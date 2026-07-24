@@ -135,7 +135,6 @@ export async function searchSoulseek(query: string, timeoutMs = 20000): Promise<
         const stateRes = await slskdFetch(`/api/v0/searches/${id}`);
         if (stateRes.ok) {
             const state = await stateRes.json() as SlskdSearch;
-            console.log(state);
             if (state.isComplete) break;
         }
         await new Promise((resolve) => setTimeout(resolve, 400));
