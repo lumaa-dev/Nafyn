@@ -2,7 +2,7 @@
   <div class="libtracks">
     <h1>{{ $t('library.tracks.title') }}</h1>
     <ol class="tracks" v-if="tracks.length > 0">
-      <li v-for="track in tracks" :key="track.id" :class="{ playing: currentTrack?.id === track.id }" @click="play(track, [track])">
+      <li v-for="track in tracks" :key="track.id" :class="{ playing: currentTrack?.id === track.id }" @click="play(track, tracks)">
         <img :src="track.coverArt ?? noCover" @error="($event.target as HTMLImageElement).src = noCover" loading="lazy" draggable="false" />
         <span class="col">
           <span class="title">{{ track.title }}</span>
