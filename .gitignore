@@ -1,0 +1,28 @@
+# Nuxt dev/build outputs
+.*/
+dist
+
+# Node dependencies
+node_modules
+
+# Locally vendored native binaries (per-machine, not committed)
+vendor/fpcalc
+
+# Logs
+logs
+*.log
+
+# Misc
+.DS_Store
+.fleet
+.idea
+!.github/
+
+# Local env files
+.env
+.env.*
+!.env.example
+
+# AI
+.claude
+CLAUDE.md

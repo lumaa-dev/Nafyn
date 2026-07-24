@@ -1,0 +1,77 @@
+{
+  "common": {
+    "search": "Search...",
+    "unknownAlbum": "Unknown Album"
+  },
+  "sidebar": {
+    "home": "Home",
+    "myAlbums": "My Albums",
+    "myTracks": "My Tracks",
+    "requests": "Requests",
+    "settings": "(Settings)"
+  },
+  "auth": {
+    "login": {
+      "title": "Login",
+      "subtitle": "Log in to your Discy account",
+      "usernamePlaceholder": "Username",
+      "passwordPlaceholder": "Password",
+      "orPrefix": "or",
+      "registerLink": "create a new account",
+      "submit": "Log in",
+      "error": "Couldn't log in"
+    },
+    "register": {
+      "title": "Register",
+      "subtitle": "Create your own Discy account",
+      "orPrefix": "or",
+      "loginLink": "log in your account",
+      "submit": "Create account"
+    }
+  },
+  "library": {
+    "tracks": {
+      "title": "Tracks",
+      "empty": "No tracks in your library yet."
+    },
+    "albums": {
+      "title": "Albums",
+      "empty": "No albums in your library yet."
+    }
+  },
+  "album": {
+    "trackList": "Track list",
+    "request": "Request",
+    "viewInMusicbrainz": "View in MusicBrainz"
+  },
+  "search": {
+    "albums": "Albums",
+    "artists": "Artists",
+    "tracks": "Tracks"
+  },
+  "requests": {
+    "title": "Requests",
+    "empty": "There are no requests.",
+    "requestedBy": "Requested by {name}",
+    "createdOn": "Created on {date}",
+    "updatedOn": "Last updated on {date}",
+    "status": {
+      "waiting": "Waiting",
+      "searching": "Searching",
+      "downloading": "Downloading",
+      "processing": "Processing",
+      "completed": "Completed",
+      "failed": "Failed"
+    }
+  },
+  "player": {
+    "repeatOff": "Repeat off",
+    "repeat": "Repeat",
+    "repeatOne": "Repeat one",
+    "shuffle": "Shuffle",
+    "queue": "Queue",
+    "lyrics": "Lyrics",
+    "queueEmpty": "Queue is empty.",
+    "nothingPlaying": "Nothing playing right now."
+  }
+}

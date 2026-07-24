@@ -1,0 +1,77 @@
+{
+  "common": {
+    "search": "Rechercher...",
+    "unknownAlbum": "Album inconnu"
+  },
+  "sidebar": {
+    "home": "Accueil",
+    "myAlbums": "Mes albums",
+    "myTracks": "Mes titres",
+    "requests": "Demandes",
+    "settings": "(Paramètres)"
+  },
+  "auth": {
+    "login": {
+      "title": "Connexion",
+      "subtitle": "Connectez-vous à votre compte Discy",
+      "usernamePlaceholder": "Nom d'utilisateur",
+      "passwordPlaceholder": "Mot de passe",
+      "orPrefix": "ou",
+      "registerLink": "créez un nouveau compte",
+      "submit": "Se connecter",
+      "error": "Connexion impossible"
+    },
+    "register": {
+      "title": "Inscription",
+      "subtitle": "Créez votre compte Discy",
+      "orPrefix": "ou",
+      "loginLink": "connectez-vous à votre compte",
+      "submit": "Créer un compte"
+    }
+  },
+  "library": {
+    "tracks": {
+      "title": "Titres",
+      "empty": "Aucun titre dans votre bibliothèque pour l'instant."
+    },
+    "albums": {
+      "title": "Albums",
+      "empty": "Aucun album dans votre bibliothèque pour l'instant."
+    }
+  },
+  "album": {
+    "trackList": "Liste des titres",
+    "request": "Demander",
+    "viewInMusicbrainz": "Voir dans MusicBrainz"
+  },
+  "search": {
+    "albums": "Albums",
+    "artists": "Artistes",
+    "tracks": "Titres"
+  },
+  "requests": {
+    "title": "Demandes",
+    "empty": "Il n'y a aucune demande.",
+    "requestedBy": "Demandé par {name}",
+    "createdOn": "Créé le {date}",
+    "updatedOn": "Mis à jour le {date}",
+    "status": {
+      "waiting": "En attente",
+      "searching": "Recherche",
+      "downloading": "Téléchargement",
+      "processing": "Traitement",
+      "completed": "Terminé",
+      "failed": "Échec"
+    }
+  },
+  "player": {
+    "repeatOff": "Répétition désactivée",
+    "repeat": "Répéter",
+    "repeatOne": "Répéter un titre",
+    "shuffle": "Aléatoire",
+    "queue": "File d'attente",
+    "lyrics": "Paroles",
+    "queueEmpty": "La file d'attente est vide.",
+    "nothingPlaying": "Aucune lecture en cours."
+  }
+}
