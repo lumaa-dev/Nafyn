@@ -16,7 +16,7 @@ jobs:
           node-version: 22
           cache: npm
 
-      - run: npm ci
+      - run: rm -f package-lock.json && npm install
 
       - run: npm run build && rm -f .output/nitro.json
 
