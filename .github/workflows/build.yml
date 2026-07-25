@@ -1,26 +1,50 @@
-name: Build
-
-on:
-  push:
-    branches:
-      - "**"
+name: Build Nuxt.js
+on: [push]
 
 jobs:
-  build:
+  build-nuxtjs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
         with:
-          node-version: 22
-          cache: npm
-
-      - run: rm -f package-lock.json && npm install
-
-      - run: npm run build && rm -f .output/nitro.json
-
-      - uses: actions/upload-artifact@v4
+          node-version: '24'
+      - name: Install dependencies
+        run: npm install
+      - name: Build the project
+        run: |
+          cd ${{ github.workspace }}
+          npm run build
+      - name: Upload .output folder
+        uses: actions/upload-artifact@v4
         with:
-          name: output
-          path: .output/**
+          name: nuxt-output
+          path: ${{ github.workspace }}/.output
+          if-no-files-found: error
+          include-hidden-files: true
+  package:
+    needs: build-nuxtjs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download .output from nuxt-output
+        uses: actions/download-artifact@v4
+        with:
+          name: nuxt-output
+          path: .output
+      - name: Delete nuxt-output
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: nuxt-output
+      - name: Create RecordLink.zip
+        run: |
+          mkdir package
+          cp -r .output/nitro.json package/
+          cp -r .output/public package/
+          cp -r .output/server package/
+      - name: Upload zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: discy
+          path: package/
