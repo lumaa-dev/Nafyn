@@ -3,11 +3,11 @@
 // pipeline:
 //   1. Search song(s) with title, artist, album info
 //   2. Match data with MusicBrainz
-//   3. Check if song is in someone else's library (if found, just copy it to requested user's library)
+//   3. Check if song is already downloaded by anyone (if found, just grant the requesting user access to that file)
 //   4. Get song(s) through Soulseek API
 //   5. Verify song(s) fingerprint with AcoustID
 //   6. Edit audio file metadata with song info from MusicBrainz (fetched in step 2)
-//   7. Add song to requested user's library (and no one else's)
+//   7. Write the song once under music/{mediaId}.ext and grant the requesting user access
 //   8. Set request status to "completed"
 //
 // security/anonymity notes:
@@ -16,8 +16,9 @@
 //   - peer-supplied filenames are never trusted for anything beyond a whitelisted extension; every file we
 //     write uses our own random/UUID-derived name, so a malicious peer can't path-traverse or spoof identity
 //     through its filename
-//   - a download is only ever accepted into a library after its AcoustID fingerprint confirms it's really the
-//     requested MusicBrainz recording, which also rules out mislabeled/malicious files
+//   - a download is rejected if its AcoustID fingerprint doesn't match the requested MusicBrainz recording AND
+//     its duration is off by more than a few seconds; fingerprint alone is too unreliable (AcoustID frequently
+//     lacks a given recording ID) to gate on by itself, so duration backs it up as the stronger "wrong file" signal
 //   - true network-level anonymity (hiding your IP from Soulseek peers) isn't something the protocol supports;
 //     use a dedicated/throwaway Soulseek account and, if you need IP-level anonymity too, run slskd itself
 //     behind a VPN at the infrastructure level
@@ -38,10 +39,8 @@ import {
     findLibraryEntry,
     insertMedia,
     addLibraryEntry,
-    copyMediaToUser,
-    libraryFilePath,
-    MediaRow,
-    LibraryPath
+    shareMediaWithUser,
+    libraryFilePath
 } from "./library";
 import { emitDownloadProgress, clearDownloadEmitter } from "../utils/downloadEvents";
 import { DiscyRequest } from "../entity/DiscyRequest";
@@ -50,6 +49,12 @@ const TMP_DIR = join(process.cwd(), ".data", "tmp");
 const ALLOWED_EXTENSIONS = [".mp3", ".flac", ".ogg", ".m4a", ".wav"];
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const MAX_CANDIDATES_PER_TRACK = 5;
+const MAX_DURATION_DELTA_SECONDS = 5;
+
+// filenames carrying one of these words are a different version of the track (same duration as the original
+// is common for instrumentals/acapellas), so duration alone can't be trusted to wave a mismatched fingerprint
+// through - only exclude when the requested title itself isn't asking for that version
+const EXCLUDED_VERSION_KEYWORDS = ["instrumental", "acapella", "a cappella", "karaoke", "backing track", "no vocal", "no vocals"];
 
 interface TrackTarget {
     recordingId: string,
@@ -70,15 +75,6 @@ function parseReleaseDate(date: string | undefined): Date | null {
     if (!date) return null;
     const parsed = new Date(date);
     return Number.isNaN(parsed.getTime()) ? null : parsed;
-}
-
-function getLibraryPath(from: MediaRow, userId: string): LibraryPath {
-    return {
-        albumId: from.albumId,
-        artistId: from.artistMbid,
-        trackId: from.id,
-        userId
-    }
 }
 
 // step 2: resolve the request's MusicBrainz ID into one (track) or many (album) concrete recordings to fetch
@@ -159,13 +155,20 @@ function normalize(s: string): string {
     return s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
 
+// true when `fileName` names a different version (instrumental/karaoke/...) than the one actually requested
+function isExcludedVersion(fileName: string, wantedTitle: string): boolean {
+    const name = normalize(fileName);
+    const title = normalize(wantedTitle);
+    return EXCLUDED_VERSION_KEYWORDS.some((keyword) => name.includes(keyword) && !title.includes(keyword));
+}
+
 // narrows an album-wide search down to the results that look like they're this specific track
 function candidatesForTrack(results: SlskSearchResult[], target: TrackTarget): SlskSearchResult[] {
     const wantedTitle = normalize(target.title);
     if (!wantedTitle) return [];
     return results.filter((result) => {
         const name = normalize(basename(result.file.replace(/\\/g, "/"), extname(result.file)));
-        return name.includes(wantedTitle);
+        return name.includes(wantedTitle) && !isExcludedVersion(name, target.title);
     });
 }
 
@@ -225,8 +228,8 @@ async function downloadTrack(
 
         const sourceEntry = findAnyLibraryEntryForMedia(existingMedia.id);
         if (sourceEntry) {
-            await copyMediaToUser(requestedBy, existingMedia, sourceEntry.filePath, extname(sourceEntry.filePath));
-            progress({ stage: "completed", message: "Copied from existing library entry" });
+            shareMediaWithUser(requestedBy, existingMedia, sourceEntry.filePath);
+            progress({ stage: "completed", message: "Granted access to existing library entry" });
             return true;
         }
     }
@@ -244,7 +247,8 @@ async function downloadTrack(
     }
     if (results.length === 0) {
         console.log(`[downloads] "${target.title}" not found in album search results, falling back to per-track search (last resort)`);
-        results = await searchWithFallback([`${target.artistName} ${target.title}`, `${target.title} ${target.artistName}`]);
+        const rawResults = await searchWithFallback([`${target.artistName} ${target.title}`, `${target.title} ${target.artistName}`]);
+        results = rawResults.filter((result) => !isExcludedVersion(basename(result.file.replace(/\\/g, "/"), extname(result.file)), target.title));
     }
 
     const candidates = pickCandidates(results);
@@ -276,16 +280,25 @@ async function downloadTrack(
             await updateRequestStatus(requestId, "processing");
             progress({ stage: "processing", message: "Verifying fingerprint" });
 
-            // TODO: Fix fingerprinting : sometimes says "not matched" while the song is purely good and fine and correct and etc...
+            // AcoustID often has no entry for this exact recording ID even when the audio is correct, so a
+            // "not matched" result alone isn't proof of a wrong file. Duration is a stronger signal of a
+            // genuinely wrong file, but it can't tell an instrumental/acapella/karaoke apart from the real thing
+            // since those commonly share the same runtime - that case is already filtered out of the candidate
+            // list before we ever get here (see isExcludedVersion), so trusting duration at this point is safe.
             const check = await verifyRecordingMatch(tempPath, target.recordingId);
-            // if (!check.matched) {
-            //     await rm(tempPath, { force: true });
-            //     console.log(`[downloads] ${check.fingerprint} not matched`);
-                
-            //     continue;
-            // } else {
-            //     console.log(`[downloads] ${check.fingerprint} matched`);
-            // }
+            const durationDelta = Math.abs(check.duration - target.duration);
+            
+            if (!check.matched && durationDelta > MAX_DURATION_DELTA_SECONDS) {
+                await rm(tempPath, { force: true });
+                console.log(`[downloads] ${check.fingerprint} rejected: not matched and duration off by ${durationDelta}s`);
+                continue;
+            }
+
+            if (!check.matched) {
+                console.log(`[downloads] ${check.fingerprint} not matched by AcoustID but duration within ${durationDelta}s, accepting`);
+            } else {
+                console.log(`[downloads] ${check.fingerprint} matched`);
+            }
 
             // step 6+7: tag with MusicBrainz metadata, move into the requesting user's library
             const media = insertMedia({
@@ -305,8 +318,7 @@ async function downloadTrack(
 
             console.log(`[downloads] Musicbrainz'd "${target.title}"`);
 
-            let path: LibraryPath = getLibraryPath(media, requestedBy)
-            const destPath = libraryFilePath(requestedBy, path, extension);
+            const destPath = libraryFilePath(media.id, extension);
             await mkdir(dirname(destPath), { recursive: true });
             await tagAudioFile(tempPath, destPath, {
                 title: target.title,
