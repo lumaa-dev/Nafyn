@@ -1,7 +1,6 @@
-// per-user music library: shared `media` metadata rows + per-user `library_entries` ownership/file rows
+// per-user music library: shared `media` metadata rows + shared audio file on disk, `library_entries` only grants per-user access
 import { randomUUID, UUID } from "node:crypto";
-import { copyFile, mkdir } from "node:fs/promises";
-import { dirname } from "node:path";
+import { rm } from "node:fs/promises";
 import { getLibrariesDb } from "./db";
 
 export interface MediaRow {
@@ -39,13 +38,6 @@ export interface LibraryEntry {
     mediaId: string,
     filePath: string,
     addedAt: number
-}
-
-export interface LibraryPath {
-    userId: UUID | string,
-    artistId: UUID | string,
-    albumId: UUID | string,
-    trackId: UUID | string
 }
 
 // any existing media row for this MusicBrainz recording, regardless of who owns it, used to skip a redundant download
@@ -147,15 +139,29 @@ export function getMediaId(mediaId: string): MediaRow | undefined {
     return row;
 }
 
-// physically copies an existing owner's file into `userId`'s library and records ownership, used when the song is already known
-export async function copyMediaToUser(userId: string, media: MediaRow, sourceFilePath: string, extension: string): Promise<LibraryEntry> {
-    let path: LibraryPath = { artistId: media.artistMbid ?? "Unknown Artist", albumId: media.album ?? "Unknown Album", trackId: media.id, userId }
-    const destPath = libraryFilePath(userId, path, extension);
-    await mkdir(dirname(destPath), { recursive: true });
-    await copyFile(sourceFilePath, destPath);
-    return addLibraryEntry(userId, media.id, destPath);
+// grants `userId` access to an already-downloaded song, no file copy needed since all users share the one file on disk
+export function shareMediaWithUser(userId: string, media: MediaRow, sharedFilePath: string): LibraryEntry {
+    return addLibraryEntry(userId, media.id, sharedFilePath);
 }
 
-export function libraryFilePath(userId: string, path: LibraryPath, extension: string): string {
-    return `${process.cwd()}/music/library/${userId}/${path.artistId}/${path.albumId}/${path.trackId}${extension}`;
+export function libraryFilePath(mediaId: string, extension: string): string {
+    return `${process.cwd()}/music/${mediaId}${extension}`;
+}
+
+// revokes `userId`'s access to a song; once no user references it anymore, the shared file and media row are deleted too
+export async function deleteLibraryEntryForUser(userId: string, mediaId: string): Promise<{ removed: boolean, fileDeleted: boolean }> {
+    const entry = findLibraryEntry(userId, mediaId);
+    if (!entry) return { removed: false, fileDeleted: false };
+
+    const db = getLibrariesDb();
+    db.prepare(`DELETE FROM library_entries WHERE id = ?`).run(entry.id);
+
+    const { count } = db.prepare(`SELECT COUNT(*) AS count FROM library_entries WHERE mediaId = ?`).get(mediaId) as { count: number };
+    if (count === 0) {
+        await rm(entry.filePath, { force: true });
+        db.prepare(`DELETE FROM media WHERE id = ?`).run(mediaId);
+        return { removed: true, fileDeleted: true };
+    }
+
+    return { removed: true, fileDeleted: false };
 }
