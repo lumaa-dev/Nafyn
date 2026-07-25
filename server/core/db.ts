@@ -1,10 +1,9 @@
 // central SQLite connection + schema setup for all Discy databases
 import Database from "better-sqlite3";
 import { existsSync, mkdirSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
+import { join } from "node:path";
 
-const dataDir = join(dirname(fileURLToPath(import.meta.url)), "..", "..", ".data");
+const dataDir = join(process.cwd(), ".data");
 
 let usersDb: Database.Database | null = null;
 let requestsDb: Database.Database | null = null;
