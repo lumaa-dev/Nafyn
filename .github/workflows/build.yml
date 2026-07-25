@@ -37,7 +37,7 @@ jobs:
         uses: geekyeggo/delete-artifact@v5
         with:
           name: nuxt-output
-      - name: Create RecordLink.zip
+      - name: Create discy.zip
         run: |
           mkdir package
           cp -r .output/nitro.json package/
