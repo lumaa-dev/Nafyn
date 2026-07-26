@@ -8,7 +8,7 @@
     "myAlbums": "Mes albums",
     "myTracks": "Mes titres",
     "requests": "Demandes",
-    "settings": "(Paramètres)"
+    "settings": "Paramètres"
   },
   "auth": {
     "login": {
@@ -62,6 +62,26 @@
       "processing": "Traitement",
       "completed": "Terminé",
       "failed": "Échec"
+    }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "categories": {
+      "profile": "Profil"
+    },
+    "profile": {
+      "title": "Profil",
+      "changeAvatar": "Changer l'avatar",
+      "removeAvatar": "Retirer",
+      "displayName": "Nom affiché",
+      "displayNamePlaceholder": "Votre nom affiché",
+      "lastFm": "Nom d'utilisateur Last.fm",
+      "lastFmPlaceholder": "Nom d'utilisateur Last.fm",
+      "discogs": "Nom d'utilisateur Discogs",
+      "discogsPlaceholder": "Nom d'utilisateur Discogs",
+      "save": "Enregistrer",
+      "saved": "Enregistré.",
+      "error": "Impossible d'enregistrer votre profil"
     }
   },
   "player": {

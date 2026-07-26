@@ -8,7 +8,7 @@
     "myAlbums": "My Albums",
     "myTracks": "My Tracks",
     "requests": "Requests",
-    "settings": "(Settings)"
+    "settings": "Settings"
   },
   "auth": {
     "login": {
@@ -62,6 +62,26 @@
       "processing": "Processing",
       "completed": "Completed",
       "failed": "Failed"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "categories": {
+      "profile": "Profile"
+    },
+    "profile": {
+      "title": "Profile",
+      "changeAvatar": "Change avatar",
+      "removeAvatar": "Remove",
+      "displayName": "Display name",
+      "displayNamePlaceholder": "Your display name",
+      "lastFm": "Last.fm username",
+      "lastFmPlaceholder": "Last.fm username",
+      "discogs": "Discogs username",
+      "discogsPlaceholder": "Discogs username",
+      "save": "Save changes",
+      "saved": "Saved.",
+      "error": "Couldn't save your profile"
     }
   },
   "player": {

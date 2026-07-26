@@ -74,14 +74,6 @@ function recordingToMediaInfo(recording: IRecording): MediaInfo {
 export default defineEventHandler(async (event) => {
     requireAuthToken(event);
 
-    const ip = getRequestIP(event, { xForwardedFor: true }) ?? "unknown";
-    const rateLimit = consumeRateLimit(`search:${ip}`, MAX_ATTEMPTS, WINDOW_MS);
-
-    if (!rateLimit.allowed) {
-        setResponseHeader(event, "Retry-After", rateLimit.retryAfterSeconds);
-        throw createError({ statusCode: 429, statusMessage: "Too many attempts, try again later" });
-    }
-
     const query = getQuery(event);
     const q = typeof query?.q === "string" ? query.q.trim() : "";
     const filter: Filter = query?.filter === "album" || query?.filter === "track" || query?.filter === "artist" ? query.filter : "all";

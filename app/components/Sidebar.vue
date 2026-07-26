@@ -5,7 +5,7 @@
       <NuxtLink to="/l/albums">{{ $t('sidebar.myAlbums') }}</NuxtLink>
       <NuxtLink to="/l/tracks">{{ $t('sidebar.myTracks') }}</NuxtLink>
       <NuxtLink to="/requests">{{ $t('sidebar.requests') }}</NuxtLink>
-      <p>{{ $t('sidebar.settings') }}</p>
+      <NuxtLink to="/settings">{{ $t('sidebar.settings') }}</NuxtLink>
     </div>
     <SidebarProgressiveBlur fade-color="#000000" height="100%" />
   </div>
