@@ -1,5 +1,4 @@
 import { getMusicBrainzClient, parseReleaseDate } from "~~/server/utils/musicbrainz";
-import { consumeRateLimit } from "~~/server/utils/rateLimit";
 import type { MediaInfo } from "~~/server/entity/media/MediaInfo";
 import type { ArtistInfo } from "~~/server/entity/media/ArtistInfo";
 
