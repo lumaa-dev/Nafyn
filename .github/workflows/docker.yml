@@ -31,7 +31,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-push:
+  docker-build-push:
     runs-on: ubuntu-latest
 
     steps:
