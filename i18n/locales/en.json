@@ -5,8 +5,7 @@
   },
   "sidebar": {
     "home": "Home",
-    "myAlbums": "My Albums",
-    "myTracks": "My Tracks",
+    "library": "Library",
     "requests": "Requests",
     "settings": "Settings"
   },
@@ -41,6 +40,10 @@
   },
   "album": {
     "trackList": "Track list",
+    "request": "Request",
+    "viewInMusicbrainz": "View in MusicBrainz"
+  },
+  "track": {
     "request": "Request",
     "viewInMusicbrainz": "View in MusicBrainz"
   },

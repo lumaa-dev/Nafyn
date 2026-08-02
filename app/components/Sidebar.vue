@@ -2,8 +2,7 @@
   <div class="sidebar">
     <div class="actions">
       <NuxtLink to="/">{{ $t('sidebar.home') }}</NuxtLink>
-      <NuxtLink to="/l/albums">{{ $t('sidebar.myAlbums') }}</NuxtLink>
-      <NuxtLink to="/l/tracks">{{ $t('sidebar.myTracks') }}</NuxtLink>
+      <NuxtLink to="/library">{{ $t('sidebar.library') }}</NuxtLink>
       <NuxtLink to="/requests">{{ $t('sidebar.requests') }}</NuxtLink>
       <NuxtLink to="/settings">{{ $t('sidebar.settings') }}</NuxtLink>
     </div>

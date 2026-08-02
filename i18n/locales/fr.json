@@ -5,8 +5,7 @@
   },
   "sidebar": {
     "home": "Accueil",
-    "myAlbums": "Mes albums",
-    "myTracks": "Mes titres",
+    "library": "Librairie",
     "requests": "Demandes",
     "settings": "Paramètres"
   },
@@ -41,6 +40,10 @@
   },
   "album": {
     "trackList": "Liste des titres",
+    "request": "Demander",
+    "viewInMusicbrainz": "Voir dans MusicBrainz"
+  },
+  "track": {
     "request": "Demander",
     "viewInMusicbrainz": "Voir dans MusicBrainz"
   },
