@@ -1,12 +1,8 @@
 import type { IArtist, IArtistCredit, IRecording, IReleaseGroup } from "musicbrainz-api";
 import { getMusicBrainzClient } from "../../utils/musicbrainz";
-import { consumeRateLimit } from "../../utils/rateLimit";
 import { requireAuthToken } from "../../utils/requireAuth";
 import type { MediaInfo } from "../../entity/media/MediaInfo";
 import type { ArtistInfo } from "../../entity/media/ArtistInfo";
-
-const MAX_ATTEMPTS = 30;
-const WINDOW_MS = 60 * 1000;
 
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 50;

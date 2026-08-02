@@ -1,6 +1,6 @@
-import bcrypt from "bcrypt";
+import { promises as dns } from "node:dns";
 import { createUser, isUsernameTaken, listUsers } from "../../../core/users";
-import { consumeRateLimit } from "../../../utils/rateLimit";
+import { consumeRateLimit, isWhitelisted } from "../../../utils/rateLimit";
 import { signAuthToken } from "../../../utils/jwt";
 import { Permission } from "../../../entity/Permission";
 
@@ -11,12 +11,14 @@ const USERNAME_RE = /^[a-zA-Z0-9_.-]{3,20}$/;
 const MIN_PASSWORD_LENGTH = 8;
 
 export default defineEventHandler(async (event) => {
-    const ip = getRequestIP(event, { xForwardedFor: true }) ?? "unknown";
-    const rateLimit = consumeRateLimit(`register:${ip}`, MAX_ATTEMPTS, WINDOW_MS);
-
-    if (!rateLimit.allowed) {
-        setResponseHeader(event, "Retry-After", rateLimit.retryAfterSeconds);
-        throw createError({ statusCode: 429, statusMessage: "Too many attempts, try again later" });
+    const ip = getRequestIP(event, { xForwardedFor: true }) ?? "unknown";    
+    if (!isWhitelisted(ip)) {
+        const rateLimit = consumeRateLimit(`register:${ip}`, MAX_ATTEMPTS, WINDOW_MS);
+    
+        if (!rateLimit.allowed) {
+            setResponseHeader(event, "Retry-After", rateLimit.retryAfterSeconds);
+            throw createError({ statusCode: 429, statusMessage: "Too many attempts, try again later" });
+        }
     }
 
     const body = await readBody(event);

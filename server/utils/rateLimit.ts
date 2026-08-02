@@ -1,3 +1,6 @@
+import { promises as dns } from "node:dns";
+import { H3Event } from "#imports";
+
 interface Bucket {
     count: number,
     expiresAt: number
@@ -30,4 +33,16 @@ export function consumeRateLimit(key: string, max: number, windowMs: number): Ra
 // clears a key's attempts, used after a successful login so honest typos don't linger
 export function resetRateLimit(key: string): void {
     buckets.delete(key);
+}
+
+export async function isWhitelisted(ip: string | null): Promise<boolean> {
+    if (ip) {
+        const config = useRuntimeConfig();
+        if (config.domainsWhitelist.length > 0) {
+            let domains: string[] = config.domainsWhitelist.split(/,+/g);
+            return domains.some(async (d) => (await dns.resolve4(d))[0] == ip);
+        }
+    }
+
+    return false
 }

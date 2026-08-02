@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import { getUserByUsername, getPasswordHash } from "../../../core/users";
-import { consumeRateLimit, resetRateLimit } from "../../../utils/rateLimit";
+import { consumeRateLimit, isWhitelisted, resetRateLimit } from "../../../utils/rateLimit";
 import { signAuthToken } from "../../../utils/jwt";
 
 const MAX_ATTEMPTS = 5;
@@ -19,12 +19,13 @@ export default defineEventHandler(async (event) => {
     }
 
     const ip = getRequestIP(event, { xForwardedFor: true }) ?? "unknown";
-    const rateLimitKey = `login:${ip}:${username.toLowerCase()}`;
-    const rateLimit = consumeRateLimit(rateLimitKey, MAX_ATTEMPTS, WINDOW_MS);
-
-    if (!rateLimit.allowed) {
-        setResponseHeader(event, "Retry-After", rateLimit.retryAfterSeconds);
-        throw createError({ statusCode: 429, statusMessage: "Too many attempts, try again later" });
+    if (!isWhitelisted(ip)) {
+        const rateLimit = consumeRateLimit(`login:${ip}:${username.toLowerCase()}`, MAX_ATTEMPTS, WINDOW_MS);
+    
+        if (!rateLimit.allowed) {
+            setResponseHeader(event, "Retry-After", rateLimit.retryAfterSeconds);
+            throw createError({ statusCode: 429, statusMessage: "Too many attempts, try again later" });
+        }
     }
 
     const passwordHash = getPasswordHash(username);

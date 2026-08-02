@@ -11,6 +11,8 @@ export default defineNuxtConfig({
     soulseekHost: process.env.SOULSEEK_HOST || 'http://localhost:5030/',
     soulseekDownloadsPath: process.env.SOULSEEK_DOWNLOADS_PATH || '/music',
 
+    domainsWhitelist: process.env.DOMAINS_WHITELIST || '',
+
     acoustidApiKey: process.env.ACOUSTID_API_KEY || ''
   },
 
