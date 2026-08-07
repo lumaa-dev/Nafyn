@@ -2,8 +2,8 @@
   <header>
     <ProgressiveBlur class="backblur" height="80%" fade-color="#00000050" />
     <span>
-      <button filled="hollow" @click="props.toggleSidebar()">
-        <img src="../assets/brand/Wordmark.svg" draggable="false" />
+      <button @click="props.toggleSidebar()">
+        <Wordmark />
       </button>
       <input v-model="searchText" type="text" name="search" id="search" :placeholder="$t('common.search')" :disabled="sidebarActive" @keydown.enter="navigateTo(`/search?q=${encodeURIComponent(searchText)}`)">
     </span>
@@ -12,6 +12,7 @@
 
 <script lang="ts" setup>
 import ProgressiveBlur from './TopProgressiveBlur.vue';
+import Wordmark from './Wordmark.vue';
 
 const searchText = ref("");
 
@@ -56,7 +57,7 @@ header input[type="text"]:disabled {
 }
 
 header button {
-  padding: 0.6em 2.0em !important;
+  padding: 0 !important;
   cursor: pointer;
   height: fit-content;
   width: fit-content;
@@ -64,15 +65,11 @@ header button {
   filter: none;
 }
 
-header button:hover img {
-  filter: invert();
-}
-
-header img {
+header img, header video {
   transition: filter 0.15s ease-out;
+  margin: calc(0.6em + 5px) 2.0em 0.6em 2.0em !important;
   width: fit-content;
   height: 40px;
-  margin-top: 8px;
 }
 
 header .backblur {

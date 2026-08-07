@@ -1,6 +1,6 @@
 <template>
   <div class="search" v-if="results">
-    <h1>"{{ route.query.q }}"</h1>
+    <!-- <h1>"{{ route.query.q }}"</h1> -->
     <span class="results" v-if="results.albums">
       <h2>{{ $t('search.albums') }}</h2>
       <div class="xs">

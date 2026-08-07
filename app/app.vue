@@ -57,6 +57,9 @@ input[type="text"], input[type="password"] {
 
 button {
 	cursor: pointer;
+	background: #00000000;
+	border: none;
+	outline: none;
 }
 
 button[filled], a[filled], p[filled] {
