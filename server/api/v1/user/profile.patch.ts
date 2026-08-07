@@ -1,5 +1,5 @@
 import { getUserById, updateUser } from "~~/server/core/users";
-import type { DiscyUser } from "~~/server/entity/DiscyUser";
+import type { NafynUser } from "~~/server/entity/NafynUser";
 
 function normalizeOptionalText(value: unknown, maxLength: number): string | null {
     if (value === null || value === undefined) return null;
@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
     const { sub } = requireAuthToken(event);
     const body = await readBody(event);
 
-    const changes: Partial<Pick<DiscyUser, "displayName" | "lastFm" | "discogs">> = {};
+    const changes: Partial<Pick<NafynUser, "displayName" | "lastFm" | "discogs">> = {};
 
     if ("displayName" in body) {
         const displayName = typeof body.displayName === "string" ? body.displayName.trim() : "";

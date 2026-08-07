@@ -43,7 +43,7 @@ function getAudioEl(state: PlayerState): HTMLAudioElement {
 }
 
 function trackStreamUrl(track: MediaRow): string {
-    const token = useCookie("discyToken").value ?? "";
+    const token = useCookie("nafynToken").value ?? "";
     return `/api/v1/library/${track.id}/stream?token=${encodeURIComponent(token)}`;
 }
 

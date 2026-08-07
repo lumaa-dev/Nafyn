@@ -1,7 +1,7 @@
-// `DiscyUser`s stuff
+// `NafynUser`s stuff
 import { randomUUID, UUID } from "node:crypto";
 import { getUsersDb } from "./db";
-import type { DiscyUser } from "../entity/DiscyUser";
+import type { NafynUser } from "../entity/NafynUser";
 import { Permission } from "../entity/Permission";
 
 interface UserRow {
@@ -15,7 +15,7 @@ interface UserRow {
     discogs: string | null
 }
 
-function rowToUser(row: UserRow): DiscyUser {
+function rowToUser(row: UserRow): NafynUser {
     return {
         id: row.id,
         username: row.username,
@@ -27,8 +27,8 @@ function rowToUser(row: UserRow): DiscyUser {
     };
 }
 
-// creates a `DiscyUser`, id is generated as a UUID if not given
-export function createUser(user: Omit<DiscyUser, "id"> & { id?: UUID }, passwordHash: string): DiscyUser {
+// creates a `NafynUser`, id is generated as a UUID if not given
+export function createUser(user: Omit<NafynUser, "id"> & { id?: UUID }, passwordHash: string): NafynUser {
     const id = (user.id ?? randomUUID()) as string;
 
     let permcount = typeof user.permissions == "number" ? user.permissions : 0;
@@ -53,16 +53,16 @@ export function createUser(user: Omit<DiscyUser, "id"> & { id?: UUID }, password
     });
 
 
-    return { ...user, id } as DiscyUser;
+    return { ...user, id } as NafynUser;
 }
 
-export function getUserById(id: UUID | string, compact: boolean = false): DiscyUser | null {
+export function getUserById(id: UUID | string, compact: boolean = false): NafynUser | null {
     let v: string = compact ? `id, username, displayName, avatar` : `*`
     const row = getUsersDb().prepare(`SELECT ${v} FROM users WHERE id = ?`).get(id) as UserRow | undefined;
     return row ? rowToUser(row) : null;
 }
 
-export function getUserByUsername(username: string): DiscyUser | null {
+export function getUserByUsername(username: string): NafynUser | null {
     const row = getUsersDb().prepare(`SELECT * FROM users WHERE username = ?`).get(username) as UserRow | undefined;
     return row ? rowToUser(row) : null;
 }
@@ -85,7 +85,7 @@ export function isUsernameTaken(username: string): boolean {
 }
 
 // partially updates a user; only defined fields are changed
-export function updateUser(id: string, changes: Partial<Omit<DiscyUser, "id">>): DiscyUser | null {
+export function updateUser(id: string, changes: Partial<Omit<NafynUser, "id">>): NafynUser | null {
     const existing = getUserById(id);
     if (!existing) return null;
 
@@ -115,7 +115,7 @@ export function deleteUser(id: string): boolean {
     return result.changes > 0;
 }
 
-export function listUsers(): DiscyUser[] {
+export function listUsers(): NafynUser[] {
     const rows = getUsersDb().prepare(`SELECT * FROM users`).all() as UserRow[];
     return rows.map(rowToUser);
 }

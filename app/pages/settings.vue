@@ -47,10 +47,10 @@
 </template>
 
 <script lang="ts" setup>
-import type { DiscyUser } from '~~/server/entity/DiscyUser';
+import type { NafynUser } from '~~/server/entity/NafynUser';
 
 const { t } = useI18n();
-const token = useCookie("discyToken").value ?? "";
+const token = useCookie("nafynToken").value ?? "";
 
 interface Category {
   id: "profile",
@@ -63,7 +63,7 @@ const categories: Category[] = [
 
 const activeCategory = ref<Category["id"]>('profile');
 
-const user = ref<DiscyUser | null>(null);
+const user = ref<NafynUser | null>(null);
 const displayName = ref("");
 const lastFm = ref("");
 const discogs = ref("");
@@ -89,12 +89,12 @@ const initial = computed(() => (displayName.value || user.value?.username || "?"
 
 const canSave = computed(() => displayName.value.trim().length >= 1 && displayName.value.trim().length <= 20);
 
-const { data } = await useFetch<DiscyUser>("/api/v1/user/me", { headers: { Authorization: token } });
+const { data } = await useFetch<NafynUser>("/api/v1/user/me", { headers: { Authorization: token } });
 if (data.value) {
   applyUser(data.value);
 }
 
-function applyUser(u: DiscyUser) {
+function applyUser(u: NafynUser) {
   user.value = u;
   displayName.value = u.displayName ?? u.username;
   lastFm.value = u.lastFm ?? "";
@@ -136,7 +136,7 @@ async function save() {
   saving.value = true;
 
   try {
-    const updated: DiscyUser = await $fetch("/api/v1/user/profile", {
+    const updated: NafynUser = await $fetch("/api/v1/user/profile", {
       method: "PATCH",
       headers: { Authorization: token },
       body: {
@@ -152,7 +152,7 @@ async function save() {
       const body = new FormData();
       body.append("avatar", avatarFile.value);
 
-      const withAvatar: DiscyUser = await $fetch("/api/v1/user/avatar", {
+      const withAvatar: NafynUser = await $fetch("/api/v1/user/avatar", {
         method: "POST",
         headers: { Authorization: token },
         body

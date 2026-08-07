@@ -12,11 +12,11 @@
 
 <script lang="ts" setup>
 import RequestRow from '~/components/RequestRow.vue';
-import type { DiscyRequest } from '~~/server/entity/DiscyRequest';
+import type { NafynRequest } from '~~/server/entity/NafynRequest';
 
-const token = useCookie("discyToken").value;
+const token = useCookie("nafynToken").value;
 
-const { data: requests } = await useAsyncData<DiscyRequest[]>("requests-list", () => {  
+const { data: requests } = await useAsyncData<NafynRequest[]>("requests-list", () => {  
   return token
     ? $fetch("/api/v1/requests", { headers: { Authorization: token } })
     : Promise.resolve([]);

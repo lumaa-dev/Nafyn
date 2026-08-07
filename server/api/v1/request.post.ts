@@ -3,7 +3,7 @@ import { processDownloadRequest } from "~~/server/core/downloads";
 import { createRequest } from "~~/server/core/requests";
 import { getPermissionsById } from "~~/server/core/users";
 import { hasPermission, Permission } from "~~/server/entity/Permission";
-import { DiscyRequest } from "~~/server/entity/DiscyRequest";
+import { NafynRequest } from "~~/server/entity/NafynRequest";
 
 export default defineEventHandler(async (event) => {
     const { sub: userId } = requireAuthToken(event);
@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
     let permcount: number = getPermissionsById(userId) ?? 0
     let autoAccept: boolean = hasPermission(permcount, type == "album" ? Permission.AUTOACCEPT_ALBUMS : Permission.AUTOACCEPT_TRACKS);
 
-    let newRequest: DiscyRequest = await createRequest(mbId as UUID, type, userId as UUID, autoAccept ? "searching" : "waiting");
+    let newRequest: NafynRequest = await createRequest(mbId as UUID, type, userId as UUID, autoAccept ? "searching" : "waiting");
     if (autoAccept) {
         processDownloadRequest(newRequest);
     }

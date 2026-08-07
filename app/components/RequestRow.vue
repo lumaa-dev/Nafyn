@@ -29,9 +29,9 @@
 </template>
 
 <script lang="ts" setup>
-import type { DiscyRequest } from '~~/server/entity/DiscyRequest';
+import type { NafynRequest } from '~~/server/entity/NafynRequest';
 
-const props = defineProps<{ request: DiscyRequest, isCompact: boolean; }>();
+const props = defineProps<{ request: NafynRequest, isCompact: boolean; }>();
 
 const { locale } = useI18n();
 

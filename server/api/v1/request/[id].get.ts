@@ -1,7 +1,7 @@
 import { getRequestById } from "~~/server/core/requests";
 import { getPermissionsById, getUserById } from "~~/server/core/users";
 import { hasPermission, Permission } from "~~/server/entity/Permission";
-import type { DiscyRequest } from "~~/server/entity/DiscyRequest";
+import type { NafynRequest } from "~~/server/entity/NafynRequest";
 
 export default defineEventHandler(async (event) => {
   const { sub: userId } = requireAuthToken(event);
@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: "Missing request ID" })
   }
 
-  const request: DiscyRequest | null = await getRequestById(reqId);
+  const request: NafynRequest | null = await getRequestById(reqId);
   if (!request) {
     throw createError({ statusCode: 404, message: "No request with ID " + reqId })
   }

@@ -12,7 +12,7 @@
   "auth": {
     "login": {
       "title": "Connexion",
-      "subtitle": "Connectez-vous à votre compte Discy",
+      "subtitle": "Connectez-vous à votre compte Nafyn",
       "usernamePlaceholder": "Nom d'utilisateur",
       "passwordPlaceholder": "Mot de passe",
       "orPrefix": "ou",
@@ -22,7 +22,7 @@
     },
     "register": {
       "title": "Inscription",
-      "subtitle": "Créez votre compte Discy",
+      "subtitle": "Créez votre compte Nafyn",
       "orPrefix": "ou",
       "loginLink": "connectez-vous à votre compte",
       "submit": "Créer un compte"

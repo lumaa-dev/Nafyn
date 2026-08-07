@@ -16,7 +16,7 @@ import type { AlbumRow } from '~~/server/core/library';
 import type { MediaInfo } from '~~/server/entity/media/MediaInfo';
 
 const { t } = useI18n();
-const token = useCookie("discyToken").value;
+const token = useCookie("nafynToken").value;
 
 const { data: albums } = await useAsyncData<AlbumRow[]>("library-albums", () => {
   return token

@@ -39,7 +39,7 @@ interface SearchResponse {
 }
 
 const route = useRoute();
-const token = useCookie("discyToken").value;
+const token = useCookie("nafynToken").value;
 
 // re-runs whenever `?q=` changes, so searching again while already on this page updates the results without a full page reload (which would kill audio playback)
 const { data: results } = await useAsyncData<SearchResponse>("search", () => {

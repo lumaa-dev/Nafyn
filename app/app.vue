@@ -126,7 +126,7 @@ import NowPlaying from "./components/NowPlaying.vue";
 const route = useRoute();
 const showSidebar = ref(false);
 
-const token = useCookie("discyToken").value;
+const token = useCookie("nafynToken").value;
 
 const hasToken = ref(await checkTokenValidity(token ?? ""));
 if (route.path !== "/login" && route.path !== "/register" && !hasToken.value) {

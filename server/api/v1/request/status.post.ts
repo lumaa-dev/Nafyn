@@ -2,7 +2,7 @@ import { processDownloadRequestId } from "~~/server/core/downloads";
 import { getRequestById, updateRequestStatus } from "~~/server/core/requests";
 import { getPermissionsById } from "~~/server/core/users";
 import { hasPermission, Permission } from "~~/server/entity/Permission";
-import type { RequestStatus } from "~~/server/entity/DiscyRequest";
+import type { RequestStatus } from "~~/server/entity/NafynRequest";
 
 export default defineEventHandler(async (event) => {
   const { sub: userId } = requireAuthToken(event);

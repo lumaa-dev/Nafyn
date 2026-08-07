@@ -1,6 +1,6 @@
 import { Permission } from "./Permission";
 
-export interface DiscyUser {
+export interface NafynUser {
     id: string,
     username: string,
     displayName: string | null,

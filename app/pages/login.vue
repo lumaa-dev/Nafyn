@@ -12,7 +12,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { DiscyUser } from '~~/server/entity/DiscyUser';
+import type { NafynUser } from '~~/server/entity/NafynUser';
 
 const { t } = useI18n();
 const username = ref("");
@@ -21,7 +21,7 @@ const password = ref("");
 const hasError: globalThis.Ref<string | null, string | null> = ref(null);
 
 interface LoginResponse {
-  user: DiscyUser,
+  user: NafynUser,
   token: string
 }
 
@@ -33,7 +33,7 @@ async function logIn() {
 
   if (!result) return hasError.value = t("auth.login.error");
 
-  const tokenCookie = useCookie("discyToken");
+  const tokenCookie = useCookie("nafynToken");
   tokenCookie.value = `Bearer ${result.token}`;
   navigateTo(`/`);
 }

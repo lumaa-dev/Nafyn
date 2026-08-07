@@ -1,17 +1,17 @@
 openapi: 3.0.3
 info:
-  title: Discy API
+  title: Nafyn API
   version: 1.0.0
-  description: OpenAPI specification for the Discy Nuxt server API.
+  description: OpenAPI specification for the Nafyn Nuxt server API.
 servers:
   - url: http://localhost:3000
     description: Local development server
 paths:
-  /api/v1/auth/discy:
+  /api/v1/auth/nafyn:
     get:
       tags: [auth]
       summary: Verify service availability
-      operationId: getDiscyStatus
+      operationId: getNafynStatus
       responses:
         '200':
           description: Service health response
@@ -20,7 +20,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  discy:
+                  nafyn:
                     type: boolean
                   response:
                     type: object
@@ -139,7 +139,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DiscyRequest'
+                $ref: '#/components/schemas/NafynRequest'
         '400':
           description: Invalid request payload
         '401':
@@ -160,7 +160,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/DiscyRequest'
+                  $ref: '#/components/schemas/NafynRequest'
         '401':
           description: Insufficient permissions
 
@@ -183,7 +183,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DiscyRequest'
+                $ref: '#/components/schemas/NafynRequest'
         '404':
           description: Request not found
         '401':
@@ -208,7 +208,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DiscyRequest'
+                $ref: '#/components/schemas/NafynRequest'
         '400':
           description: Malformed request
         '401':
@@ -417,7 +417,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DiscyUser'
+                $ref: '#/components/schemas/NafynUser'
         '401':
           description: Not authenticated
         '404':
@@ -442,7 +442,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DiscyUser'
+                $ref: '#/components/schemas/NafynUser'
         '400':
           description: Invalid profile data
         '401':
@@ -474,7 +474,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DiscyUser'
+                $ref: '#/components/schemas/NafynUser'
         '400':
           description: Missing avatar file
         '401':
@@ -493,7 +493,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DiscyUser'
+                $ref: '#/components/schemas/NafynUser'
         '401':
           description: Not authenticated
         '404':
@@ -557,7 +557,7 @@ components:
       type: object
       properties:
         user:
-          $ref: '#/components/schemas/DiscyUser'
+          $ref: '#/components/schemas/NafynUser'
         token:
           type: string
     CreateRequestPayload:
@@ -604,7 +604,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ArtistInfo'
-    DiscyUser:
+    NafynUser:
       type: object
       properties:
         id:
@@ -629,7 +629,7 @@ components:
         discogs:
           type: string
           nullable: true
-    DiscyRequest:
+    NafynRequest:
       type: object
       properties:
         id:
@@ -646,7 +646,7 @@ components:
           enum: [searching, downloading, processing, completed, failed, waiting]
         requestedBy:
           oneOf:
-            - $ref: '#/components/schemas/DiscyUser'
+            - $ref: '#/components/schemas/NafynUser'
             - type: string
         createdAt:
           type: string

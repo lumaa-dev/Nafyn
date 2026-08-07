@@ -12,13 +12,13 @@
 </template>
 
 <script lang="ts" setup>
-import type { DiscyUser } from '~~/server/entity/DiscyUser';
+import type { NafynUser } from '~~/server/entity/NafynUser';
 
 const username = ref("");
 const password = ref("");
 
 interface RegisterResponse {
-  user: DiscyUser,
+  user: NafynUser,
   token: string
 }
 
@@ -28,7 +28,7 @@ async function register() {
     body: { username: username.value, password: password.value }
   })
 
-  const tokenCookie = useCookie("discyToken");
+  const tokenCookie = useCookie("nafynToken");
   tokenCookie.value = `Bearer ${result.token}`;
   navigateTo(`/`);
 }

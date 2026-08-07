@@ -1,16 +1,16 @@
 import type { UUID } from "node:crypto";
-import { DiscyUser } from "./DiscyUser";
+import { NafynUser } from "./NafynUser";
 import { MediaInfo } from "./media/MediaInfo";
 
 export type RequestStatus = "searching" | "downloading" | "processing" | "completed" | "failed" | "waiting";
 
-export interface DiscyRequest {
+export interface NafynRequest {
     id: UUID,
     musicbrainzId: UUID,
     info: MediaInfo | null,
     type: "album" | "track",
     status: RequestStatus,
-    requestedBy: DiscyUser | UUID,
+    requestedBy: NafynUser | UUID,
     createdAt: Date,
     updatedAt: Date
 }

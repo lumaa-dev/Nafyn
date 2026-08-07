@@ -43,7 +43,7 @@ import {
     libraryFilePath
 } from "./library";
 import { emitDownloadProgress, clearDownloadEmitter } from "../utils/downloadEvents";
-import { DiscyRequest } from "../entity/DiscyRequest";
+import { NafynRequest } from "../entity/NafynRequest";
 
 const TMP_DIR = join(process.cwd(), ".data", "tmp");
 const ALLOWED_EXTENSIONS = [".mp3", ".flac", ".ogg", ".m4a", ".wav"];
@@ -351,7 +351,7 @@ export async function processDownloadRequestId(requestId: UUID | string): Promis
 }
 
 // entry point: runs the full pipeline for a request and lands it on "completed" or "failed"
-export async function processDownloadRequest(request: DiscyRequest): Promise<void> {
+export async function processDownloadRequest(request: NafynRequest): Promise<void> {
     if (!request || request.status === "completed" || request.status === "failed") return;
 
     try {

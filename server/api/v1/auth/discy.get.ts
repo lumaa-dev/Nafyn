@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
 
 
     return {
-        discy: true,
+        nafyn: true,
         response: {
             id: randomUUID(),
             date: Math.floor(Date.now() / 1000)

@@ -37,7 +37,7 @@ jobs:
         uses: geekyeggo/delete-artifact@v5
         with:
           name: nuxt-output
-      - name: Create discy.zip
+      - name: Create nafyn.zip
         run: |
           mkdir package
           cp -r .output/nitro.json package/
@@ -46,5 +46,5 @@ jobs:
       - name: Upload zip
         uses: actions/upload-artifact@v4
         with:
-          name: discy
+          name: nafyn
           path: package/

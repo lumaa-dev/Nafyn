@@ -1,4 +1,4 @@
-// central SQLite connection + schema setup for all Discy databases
+// central SQLite connection + schema setup for all Nafyn databases
 import Database from "better-sqlite3";
 import { existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
@@ -35,7 +35,7 @@ export function getLibrariesDb(): Database.Database {
     return librariesDb;
 }
 
-// creates every DB (if missing) and ensures their tables exist, based on the `DiscyUser`/`DiscyRequest`/media entities
+// creates every DB (if missing) and ensures their tables exist, based on the `NafynUser`/`NafynRequest`/media entities
 export function initDatabases(): void {
     const users = getUsersDb();
     users.exec(`

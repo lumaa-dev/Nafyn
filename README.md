@@ -1,11 +1,11 @@
 <div align="center">
-    <img src="./.github/DiscyBg.png" width=200 />
+    <img src="./.github/NafynBg.png" width=200 />
     <hr />
 </div>
 
-Self-hosted web service. Download music from Soulseek, play through web player or third-party app via Discy API.
+Self-hosted web service. Download music from Soulseek, play through web player or third-party app via Nafyn API.
 
-Multi-user: separate libraries, separate permissions per user. Users request songs (matched via MusicBrainz), Discy fetches through Soulseek (via slskd).
+Multi-user: separate libraries, separate permissions per user. Users request songs (matched via MusicBrainz), Nafyn fetches through Soulseek (via slskd).
 
 ## Contents
 
@@ -18,16 +18,16 @@ Multi-user: separate libraries, separate permissions per user. Users request son
 ## How it works
 
 1. User requests a track/album via MusicBrainz search (title, artist, etc).
-2. Discy finds match on Soulseek network through [slskd](https://github.com/slskd/slskd) (self-hosted Soulseek client with HTTP API).
+2. Nafyn finds match on Soulseek network through [slskd](https://github.com/slskd/slskd) (self-hosted Soulseek client with HTTP API).
 3. Download queued and tracked (`bullmq` job queue).
 4. Finished file verified against requested MusicBrainz recording via audio fingerprint (`fpcalc` + AcoustID API) — makes sure download actually matches, not a mislabeled file.
-5. Track added to that user's library, tagged with metadata (`music-metadata`), transcodable/playable through built-in web player or Discy API endpoints.
+5. Track added to that user's library, tagged with metadata (`music-metadata`), transcodable/playable through built-in web player or Nafyn API endpoints.
 
 Auth: JWT-based (`jsonwebtoken`), passwords hashed with `bcrypt`. Each user has own library + permission set ([`server/entity/Permission.ts`](server/entity/Permission.ts)).
 
 Storage: SQLite (`better-sqlite3`).
 
-Note: slskd itself only exposes its own local downloads folder, not file bytes over HTTP — so `SOULSEEK_DOWNLOADS_PATH` must be a path Discy can read directly (local disk, or mounted SMB/NFS share if slskd runs elsewhere).
+Note: slskd itself only exposes its own local downloads folder, not file bytes over HTTP — so `SOULSEEK_DOWNLOADS_PATH` must be a path Nafyn can read directly (local disk, or mounted SMB/NFS share if slskd runs elsewhere).
 
 ## How to setup
 

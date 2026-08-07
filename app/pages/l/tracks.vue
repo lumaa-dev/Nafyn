@@ -20,7 +20,7 @@
 import type { MediaRow } from '~~/server/core/library';
 import noCover from '~/assets/no-cover.png';
 
-const token = useCookie("discyToken").value;
+const token = useCookie("nafynToken").value;
 
 const { data: tracks } = await useAsyncData<MediaRow[]>("library-tracks", () => {
   return token

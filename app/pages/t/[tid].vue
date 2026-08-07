@@ -31,7 +31,7 @@ type TrackDetail = MediaInfo & { albumMbid: string | null };
 
 const { locale } = useI18n();
 const tid = useRoute().params.tid as string;
-const token = useCookie("discyToken").value;
+const token = useCookie("nafynToken").value;
 
 const { data: track } = await useAsyncData<TrackDetail>(`track-${tid}`, () => {
   return token

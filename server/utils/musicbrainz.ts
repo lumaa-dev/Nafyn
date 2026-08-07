@@ -5,7 +5,7 @@ import type { ArtistInfo } from "../entity/media/ArtistInfo";
 
 let client: MusicBrainzApi | null = null;
 
-// shared MusicBrainz client, identifies Discy with its app name/version/contact per MusicBrainz's API requirements
+// shared MusicBrainz client, identifies Nafyn with its app name/version/contact per MusicBrainz's API requirements
 export function getMusicBrainzClient(): MusicBrainzApi {
     if (!client) {
         client = new MusicBrainzApi({
@@ -76,7 +76,7 @@ async function getAlbumMediaInfo(client: MusicBrainzApi, musicbrainzId: string):
     };
 }
 
-// fetches a MusicBrainz entity (track or album) and maps it into Discy's MediaInfo shape
+// fetches a MusicBrainz entity (track or album) and maps it into Nafyn's MediaInfo shape
 export async function getMediaInfo(musicbrainzId: string, type: "album" | "track"): Promise<MediaInfo> {
     const client = getMusicBrainzClient();
     return type === "track"

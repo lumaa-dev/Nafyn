@@ -7,7 +7,7 @@ const MAX_ATTEMPTS = 5;
 const WINDOW_MS = 15 * 60 * 1000;
 
 // anti account-revealer
-const DUMMY_HASH = bcrypt.hashSync("LumaaDev-Discy-Password", 12);
+const DUMMY_HASH = bcrypt.hashSync("LumaaDev-Nafyn-Password", 12);
 
 export default defineEventHandler(async (event) => {
     const body = await readBody(event);

@@ -1,7 +1,6 @@
 import { randomUUID, UUID } from "node:crypto";
 import { getRequestsDb } from "./db";
-import { DiscyRequest, RequestStatus } from "../entity/DiscyRequest";
-import { DiscyUser } from "../entity/DiscyUser";
+import { NafynRequest, RequestStatus } from "../entity/NafynRequest";
 import { getUserById } from "./users";
 import { getMediaInfo } from "../utils/musicbrainz";
 import type { MediaInfo } from "../entity/media/MediaInfo";
@@ -38,7 +37,7 @@ function infoFromRow(row: Pick<RequestRow, "musicbrainzId" | "type" | "title" | 
     };
 }
 
-function rowToRequest(row: RequestRow): DiscyRequest {
+function rowToRequest(row: RequestRow): NafynRequest {
     return {
         id: row.id as UUID,
         musicbrainzId: row.musicbrainzId as UUID,
@@ -53,11 +52,11 @@ function rowToRequest(row: RequestRow): DiscyRequest {
 
 // creates a request, starts at "waiting" status; fetches MediaInfo once here and stores the
 // display fields (title/artistName/coverArt) so later reads never have to call MusicBrainz again
-export async function createRequest(musicbrainzId: UUID, type: "album" | "track", requestedBy: UUID, defaultStatus: RequestStatus = "waiting"): Promise<DiscyRequest> {
+export async function createRequest(musicbrainzId: UUID, type: "album" | "track", requestedBy: UUID, defaultStatus: RequestStatus = "waiting"): Promise<NafynRequest> {
     const info: MediaInfo | null = await getMediaInfo(musicbrainzId, type).catch(() => null);
     const artistName = info ? (typeof info.artist === "string" ? info.artist : info.artist.name) : null;
 
-    const request: DiscyRequest = {
+    const request: NafynRequest = {
         id: randomUUID(),
         musicbrainzId,
         info,
@@ -87,28 +86,28 @@ export async function createRequest(musicbrainzId: UUID, type: "album" | "track"
     return request;
 }
 
-export async function getRequestById(id: string): Promise<DiscyRequest | null> {
+export async function getRequestById(id: string): Promise<NafynRequest | null> {
     const row = getRequestsDb().prepare(`SELECT * FROM requests WHERE id = ?`).get(id) as RequestRow | undefined;
     return row ? rowToRequest(row) : null;
 }
 
-export async function listRequests(): Promise<DiscyRequest[]> {
+export async function listRequests(): Promise<NafynRequest[]> {
     const rows = getRequestsDb().prepare(`SELECT * FROM requests ORDER BY createdAt DESC`).all() as RequestRow[];
     return rows.map(rowToRequest);
 }
 
-export async function listRequestsByStatus(status: RequestStatus): Promise<DiscyRequest[]> {
+export async function listRequestsByStatus(status: RequestStatus): Promise<NafynRequest[]> {
     const rows = getRequestsDb().prepare(`SELECT * FROM requests WHERE status = ? ORDER BY createdAt DESC`).all(status) as RequestRow[];
     return rows.map(rowToRequest);
 }
 
-export async function listRequestsByUser(requestedBy: string): Promise<DiscyRequest[]> {
+export async function listRequestsByUser(requestedBy: string): Promise<NafynRequest[]> {
     const rows = getRequestsDb().prepare(`SELECT * FROM requests WHERE requestedBy = ? ORDER BY createdAt DESC`).all(requestedBy) as RequestRow[];
     return rows.map(rowToRequest);
 }
 
-export async function updateRequestStatus(id: UUID | string, status: RequestStatus, checkValidity: boolean = false): Promise<DiscyRequest | null> {
-    let req: DiscyRequest | null = await getRequestById(id);
+export async function updateRequestStatus(id: UUID | string, status: RequestStatus, checkValidity: boolean = false): Promise<NafynRequest | null> {
+    let req: NafynRequest | null = await getRequestById(id);
     if (!req) return null;
     if (req.status !== "waiting" && checkValidity) return null;
 

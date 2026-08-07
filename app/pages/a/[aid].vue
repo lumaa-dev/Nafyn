@@ -38,7 +38,7 @@ import noCover from '~/assets/no-cover.png';
 
 const { locale } = useI18n();
 const aid = useRoute().params.aid as string;
-const token = useCookie("discyToken").value;
+const token = useCookie("nafynToken").value;
 
 const { data: album } = await useAsyncData<AlbumDetail>(`album-${aid}`, () => {
   return token

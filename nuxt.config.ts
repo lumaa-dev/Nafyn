@@ -33,8 +33,8 @@ export default defineNuxtConfig({
     openAPI: {
       production: "runtime",
       meta: {
-        title: "Discy API",
-        description: "Discy API to easily control Soulseek from any HTTP client, including the Discy web interface.",
+        title: "Nafyn API",
+        description: "Nafyn API to easily control Soulseek from any HTTP client, including the Nafyn web interface.",
         version: "1.0.0"
       }
     }
@@ -60,7 +60,7 @@ export default defineNuxtConfig({
     // no locale switcher yet, so the whole UI just follows the browser's language
     detectBrowserLanguage: {
       useCookie: true,
-      cookieKey: 'discy_locale',
+      cookieKey: 'nafyn_locale',
       alwaysRedirect: false,
       fallbackLocale: 'en'
     }
