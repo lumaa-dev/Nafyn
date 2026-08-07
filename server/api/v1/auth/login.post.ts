@@ -18,9 +18,12 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 400, statusMessage: "Missing username or password" });
     }
 
+    
     const ip = getRequestIP(event, { xForwardedFor: true }) ?? "unknown";
+    const rateLimitKey = `login:${ip}:${username.toLowerCase()}`;
+
     if (!isWhitelisted(ip)) {
-        const rateLimit = consumeRateLimit(`login:${ip}:${username.toLowerCase()}`, MAX_ATTEMPTS, WINDOW_MS);
+        const rateLimit = consumeRateLimit(rateLimitKey, MAX_ATTEMPTS, WINDOW_MS);
     
         if (!rateLimit.allowed) {
             setResponseHeader(event, "Retry-After", rateLimit.retryAfterSeconds);

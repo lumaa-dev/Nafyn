@@ -1,5 +1,4 @@
 import { promises as dns } from "node:dns";
-import { H3Event } from "#imports";
 
 interface Bucket {
     count: number,
