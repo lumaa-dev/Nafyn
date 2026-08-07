@@ -27,7 +27,16 @@ export default defineNuxtConfig({
 
   nitro: {
     experimental: {
-      websocket: true
+      websocket: true,
+      openAPI: true
+    },
+    openAPI: {
+      production: "runtime",
+      meta: {
+        title: "Discy API",
+        description: "Discy API to easily control Soulseek from any HTTP client, including the Discy web interface.",
+        version: "1.0.0"
+      }
     }
   },
 

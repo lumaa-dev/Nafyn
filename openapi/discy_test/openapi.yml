@@ -1,0 +1,776 @@
+openapi: 3.0.3
+info:
+  title: Discy API
+  version: 1.0.0
+  description: OpenAPI specification for the Discy Nuxt server API.
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+paths:
+  /api/v1/auth/discy:
+    get:
+      tags: [auth]
+      summary: Verify service availability
+      operationId: getDiscyStatus
+      responses:
+        '200':
+          description: Service health response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  discy:
+                    type: boolean
+                  response:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      date:
+                        type: integer
+
+  /api/v1/auth/login:
+    post:
+      tags: [auth]
+      summary: Log in a user
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Authenticated user and token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+        '429':
+          description: Rate limited
+
+  /api/v1/auth/register:
+    post:
+      tags: [auth]
+      summary: Register a new user
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '200':
+          description: Registered user and token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '409':
+          description: Username already taken
+        '429':
+          description: Rate limited
+
+  /api/v1/search:
+    get:
+      tags: [search]
+      summary: Search MusicBrainz media
+      operationId: searchMedia
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: q
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: filter
+          schema:
+            type: string
+            enum: [album, track, artist, all]
+            default: all
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+        '400':
+          description: Missing search query
+        '401':
+          description: Not authenticated
+
+  /api/v1/request:
+    post:
+      tags: [requests]
+      summary: Create a new request
+      operationId: createRequest
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRequestPayload'
+      responses:
+        '200':
+          description: Created request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscyRequest'
+        '400':
+          description: Invalid request payload
+        '401':
+          description: Not authenticated
+
+  /api/v1/requests:
+    get:
+      tags: [requests]
+      summary: List all requests
+      operationId: listRequests
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DiscyRequest'
+        '401':
+          description: Insufficient permissions
+
+  /api/v1/request/{id}:
+    get:
+      tags: [requests]
+      summary: Get a single request
+      operationId: getRequestById
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Request details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscyRequest'
+        '404':
+          description: Request not found
+        '401':
+          description: Not authenticated
+
+  /api/v1/request/status:
+    post:
+      tags: [requests]
+      summary: Update request status
+      operationId: updateRequestStatus
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRequestStatusPayload'
+      responses:
+        '200':
+          description: Updated request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscyRequest'
+        '400':
+          description: Malformed request
+        '401':
+          description: Not authenticated or missing permissions
+        '500':
+          description: Request could not be modified
+
+  /api/v1/album/{aid}:
+    get:
+      tags: [media]
+      summary: Get album details
+      operationId: getAlbumById
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: aid
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Album details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlbumDetail'
+        '400':
+          description: Missing album ID
+        '404':
+          description: Album not found
+        '401':
+          description: Not authenticated
+
+  /api/v1/track/{tid}:
+    get:
+      tags: [media]
+      summary: Get track details by MusicBrainz ID
+      operationId: getTrackById
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: tid
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Track details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaInfo'
+        '400':
+          description: Missing track ID
+        '404':
+          description: Track not found
+        '401':
+          description: Not authenticated
+
+  /api/v1/track/isrc/{isrc}:
+    get:
+      tags: [media]
+      summary: Get track details by ISRC
+      operationId: getTrackByIsrc
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: isrc
+          required: true
+          schema:
+            type: string
+            pattern: '^[A-Z]{2}[A-Z0-9]{3}\d{2}\d{5}$'
+      responses:
+        '200':
+          description: Track details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaInfo'
+        '400':
+          description: Invalid or missing ISRC
+        '404':
+          description: Track not found
+        '401':
+          description: Not authenticated
+
+  /api/v1/library/albums:
+    get:
+      tags: [library]
+      summary: List albums in the authenticated user's library
+      operationId: listUserAlbums
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User library albums
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MediaInfo'
+        '401':
+          description: Not authenticated
+
+  /api/v1/library/tracks:
+    get:
+      tags: [library]
+      summary: List tracks in the authenticated user's library
+      operationId: listUserTracks
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User library tracks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MediaInfo'
+        '401':
+          description: Not authenticated
+
+  /api/v1/library/{id}:
+    delete:
+      tags: [library]
+      summary: Remove a media entry from the authenticated user's library
+      operationId: deleteLibraryEntry
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Removal result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteLibraryResult'
+        '400':
+          description: Missing media ID
+        '404':
+          description: Media not found in library
+        '401':
+          description: Not authenticated
+
+  /api/v1/library/{id}/stream:
+    get:
+      tags: [library]
+      summary: Stream an audio file from the authenticated user's library
+      operationId: streamLibraryTrack
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+        - in: query
+          name: token
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Audio stream
+          content:
+            audio/*:
+              schema:
+                type: string
+                format: binary
+        '206':
+          description: Partial audio stream
+          content:
+            audio/*:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Not authenticated
+        '404':
+          description: Media not found in library
+        '416':
+          description: Invalid range request
+
+  /api/v1/user/me:
+    get:
+      tags: [user]
+      summary: Get the authenticated user profile
+      operationId: getCurrentUser
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscyUser'
+        '401':
+          description: Not authenticated
+        '404':
+          description: User not found
+
+  /api/v1/user/profile:
+    patch:
+      tags: [user]
+      summary: Update the authenticated user's profile
+      operationId: updateUserProfile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfilePayload'
+      responses:
+        '200':
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscyUser'
+        '400':
+          description: Invalid profile data
+        '401':
+          description: Not authenticated
+        '404':
+          description: User not found
+
+  /api/v1/user/avatar:
+    post:
+      tags: [user]
+      summary: Upload a user avatar
+      operationId: uploadAvatar
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [avatar]
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Updated user profile with new avatar timestamp
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscyUser'
+        '400':
+          description: Missing avatar file
+        '401':
+          description: Not authenticated
+        '404':
+          description: User not found
+    delete:
+      tags: [user]
+      summary: Remove a user avatar
+      operationId: deleteAvatar
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Updated user profile without avatar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscyUser'
+        '401':
+          description: Not authenticated
+        '404':
+          description: User not found
+
+  /api/v1/user/{id}/avatar:
+    get:
+      tags: [user]
+      summary: Get a user's avatar image
+      operationId: getUserAvatar
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+        - in: query
+          name: token
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Avatar image
+          content:
+            image/webp:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Not authenticated
+        '404':
+          description: User has no avatar
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    RegisterRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/DiscyUser'
+        token:
+          type: string
+    CreateRequestPayload:
+      type: object
+      required: [id, type]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [album, track]
+    UpdateRequestStatusPayload:
+      type: object
+      required: [requestId, status]
+      properties:
+        requestId:
+          type: string
+        status:
+          type: string
+          enum: [searching, downloading, processing, completed, failed, waiting]
+    UpdateProfilePayload:
+      type: object
+      properties:
+        displayName:
+          type: string
+        lastFm:
+          type: string
+          nullable: true
+        discogs:
+          type: string
+          nullable: true
+    SearchResponse:
+      type: object
+      properties:
+        albums:
+          type: array
+          items:
+            $ref: '#/components/schemas/MediaInfo'
+        tracks:
+          type: array
+          items:
+            $ref: '#/components/schemas/MediaInfo'
+        artists:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArtistInfo'
+    DiscyUser:
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        displayName:
+          type: string
+          nullable: true
+        avatar:
+          type: string
+          nullable: true
+        permissions:
+          oneOf:
+            - type: integer
+            - type: array
+              items:
+                type: integer
+        lastFm:
+          type: string
+          nullable: true
+        discogs:
+          type: string
+          nullable: true
+    DiscyRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        musicbrainzId:
+          type: string
+        info:
+          $ref: '#/components/schemas/MediaInfo'
+        type:
+          type: string
+          enum: [album, track]
+        status:
+          type: string
+          enum: [searching, downloading, processing, completed, failed, waiting]
+        requestedBy:
+          oneOf:
+            - $ref: '#/components/schemas/DiscyUser'
+            - type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ArtistInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        musicbrainzId:
+          type: string
+        description:
+          type: string
+          nullable: true
+        image:
+          type: string
+          nullable: true
+    MediaInfo:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        artist:
+          oneOf:
+            - $ref: '#/components/schemas/ArtistInfo'
+            - type: string
+        album:
+          $ref: '#/components/schemas/MediaAlbumInfo'
+        type:
+          type: string
+          enum: [album, ep, track]
+          nullable: true
+        coverArt:
+          type: string
+          nullable: true
+        releaseDate:
+          type: string
+          format: date-time
+          nullable: true
+        inLibrary:
+          type: boolean
+          nullable: true
+        duration:
+          type: integer
+        label:
+          type: string
+          nullable: true
+    MediaAlbumInfo:
+      type: object
+      properties:
+        id:
+          type: string
+          nullable: true
+        type:
+          type: string
+          enum: [album, ep]
+          nullable: true
+        title:
+          type: string
+          nullable: true
+    AlbumDetail:
+      type: object
+      properties:
+        id:
+          type: string
+        releaseId:
+          type: string
+        title:
+          type: string
+        artist:
+          oneOf:
+            - $ref: '#/components/schemas/ArtistInfo'
+            - type: string
+        type:
+          type: string
+          enum: [album, ep]
+          nullable: true
+        coverArt:
+          type: string
+          nullable: true
+        releaseDate:
+          type: string
+          format: date-time
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        label:
+          type: string
+          nullable: true
+        tracks:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrackInfo'
+    TrackInfo:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        trackNumber:
+          type: integer
+        duration:
+          type: integer
+        releaseDate:
+          type: string
+          format: date-time
+          nullable: true
+        released:
+          type: boolean
+        inLibrary:
+          type: boolean
+        requested:
+          type: boolean
+    DeleteLibraryResult:
+      type: object
+      properties:
+        removed:
+          type: boolean
+        fileDeleted:
+          type: boolean
