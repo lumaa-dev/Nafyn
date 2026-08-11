@@ -155,7 +155,7 @@ function bindMediaSessionActions(actions: { togglePlay: () => void; next: () => 
     });
 }
 
-export function usePlayer() {
+export const usePlayer = () => {
     const state = useState<PlayerState>("player", () => ({
         queue: [],
         currentIndex: -1,
@@ -175,7 +175,6 @@ export function usePlayer() {
 
     // plays `track` immediately; if `queue` is given it replaces the whole queue (e.g. "play this track from this list"), otherwise the track is appended and jumped to
     function play(track: MediaRow, queue?: MediaRow[]) {
-    
         if (queue) {
             state.value.queue = queue;
             state.value.currentIndex = queue.findIndex(t => t.id === track.id);
