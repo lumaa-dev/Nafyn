@@ -6,6 +6,8 @@
   "sidebar": {
     "home": "Accueil",
     "library": "Librairie",
+    "albums": "Mes albums",
+    "tracks": "Mes titres",
     "requests": "Demandes",
     "settings": "Paramètres"
   },

@@ -39,7 +39,8 @@ function formatDuration(seconds: number): string {
 
 <style>
 .libtracks {
-  max-width: 900px;
+  width: 70vw;
+  max-width: 1200px;
   margin: calc(15vh - 10px) auto;
 }
 

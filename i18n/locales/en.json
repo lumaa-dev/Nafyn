@@ -6,6 +6,8 @@
   "sidebar": {
     "home": "Home",
     "library": "Library",
+    "albums": "My Albums",
+    "tracks": "My Tracks",
     "requests": "Requests",
     "settings": "Settings"
   },

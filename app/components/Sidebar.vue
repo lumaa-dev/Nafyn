@@ -2,7 +2,9 @@
   <div class="sidebar">
     <div class="actions">
       <NuxtLink to="/">{{ $t('sidebar.home') }}</NuxtLink>
-      <NuxtLink to="/library">{{ $t('sidebar.library') }}</NuxtLink>
+      <NuxtLink to="/library" class="s">{{ $t('sidebar.library') }}</NuxtLink>
+      <NuxtLink to="/l/albums" class="b">{{ $t('sidebar.albums') }}</NuxtLink>
+      <NuxtLink to="/l/tracks" class="b">{{ $t('sidebar.tracks') }}</NuxtLink>
       <NuxtLink to="/requests">{{ $t('sidebar.requests') }}</NuxtLink>
       <NuxtLink to="/settings">{{ $t('sidebar.settings') }}</NuxtLink>
     </div>
@@ -15,6 +17,14 @@ import SidebarProgressiveBlur from './SidebarProgressiveBlur.vue';
 </script>
 
 <style>
+.s {
+  display: none;
+}
+
+.b {
+  display: initial;
+}
+
 .sidebar {
   position: fixed;
   top: 0;
@@ -47,6 +57,14 @@ import SidebarProgressiveBlur from './SidebarProgressiveBlur.vue';
     font-size: 0.8em;
     width: 90%;
     top: 50px;
+  }
+
+  .s {
+    display: initial;
+  }
+
+  .b {
+    display: none;
   }
 }
 </style>

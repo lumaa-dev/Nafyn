@@ -42,6 +42,7 @@ function toMediaInfo(album: AlbumRow): MediaInfo {
 
 <style>
 .libalbums {
+  width: 70vw;
   max-width: 1200px;
   margin: calc(15vh - 10px) auto;
 }
