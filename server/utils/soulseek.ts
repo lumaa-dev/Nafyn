@@ -119,7 +119,6 @@ interface SlskdSearch {
 
 export async function searchSoulseek(query: string, timeoutMs = 20000): Promise<SlskSearchResult[]> {
     const id = randomUUID();
-    const searchTimeoutSeconds = Math.max(5, Math.round(timeoutMs / 1000));
 
     const startRes = await slskdFetch("/api/v0/searches", {
         method: "POST",
