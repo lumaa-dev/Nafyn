@@ -10,7 +10,7 @@
         <NuxtLink class="album-link" v-if="track.album?.id" :to="`/a/${track.album.id}`">
           {{ track.album.title }}
         </NuxtLink>
-        <button filled @click="requestMedia(track.id, 'track')" v-if="!track.inLibrary">{{ $t('track.request') }}</button>
+        <button filled @click="requestMedia(track.id, 'track', track.title)" v-if="!track.inLibrary">{{ $t('track.request') }}</button>
       </div>
     </div>
 
@@ -49,13 +49,30 @@ function formatDuration(seconds: number): string {
   return `${minutes}:${rest.toString().padStart(2, "0")}`;
 }
 
-async function requestMedia(musicbrainzId: string, type: "album" | "track") {
+async function requestMedia(musicbrainzId: string, type: "album" | "track", toastTitle: string | null) {
   if (!token) return;
-  await $fetch("/api/v1/request", {
-    method: "POST",
-    headers: { Authorization: token },
-    body: { id: musicbrainzId, type }
-  });
+
+  try {
+    await $fetch("/api/v1/request", {
+      method: "POST",
+      headers: { Authorization: token },
+      body: { id: musicbrainzId, type }
+    });
+
+    sendToast(toastTitle ?? (track.value?.title ?? null), $t(`${type}.requested`))
+  } catch (e) {
+    let err = (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? (e as string) ?? $t('album.error');
+    sendToast(toastTitle ?? (track.value?.title ?? null), err, false)
+  }
+}
+
+function sendToast(title: string | null, message: string, success: boolean = true) {
+  useToast().sendToast({
+    content: message,
+    tint: success ? "green" : "red",
+    icon: null,
+    title
+  })
 }
 </script>
 

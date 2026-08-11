@@ -23,6 +23,7 @@
           </div>
           <input ref="avatarInput" type="file" accept="image/png,image/jpeg,image/webp" class="hidden-input" @change="onAvatarSelected">
           <div class="avatar-actions">
+            <p>@{{ user?.username }}</p>
             <button type="button" filled="hollow" @click="triggerAvatarPicker">{{ $t('settings.profile.changeAvatar') }}</button>
             <button v-if="avatarPreviewUrl" type="button" filled="hollow" @click="removeAvatar">{{ $t('settings.profile.removeAvatar') }}</button>
           </div>
@@ -37,9 +38,6 @@
         <label for="discogs">{{ $t('settings.profile.discogs') }}</label>
         <input id="discogs" v-model="discogs" type="text" :placeholder="$t('settings.profile.discogsPlaceholder')">
 
-        <p v-if="error" class="error">{{ error }}</p>
-        <p v-else-if="saved" class="saved">{{ $t('settings.profile.saved') }}</p>
-
         <button type="button" filled :disabled="!canSave || saving" @click="save">{{ $t('settings.profile.save') }}</button>
       </div>
     </section>
@@ -48,8 +46,6 @@
 
 <script lang="ts" setup>
 import type { NafynUser } from '~~/server/entity/NafynUser';
-
-const { t } = useI18n();
 const token = useCookie("nafynToken").value ?? "";
 
 interface Category {
@@ -58,7 +54,7 @@ interface Category {
 }
 
 const categories: Category[] = [
-  { id: 'profile', label: t('settings.categories.profile') }
+  { id: 'profile', label: $t('settings.categories.profile') }
 ];
 
 const activeCategory = ref<Category["id"]>('profile');
@@ -71,8 +67,6 @@ const avatarVersion = ref<string | null>(null);
 const avatarFile = ref<File | null>(null);
 const avatarObjectUrl = ref<string | null>(null);
 const avatarInput = ref<HTMLInputElement | null>(null);
-const error = ref<string | null>(null);
-const saved = ref(false);
 const saving = ref(false);
 
 const avatarPreviewUrl = computed(() => {
@@ -116,8 +110,6 @@ function onAvatarSelected(e: Event) {
 }
 
 async function removeAvatar() {
-  error.value = null;
-
   if (avatarFile.value) {
     avatarFile.value = null;
     if (avatarObjectUrl.value) URL.revokeObjectURL(avatarObjectUrl.value);
@@ -126,13 +118,14 @@ async function removeAvatar() {
   }
 
   await $fetch("/api/v1/user/avatar", { method: "DELETE", headers: { Authorization: token } })
-    .catch((e) => error.value = e?.data?.statusMessage ?? t('settings.profile.error'));
+    .catch((e) => {
+      let err = e?.data?.statusMessage ?? $t('settings.profile.error');
+      sendToast($t('settings.profile.removeAvatar'), err, false);
+    });
   avatarVersion.value = null;
 }
 
 async function save() {
-  error.value = null;
-  saved.value = false;
   saving.value = true;
 
   try {
@@ -164,12 +157,22 @@ async function save() {
       avatarObjectUrl.value = null;
     }
 
-    saved.value = true;
+    sendToast($t('settings.profile.title'), $t('settings.profile.saved'));
   } catch (e) {
-    error.value = (e as { data?: { statusMessage?: string } })?.data?.statusMessage ?? t('settings.profile.error');
+    let err = (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error');
+    sendToast($t('settings.profile.title'), err, false);
   } finally {
     saving.value = false;
   }
+}
+
+function sendToast(title: string | null, message: string, success: boolean = true) {
+  useToast().sendToast({
+    content: message,
+    tint: success ? "green" : "red",
+    icon: null,
+    title
+  })
 }
 </script>
 
@@ -258,7 +261,10 @@ async function save() {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  font-size: 0.6em;
+}
+
+.avatar-actions button {
+  font-size: 0.8em;
 }
 
 .panel .error {

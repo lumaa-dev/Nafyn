@@ -43,10 +43,12 @@
   "album": {
     "trackList": "Track list",
     "request": "Request",
+    "requested": "Requested successfully",
     "viewInMusicbrainz": "View in MusicBrainz"
   },
   "track": {
     "request": "Request",
+    "requested": "Requested successfully",
     "viewInMusicbrainz": "View in MusicBrainz"
   },
   "search": {
@@ -85,7 +87,7 @@
       "discogs": "Discogs username",
       "discogsPlaceholder": "Discogs username",
       "save": "Save changes",
-      "saved": "Saved.",
+      "saved": "Saved",
       "error": "Couldn't save your profile"
     }
   },

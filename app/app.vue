@@ -3,6 +3,9 @@
 		<Header :toggleSidebar="toggleSidebar" :class="`hd ${hasToken ? '' : 'out'}`" :sidebarActive="showSidebar" />
 		<Sidebar :class="`sb ${showSidebar ? '' : 'hide'}`" @click="toggleSidebar" />
 		<NuxtPage class="view" />
+		<TransitionGroup tag="span" name="pill" class="toasts">
+			<ToastPill v-for="(toast, index) in tState.toasts.slice(0, 3)" :key="toast.id" :toast="toast" :underLast="tState.lastToast?.id !== toast.id" :style="`top: ${index * -40}px; scale: ${index * -0.2 + 1}; z-index: ${-index + 3}`" />
+		</TransitionGroup>
 		<NowPlaying v-if="hasToken && route.path !== '/now-playing'" />
 	</div>
 </template>
@@ -114,6 +117,51 @@ button[filled="hollow"]:hover:not(:disabled), a[filled="hollow"]:hover:not(:disa
 	padding-bottom: 6em;
 }
 
+.toasts {
+	display: flex;
+	flex-direction: column;
+	width: 100vw;
+	align-items: center;
+	position: fixed;
+	bottom: 100px;
+	left: 0;
+	height: 10vh;
+}
+
+.toasts > * {
+	width: fit-content;
+}
+
+.toasts > *:not(:first-child) {
+	filter: brightness(0.8);
+}
+
+.pill-enter-active {
+  animation: appearPill 0.35s ease-out forwards;
+}
+
+.pill-leave-active {
+  animation: disappearPill 0s ease-in forwards;
+}
+
+@keyframes appearPill {
+	0% {
+		opacity: 0;
+	}
+	100% {
+		opacity: 1;
+	}
+}
+
+@keyframes disappearPill {
+  0% { 
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.sb {
 		transition: none !important;
@@ -124,12 +172,15 @@ button[filled="hollow"]:hover:not(:disabled), a[filled="hollow"]:hover:not(:disa
 <script setup lang="ts">
 import Header from "./components/Header.vue";
 import Sidebar from "./components/Sidebar.vue";
+import ToastPill from "./components/ToastPill.vue";
 import NowPlaying from "./components/NowPlaying.vue";
 
 const route = useRoute();
 const showSidebar = ref(false);
 
 const token = useCookie("nafynToken").value;
+
+const { state: tState } = useToast();
 
 const hasToken = ref(await checkTokenValidity(token ?? ""));
 if (route.path !== "/login" && route.path !== "/register" && !hasToken.value) {

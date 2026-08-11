@@ -43,10 +43,12 @@
   "album": {
     "trackList": "Liste des titres",
     "request": "Demander",
+    "requested": "Demandé",
     "viewInMusicbrainz": "Voir dans MusicBrainz"
   },
   "track": {
     "request": "Demander",
+    "requested": "Demandé",
     "viewInMusicbrainz": "Voir dans MusicBrainz"
   },
   "search": {
@@ -85,7 +87,7 @@
       "discogs": "Nom d'utilisateur Discogs",
       "discogsPlaceholder": "Nom d'utilisateur Discogs",
       "save": "Enregistrer",
-      "saved": "Enregistré.",
+      "saved": "Enregistré",
       "error": "Impossible d'enregistrer votre profil"
     }
   },

@@ -9,7 +9,7 @@
         </span>
         <p class="artist">{{ typeof album.artist == "string" ? album.artist : album.artist.name }}</p>
         <p class="description" v-if="album.description">{{ album.description }}</p>
-        <button filled @click="requestMedia(album.id, 'album')">{{ $t('album.request') }}</button>
+        <button filled @click="requestMedia(album.id, 'album', album.title)">{{ $t('album.request') }}</button>
       </div>
     </div>
 
@@ -56,23 +56,39 @@ function formatDuration(seconds: number): string {
   return `${minutes}:${rest.toString().padStart(2, "0")}`;
 }
 
-async function requestMedia(musicbrainzId: string, type: "album" | "track") {
+async function requestMedia(musicbrainzId: string, type: "album" | "track", toastTitle: string | null) {
   if (!token) return;
-  await $fetch("/api/v1/request", {
-    method: "POST",
-    headers: { Authorization: token },
-    body: { id: musicbrainzId, type }
-  });
+  try {
+    await $fetch("/api/v1/request", {
+      method: "POST",
+      headers: { Authorization: token },
+      body: { id: musicbrainzId, type }
+    })
+
+    sendToast(toastTitle ?? (album.value?.title ?? null), $t(`${type}.requested`))
+  } catch (e) {
+    let err = (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? (e as string) ?? $t('album.error');
+    sendToast(toastTitle ?? (album.value?.title ?? null), err, false)
+  };
 }
 
 async function requestTrack(track: TrackInfo) {
-  await requestMedia(track.id, "track");
+  await requestMedia(track.id, "track", track.title);
   
   let i = album.value!.tracks.lastIndexOf(track);
   if (i > 0) {
     track.requested = true;
     album.value!.tracks[i] = track;
   }
+}
+
+function sendToast(title: string | null, message: string, success: boolean = true) {
+  useToast().sendToast({
+    content: message,
+    tint: success ? "green" : "red",
+    icon: null,
+    title
+  })
 }
 </script>
 
