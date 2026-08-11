@@ -36,6 +36,11 @@ export default defineNuxtConfig({
         title: "Nafyn API",
         description: "Nafyn API to easily control Soulseek from any HTTP client, including the Nafyn web interface.",
         version: "1.0.0"
+      },
+      ui: {
+        scalar: {
+          theme: "nuxt"
+        }
       }
     }
   },

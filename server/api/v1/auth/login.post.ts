@@ -9,6 +9,74 @@ const WINDOW_MS = 15 * 60 * 1000;
 // anti account-revealer
 const DUMMY_HASH = bcrypt.hashSync("LumaaDev-Nafyn-Password", 12);
 
+defineRouteMeta({
+    openAPI: {
+        description: "Log in as a user using their token",
+        tags: ["auth"],
+        operationId: "loginUser",
+        requestBody: {
+            content: {
+                "application/json": {
+                    schema: {
+                        type: "object",
+                        required: ["username", "password"],
+                        properties: {
+                            username: {
+                                type: "string"
+                            },
+                            password: {
+                                type: "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        responses: {
+            "200": {
+                description: "",
+                content: {
+                    "application/json": {
+                        schema: {
+                            type: "object",
+                            properties: {
+                                user: {
+                                    $ref: "#/components/schemas/NafynUser"
+                                },
+                                token: {
+                                    type: "string",
+                                    description: "The logged in user's token"
+                                }
+                            },
+                            required: ["user", "token"]
+                        }
+                    }
+                }
+            },
+            "400": {
+                description: "Incorrect Request",
+                content: {
+                    "application/json": {
+                        schema: {
+                            $ref: "#/components/schemas/NuxtError"
+                        }
+                    }
+                }
+            },
+            "429": {
+                description: "Rate limit error",
+                content: {
+                    "application/json": {
+                        schema: {
+                            $ref: "#/components/schemas/NuxtError"
+                        }
+                    }
+                }
+            }
+        },
+    },
+});
+
 export default defineEventHandler(async (event) => {
     const body = await readBody(event);
     const username = typeof body?.username === "string" ? body.username.trim() : "";

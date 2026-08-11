@@ -10,6 +10,110 @@ const WINDOW_MS = 60 * 60 * 1000;
 const USERNAME_RE = /^[a-zA-Z0-9_.-]{3,20}$/;
 const MIN_PASSWORD_LENGTH = 8;
 
+defineRouteMeta({
+    openAPI: {
+        description: "Create a new user",
+        tags: ["auth"],
+        operationId: "registerUser",
+        requestBody: {
+            content: {
+                "application/json": {
+                    schema: {
+                        type: "object",
+                        required: ["username", "password"],
+                        properties: {
+                            username: {
+                                type: "string"
+                            },
+                            password: {
+                                type: "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        responses: {
+            "200": {
+                description: "",
+                content: {
+                    "application/json": {
+                        schema: {
+                            type: "object",
+                            properties: {
+                                user: {
+                                    $ref: "#/components/schemas/NafynUser"
+                                },
+                                token: {
+                                    type: "string",
+                                    description: "The created user's token"
+                                }
+                            },
+                            required: ["user", "token"]
+                        }
+                    }
+                }
+            },
+            "400": {
+                description: "Incorrect Request",
+                content: {
+                    "application/json": {
+                        schema: {
+                            $ref: "#/components/schemas/NuxtError"
+                        }
+                    }
+                }
+            },
+            "429": {
+                description: "Rate limit error",
+                content: {
+                    "application/json": {
+                        schema: {
+                            $ref: "#/components/schemas/NuxtError"
+                        }
+                    }
+                }
+            }
+        },
+        $global: {
+            components: {
+                schemas: {
+                    NafynUser: {
+                        type: "object",
+                        required: ["id", "username", "permissions"],
+                        properties: {
+                            id: {
+                                type: "string",
+                                description: "The user's identifier"
+                            },
+                            username: {
+                                type: "string"
+                            },
+                            displayName: {
+                                type: "string"
+                            },
+                            avatar: {
+                                type: "string",
+                                description: "The user's avatar URL"
+                            },
+                            permissions: {
+                                type: ["array", "number"],
+                                description: "The user's current permissions"
+                            },
+                            lastFm: {
+                                type: "string"
+                            },
+                            discogs: {
+                                type: "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+});
+
 export default defineEventHandler(async (event) => {
     const ip = getRequestIP(event, { xForwardedFor: true }) ?? "unknown";    
     if (!isWhitelisted(ip)) {
