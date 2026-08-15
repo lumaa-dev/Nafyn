@@ -14,7 +14,6 @@
 <script lang="ts" setup>
 import type { NafynUser } from '~~/server/entity/NafynUser';
 
-const { t } = useI18n();
 const username = ref("");
 const password = ref("");
 
@@ -31,7 +30,7 @@ async function logIn() {
     body: { username: username.value, password: password.value }
   }).catch(r => hasError.value = r)
 
-  if (!result) return hasError.value = t("auth.login.error");
+  if (!result || hasError.value) return hasError.value = $t("auth.login.error");
 
   const tokenCookie = useCookie("nafynToken");
   tokenCookie.value = `Bearer ${result.token}`;

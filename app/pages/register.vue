@@ -17,6 +17,8 @@ import type { NafynUser } from '~~/server/entity/NafynUser';
 const username = ref("");
 const password = ref("");
 
+const hasError: globalThis.Ref<string | null, string | null> = ref(null);
+
 interface RegisterResponse {
   user: NafynUser,
   token: string
@@ -26,7 +28,9 @@ async function register() {
   const result: RegisterResponse = await $fetch("/api/v1/auth/register", {
     method: "POST",
     body: { username: username.value, password: password.value }
-  })
+  }).catch(r => hasError.value = r)
+
+  if (!result || hasError.value) return hasError.value = $t("auth.register.error");;
 
   const tokenCookie = useCookie("nafynToken");
   tokenCookie.value = `Bearer ${result.token}`;
