@@ -13,13 +13,13 @@
           <p class="title">{{ props.request.info.title }}</p>
           <p class="artist">{{ props.request.info.artist }}</p>
         </span>
-        <span class="data" v-if="isCompact">
+        <span class="data" v-if="!isCompact">
           <p v-if="typeof props.request.requestedBy != 'string'">{{ $t('requests.requestedBy', { name: props.request.requestedBy.displayName ?? props.request.requestedBy.username }) }}</p>
           <p>{{ $t('requests.createdOn', { date: formatDate(props.request.createdAt) }) }}</p>
           <p>{{ $t('requests.updatedOn', { date: formatDate(props.request.updatedAt) }) }}</p>
         </span>
       </div>
-      <div class="col" v-if="isCompact">
+      <div class="col" v-if="!isCompact">
         <span>
           <p :filled="props.request.status == 'waiting' ? 'hollow' : ''" :class="`status ${props.request.status}`">{{ $t(`requests.status.${props.request.status}`) }}</p>
         </span>
