@@ -85,7 +85,6 @@ export default defineEventHandler(async (event) => {
     if (!username || !password) {
         throw createError({ statusCode: 400, statusMessage: "Missing username or password" });
     }
-
     
     const ip = getRequestIP(event, { xForwardedFor: true }) ?? "unknown";
     const rateLimitKey = `login:${ip}:${username.toLowerCase()}`;
