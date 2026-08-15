@@ -2,6 +2,7 @@
 import { getMusicBrainzClient, parseReleaseDate } from "~~/server/utils/musicbrainz";
 import type { MediaInfo } from "~~/server/entity/media/MediaInfo";
 import type { ArtistInfo } from "~~/server/entity/media/ArtistInfo";
+import { IRecording } from "musicbrainz-api";
 
 export default defineEventHandler(async (event) => {
     requireAuthToken(event);
@@ -13,7 +14,7 @@ export default defineEventHandler(async (event) => {
 
     const client = getMusicBrainzClient();
 
-    const recording = await client.lookup("recording", tid, ["artist-credits", "releases", "release-groups"]).catch(() => {
+    const recording: IRecording = await client.lookup("recording", tid, ["artist-credits", "releases", "release-groups"]).catch(() => {
         throw createError({ statusCode: 404, statusMessage: "No track with ID " + tid });
     });
 
@@ -22,6 +23,8 @@ export default defineEventHandler(async (event) => {
     const credit = recording["artist-credit"]?.[0]?.artist;
 
     const artist: ArtistInfo | string = credit ? { name: credit.name, musicbrainzId: credit.id, description: null, image: null } : "Unknown Artist";
+
+    const amId: string | undefined = getAppleMusicTrackID(recording, release);
 
     const media: MediaInfo = {
         id: recording.id,
@@ -33,7 +36,10 @@ export default defineEventHandler(async (event) => {
         releaseDate: parseReleaseDate(recording["first-release-date"]),
         inLibrary: null,
         duration: recording.length ? Math.round(recording.length / 1000) : 0,
-        label: null
+        label: null,
+        relations: {
+            amId
+        }
     };
 
     return { ...media, albumMbid };

@@ -99,6 +99,8 @@
     "queue": "File d'attente",
     "lyrics": "Paroles",
     "queueEmpty": "La file d'attente est vide.",
-    "nothingPlaying": "Aucune lecture en cours."
+    "nothingPlaying": "Aucune lecture en cours.",
+    "lyricsLoading": "Chargement des paroles...",
+    "lyricsUnavailable": "Aucune parole disponible pour ce titre."
   }
 }

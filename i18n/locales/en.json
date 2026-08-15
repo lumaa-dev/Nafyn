@@ -99,6 +99,8 @@
     "queue": "Queue",
     "lyrics": "Lyrics",
     "queueEmpty": "Queue is empty.",
-    "nothingPlaying": "Nothing playing right now."
+    "nothingPlaying": "Nothing playing right now.",
+    "lyricsLoading": "Loading lyrics...",
+    "lyricsUnavailable": "No lyrics available for this track."
   }
 }

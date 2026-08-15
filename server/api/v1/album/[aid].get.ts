@@ -20,7 +20,7 @@ export default defineEventHandler(async (event): Promise<AlbumDetail> => {
         throw createError({ statusCode: 404, message: "No album with ID " + aid });
     });
 
-    const browsed = await client.browse("release", { "release-group": aid }, ["recordings", "artist-credits", "labels", "media"]);
+    const browsed = await client.browse("release", { "release-group": aid }, ["recordings", "artist-credits", "labels", "media", "url-rels"]);
     const release: IRelease | undefined = browsed.releases[0];
     if (!release) {
         throw createError({ statusCode: 404, message: "No release found for album " + aid });

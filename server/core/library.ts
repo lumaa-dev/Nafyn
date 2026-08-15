@@ -17,6 +17,7 @@ export interface MediaRow {
     duration: number,
     label: string | null,
     fingerprint: string | null,
+    amId: string | null,
     addedAt: number
 }
 
@@ -77,12 +78,13 @@ export function insertMedia(media: Omit<MediaRow, "id" | "addedAt"> & { id?: str
         duration: media.duration,
         label: media.label,
         fingerprint: media.fingerprint,
+        amId: media.amId,
         addedAt: Date.now()
     };
 
     getLibrariesDb().prepare(`
-        INSERT INTO media (id, musicbrainzId, title, artistName, artistMbid, album, albumId, albumType, coverArt, releaseDate, duration, label, fingerprint, addedAt)
-        VALUES (@id, @musicbrainzId, @title, @artistName, @artistMbid, @album, @albumId, @albumType, @coverArt, @releaseDate, @duration, @label, @fingerprint, @addedAt)
+        INSERT INTO media (id, musicbrainzId, title, artistName, artistMbid, album, albumId, albumType, coverArt, releaseDate, duration, label, fingerprint, amId, addedAt)
+        VALUES (@id, @musicbrainzId, @title, @artistName, @artistMbid, @album, @albumId, @albumType, @coverArt, @releaseDate, @duration, @label, @fingerprint, @amId, @addedAt)
     `).run(row);
 
     return row;

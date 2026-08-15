@@ -10,11 +10,17 @@ export interface MediaInfo {
     releaseDate: Date | null,
     inLibrary: boolean | null,
     duration: number,
-    label: string | null
+    label: string | null,
+    relations: MediaRelations
 }
 
 interface MediaAlbumInfo {
     id: string | null,
     type: "album" | "ep" | null,
     title: string | null
+}
+
+interface MediaRelations {
+    /** Apple Music identifier */
+    amId: string | undefined;
 }

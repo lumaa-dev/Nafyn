@@ -28,7 +28,7 @@ import { basename, dirname, extname, join } from "node:path";
 import { mkdir, rm } from "node:fs/promises";
 import type { IRelease, IReleaseGroup, MusicBrainzApi } from "musicbrainz-api";
 import type { SlskSearchResult } from "../utils/soulseek";
-import { getMusicBrainzClient } from "../utils/musicbrainz";
+import { getMusicBrainzClient, getAppleMusicTrackID } from "../utils/musicbrainz";
 import { searchSoulseek, downloadFromSoulseek } from "../utils/soulseek";
 import { verifyRecordingMatch } from "../utils/fingerprint";
 import { tagAudioFile } from "../utils/audioTag";
@@ -68,7 +68,8 @@ interface TrackTarget {
     releaseDate: Date | null,
     duration: number,
     label: string | null,
-    coverArt: string | null
+    coverArt: string | null,
+    amId: string | null
 }
 
 function parseReleaseDate(date: string | undefined): Date | null {
@@ -80,7 +81,7 @@ function parseReleaseDate(date: string | undefined): Date | null {
 // step 2: resolve the request's MusicBrainz ID into one (track) or many (album) concrete recordings to fetch
 async function resolveTargets(client: MusicBrainzApi, musicbrainzId: string, type: "album" | "track"): Promise<TrackTarget[]> {
     if (type === "track") {
-        const recording = await client.lookup("recording", musicbrainzId, ["artist-credits", "releases"]);
+        const recording = await client.lookup("recording", musicbrainzId, ["artist-credits", "releases", "url-rels"]);
         const release = recording.releases?.[0];
         const credit = recording["artist-credit"]?.[0]?.artist;
 
@@ -96,7 +97,8 @@ async function resolveTargets(client: MusicBrainzApi, musicbrainzId: string, typ
             releaseDate: parseReleaseDate(recording["first-release-date"]),
             duration: recording.length ? Math.round(recording.length / 1000) : 0,
             label: null,
-            coverArt: release?.id ? `https://coverartarchive.org/release/${release.id}/front-250` : null
+            coverArt: release?.id ? `https://coverartarchive.org/release/${release.id}/front-250` : null,
+            amId: getAppleMusicTrackID(recording, release) ?? null
         }];
     }
 
@@ -111,6 +113,7 @@ async function resolveTargets(client: MusicBrainzApi, musicbrainzId: string, typ
     const releaseArtist = releaseGroup["artist-credit"]?.[0]?.artist;
     const releaseDate = parseReleaseDate(releaseGroup["first-release-date"]);
     const coverArt = `https://coverartarchive.org/release-group/${musicbrainzId}/front-250`;
+    const amId = getAppleMusicTrackID(undefined, release) ?? null;
 
     const targets: TrackTarget[] = [];
     for (const medium of release.media ?? []) {
@@ -128,7 +131,8 @@ async function resolveTargets(client: MusicBrainzApi, musicbrainzId: string, typ
                 releaseDate,
                 duration: track.length ? Math.round(track.length / 1000) : 0,
                 label,
-                coverArt
+                coverArt,
+                amId
             });
         }
     }
@@ -313,7 +317,8 @@ async function downloadTrack(
                 releaseDate: target.releaseDate ? Math.floor(target.releaseDate.getTime() / 1000) : null,
                 duration: target.duration,
                 label: target.label,
-                fingerprint: check.fingerprint
+                fingerprint: check.fingerprint,
+                amId: target.amId
             });
 
             console.log(`[downloads] Musicbrainz'd "${target.title}"`);

@@ -83,6 +83,7 @@ export function initDatabases(): void {
             duration INTEGER NOT NULL,
             label TEXT,
             fingerprint TEXT,
+            amId TEXT,
             addedAt INTEGER NOT NULL
         );
 
@@ -104,6 +105,11 @@ export function initDatabases(): void {
     const mediaColumns = libraries.prepare(`PRAGMA table_info(media)`).all() as { name: string }[];
     if (!mediaColumns.some((c) => c.name === "albumId")) {
         libraries.exec(`ALTER TABLE media ADD COLUMN albumId TEXT`);
+    }
+
+    // migration: amId (Apple Music relation) was added after media's initial release, existing DBs need it backfilled
+    if (!mediaColumns.some((c) => c.name === "amId")) {
+        libraries.exec(`ALTER TABLE media ADD COLUMN amId TEXT`);
     }
 
     // migration: title/artistName/coverArt were added after requests' initial release, existing DBs need them backfilled

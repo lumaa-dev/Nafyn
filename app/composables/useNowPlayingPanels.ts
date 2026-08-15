@@ -2,6 +2,7 @@
 // to add a new panel: drop a component in app/components/panels/, then add one entry below.
 import type { Component } from "vue";
 import QueuePanel from "~/components/panels/QueuePanel.vue";
+import LyricsPanel from "~/components/panels/LyricsPanel.vue";
 
 export interface NowPlayingPanel {
     id: string;
@@ -12,5 +13,5 @@ export interface NowPlayingPanel {
 
 export const nowPlayingPanels: NowPlayingPanel[] = [
     { id: "queue", label: "player.queue", component: QueuePanel },
-    { id: "lyrics", label: "player.lyrics", component: QueuePanel }
+    { id: "lyrics", label: "player.lyrics", component: LyricsPanel }
 ];
