@@ -1,4 +1,4 @@
-import { promises as dns } from "node:dns";
+import bcrypt from "bcrypt";
 import { createUser, isUsernameTaken, listUsers } from "../../../core/users";
 import { consumeRateLimit, isWhitelisted } from "../../../utils/rateLimit";
 import { signAuthToken } from "../../../utils/jwt";
@@ -143,6 +143,8 @@ export default defineEventHandler(async (event) => {
 
     let defaultPerms: Permission = listUsers().length <= 0 ? Permission.ADMIN : Permission.NONE;
 
+    const passwordHash = bcrypt.hashSync(password, 12);
+
     const user = createUser({
         username,
         displayName: null,
@@ -150,7 +152,7 @@ export default defineEventHandler(async (event) => {
         permissions: defaultPerms,
         lastFm: null,
         discogs: null
-    }, password);
+    }, passwordHash);
 
     const token = signAuthToken(user.id);
 
