@@ -15,11 +15,6 @@ const MIME_TYPES: Record<string, string> = {
 };
 
 export default defineEventHandler(async (event) => {
-    const mediaId = getRouterParam(event, "id");
-    if (!mediaId) {
-        throw createError({ statusCode: 400, statusMessage: "Missing media ID" });
-    }
-
     // <audio>/<video> elements can't set custom headers, so accept the token as a query param here as a fallback
     const authHeader: string | undefined = getHeader(event, "Authorization");
 
@@ -37,6 +32,11 @@ export default defineEventHandler(async (event) => {
         userId = verifyAuthToken(token).sub;
     } catch {
         throw createError({ statusCode: 401, statusMessage: "Invalid or expired token" });
+    }
+
+    const mediaId = getRouterParam(event, "id");
+    if (!mediaId) {
+        throw createError({ statusCode: 400, statusMessage: "Missing media ID" });
     }
 
     const entry = findLibraryEntry(userId, mediaId);
