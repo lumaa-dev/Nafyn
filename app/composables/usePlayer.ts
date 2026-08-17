@@ -1,7 +1,26 @@
 // global "Now Playing" audio engine: one <audio> element shared across every page via useState
 import type { MediaRow } from "~~/server/core/library";
+import type { RecentlyPlayedType } from "~~/server/core/recentlyPlayed";
 
 export type RepeatMode = "off" | "queue" | "track";
+
+export interface PlayContext {
+    type: RecentlyPlayedType;
+    refId: string;
+}
+
+// fire-and-forget: recording a recently-played entry should never block/break playback
+function recordRecentlyPlayed(context: PlayContext) {
+    if (!import.meta.client) return;
+    const token = useCookie("nafynToken").value;
+    if (!token) return;
+
+    $fetch("/api/v1/library/recently-played", {
+        method: "POST",
+        headers: { Authorization: token },
+        body: { type: context.type, refId: context.refId }
+    }).catch(() => {});
+}
 
 export interface PlayerState {
     queue: MediaRow[];
@@ -173,8 +192,10 @@ export const usePlayer = () => {
     const hasNext = computed(() => state.value.repeat === "queue" ? state.value.queue.length > 1 : state.value.currentIndex < state.value.queue.length - 1 || state.value.repeat == "track");
     const hasPrev = computed(() => state.value.repeat === "queue" ? state.value.queue.length > 1 : state.value.currentIndex > 0);
 
-    // plays `track` immediately; if `queue` is given it replaces the whole queue (e.g. "play this track from this list"), otherwise the track is appended and jumped to
-    function play(track: MediaRow, queue?: MediaRow[]) {
+    // plays `track` immediately; if `queue` is given it replaces the whole queue (e.g. "play this track from this list"), otherwise the track is appended and jumped to.
+    // `context` records where playback was started from (a track list, an album, a playlist) into "recently played" -
+    // omit it for internal/derived plays (queue navigation, repeat, etc.) that don't represent a fresh "play this" action
+    function play(track: MediaRow, queue?: MediaRow[], context?: PlayContext) {
         if (queue) {
             state.value.queue = queue;
             state.value.currentIndex = queue.findIndex(t => t.id === track.id);
@@ -188,6 +209,7 @@ export const usePlayer = () => {
             }
         }
         loadCurrent(state.value, true);
+        if (context) recordRecentlyPlayed(context);
     }
 
     function togglePlay() {
