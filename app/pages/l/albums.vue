@@ -2,7 +2,7 @@
   <div class="libalbums">
     <h1>{{ $t('library.albums.title') }}</h1>
     <div class="grid" v-if="albums.length > 0">
-      <NuxtLink v-for="album in albums" :key="album.id" :to="`/t/${album.mbId}`">
+      <NuxtLink v-for="album in albums" :key="album.id" :to="`/a/${album.id}`">
         <MediaBox :media="toMediaInfo(album)" />
       </NuxtLink>
     </div>
@@ -15,7 +15,6 @@ import MediaBox from '~/components/MediaBox.vue';
 import type { AlbumRow } from '~~/server/core/library';
 import type { MediaInfo } from '~~/server/entity/media/MediaInfo';
 
-const { t } = useI18n();
 const token = useCookie("nafynToken").value;
 
 const { data: albums } = await useAsyncData<AlbumRow[]>("library-albums", () => {
@@ -27,7 +26,7 @@ const { data: albums } = await useAsyncData<AlbumRow[]>("library-albums", () => 
 function toMediaInfo(album: AlbumRow): MediaInfo {
   return {
     id: album.mbId,
-    title: album.title ?? t("common.unknownAlbum"),
+    title: album.title ?? $t("common.unknownAlbum"),
     artist: album.artistName,
     album: null,
     type: null,
@@ -35,7 +34,10 @@ function toMediaInfo(album: AlbumRow): MediaInfo {
     releaseDate: album.releaseDate ? new Date(album.releaseDate * 1000) : null,
     inLibrary: true,
     duration: album.duration,
-    label: null
+    label: null,
+    relations: {
+      amId: undefined
+    }
   };
 }
 </script>
@@ -55,6 +57,11 @@ function toMediaInfo(album: AlbumRow): MediaInfo {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 20px;
+}
+
+.libalbums .grid a {
+  font-family: "Instrument-Serif";
+  text-decoration: none;
 }
 
 @media screen and (max-width: 800px) {

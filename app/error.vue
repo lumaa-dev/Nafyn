@@ -33,7 +33,7 @@ const props = defineProps<{ error: NuxtError }>()
 
 .err .message {
     color: #666666;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-family: "Discy";
     font-size: 0.85em;
 }
 </style>

@@ -22,6 +22,9 @@ export interface SlskSearchResult {
     speed?: number
 }
 
+// how long a transfer is allowed to sit at 0 bytes (queued/remotely-queued) before we give up on that peer
+const STALL_TIMEOUT_MS = 60_000;
+
 export interface DownloadProgress {
     bytesDownloaded: number,
     totalBytes: number,
@@ -240,6 +243,11 @@ export async function downloadFromSoulseek(
     let lastTick = Date.now();
     let finalState = transfer.state;
 
+    // a peer that never moves a queued transfer past 0 bytes is a dead end (they may be offline, out of slots
+    // forever, or just never coming back) - track how long we've been stuck at 0 and give up on this specific
+    // peer once it's been too long, so the caller can retry with a different seller of the same file
+    let stalledSinceMs: number | null = Date.now();
+
     // poll until the transfer reaches a terminal (Completed-flagged) state
     for (;;) {
         await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -249,6 +257,10 @@ export async function downloadFromSoulseek(
 
         const current = await pollRes.json() as SlskdTransfer;
         finalState = current.state;
+
+        if (current.bytesTransferred > 0) {
+            stalledSinceMs = null;
+        }
 
         const now = Date.now();
         const elapsed = (now - lastTick) / 1000;
@@ -266,6 +278,11 @@ export async function downloadFromSoulseek(
         }
 
         if (current.state.includes("Completed")) break;
+
+        if (stalledSinceMs !== null && now - stalledSinceMs >= STALL_TIMEOUT_MS) {
+            await slskdFetch(`/api/v0/transfers/downloads/${encodeURIComponent(file.user)}/${transfer.id}?remove=true`, { method: "DELETE" }).catch(() => {});
+            throw new Error(`Soulseek transfer from ${file.user} stalled at 0 bytes for over ${STALL_TIMEOUT_MS / 1000}s`);
+        }
     }
 
     if (!finalState.includes("Succeeded")) {

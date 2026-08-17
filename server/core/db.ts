@@ -99,6 +99,53 @@ export function initDatabases(): void {
         );
 
         CREATE INDEX IF NOT EXISTS idx_library_entries_userId ON library_entries(userId);
+
+        CREATE TABLE IF NOT EXISTS playlists (
+            id TEXT PRIMARY KEY,
+            ownerId TEXT NOT NULL,
+            title TEXT NOT NULL,
+            description TEXT,
+            privacy TEXT NOT NULL DEFAULT 'private' CHECK(privacy IN ('public', 'private')),
+            image TEXT,
+            sortMode TEXT NOT NULL DEFAULT 'manual' CHECK(sortMode IN ('manual', 'title', 'artist', 'addedBy', 'duration')),
+            createdAt INTEGER NOT NULL,
+            updatedAt INTEGER NOT NULL
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_playlists_ownerId ON playlists(ownerId);
+
+        CREATE TABLE IF NOT EXISTS playlist_members (
+            id TEXT PRIMARY KEY,
+            playlistId TEXT NOT NULL REFERENCES playlists(id),
+            userId TEXT NOT NULL,
+            addedAt INTEGER NOT NULL,
+            UNIQUE(playlistId, userId)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_playlist_members_playlistId ON playlist_members(playlistId);
+        CREATE INDEX IF NOT EXISTS idx_playlist_members_userId ON playlist_members(userId);
+
+        CREATE TABLE IF NOT EXISTS playlist_entries (
+            id TEXT PRIMARY KEY,
+            playlistId TEXT NOT NULL REFERENCES playlists(id),
+            mediaId TEXT NOT NULL REFERENCES media(id),
+            addedBy TEXT NOT NULL,
+            position INTEGER NOT NULL,
+            addedAt INTEGER NOT NULL
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_playlist_entries_playlistId ON playlist_entries(playlistId);
+
+        CREATE TABLE IF NOT EXISTS recently_played (
+            id TEXT PRIMARY KEY,
+            userId TEXT NOT NULL,
+            type TEXT NOT NULL CHECK(type IN ('track', 'album', 'playlist')),
+            refId TEXT NOT NULL,
+            playedAt INTEGER NOT NULL,
+            UNIQUE(userId, type, refId)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_recently_played_userId_playedAt ON recently_played(userId, playedAt DESC);
     `);
 
     // migration: albumId was added after media's initial release, existing DBs need it backfilled
@@ -110,6 +157,12 @@ export function initDatabases(): void {
     // migration: amId (Apple Music relation) was added after media's initial release, existing DBs need it backfilled
     if (!mediaColumns.some((c) => c.name === "amId")) {
         libraries.exec(`ALTER TABLE media ADD COLUMN amId TEXT`);
+    }
+
+    // migration: sortMode was added after playlists' initial release, existing DBs need it backfilled
+    const playlistColumns = libraries.prepare(`PRAGMA table_info(playlists)`).all() as { name: string }[];
+    if (!playlistColumns.some((c) => c.name === "sortMode")) {
+        libraries.exec(`ALTER TABLE playlists ADD COLUMN sortMode TEXT NOT NULL DEFAULT 'manual'`);
     }
 
     // migration: title/artistName/coverArt were added after requests' initial release, existing DBs need them backfilled

@@ -8,6 +8,7 @@
     "library": "Librairie",
     "albums": "Mes albums",
     "tracks": "Mes titres",
+    "playlists": "Playlists",
     "requests": "Demandes",
     "settings": "Paramètres"
   },
@@ -38,6 +39,13 @@
     "albums": {
       "title": "Albums",
       "empty": "Aucun album dans votre bibliothèque pour l'instant."
+    },
+    "recentlyPlayed": "Écoutés récemment",
+    "recentlyPlayedEmpty": "Rien d'écouté pour l'instant.",
+    "recentType": {
+      "track": "Titre",
+      "album": "Album",
+      "playlist": "Playlist"
     }
   },
   "album": {
@@ -69,6 +77,10 @@
       "processing": "Traitement",
       "completed": "Terminé",
       "failed": "Échec"
+    },
+    "progress": {
+      "eta": "{time} restant",
+      "track": "Titre {index} sur {count}"
     }
   },
   "settings": {
@@ -89,6 +101,69 @@
       "save": "Enregistrer",
       "saved": "Enregistré",
       "error": "Impossible d'enregistrer votre profil"
+    }
+  },
+  "playlist": {
+    "title": "Playlists",
+    "empty": "Vous n'avez aucune playlist pour l'instant.",
+    "tracksEmpty": "Cette playlist n'a aucun titre pour l'instant.",
+    "ownedBy": "Par {name}",
+    "play": "Lecture",
+    "shuffle": "Aléatoire",
+    "leave": "Quitter la playlist",
+    "removeTrack": "Retirer de la playlist",
+    "reorder": "Glisser pour réorganiser",
+    "privacy": {
+      "public": "Publique",
+      "private": "Privée"
+    },
+    "sort": {
+      "label": "Trier par",
+      "manual": "Ordre manuel",
+      "title": "Titre (A-Z)",
+      "artist": "Artiste (A-Z)",
+      "addedBy": "Ajouté par",
+      "duration": "Durée"
+    },
+    "form": {
+      "title": "Titre",
+      "description": "Description",
+      "privacy": "Confidentialité"
+    },
+    "create": {
+      "open": "Nouvelle playlist",
+      "submit": "Créer la playlist"
+    },
+    "edit": {
+      "open": "Modifier les détails",
+      "save": "Enregistrer"
+    },
+    "delete": {
+      "open": "Supprimer la playlist",
+      "confirmTitle": "Supprimer cette playlist ?",
+      "confirmMessage": "Cela supprimera définitivement la playlist et son image. Les titres restent dans votre bibliothèque."
+    },
+    "members": {
+      "open": "Gérer les membres",
+      "remove": "Retirer",
+      "invite": "Inviter",
+      "inviteLabel": "Ajouter un membre par nom d'utilisateur",
+      "invitePlaceholder": "Nom d'utilisateur"
+    },
+    "picker": {
+      "title": "Ajouter à une playlist",
+      "empty": "Vous n'avez aucune playlist pour l'instant.",
+      "added": "Ajouté à la playlist",
+      "cancel": "Annuler",
+      "error": "Impossible d'ajouter à la playlist"
+    },
+    "addToPlaylist": "Ajouter à une playlist",
+    "addTracks": {
+      "open": "Ajouter des titres",
+      "title": "Ajouter des titres",
+      "empty": "Votre bibliothèque n'a plus de titre à ajouter.",
+      "added": "Titre ajouté",
+      "error": "Impossible d'ajouter le titre"
     }
   },
   "player": {

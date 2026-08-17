@@ -40,4 +40,9 @@ watch(() => props.media.coverArt, (coverArt) => imgSrc.value = coverArt ?? noCov
 .mbox .title {
   font-weight: 700;
 }
+
+.mbox .artist {
+  font-size: 0.85em;
+  color: #666666;
+}
 </style>

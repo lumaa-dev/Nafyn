@@ -219,7 +219,7 @@ button[filled="hollow"].round:not(:disabled):hover img {
 .now-playing .time {
   color: #666666;
   font-variant-numeric: tabular-nums;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: "Discy";
   width: 2.5em;
 }
 

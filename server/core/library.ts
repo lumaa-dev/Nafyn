@@ -107,6 +107,17 @@ export function addLibraryEntry(userId: string, mediaId: string, filePath: strin
     return entry;
 }
 
+// true if any of the user's library entries belong to this albumId (release-group MBID)
+export function userOwnsAlbum(userId: string, albumId: string): boolean {
+    const row = getLibrariesDb().prepare(`
+        SELECT 1 FROM library_entries
+        JOIN media ON media.id = library_entries.mediaId
+        WHERE library_entries.userId = ? AND media.albumId = ?
+        LIMIT 1
+    `).get(userId, albumId);
+    return !!row;
+}
+
 export function getMediaOfUser(userId: string): MediaRow[] {
     return getLibrariesDb().prepare(`
         SELECT media.*
@@ -116,23 +127,25 @@ export function getMediaOfUser(userId: string): MediaRow[] {
     `).all(userId) as MediaRow[];
 }
 
-// one AlbumRow per distinct (artistName, album) pair owned by the user, aggregated from their media rows
+// one AlbumRow per distinct albumId (release-group MBID) owned by the user, aggregated from their media rows;
+// grouping must key off albumId (not the display title) since SQLite returns an arbitrary row's value for any
+// selected column that isn't in GROUP BY or wrapped in an aggregate, which made `id`/`mbId` nondeterministic
 export function getAlbumsOfUser(userId: string): AlbumRow[] {
     return getLibrariesDb().prepare(`
         SELECT
             media.albumId AS id,
-            media.musicbrainzId AS mbId,
-            media.album AS title,
-            media.artistName AS artistName,
-            media.artistMbid AS artistMbid,
+            MIN(media.musicbrainzId) AS mbId,
+            MIN(media.album) AS title,
+            MIN(media.artistName) AS artistName,
+            MIN(media.artistMbid) AS artistMbid,
             MIN(media.coverArt) AS coverArt,
             MIN(media.releaseDate) AS releaseDate,
             SUM(media.duration) AS duration,
             COUNT(*) AS trackCount
         FROM library_entries
         JOIN media ON media.id = library_entries.mediaId
-        WHERE library_entries.userId = ? AND media.album IS NOT NULL
-        GROUP BY media.artistName, media.album
+        WHERE library_entries.userId = ? AND media.album IS NOT NULL AND media.albumId IS NOT NULL AND media.albumId != 'unknown-album'
+        GROUP BY media.albumId
     `).all(userId) as AlbumRow[];
 }
 
@@ -161,7 +174,10 @@ export async function deleteLibraryEntryForUser(userId: string, mediaId: string)
     const { count } = db.prepare(`SELECT COUNT(*) AS count FROM library_entries WHERE mediaId = ?`).get(mediaId) as { count: number };
     if (count === 0) {
         await rm(entry.filePath, { force: true });
-        db.prepare(`DELETE FROM media WHERE id = ?`).run(mediaId);
+        db.transaction(() => {
+            db.prepare(`DELETE FROM playlist_entries WHERE mediaId = ?`).run(mediaId);
+            db.prepare(`DELETE FROM media WHERE id = ?`).run(mediaId);
+        })();
         return { removed: true, fileDeleted: true };
     }
 

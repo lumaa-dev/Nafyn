@@ -64,6 +64,30 @@ export const useToast = () => {
     state,
     toastDuration: TOAST_DURATION,
     sendToast,
-    removeToast
+    removeToast,
+    errorToast: (title: string, content: string): Omit<Toast, "id" | "timeout"> => {
+      return {
+        title,
+        content,
+        tint: "red",
+        icon: null
+      }
+    },
+    successToast: (title: string, content: string): Omit<Toast, "id" | "timeout"> => {
+      return {
+        title,
+        content,
+        tint: "green",
+        icon: null
+      }
+    },
+    toast: (title: string, content: string): Omit<Toast, "id" | "timeout"> => {
+      return {
+        title,
+        content,
+        tint: null,
+        icon: null
+      }
+    }
   }
 }

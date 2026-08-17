@@ -8,6 +8,7 @@
     "library": "Library",
     "albums": "My Albums",
     "tracks": "My Tracks",
+    "playlists": "Playlists",
     "requests": "Requests",
     "settings": "Settings"
   },
@@ -38,6 +39,13 @@
     "albums": {
       "title": "Albums",
       "empty": "No albums in your library yet."
+    },
+    "recentlyPlayed": "Recently played",
+    "recentlyPlayedEmpty": "Nothing played yet.",
+    "recentType": {
+      "track": "Track",
+      "album": "Album",
+      "playlist": "Playlist"
     }
   },
   "album": {
@@ -49,7 +57,8 @@
   "track": {
     "request": "Request",
     "requested": "Requested successfully",
-    "viewInMusicbrainz": "View in MusicBrainz"
+    "viewInMusicbrainz": "View in MusicBrainz",
+    "delete": "Delete track"
   },
   "search": {
     "albums": "Albums",
@@ -69,6 +78,10 @@
       "processing": "Processing",
       "completed": "Completed",
       "failed": "Failed"
+    },
+    "progress": {
+      "eta": "{time} left",
+      "track": "Track {index} of {count}"
     }
   },
   "settings": {
@@ -89,6 +102,69 @@
       "save": "Save changes",
       "saved": "Saved",
       "error": "Couldn't save your profile"
+    }
+  },
+  "playlist": {
+    "title": "Playlists",
+    "empty": "You have no playlists yet.",
+    "tracksEmpty": "This playlist has no tracks yet.",
+    "ownedBy": "By {name}",
+    "play": "Play",
+    "shuffle": "Shuffle",
+    "leave": "Leave playlist",
+    "removeTrack": "Remove from playlist",
+    "reorder": "Drag to reorder",
+    "privacy": {
+      "public": "Public",
+      "private": "Private"
+    },
+    "sort": {
+      "label": "Sort by",
+      "manual": "Manual order",
+      "title": "Title (A-Z)",
+      "artist": "Artist (A-Z)",
+      "addedBy": "Added by",
+      "duration": "Duration"
+    },
+    "form": {
+      "title": "Title",
+      "description": "Description",
+      "privacy": "Privacy"
+    },
+    "create": {
+      "open": "New playlist",
+      "submit": "Create playlist"
+    },
+    "edit": {
+      "open": "Edit details",
+      "save": "Save changes"
+    },
+    "delete": {
+      "open": "Delete playlist",
+      "confirmTitle": "Delete this playlist?",
+      "confirmMessage": "This will permanently delete the playlist and its cover image. Tracks stay in your library."
+    },
+    "members": {
+      "open": "Manage members",
+      "remove": "Remove",
+      "invite": "Invite",
+      "inviteLabel": "Add member by username",
+      "invitePlaceholder": "Username"
+    },
+    "picker": {
+      "title": "Add to playlist",
+      "empty": "You have no playlists yet.",
+      "added": "Added to playlist",
+      "cancel": "Cancel",
+      "error": "Couldn't add to playlist"
+    },
+    "addToPlaylist": "Add to playlist",
+    "addTracks": {
+      "open": "Add tracks",
+      "title": "Add tracks",
+      "empty": "Your library has no more tracks to add.",
+      "added": "Track added",
+      "error": "Couldn't add track"
     }
   },
   "player": {

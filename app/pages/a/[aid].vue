@@ -9,19 +9,28 @@
         </span>
         <p class="artist">{{ typeof album.artist == "string" ? album.artist : album.artist.name }}</p>
         <p class="description" v-if="album.description">{{ album.description }}</p>
-        <button filled @click="requestMedia(album.id, 'album', album.title)">{{ $t('album.request') }}</button>
+        <span class="albumactions">
+          <button filled @click="requestMedia(album.id, 'album', album.title)">{{ $t('album.request') }}</button>
+          <!-- <button filled="hollow" v-if="albumMediaIds.length > 0" @click="openPicker(albumMediaIds)">{{ $t('playlist.addToPlaylist') }}</button> -->
+        </span>
       </div>
     </div>
 
     <ol class="tracks">
       <h2>{{ $t('album.trackList') }}</h2>
-      <li v-for="track in album.tracks" :key="track.id" :class="{ unreleased: !track.released }">
+      <li v-for="track in album.tracks" :key="track.id" :class="{ unreleased: !track.released, playing: currentTrack?.id === track.mediaId, playable: track.mediaId }" @click="track.mediaId ? playTrack(track) : undefined" @contextmenu.prevent="track.mediaId ? onTrackContextMenu($event, track.mediaId) : undefined">
         <span class="number">{{ track.trackNumber }}</span>
         <span class="title">{{ track.title }}</span>
-        <button filled="hollow" @click="requestTrack(track)" v-if="track.released && (!track.requested || !track.inLibrary)"><img src="../../assets/icons/download.svg" draggable="false"></button>
+        <button filled="hollow" @click.stop="requestTrack(track)" v-if="track.released && (!track.requested && !track.inLibrary)"><img src="../../assets/icons/download.svg" draggable="false"></button>
+        <button type="button" class="ellipsis" v-if="track.mediaId" @click.stop="onTrackEllipsis($event, track.mediaId)">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
+        </button>
         <span class="duration" v-if="track.duration > 0">{{ formatDuration(track.duration) }}</span>
       </li>
     </ol>
+
+    <ContextMenu ref="trackMenu" :items="trackMenuItems" />
+    <PlaylistPickerModal v-model="showPicker" :media-ids="pickerMediaIds" />
 
     <p class="details">
       <span v-if="album.releaseDate">{{ formatDate(album.releaseDate) }}</span>
@@ -34,7 +43,10 @@
 <script lang="ts" setup>
 import type { AlbumDetail } from '~~/server/entity/media/AlbumDetail';
 import type { TrackInfo } from '~~/server/entity/media/TrackInfo';
+import type { MediaRow } from '~~/server/core/library';
 import noCover from '~/assets/no-cover.png';
+import ContextMenu, { type ContextMenuItem } from '~/components/ContextMenu.vue';
+import PlaylistPickerModal from '~/components/PlaylistPickerModal.vue';
 
 const { locale } = useI18n();
 const aid = useRoute().params.aid as string;
@@ -45,6 +57,72 @@ const { data: album } = await useAsyncData<AlbumDetail>(`album-${aid}`, () => {
     ? $fetch(`/api/v1/album/${aid}`, { headers: { Authorization: token } })
     : Promise.reject(new Error("Not authenticated"));
 });
+
+const albumMediaIds = computed(() => album.value?.tracks.map((t) => t.mediaId).filter((id): id is string => id !== null) ?? []);
+
+const { currentTrack, play } = usePlayer();
+
+// tracks aren't fetched as full MediaRow rows on the album page (only display fields), so build one client-side
+// from data already on hand - just enough to stream/queue/show the track, matching what the actual media row holds
+function toMediaRow(track: TrackInfo): MediaRow | null {
+  if (!track.mediaId || !album.value) return null;
+  const artist = album.value.artist;
+
+  return {
+    id: track.mediaId,
+    musicbrainzId: track.id,
+    title: track.title,
+    artistName: typeof artist === "string" ? artist : artist.name,
+    artistMbid: typeof artist === "string" ? "" : artist.musicbrainzId,
+    album: album.value.title,
+    albumId: aid,
+    albumType: album.value.type,
+    coverArt: album.value.coverArt,
+    releaseDate: track.releaseDate ? Math.floor(new Date(track.releaseDate).getTime() / 1000) : null,
+    duration: track.duration,
+    label: album.value.label,
+    fingerprint: null,
+    amId: null,
+    addedAt: 0
+  };
+}
+
+function playTrack(track: TrackInfo) {
+  const media = toMediaRow(track);
+  if (!media) return;
+
+  const queue = album.value!.tracks
+    .map((t) => toMediaRow(t))
+    .filter((t): t is MediaRow => t !== null);
+
+  play(media, queue, { type: "album", refId: aid });
+}
+
+const showPicker = ref(false);
+const pickerMediaIds = ref<string[]>([]);
+
+function openPicker(mediaIds: string[]) {
+  pickerMediaIds.value = mediaIds;
+  showPicker.value = true;
+}
+
+const trackMenu = ref<InstanceType<typeof ContextMenu> | null>(null);
+const trackMenuItems = ref<ContextMenuItem[]>([]);
+
+function buildTrackMenu(mediaId: string) {
+  trackMenuItems.value = [{ label: $t('playlist.addToPlaylist'), action: () => openPicker([mediaId]) }];
+}
+
+function onTrackContextMenu(e: MouseEvent, mediaId: string) {
+  buildTrackMenu(mediaId);
+  trackMenu.value?.openAt(e.clientX, e.clientY);
+}
+
+function onTrackEllipsis(e: MouseEvent, mediaId: string) {
+  buildTrackMenu(mediaId);
+  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+  trackMenu.value?.openAt(rect.left, rect.bottom);
+}
 
 function formatDate(date: string | Date): string {
   return new Date(date).toLocaleDateString(locale.value, { year: "numeric", month: "long", day: "numeric" });
@@ -126,6 +204,21 @@ function sendToast(title: string | null, message: string, success: boolean = tru
   justify-content: center;
 }
 
+.album .meta .albumactions {
+  display: flex;
+  gap: 10px;
+}
+
+.album .tracks li .ellipsis {
+  background: none;
+  border: none;
+  color: #666666;
+  cursor: pointer;
+  font-size: 1.2em;
+  width: auto;
+  height: fit-content;
+}
+
 .album .meta button {
   margin: 1.2em 0;
 }
@@ -174,6 +267,15 @@ function sendToast(title: string | null, message: string, success: boolean = tru
   border-bottom: 1px solid #666666;
 }
 
+.album .tracks li.playable {
+  cursor: pointer;
+}
+
+.album .tracks li.playing .title {
+  color: #ffffff;
+  font-weight: 700;
+}
+
 .album .tracks li button {
   width: 2em;
   height: 2em;
@@ -196,7 +298,7 @@ function sendToast(title: string | null, message: string, success: boolean = tru
 .album .tracks .number {
   width: 1.5em;
   text-align: center;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: "Discy";
   font-size: 0.85em;
 }
 
@@ -217,7 +319,7 @@ function sendToast(title: string | null, message: string, success: boolean = tru
 .album .tracks .duration {
   color: #666666;
   font-variant-numeric: tabular-nums;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: "Discy";
   font-size: 0.7em;
 }
 

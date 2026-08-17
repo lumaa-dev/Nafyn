@@ -21,6 +21,11 @@
 	src: url("./assets/fonts/InstrumentSerif-Italic.ttf");
 }
 
+@font-face {
+	font-family: "Discy";
+	src: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
 * {
 	padding: 0;
 	margin: 0;
@@ -53,8 +58,42 @@ input[type="text"], input[type="password"] {
 	border-radius: 250px;
 	outline: none;
 	border: none;
-	font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+	font-family: "Discy";
 	font-size: 0.8em;
+	color: inherit;
+}
+
+textarea {
+	background: #00000050;
+	padding: 15px 30px;
+	border-radius: 20px;
+	outline: none;
+	border: none;
+	font-family: "Discy";
+	font-size: 0.8em;
+	color: inherit;
+	resize: none !important;
+}
+
+select {
+	background: #1a1a1a;
+	border: 1px solid #333333;
+	border-radius: 50vw;
+	outline: none;
+	padding: 0.6em 1em;
+	font-family: "Discy";
+	font-size: 0.8em;
+	color: inherit;
+	cursor: pointer;
+	/* appearance: none; */
+}
+
+select:hover {
+	background: #232323;
+}
+
+select option {
+	background: #1a1a1a;
 	color: inherit;
 }
 
@@ -92,6 +131,17 @@ button[filled="hollow"]:hover:not(:disabled), a[filled="hollow"]:hover:not(:disa
 	color: #000000;
 }
 
+button[filled].danger, a[filled].danger {
+	background: #e06666ae;
+	border: #e06666ae 1px solid;
+	color: #ffffffae;
+}
+
+button[filled].danger:hover, a[filled].danger:hover {
+	background: #e06666d0;
+	border: #e06666d0 1px solid;
+}
+
 *:disabled {
 	cursor: not-allowed !important;
 	opacity: 0.7;
@@ -126,6 +176,8 @@ button[filled="hollow"]:hover:not(:disabled), a[filled="hollow"]:hover:not(:disa
 	bottom: 100px;
 	left: 0;
 	height: 10vh;
+	pointer-events: none !important;
+	user-select: none !important;
 }
 
 .toasts > * {
@@ -183,7 +235,9 @@ const token = useCookie("nafynToken").value;
 const { state: tState } = useToast();
 
 const hasToken = ref(await checkTokenValidity(token ?? ""));
-if (route.path !== "/login" && route.path !== "/register" && !hasToken.value) {
+const isNotLogging: boolean = route.path !== "/login" && route.path !== "/register"
+const isViewingPlaylist: boolean = route.path.includes("/l/playlist")
+if (isNotLogging && !isViewingPlaylist && !hasToken.value) {
 	useRouter().push(`/login`);
 }
 

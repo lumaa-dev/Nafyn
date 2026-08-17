@@ -81,17 +81,19 @@ function parseReleaseDate(date: string | undefined): Date | null {
 // step 2: resolve the request's MusicBrainz ID into one (track) or many (album) concrete recordings to fetch
 async function resolveTargets(client: MusicBrainzApi, musicbrainzId: string, type: "album" | "track"): Promise<TrackTarget[]> {
     if (type === "track") {
-        const recording = await client.lookup("recording", musicbrainzId, ["artist-credits", "releases", "url-rels"]);
+        const recording = await client.lookup("recording", musicbrainzId, ["artist-credits", "releases", "release-groups", "url-rels"]);
         const release = recording.releases?.[0];
         const credit = recording["artist-credit"]?.[0]?.artist;
 
+        // albumId must be the release-*group* MBID (not the release's own ID) so the library's
+        // "album" grouping links back to a valid /api/v1/album/{aid} target
         return [{
             recordingId: recording.id,
             title: recording.title,
             artistName: credit?.name ?? "Unknown Artist",
             artistMbid: credit?.id ?? "unknown-artist",
             album: release?.title ?? null,
-            albumId: release?.id ?? "unknown-album",
+            albumId: release?.["release-group"]?.id ?? "unknown-album",
             albumType: null,
             trackNumber: null,
             releaseDate: parseReleaseDate(recording["first-release-date"]),
@@ -242,12 +244,16 @@ async function downloadTrack(
     await updateRequestStatus(requestId, "downloading");
     progress({ stage: "downloading", message: "Searching Soulseek" });
 
-    // preferred seller first, then anyone else already surfaced by the one album-wide search (no extra
-    // Soulseek traffic), and only as an absolute last resort a fresh per-track search
+    // preferred seller's copies first, but merged with any other album-wide-search seller's copies of the
+    // same track (no extra Soulseek traffic - poolResults is already in hand) so that if the preferred
+    // seller stalls, the candidate loop below has a *different user's* copy to fall through to instead of
+    // just giving up; a fresh per-track search is only ever used as an absolute last resort
     let results: SlskSearchResult[] = primaryResults ? candidatesForTrack(primaryResults, target) : [];
-    if (results.length === 0 && poolResults) {
-        results = candidatesForTrack(poolResults, target);
-        if (results.length > 0) console.log(`[downloads] "${target.title}" not found with selected seller, matched from another seller in existing results`);
+    if (poolResults) {
+        const pooled = candidatesForTrack(poolResults, target)
+            .filter((r) => !results.some((existing) => existing.user === r.user && existing.file === r.file));
+        if (pooled.length > 0 && results.length === 0) console.log(`[downloads] "${target.title}" not found with selected seller, matched from another seller in existing results`);
+        results = results.concat(pooled);
     }
     if (results.length === 0) {
         console.log(`[downloads] "${target.title}" not found in album search results, falling back to per-track search (last resort)`);

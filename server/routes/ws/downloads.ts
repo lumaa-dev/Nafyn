@@ -7,13 +7,17 @@ import { onDownloadProgress } from "../../utils/downloadEvents";
 export default defineWebSocketHandler({
     async open(peer) {
         const url = new URL(peer.request.url, "http://localhost");
-        const token = url.searchParams.get("token");
+        const rawToken = url.searchParams.get("token");
         const requestId = url.searchParams.get("requestId");
 
-        if (!token || !requestId) {
+        if (!rawToken || !requestId) {
             peer.close(4000, "Missing token or requestId");
             return;
         }
+
+        // the `nafynToken` cookie is stored (and sent everywhere else) as `Bearer <jwt>`; strip that prefix
+        // here too, the same way requireAuthToken does for the Authorization header on regular HTTP routes
+        const token = rawToken.startsWith("Bearer ") ? rawToken.slice("Bearer ".length) : rawToken;
 
         let userId: string;
         try {
@@ -24,7 +28,10 @@ export default defineWebSocketHandler({
         }
 
         const request = await getRequestById(requestId);
-        if (!request || request.requestedBy !== userId) {
+        // requestedBy is resolved to a full NafynUser object whenever that user still exists, so it can't
+        // be compared to the raw `userId` string directly - only fall back to it as a plain UUID otherwise
+        const requestedById = typeof request?.requestedBy === "string" ? request.requestedBy : request?.requestedBy?.id;
+        if (!request || requestedById !== userId) {
             peer.close(4004, "Request not found");
             return;
         }
