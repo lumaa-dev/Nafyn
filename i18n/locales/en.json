@@ -10,6 +10,7 @@
     "tracks": "My Tracks",
     "playlists": "Playlists",
     "requests": "Requests",
+    "everyoneLibrary": "Everyone's Library",
     "settings": "Settings"
   },
   "auth": {
@@ -35,6 +36,11 @@
     "tracks": {
       "title": "Tracks",
       "empty": "No tracks in your library yet."
+    },
+    "all": {
+      "title": "Everyone's Library",
+      "empty": "No tracks have been downloaded yet.",
+      "removeFrom": "Remove from {username}'s library"
     },
     "albums": {
       "title": "Albums",
@@ -87,7 +93,9 @@
   "settings": {
     "title": "Settings",
     "categories": {
-      "profile": "Profile"
+      "profile": "Profile",
+      "accounts": "Accounts",
+      "storage": "Storage"
     },
     "profile": {
       "title": "Profile",
@@ -102,6 +110,47 @@
       "save": "Save changes",
       "saved": "Saved",
       "error": "Couldn't save your profile"
+    },
+    "accounts": {
+      "title": "Accounts",
+      "registerLock": {
+        "title": "Open registration",
+        "open": "Anyone can create an account",
+        "closed": "An access token is required to register",
+        "generate": "Generate access token",
+        "expires": "Expires on {date}"
+      },
+      "users": {
+        "title": "Users",
+        "edit": "Edit",
+        "cancel": "Cancel",
+        "save": "Save",
+        "delete": "Delete account",
+        "username": "Username",
+        "permissions": "Permissions"
+      },
+      "permissions": {
+        "REQUEST_ALBUMS": "Request albums",
+        "REQUEST_TRACKS": "Request tracks",
+        "MANAGE_REQUESTS": "Manage requests",
+        "AUTOACCEPT_ALBUMS": "Autoaccept albums",
+        "AUTOACCEPT_TRACKS": "Autoaccept tracks",
+        "MANAGE_ACCOUNTS": "Manage accounts",
+        "MANAGE_MUSIC": "Manage music",
+        "MANAGE_NOTIFICATIONS": "Manage notifications",
+        "ADMIN": "Admin"
+      }
+    },
+    "storage": {
+      "title": "Storage",
+      "usage": {
+        "title": "Storage usage",
+        "stats": "{used} used · {free} free · {total} total"
+      },
+      "perUser": {
+        "title": "Storage by user"
+      },
+      "everyoneLibraryLink": "View everyone's library"
     }
   },
   "playlist": {

@@ -1,5 +1,5 @@
 <template>
-  <div class="login">
+  <div class="login" v-if="allowed">
     <span class="header">
       <h1>{{ $t('auth.register.title') }}</h1>
       <p class="description">{{ $t('auth.register.subtitle') }}</p>
@@ -14,6 +14,16 @@
 <script lang="ts" setup>
 import type { NafynUser } from '~~/server/entity/NafynUser';
 
+const route = useRoute();
+const registerToken = typeof route.query.token === "string" ? route.query.token : "";
+
+const { data: status } = await useFetch<{ open: boolean }>("/api/v1/settings/register");
+const allowed = computed(() => !!status.value?.open || !!registerToken);
+
+if (!allowed.value) {
+  throw createError({ statusCode: 404, statusMessage: "Not Found", fatal: true });
+}
+
 const username = ref("");
 const password = ref("");
 
@@ -27,7 +37,7 @@ interface RegisterResponse {
 async function register() {
   const result: RegisterResponse = await $fetch("/api/v1/auth/register", {
     method: "POST",
-    body: { username: username.value, password: password.value }
+    body: { username: username.value, password: password.value, token: registerToken }
   }).catch(r => hasError.value = r)
 
   if (!result || hasError.value) return hasError.value = $t("auth.register.error");;

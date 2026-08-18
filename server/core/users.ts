@@ -92,10 +92,11 @@ export function updateUser(id: string, changes: Partial<Omit<NafynUser, "id">>):
     const merged = { ...existing, ...changes };
     getUsersDb().prepare(`
         UPDATE users
-        SET displayName = @displayName, avatar = @avatar, permissions = @permissions, lastFm = @lastFm, discogs = @discogs
+        SET username = @username, displayName = @displayName, avatar = @avatar, permissions = @permissions, lastFm = @lastFm, discogs = @discogs
         WHERE id = @id
     `).run({
         id,
+        username: merged.username,
         displayName: merged.displayName ?? null,
         avatar: merged.avatar ?? null,
         permissions: merged.permissions as unknown as number,

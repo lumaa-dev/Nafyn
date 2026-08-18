@@ -2,6 +2,8 @@
 // entries reference `media.id` directly, not `library_entries`, so a member can add a track they don't personally own.
 import { getPlaylistById, hasAccess, addEntries } from "~~/server/core/playlists";
 import { getMediaId } from "~~/server/core/library";
+import { getPermissionsById } from "~~/server/core/users";
+import { hasPermission, Permission } from "~~/server/entity/Permission";
 
 export default defineEventHandler(async (event) => {
     const { sub: userId } = requireAuthToken(event);
@@ -16,7 +18,8 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 404, statusMessage: "Playlist not found" });
     }
 
-    if (playlist.ownerId !== userId && !hasAccess(playlist, userId)) {
+    const canManageMusic = hasPermission(getPermissionsById(userId) ?? 0, Permission.MANAGE_MUSIC);
+    if (playlist.ownerId !== userId && !hasAccess(playlist, userId) && !canManageMusic) {
         throw createError({ statusCode: 403, statusMessage: "You don't have access to this playlist" });
     }
 

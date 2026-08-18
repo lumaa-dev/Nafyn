@@ -1,5 +1,8 @@
-// removes a single entry; members may only remove entries they personally added, the owner can remove any entry
+// removes a single entry; members may only remove entries they personally added, the owner can remove any entry,
+// and MANAGE_MUSIC users can remove any entry from any playlist
 import { getPlaylistById, getEntryById, removeEntry } from "~~/server/core/playlists";
+import { getPermissionsById } from "~~/server/core/users";
+import { hasPermission, Permission } from "~~/server/entity/Permission";
 
 export default defineEventHandler(async (event) => {
     const { sub: userId } = requireAuthToken(event);
@@ -22,7 +25,8 @@ export default defineEventHandler(async (event) => {
 
     const isOwner = playlist.ownerId === userId;
     const isAdder = entry.addedBy === userId;
-    if (!isOwner && !isAdder) {
+    const canManageMusic = hasPermission(getPermissionsById(userId) ?? 0, Permission.MANAGE_MUSIC);
+    if (!isOwner && !isAdder && !canManageMusic) {
         throw createError({ statusCode: 403, statusMessage: "You can only remove tracks you added" });
     }
 

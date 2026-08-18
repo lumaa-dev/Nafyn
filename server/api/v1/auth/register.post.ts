@@ -3,11 +3,13 @@ import { createUser, isUsernameTaken, listUsers } from "../../../core/users";
 import { consumeRateLimit, isWhitelisted } from "../../../utils/rateLimit";
 import { signAuthToken } from "../../../utils/jwt";
 import { Permission } from "../../../entity/Permission";
+import { isRegistrationOpen } from "../../../core/appSettings";
+import { validateRegisterToken, consumeRegisterToken } from "../../../core/registerTokens";
+import { assertValidUsername } from "../../../utils/validation";
 
 const MAX_ATTEMPTS = 3;
 const WINDOW_MS = 60 * 60 * 1000;
 
-const USERNAME_RE = /^[a-zA-Z0-9_.-]{3,20}$/;
 const MIN_PASSWORD_LENGTH = 8;
 
 defineRouteMeta({
@@ -27,6 +29,10 @@ defineRouteMeta({
                             },
                             password: {
                                 type: "string"
+                            },
+                            token: {
+                                type: "string",
+                                description: "Required only when open registration is disabled"
                             }
                         }
                     }
@@ -129,9 +135,16 @@ export default defineEventHandler(async (event) => {
     const username: string = typeof body?.username === "string" ? body.username.trim() : "";
     const password: string = typeof body?.password === "string" ? body.password : "";
 
-    if (!USERNAME_RE.test(username)) {
-        throw createError({ statusCode: 400, statusMessage: "Username must be 3-20 characters (letters, numbers, _ . -)" });
+    const registerToken = typeof body?.token === "string" ? body.token : "";
+    let tokenRow = null;
+    if (!isRegistrationOpen()) {
+        tokenRow = validateRegisterToken(registerToken);
+        if (!tokenRow) {
+            throw createError({ statusCode: 404, statusMessage: "Not found" });
+        }
     }
+
+    assertValidUsername(username);
 
     if (password.length < MIN_PASSWORD_LENGTH) {
         throw createError({ statusCode: 400, statusMessage: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` });
@@ -141,7 +154,7 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 409, statusMessage: "Username is already taken" });
     }
 
-    let defaultPerms: Permission = listUsers().length <= 0 ? Permission.ADMIN : Permission.NONE;
+    let defaultPerms: Permission | Permission[] = listUsers().length <= 0 ? Permission.ADMIN : [Permission.REQUEST_TRACKS, Permission.REQUEST_ALBUMS];
 
     const passwordHash = bcrypt.hashSync(password, 12);
 
@@ -153,6 +166,10 @@ export default defineEventHandler(async (event) => {
         lastFm: null,
         discogs: null
     }, passwordHash);
+
+    if (tokenRow) {
+        consumeRegisterToken(tokenRow.id);
+    }
 
     const token = signAuthToken(user.id);
 

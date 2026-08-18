@@ -22,7 +22,7 @@ interface PlaylistRow {
   image: string | null;
 }
 
-const props = defineProps<{ modelValue: boolean; mediaIds: string[] }>();
+const props = defineProps<{ modelValue: boolean; mediaIds: string[]; admin?: boolean }>();
 const emit = defineEmits<{ (e: "update:modelValue", value: boolean): void }>();
 
 const token = useCookie("nafynToken").value ?? "";
@@ -30,7 +30,8 @@ const playlists = ref<PlaylistRow[]>([]);
 
 watch(() => props.modelValue, async (isOpen) => {
   if (!isOpen) return;
-  playlists.value = await $fetch<PlaylistRow[]>("/api/v1/playlist", { headers: { Authorization: token } }).catch(() => []);
+  const path = props.admin ? "/api/v1/playlist/all" : "/api/v1/playlist";
+  playlists.value = await $fetch<PlaylistRow[]>(path, { headers: { Authorization: token } }).catch(() => []);
 });
 
 function playlistImageUrl(playlist: PlaylistRow): string {

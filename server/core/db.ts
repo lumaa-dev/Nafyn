@@ -49,6 +49,20 @@ export function initDatabases(): void {
             lastFm TEXT,
             discogs TEXT
         );
+
+        CREATE TABLE IF NOT EXISTS app_settings (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS register_tokens (
+            id TEXT PRIMARY KEY,
+            token TEXT NOT NULL UNIQUE,
+            createdBy TEXT NOT NULL,
+            createdAt INTEGER NOT NULL,
+            expiresAt INTEGER NOT NULL,
+            usedAt INTEGER
+        );
     `);
 
     const requests = getRequestsDb();
@@ -157,6 +171,11 @@ export function initDatabases(): void {
     // migration: amId (Apple Music relation) was added after media's initial release, existing DBs need it backfilled
     if (!mediaColumns.some((c) => c.name === "amId")) {
         libraries.exec(`ALTER TABLE media ADD COLUMN amId TEXT`);
+    }
+
+    // migration: fileSize was added after media's initial release, existing DBs need it backfilled (see server/plugins/db.ts)
+    if (!mediaColumns.some((c) => c.name === "fileSize")) {
+        libraries.exec(`ALTER TABLE media ADD COLUMN fileSize INTEGER`);
     }
 
     // migration: sortMode was added after playlists' initial release, existing DBs need it backfilled

@@ -10,6 +10,7 @@
     "tracks": "Mes titres",
     "playlists": "Playlists",
     "requests": "Demandes",
+    "everyoneLibrary": "Bibliothèque de tous",
     "settings": "Paramètres"
   },
   "auth": {
@@ -35,6 +36,11 @@
     "tracks": {
       "title": "Titres",
       "empty": "Aucun titre dans votre bibliothèque pour l'instant."
+    },
+    "all": {
+      "title": "Bibliothèque de tous",
+      "empty": "Aucun titre n'a encore été téléchargé.",
+      "removeFrom": "Retirer de la bibliothèque de {username}"
     },
     "albums": {
       "title": "Albums",
@@ -86,7 +92,9 @@
   "settings": {
     "title": "Paramètres",
     "categories": {
-      "profile": "Profil"
+      "profile": "Profil",
+      "accounts": "Comptes",
+      "storage": "Stockage"
     },
     "profile": {
       "title": "Profil",
@@ -101,6 +109,47 @@
       "save": "Enregistrer",
       "saved": "Enregistré",
       "error": "Impossible d'enregistrer votre profil"
+    },
+    "accounts": {
+      "title": "Comptes",
+      "registerLock": {
+        "title": "Inscription ouverte",
+        "open": "Tout le monde peut créer un compte",
+        "closed": "Un jeton d'accès est requis pour s'inscrire",
+        "generate": "Générer un jeton d'accès",
+        "expires": "Expire le {date}"
+      },
+      "users": {
+        "title": "Utilisateurs",
+        "edit": "Modifier",
+        "cancel": "Annuler",
+        "save": "Enregistrer",
+        "delete": "Supprimer le compte",
+        "username": "Nom d'utilisateur",
+        "permissions": "Permissions"
+      },
+      "permissions": {
+        "REQUEST_ALBUMS": "Demander des albums",
+        "REQUEST_TRACKS": "Demander des titres",
+        "MANAGE_REQUESTS": "Gérer les demandes",
+        "AUTOACCEPT_ALBUMS": "Accepter automatiquement les albums",
+        "AUTOACCEPT_TRACKS": "Accepter automatiquement les titres",
+        "MANAGE_ACCOUNTS": "Gérer les comptes",
+        "MANAGE_MUSIC": "Gérer la musique",
+        "MANAGE_NOTIFICATIONS": "Gérer les notifications",
+        "ADMIN": "Administrateur"
+      }
+    },
+    "storage": {
+      "title": "Stockage",
+      "usage": {
+        "title": "Utilisation du stockage",
+        "stats": "{used} utilisés · {free} libres · {total} au total"
+      },
+      "perUser": {
+        "title": "Stockage par utilisateur"
+      },
+      "everyoneLibraryLink": "Voir la bibliothèque de tous"
     }
   },
   "playlist": {

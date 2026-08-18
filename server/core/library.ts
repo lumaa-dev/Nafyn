@@ -18,6 +18,7 @@ export interface MediaRow {
     label: string | null,
     fingerprint: string | null,
     amId: string | null,
+    fileSize: number | null,
     addedAt: number
 }
 
@@ -79,12 +80,13 @@ export function insertMedia(media: Omit<MediaRow, "id" | "addedAt"> & { id?: str
         label: media.label,
         fingerprint: media.fingerprint,
         amId: media.amId,
+        fileSize: media.fileSize,
         addedAt: Date.now()
     };
 
     getLibrariesDb().prepare(`
-        INSERT INTO media (id, musicbrainzId, title, artistName, artistMbid, album, albumId, albumType, coverArt, releaseDate, duration, label, fingerprint, amId, addedAt)
-        VALUES (@id, @musicbrainzId, @title, @artistName, @artistMbid, @album, @albumId, @albumType, @coverArt, @releaseDate, @duration, @label, @fingerprint, @amId, @addedAt)
+        INSERT INTO media (id, musicbrainzId, title, artistName, artistMbid, album, albumId, albumType, coverArt, releaseDate, duration, label, fingerprint, amId, fileSize, addedAt)
+        VALUES (@id, @musicbrainzId, @title, @artistName, @artistMbid, @album, @albumId, @albumType, @coverArt, @releaseDate, @duration, @label, @fingerprint, @amId, @fileSize, @addedAt)
     `).run(row);
 
     return row;
@@ -149,6 +151,41 @@ export function getAlbumsOfUser(userId: string): AlbumRow[] {
     `).all(userId) as AlbumRow[];
 }
 
+// total bytes across every distinct media row (the shared pool, not per-user)
+export function getTotalMediaSize(): number {
+    const row = getLibrariesDb().prepare(`SELECT SUM(fileSize) AS total FROM media`).get() as { total: number | null };
+    return row.total ?? 0;
+}
+
+// bytes owned per user, summed across their library entries (a shared track counts for each owner)
+export function getStorageByUser(): { userId: string, bytes: number }[] {
+    return getLibrariesDb().prepare(`
+        SELECT library_entries.userId AS userId, SUM(media.fileSize) AS bytes
+        FROM library_entries
+        JOIN media ON media.id = library_entries.mediaId
+        GROUP BY library_entries.userId
+    `).all() as { userId: string, bytes: number }[];
+}
+
+export function updateMediaFileSize(mediaId: string, fileSize: number): void {
+    getLibrariesDb().prepare(`UPDATE media SET fileSize = ? WHERE id = ?`).run(fileSize, mediaId);
+}
+
+// every media row plus the userIds that own a library entry for it, for the MANAGE_MUSIC "everyone's library" view
+export function getAllMediaWithOwners(): (MediaRow & { ownerIds: string[] })[] {
+    const media = getLibrariesDb().prepare(`SELECT * FROM media ORDER BY addedAt DESC`).all() as MediaRow[];
+    const entries = getLibrariesDb().prepare(`SELECT userId, mediaId FROM library_entries`).all() as { userId: string, mediaId: string }[];
+
+    const ownersByMedia = new Map<string, string[]>();
+    for (const entry of entries) {
+        const list = ownersByMedia.get(entry.mediaId) ?? [];
+        list.push(entry.userId);
+        ownersByMedia.set(entry.mediaId, list);
+    }
+
+    return media.map((row) => ({ ...row, ownerIds: ownersByMedia.get(row.id) ?? [] }));
+}
+
 export function getMediaId(mediaId: string): MediaRow | undefined {
     const row = getLibrariesDb().prepare(`SELECT * FROM media WHERE id = ? LIMIT 1`).get(mediaId) as MediaRow | undefined;    
     return row;
@@ -161,6 +198,14 @@ export function shareMediaWithUser(userId: string, media: MediaRow, sharedFilePa
 
 export function libraryFilePath(mediaId: string, extension: string): string {
     return `${process.cwd()}/music/${mediaId}${extension}`;
+}
+
+// revokes every library entry a user has, used when an account is deleted so no orphaned entries linger
+export async function deleteAllLibraryEntriesForUser(userId: string): Promise<void> {
+    const media = getMediaOfUser(userId);
+    for (const row of media) {
+        await deleteLibraryEntryForUser(userId, row.id);
+    }
 }
 
 // revokes `userId`'s access to a song; once no user references it anymore, the shared file and media row are deleted too

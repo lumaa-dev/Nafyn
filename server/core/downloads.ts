@@ -26,6 +26,7 @@
 import { randomUUID, UUID } from "node:crypto";
 import { basename, dirname, extname, join } from "node:path";
 import { mkdir, rm } from "node:fs/promises";
+import { statSync } from "node:fs";
 import type { IRelease, IReleaseGroup, MusicBrainzApi } from "musicbrainz-api";
 import type { SlskSearchResult } from "../utils/soulseek";
 import { getMusicBrainzClient, getAppleMusicTrackID } from "../utils/musicbrainz";
@@ -40,7 +41,8 @@ import {
     insertMedia,
     addLibraryEntry,
     shareMediaWithUser,
-    libraryFilePath
+    libraryFilePath,
+    updateMediaFileSize
 } from "./library";
 import { emitDownloadProgress, clearDownloadEmitter } from "../utils/downloadEvents";
 import { NafynRequest } from "../entity/NafynRequest";
@@ -324,7 +326,8 @@ async function downloadTrack(
                 duration: target.duration,
                 label: target.label,
                 fingerprint: check.fingerprint,
-                amId: target.amId
+                amId: target.amId,
+                fileSize: null
             });
 
             console.log(`[downloads] Musicbrainz'd "${target.title}"`);
@@ -341,6 +344,7 @@ async function downloadTrack(
             });
             await rm(tempPath, { force: true });
 
+            updateMediaFileSize(media.id, statSync(destPath).size);
             addLibraryEntry(requestedBy, media.id, destPath);
 
             progress({ stage: "completed" });
