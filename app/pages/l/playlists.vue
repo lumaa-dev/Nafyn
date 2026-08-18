@@ -113,6 +113,10 @@ async function create() {
   gap: 20px;
 }
 
+.libplaylists .pcard {
+  text-decoration: none;
+}
+
 .libplaylists .pcard img {
   width: 100%;
   aspect-ratio: 1 / 1;

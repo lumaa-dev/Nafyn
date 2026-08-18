@@ -214,6 +214,13 @@ button[filled].danger:hover, a[filled].danger:hover {
   }
 }
 
+@media screen and (max-width: 800px) {
+	.view {
+		margin: calc(20vh - 10px) 1.2em;
+		padding-bottom: 6em;
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.sb {
 		transition: none !important;
