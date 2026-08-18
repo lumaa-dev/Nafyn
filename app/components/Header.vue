@@ -1,11 +1,14 @@
 <template>
-  <header>
+  <header ref="headerRef">
     <ProgressiveBlur class="backblur" height="80%" fade-color="#00000050" />
     <span>
-      <button @click="props.toggleSidebar()">
+      <button v-show="!mobileSearchActive" @click="props.toggleSidebar()">
         <Wordmark />
       </button>
-      <input v-model="searchText" type="text" name="search" id="search" :placeholder="$t('common.search')" :disabled="sidebarActive" @keydown.enter="navigateTo(`/search?q=${encodeURIComponent(searchText)}`)">
+      <button class="search-toggle" :class="{ active: mobileSearchActive }" @click="mobileSearchActive = !mobileSearchActive">
+        <img src="../assets/icons/search.svg" draggable="false" />
+      </button>
+      <input v-model="searchText" type="text" name="search" id="search" :class="{ 'mobile-active': mobileSearchActive }" :placeholder="$t('common.search')" :disabled="sidebarActive" @keydown.enter="navigateTo(`/search?q=${encodeURIComponent(searchText)}`)">
     </span>
   </header>
 </template>
@@ -15,11 +18,22 @@ import ProgressiveBlur from './TopProgressiveBlur.vue';
 import Wordmark from './Wordmark.vue';
 
 const searchText = ref("");
+const mobileSearchActive = ref(false);
+const headerRef = ref<HTMLElement | null>(null);
 
 const props = defineProps({
   toggleSidebar: { type: Function, default: () => { } },
   sidebarActive: { type: Boolean, default: false }
 })
+
+function onClickOutside(event: MouseEvent) {
+  if (mobileSearchActive.value && headerRef.value && !headerRef.value.contains(event.target as Node)) {
+    mobileSearchActive.value = false;
+  }
+}
+
+onMounted(() => document.addEventListener('click', onClickOutside));
+onUnmounted(() => document.removeEventListener('click', onClickOutside));
 </script>
 
 <style>
@@ -81,6 +95,10 @@ header .backblur {
   z-index: 99;
 }
 
+header .search-toggle {
+  display: none;
+}
+
 @media screen and (max-width: 800px) {
   header {
     height: 20vh;
@@ -89,6 +107,7 @@ header .backblur {
 
   header > span {
     justify-content: center;
+    align-items: center;
   }
 
   header img {
@@ -98,11 +117,40 @@ header .backblur {
 
   header button {
     padding: 0.2em 1.0em !important;
-    margin-bottom: 20px;
+    /* margin-bottom: 20px; */
   }
 
   header input {
     display: none !important;
+  }
+
+  header input.mobile-active {
+    display: block !important;
+    width: 100%;
+    max-width: 400px;
+  }
+
+  header .search-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 !important;
+    background: #ffffff20;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    aspect-ratio: 1 / 1;
+    z-index: 100;
+  }
+
+  header .search-toggle.active {
+    display: none !important;
+  }
+
+  header .search-toggle img {
+    width: 20px;
+    height: 20px;
+    margin: 0 !important;
   }
 }
 </style>
