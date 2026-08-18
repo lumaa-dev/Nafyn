@@ -12,12 +12,20 @@ export enum Permission {
 }
 
 export function hasPermission(permissions: number, requiredPermission: Permission): boolean {
-    return permissions == Permission.ADMIN || (permissions > 0 && !!(permissions % requiredPermission));
+    if (permissions & Permission.ADMIN) return true;
+    return !!(permissions & requiredPermission);
 }
 
 export function hasPermissions(permissions: number, requiredPermissions: Permission[]): boolean {
-    if (permissions > 0 && permissions != Permission.ADMIN) {
-        return requiredPermissions.every((p) => permissions & p);
-    }
-    return permissions == Permission.ADMIN;
+    if (permissions & Permission.ADMIN) return true;
+    return requiredPermissions.every((p) => permissions & p);
+}
+
+// true if `actorPerms` may edit `targetPerms`'s account (profile fields + permission bits):
+// ADMIN can edit anyone; MANAGE_ACCOUNTS can edit themselves or anyone without MANAGE_ACCOUNTS/ADMIN
+export function canManageUser(actorId: string, actorPerms: number, targetId: string, targetPerms: number): boolean {
+    if (actorPerms & Permission.ADMIN) return true;
+    if (!(actorPerms & Permission.MANAGE_ACCOUNTS)) return false;
+    if (actorId === targetId) return true;
+    return !(targetPerms & (Permission.MANAGE_ACCOUNTS | Permission.ADMIN));
 }
