@@ -23,7 +23,9 @@ export default defineEventHandler(async (event): Promise<AlbumDetail> => {
     const browsed = await client.browse("release", { "release-group": aid }, ["recordings", "artist-credits", "labels", "media", "url-rels"]).catch(() => {
         throw createError({ statusCode: 404, message: "No release found for album " + aid });
     });
-    const release: IRelease | undefined = browsed.releases?.[0];
+    // prefer the "Digital Media" release: it best matches what we actually distribute,
+    // while CD/Vinyl releases (often the first one MusicBrainz returns) can differ in track listing/labels
+    const release: IRelease | undefined = browsed.releases?.find((r) => r.media?.some((m) => m.format === "Digital Media")) ?? browsed.releases?.[0];
     if (!release) {
         throw createError({ statusCode: 404, message: "No release found for album " + aid });
     }

@@ -14,11 +14,13 @@ export default defineEventHandler(async (event) => {
 
     const client = getMusicBrainzClient();
 
-    const recording: IRecording = await client.lookup("recording", tid, ["artist-credits", "releases", "release-groups"]).catch(() => {
+    const recording: IRecording = await client.lookup("recording", tid, ["artist-credits", "releases", "release-groups", "media"]).catch(() => {
         throw createError({ statusCode: 404, statusMessage: "No track with ID " + tid });
     });
 
-    const release = recording.releases?.[0];
+    // prefer the "Digital Media" release: it best matches what we actually distribute,
+    // while CD/Vinyl releases (often the first one MusicBrainz returns) can differ in title/label/cover art
+    const release = recording.releases?.find((r) => r.media?.some((m) => m.format === "Digital Media")) ?? recording.releases?.[0];
     const albumMbid = release?.["release-group"]?.id ?? null;
     const credit = recording["artist-credit"]?.[0]?.artist;
 
