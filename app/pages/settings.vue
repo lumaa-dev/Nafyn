@@ -711,6 +711,7 @@ watch(activeCategory, async (cat) => {
 }
 
 .perm-option {
+  font-family: "Discy";
   display: flex;
   align-items: center;
   gap: 6px;
