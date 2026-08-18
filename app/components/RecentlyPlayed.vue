@@ -47,7 +47,8 @@ function coverSrc(item: RecentlyPlayedEntry): string {
 
 .recent.grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  /* container caps at 1200px (see library-home/index), so a 200px min column naturally tops out at 5 columns */
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 20px;
 }
 
@@ -60,6 +61,11 @@ function coverSrc(item: RecentlyPlayedEntry): string {
 .recent.scroll .recent-card {
   flex: 0 0 auto;
   width: 160px;
+}
+
+.recent.grid .recent-card {
+  min-width: 100px;
+  width: fit-content;
 }
 
 .recent-card img {
@@ -88,5 +94,16 @@ function coverSrc(item: RecentlyPlayedEntry): string {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+@media screen and (max-width: 800px) {
+  .recent.grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  .recent-card img {
+    width: 150px;
+    height: 150px;
+  }
 }
 </style>
