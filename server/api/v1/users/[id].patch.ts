@@ -3,6 +3,81 @@ import { canManageUser, Permission } from "~~/server/entity/Permission";
 import { assertValidUsername } from "~~/server/utils/validation";
 import type { NafynUser } from "~~/server/entity/NafynUser";
 
+defineRouteMeta({
+    openAPI: {
+        description: "Update another user's account fields, including permissions. Requires ADMIN, or MANAGE_ACCOUNTS against a non-privileged target (see canManageUser). Only an ADMIN can grant/revoke MANAGE_ACCOUNTS or ADMIN itself",
+        tags: ["users"],
+        operationId: "updateUser",
+        parameters: [
+            {
+                name: "id",
+                in: "path",
+                required: true,
+                description: "Target user ID",
+                schema: { type: "string" }
+            }
+        ],
+        requestBody: {
+            content: {
+                "application/json": {
+                    schema: {
+                        type: "object",
+                        properties: {
+                            displayName: { type: "string", description: "1-20 characters" },
+                            username: { type: "string" },
+                            lastFm: { type: "string", nullable: true, description: "Up to 50 characters" },
+                            discogs: { type: "string", nullable: true, description: "Up to 50 characters" },
+                            permissions: { type: "number", description: "Non-negative integer bitfield, see the Permission enum" }
+                        }
+                    }
+                }
+            }
+        },
+        responses: {
+            "200": {
+                description: "",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NafynUser" }
+                    }
+                }
+            },
+            "400": {
+                description: "Missing user ID, invalid field value, username taken, or no changes provided",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NuxtError" }
+                    }
+                }
+            },
+            "401": {
+                description: "Not authenticated, or insufficient permissions to manage this user",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NuxtError" }
+                    }
+                }
+            },
+            "404": {
+                description: "User not found",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NuxtError" }
+                    }
+                }
+            },
+            "409": {
+                description: "Username is already taken",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NuxtError" }
+                    }
+                }
+            }
+        }
+    },
+});
+
 function normalizeOptionalText(value: unknown, maxLength: number): string | null {
     if (value === null || value === undefined) return null;
     if (typeof value !== "string") {
@@ -19,14 +94,14 @@ function normalizeOptionalText(value: unknown, maxLength: number): string | null
 
 export default defineEventHandler(async (event) => {
     const { sub: actorId } = requireAuthToken(event);
-    const actorPerms = getPermissionsById(actorId) ?? 0;
+    const actorPerms = await getPermissionsById(actorId) ?? 0;
 
     const targetId = getRouterParam(event, "id");
     if (!targetId) {
         throw createError({ statusCode: 400, statusMessage: "Missing user ID" });
     }
 
-    const target = getUserById(targetId);
+    const target = await getUserById(targetId);
     if (!target) {
         throw createError({ statusCode: 404, statusMessage: "User not found" });
     }
@@ -49,7 +124,7 @@ export default defineEventHandler(async (event) => {
     if ("username" in body) {
         const username = typeof body.username === "string" ? body.username.trim() : "";
         assertValidUsername(username);
-        if (username !== target.username && isUsernameTaken(username)) {
+        if (username !== target.username && await isUsernameTaken(username)) {
             throw createError({ statusCode: 409, statusMessage: "Username is already taken" });
         }
         (changes as Partial<NafynUser>).username = username;
@@ -82,5 +157,5 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 400, statusMessage: "No changes provided" });
     }
 
-    return updateUser(targetId, changes);
+    return await updateUser(targetId, changes);
 });

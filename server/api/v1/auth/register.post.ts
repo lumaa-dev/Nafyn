@@ -137,8 +137,8 @@ export default defineEventHandler(async (event) => {
 
     const registerToken = typeof body?.token === "string" ? body.token : "";
     let tokenRow = null;
-    if (!isRegistrationOpen()) {
-        tokenRow = validateRegisterToken(registerToken);
+    if (!await isRegistrationOpen()) {
+        tokenRow = await validateRegisterToken(registerToken);
         if (!tokenRow) {
             throw createError({ statusCode: 404, statusMessage: "Not found" });
         }
@@ -150,15 +150,15 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 400, statusMessage: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` });
     }
 
-    if (isUsernameTaken(username)) {
+    if (await isUsernameTaken(username)) {
         throw createError({ statusCode: 409, statusMessage: "Username is already taken" });
     }
 
-    let defaultPerms: Permission | Permission[] = listUsers().length <= 0 ? Permission.ADMIN : [Permission.REQUEST_TRACKS, Permission.REQUEST_ALBUMS];
+    let defaultPerms: Permission | Permission[] = (await listUsers()).length <= 0 ? Permission.ADMIN : [Permission.REQUEST_TRACKS, Permission.REQUEST_ALBUMS];
 
     const passwordHash = bcrypt.hashSync(password, 12);
 
-    const user = createUser({
+    const user = await createUser({
         username,
         displayName: null,
         avatar: null,
@@ -168,7 +168,7 @@ export default defineEventHandler(async (event) => {
     }, passwordHash);
 
     if (tokenRow) {
-        consumeRegisterToken(tokenRow.id);
+        await consumeRegisterToken(tokenRow.id);
     }
 
     const token = signAuthToken(user.id);

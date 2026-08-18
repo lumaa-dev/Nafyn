@@ -13,7 +13,7 @@ export interface RegisterTokenRow {
     usedAt: number | null
 }
 
-export function createRegisterToken(createdBy: string): RegisterTokenRow {
+export async function createRegisterToken(createdBy: string): Promise<RegisterTokenRow> {
     const now = Date.now();
     const row: RegisterTokenRow = {
         id: randomUUID(),
@@ -24,28 +24,28 @@ export function createRegisterToken(createdBy: string): RegisterTokenRow {
         usedAt: null
     };
 
-    getUsersDb().prepare(`
+    await getUsersDb().prepare(`
         INSERT INTO register_tokens (id, token, createdBy, createdAt, expiresAt, usedAt)
-        VALUES (@id, @token, @createdBy, @createdAt, @expiresAt, @usedAt)
+        VALUES (:id, :token, :createdBy, :createdAt, :expiresAt, :usedAt)
     `).run(row);
 
     return row;
 }
 
 // unused and unexpired only
-export function validateRegisterToken(token: string): RegisterTokenRow | null {
-    const row = getUsersDb().prepare(`
+export async function validateRegisterToken(token: string): Promise<RegisterTokenRow | null> {
+    const row = await getUsersDb().prepare(`
         SELECT * FROM register_tokens WHERE token = ? AND usedAt IS NULL AND expiresAt > ?
     `).get(token, Date.now()) as RegisterTokenRow | undefined;
     return row ?? null;
 }
 
-export function consumeRegisterToken(id: string): void {
-    getUsersDb().prepare(`UPDATE register_tokens SET usedAt = ? WHERE id = ?`).run(Date.now(), id);
+export async function consumeRegisterToken(id: string): Promise<void> {
+    await getUsersDb().prepare(`UPDATE register_tokens SET usedAt = ? WHERE id = ?`).run(Date.now(), id);
 }
 
-export function listActiveRegisterTokens(): RegisterTokenRow[] {
-    return getUsersDb().prepare(`
+export async function listActiveRegisterTokens(): Promise<RegisterTokenRow[]> {
+    return await getUsersDb().prepare(`
         SELECT * FROM register_tokens WHERE usedAt IS NULL AND expiresAt > ? ORDER BY createdAt DESC
     `).all(Date.now()) as RegisterTokenRow[];
 }

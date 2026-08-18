@@ -37,14 +37,14 @@ function infoFromRow(row: Pick<RequestRow, "musicbrainzId" | "type" | "title" | 
     };
 }
 
-function rowToRequest(row: RequestRow): NafynRequest {
+async function rowToRequest(row: RequestRow): Promise<NafynRequest> {
     return {
         id: row.id as UUID,
         musicbrainzId: row.musicbrainzId as UUID,
         info: infoFromRow(row),
         type: row.type,
         status: row.status,
-        requestedBy: getUserById(row.requestedBy as UUID, true) ?? row.requestedBy as UUID,
+        requestedBy: await getUserById(row.requestedBy as UUID, true) ?? row.requestedBy as UUID,
         createdAt: new Date(row.createdAt * 1000),
         updatedAt: new Date(row.updatedAt * 1000)
     };
@@ -67,9 +67,9 @@ export async function createRequest(musicbrainzId: UUID, type: "album" | "track"
         updatedAt: new Date()
     };
 
-    getRequestsDb().prepare(`
+    await getRequestsDb().prepare(`
         INSERT INTO requests (id, musicbrainzId, type, status, requestedBy, title, artistName, coverArt, createdAt, updatedAt)
-        VALUES (@id, @musicbrainzId, @type, @status, @requestedBy, @title, @artistName, @coverArt, @createdAt, @updatedAt)
+        VALUES (:id, :musicbrainzId, :type, :status, :requestedBy, :title, :artistName, :coverArt, :createdAt, :updatedAt)
     `).run({
         id: request.id,
         musicbrainzId: request.musicbrainzId,
@@ -87,23 +87,23 @@ export async function createRequest(musicbrainzId: UUID, type: "album" | "track"
 }
 
 export async function getRequestById(id: string): Promise<NafynRequest | null> {
-    const row = getRequestsDb().prepare(`SELECT * FROM requests WHERE id = ?`).get(id) as RequestRow | undefined;
+    const row = await getRequestsDb().prepare(`SELECT * FROM requests WHERE id = ?`).get(id) as RequestRow | undefined;
     return row ? rowToRequest(row) : null;
 }
 
 export async function listRequests(): Promise<NafynRequest[]> {
-    const rows = getRequestsDb().prepare(`SELECT * FROM requests ORDER BY createdAt DESC`).all() as RequestRow[];
-    return rows.map(rowToRequest);
+    const rows = await getRequestsDb().prepare(`SELECT * FROM requests ORDER BY createdAt DESC`).all() as RequestRow[];
+    return Promise.all(rows.map(rowToRequest));
 }
 
 export async function listRequestsByStatus(status: RequestStatus): Promise<NafynRequest[]> {
-    const rows = getRequestsDb().prepare(`SELECT * FROM requests WHERE status = ? ORDER BY createdAt DESC`).all(status) as RequestRow[];
-    return rows.map(rowToRequest);
+    const rows = await getRequestsDb().prepare(`SELECT * FROM requests WHERE status = ? ORDER BY createdAt DESC`).all(status) as RequestRow[];
+    return Promise.all(rows.map(rowToRequest));
 }
 
 export async function listRequestsByUser(requestedBy: string): Promise<NafynRequest[]> {
-    const rows = getRequestsDb().prepare(`SELECT * FROM requests WHERE requestedBy = ? ORDER BY createdAt DESC`).all(requestedBy) as RequestRow[];
-    return rows.map(rowToRequest);
+    const rows = await getRequestsDb().prepare(`SELECT * FROM requests WHERE requestedBy = ? ORDER BY createdAt DESC`).all(requestedBy) as RequestRow[];
+    return Promise.all(rows.map(rowToRequest));
 }
 
 export async function updateRequestStatus(id: UUID | string, status: RequestStatus, checkValidity: boolean = false): Promise<NafynRequest | null> {
@@ -111,25 +111,25 @@ export async function updateRequestStatus(id: UUID | string, status: RequestStat
     if (!req) return null;
     if (req.status !== "waiting" && checkValidity) return null;
 
-    const result = getRequestsDb().prepare(`
+    const result = await getRequestsDb().prepare(`
         UPDATE requests SET status = ?, updatedAt = ? WHERE id = ?
     `).run(status, Math.floor(Date.now() / 1000), id);
 
     req.status = status;
-    
+
     if (result.changes === 0) return null;
     return req;
 }
 
 // true if this user already has a non-failed request for this MusicBrainz ID (failed ones can be retried)
-export function hasActiveRequest(requestedBy: string, musicbrainzId: string): boolean {
-    const row = getRequestsDb().prepare(`
+export async function hasActiveRequest(requestedBy: string, musicbrainzId: string): Promise<boolean> {
+    const row = await getRequestsDb().prepare(`
         SELECT 1 FROM requests WHERE requestedBy = ? AND musicbrainzId = ? AND status != 'failed' LIMIT 1
     `).get(requestedBy, musicbrainzId);
     return row != null;
 }
 
-export function deleteRequest(id: string): boolean {
-    const result = getRequestsDb().prepare(`DELETE FROM requests WHERE id = ?`).run(id);
+export async function deleteRequest(id: string): Promise<boolean> {
+    const result = await getRequestsDb().prepare(`DELETE FROM requests WHERE id = ?`).run(id);
     return result.changes > 0;
 }

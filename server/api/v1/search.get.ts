@@ -9,6 +9,130 @@ const MAX_LIMIT = 50;
 
 type Filter = "album" | "track" | "artist" | "all";
 
+defineRouteMeta({
+    openAPI: {
+        description: "Search MusicBrainz for albums, tracks, and/or artists",
+        tags: ["search"],
+        operationId: "search",
+        parameters: [
+            {
+                name: "q",
+                in: "query",
+                required: true,
+                description: "Search query",
+                schema: { type: "string" }
+            },
+            {
+                name: "filter",
+                in: "query",
+                required: false,
+                description: "Restrict results to one result type, defaults to `all`",
+                schema: { type: "string", enum: ["album", "track", "artist", "all"] }
+            },
+            {
+                name: "limit",
+                in: "query",
+                required: false,
+                description: `Max results per category, defaults to ${DEFAULT_LIMIT}, capped at ${MAX_LIMIT}`,
+                schema: { type: "number" }
+            },
+            {
+                name: "offset",
+                in: "query",
+                required: false,
+                description: "Pagination offset, defaults to 0",
+                schema: { type: "number" }
+            }
+        ],
+        responses: {
+            "200": {
+                description: "",
+                content: {
+                    "application/json": {
+                        schema: {
+                            type: "object",
+                            required: ["albums", "tracks", "artists"],
+                            properties: {
+                                albums: {
+                                    type: "array",
+                                    items: { $ref: "#/components/schemas/MediaInfo" }
+                                },
+                                tracks: {
+                                    type: "array",
+                                    items: { $ref: "#/components/schemas/MediaInfo" }
+                                },
+                                artists: {
+                                    type: "array",
+                                    items: { $ref: "#/components/schemas/ArtistInfo" }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "400": {
+                description: "Missing search query `q`",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NuxtError" }
+                    }
+                }
+            },
+            "401": {
+                description: "Not authenticated",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NuxtError" }
+                    }
+                }
+            }
+        },
+        $global: {
+            components: {
+                schemas: {
+                    MediaInfo: {
+                        type: "object",
+                        required: ["id", "title", "artist", "album", "type", "coverArt", "releaseDate", "inLibrary", "duration", "label"],
+                        properties: {
+                            id: { type: "string", description: "MusicBrainz ID (recording or release-group)" },
+                            title: { type: "string" },
+                            artist: {
+                                type: ["object", "string"],
+                                oneOf: [
+                                    { $ref: "#/components/schemas/ArtistInfo" },
+                                    { type: "string" }
+                                ]
+                            },
+                            album: {
+                                type: "object",
+                                nullable: true,
+                                properties: {
+                                    id: { type: "string", nullable: true },
+                                    type: { type: "string", enum: ["album", "ep"], nullable: true },
+                                    title: { type: "string", nullable: true }
+                                }
+                            },
+                            type: { type: "string", enum: ["album", "ep", "track"], nullable: true },
+                            coverArt: { type: "string", nullable: true },
+                            releaseDate: { type: "string", format: "date-time", nullable: true },
+                            inLibrary: { type: "boolean", nullable: true },
+                            duration: { type: "number", description: "Seconds" },
+                            label: { type: "string", nullable: true },
+                            relations: {
+                                type: "object",
+                                description: "Cross-service identifiers, only present on some lookups",
+                                properties: {
+                                    amId: { type: "string", description: "Apple Music identifier" }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+});
+
 function toArtistInfo(artist: IArtist): ArtistInfo {
     return {
         name: artist.name,

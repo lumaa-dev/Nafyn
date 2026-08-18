@@ -29,22 +29,26 @@ export interface RecentlyPlayedEntry {
 
 const MAX_ENTRIES = 20;
 
-export function recordRecentlyPlayed(userId: string, type: RecentlyPlayedType, refId: string): void {
+export async function recordRecentlyPlayed(userId: string, type: RecentlyPlayedType, refId: string): Promise<void> {
     const db = getLibrariesDb();
     const row: RecentlyPlayedRow = { id: randomUUID(), userId, type, refId, playedAt: Date.now() };
 
-    db.prepare(`
+    await db.prepare(`
         INSERT INTO recently_played (id, userId, type, refId, playedAt)
-        VALUES (@id, @userId, @type, @refId, @playedAt)
-        ON CONFLICT(userId, type, refId) DO UPDATE SET playedAt = excluded.playedAt
+        VALUES (:id, :userId, :type, :refId, :playedAt)
+        ON DUPLICATE KEY UPDATE playedAt = VALUES(playedAt)
     `).run(row);
 
-    db.prepare(`
+    // MySQL can't reference a LIMIT subquery directly in NOT IN, so it's wrapped in a derived table;
+    // MAX_ENTRIES is a trusted constant, inlined because mysql2's prepared statements reject `LIMIT ?`
+    await db.prepare(`
         DELETE FROM recently_played
         WHERE userId = ? AND id NOT IN (
-            SELECT id FROM recently_played WHERE userId = ? ORDER BY playedAt DESC LIMIT ?
+            SELECT id FROM (
+                SELECT id FROM recently_played WHERE userId = ? ORDER BY playedAt DESC LIMIT ${MAX_ENTRIES}
+            ) keep
         )
-    `).run(userId, userId, MAX_ENTRIES);
+    `).run(userId, userId);
 }
 
 interface TrackAlbumJoinRow {
@@ -55,17 +59,17 @@ interface TrackAlbumJoinRow {
     coverArt: string | null
 }
 
-export function getRecentlyPlayed(userId: string): RecentlyPlayedEntry[] {
+export async function getRecentlyPlayed(userId: string): Promise<RecentlyPlayedEntry[]> {
     const db = getLibrariesDb();
-    const rows = db.prepare(`
-        SELECT * FROM recently_played WHERE userId = ? ORDER BY playedAt DESC LIMIT ?
-    `).all(userId, MAX_ENTRIES) as RecentlyPlayedRow[];
+    const rows = await db.prepare(`
+        SELECT * FROM recently_played WHERE userId = ? ORDER BY playedAt DESC LIMIT ${MAX_ENTRIES}
+    `).all(userId) as RecentlyPlayedRow[];
 
     const entries: RecentlyPlayedEntry[] = [];
 
     for (const row of rows) {
         if (row.type === "track") {
-            const media = db.prepare(`
+            const media = await db.prepare(`
                 SELECT media.musicbrainzId AS refId, media.title AS title, media.artistName AS subtitle, media.coverArt AS coverArt
                 FROM media WHERE media.id = ?
             `).get(row.refId) as TrackAlbumJoinRow | undefined;
@@ -82,7 +86,7 @@ export function getRecentlyPlayed(userId: string): RecentlyPlayedEntry[] {
                 href: `/t/${media.refId}`
             });
         } else if (row.type === "album") {
-            const album = db.prepare(`
+            const album = await db.prepare(`
                 SELECT
                     MIN(media.album) AS title,
                     MIN(media.artistName) AS subtitle,
@@ -105,7 +109,7 @@ export function getRecentlyPlayed(userId: string): RecentlyPlayedEntry[] {
                 href: `/a/${row.refId}`
             });
         } else {
-            const playlist = db.prepare(`SELECT title, image FROM playlists WHERE id = ?`).get(row.refId) as { title: string, image: string | null } | undefined;
+            const playlist = await db.prepare(`SELECT title, image FROM playlists WHERE id = ?`).get(row.refId) as { title: string, image: string | null } | undefined;
             if (!playlist) continue;
 
             entries.push({

@@ -227,16 +227,16 @@ async function downloadTrack(
         emitDownloadProgress({ requestId, trackTitle: target.title, trackIndex, trackCount, stage: "searching", ...fields });
 
     // step 3: already downloaded by someone else? copy instead of hitting Soulseek again
-    const existingMedia = findMediaByMusicbrainzId(target.recordingId);
+    const existingMedia = await findMediaByMusicbrainzId(target.recordingId);
     if (existingMedia) {
-        if (findLibraryEntry(requestedBy, existingMedia.id)) {
+        if (await findLibraryEntry(requestedBy, existingMedia.id)) {
             progress({ stage: "completed", message: "Already in library" });
             return true;
         }
 
-        const sourceEntry = findAnyLibraryEntryForMedia(existingMedia.id);
+        const sourceEntry = await findAnyLibraryEntryForMedia(existingMedia.id);
         if (sourceEntry) {
-            shareMediaWithUser(requestedBy, existingMedia, sourceEntry.filePath);
+            await shareMediaWithUser(requestedBy, existingMedia, sourceEntry.filePath);
             progress({ stage: "completed", message: "Granted access to existing library entry" });
             return true;
         }
@@ -313,7 +313,7 @@ async function downloadTrack(
             }
 
             // step 6+7: tag with MusicBrainz metadata, move into the requesting user's library
-            const media = insertMedia({
+            const media = await insertMedia({
                 musicbrainzId: target.recordingId,
                 title: target.title,
                 artistName: target.artistName,
@@ -344,8 +344,8 @@ async function downloadTrack(
             });
             await rm(tempPath, { force: true });
 
-            updateMediaFileSize(media.id, statSync(destPath).size);
-            addLibraryEntry(requestedBy, media.id, destPath);
+            await updateMediaFileSize(media.id, statSync(destPath).size);
+            await addLibraryEntry(requestedBy, media.id, destPath);
 
             progress({ stage: "completed" });
             return true;

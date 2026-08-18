@@ -3,24 +3,23 @@ import { initDatabases, getLibrariesDb } from "../core/db";
 import { findAnyLibraryEntryForMedia } from "../core/library";
 
 // one-time backfill for media rows written before `fileSize` existed
-function backfillMediaFileSizes(): void {
+async function backfillMediaFileSizes(): Promise<void> {
     const db = getLibrariesDb();
-    const rows = db.prepare(`SELECT id FROM media WHERE fileSize IS NULL`).all() as { id: string }[];
+    const rows = await db.prepare(`SELECT id FROM media WHERE fileSize IS NULL`).all() as { id: string }[];
     if (rows.length === 0) return;
 
-    const update = db.prepare(`UPDATE media SET fileSize = ? WHERE id = ?`);
     for (const { id } of rows) {
-        const entry = findAnyLibraryEntryForMedia(id);
+        const entry = await findAnyLibraryEntryForMedia(id);
         if (!entry) continue;
         try {
-            update.run(statSync(entry.filePath).size, id);
+            await db.prepare(`UPDATE media SET fileSize = ? WHERE id = ?`).run(statSync(entry.filePath).size, id);
         } catch {
             // file missing on disk, leave fileSize null
         }
     }
 }
 
-export default defineNitroPlugin(() => {
-    initDatabases();
-    backfillMediaFileSizes();
+export default defineNitroPlugin(async () => {
+    await initDatabases();
+    await backfillMediaFileSizes();
 });

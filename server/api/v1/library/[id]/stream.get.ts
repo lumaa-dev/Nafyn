@@ -14,6 +14,85 @@ const MIME_TYPES: Record<string, string> = {
     ".wav": "audio/wav"
 };
 
+defineRouteMeta({
+    openAPI: {
+        description: "Stream an owned track's audio file, with HTTP Range support for progressive playback. Since <audio>/<video> elements can't set custom headers, the token may be passed as a `?token=` query param instead of an Authorization header",
+        tags: ["library"],
+        operationId: "streamTrack",
+        parameters: [
+            {
+                name: "id",
+                in: "path",
+                required: true,
+                description: "Media ID",
+                schema: { type: "string" }
+            },
+            {
+                name: "token",
+                in: "query",
+                required: false,
+                description: "Auth token, as a fallback for clients that can't set the Authorization header",
+                schema: { type: "string" }
+            },
+            {
+                name: "Range",
+                in: "header",
+                required: false,
+                description: "Standard HTTP byte-range header, e.g. `bytes=0-1023`",
+                schema: { type: "string" }
+            }
+        ],
+        responses: {
+            "200": {
+                description: "Full file contents",
+                content: {
+                    "audio/mpeg": { schema: { type: "string", format: "binary" } },
+                    "audio/flac": { schema: { type: "string", format: "binary" } },
+                    "audio/ogg": { schema: { type: "string", format: "binary" } },
+                    "audio/mp4": { schema: { type: "string", format: "binary" } },
+                    "audio/wav": { schema: { type: "string", format: "binary" } },
+                    "application/octet-stream": { schema: { type: "string", format: "binary" } }
+                }
+            },
+            "206": {
+                description: "Partial content for the requested byte range"
+            },
+            "400": {
+                description: "Missing media ID",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NuxtError" }
+                    }
+                }
+            },
+            "401": {
+                description: "Not authenticated",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NuxtError" }
+                    }
+                }
+            },
+            "404": {
+                description: "Track not found in your library",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NuxtError" }
+                    }
+                }
+            },
+            "416": {
+                description: "Invalid or unsatisfiable Range header",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NuxtError" }
+                    }
+                }
+            }
+        }
+    },
+});
+
 export default defineEventHandler(async (event) => {
     // <audio>/<video> elements can't set custom headers, so accept the token as a query param here as a fallback
     const authHeader: string | undefined = getHeader(event, "Authorization");
@@ -39,7 +118,7 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 400, statusMessage: "Missing media ID" });
     }
 
-    const entry = findLibraryEntry(userId, mediaId);
+    const entry = await findLibraryEntry(userId, mediaId);
     if (!entry) {
         throw createError({ statusCode: 404, statusMessage: "Track not found in your library" });
     }

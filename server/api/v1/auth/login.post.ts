@@ -98,7 +98,7 @@ export default defineEventHandler(async (event) => {
         }
     }
 
-    const passwordHash = getPasswordHash(username);
+    const passwordHash = await getPasswordHash(username);
 
     // always run bcrypt.compare, even for an unknown username, so early/late response timing can't leak account existence
     const valid = await bcrypt.compare(password, passwordHash ?? DUMMY_HASH);
@@ -107,7 +107,7 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 401, statusMessage: "Invalid username or password" });
     }
 
-    const user = getUserByUsername(username);
+    const user = await getUserByUsername(username);
     if (!user) {
         throw createError({ statusCode: 401, statusMessage: "Invalid username or password" });
     }

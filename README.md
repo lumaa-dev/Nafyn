@@ -25,7 +25,7 @@ Multi-user: separate libraries, separate permissions per user. Users request son
 
 Auth: JWT-based (`jsonwebtoken`), passwords hashed with `bcrypt`. Each user has own library + permission set ([`server/entity/Permission.ts`](server/entity/Permission.ts)).
 
-Storage: SQLite (`better-sqlite3`).
+Storage: MySQL (`mysql2`).
 
 Note: slskd itself only exposes its own local downloads folder, not file bytes over HTTP — so `SOULSEEK_DOWNLOADS_PATH` must be a path Nafyn can read directly (local disk, or mounted SMB/NFS share if slskd runs elsewhere).
 
@@ -83,7 +83,7 @@ Configured via environment variables (see `.env.example`):
 ## Tech stack
 
 - [Nuxt 4](https://nuxt.com/) (Vue 3) — frontend + server API routes (Nitro)
-- `better-sqlite3` — database
+- `mysql2` — database
 - `bullmq` — download job queue
 - `musicbrainz-api` — track/album metadata search
 - `slskd` (external, self-hosted) — Soulseek network access

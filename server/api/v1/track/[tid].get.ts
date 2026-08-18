@@ -4,6 +4,69 @@ import type { MediaInfo } from "~~/server/entity/media/MediaInfo";
 import type { ArtistInfo } from "~~/server/entity/media/ArtistInfo";
 import { IRecording } from "musicbrainz-api";
 
+defineRouteMeta({
+    openAPI: {
+        description: "Get track details from a MusicBrainz recording ID",
+        tags: ["track"],
+        operationId: "getTrack",
+        parameters: [
+            {
+                name: "tid",
+                in: "path",
+                required: true,
+                description: "MusicBrainz recording ID",
+                schema: { type: "string" }
+            }
+        ],
+        responses: {
+            "200": {
+                description: "",
+                content: {
+                    "application/json": {
+                        schema: {
+                            type: "object",
+                            allOf: [
+                                { $ref: "#/components/schemas/MediaInfo" },
+                                {
+                                    type: "object",
+                                    required: ["albumMbid"],
+                                    properties: {
+                                        albumMbid: { type: "string", nullable: true, description: "MusicBrainz release-group ID for the track's release, if any" }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "400": {
+                description: "Missing track ID",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NuxtError" }
+                    }
+                }
+            },
+            "401": {
+                description: "Not authenticated",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NuxtError" }
+                    }
+                }
+            },
+            "404": {
+                description: "No track with that ID",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NuxtError" }
+                    }
+                }
+            }
+        }
+    },
+});
+
 export default defineEventHandler(async (event) => {
     requireAuthToken(event);
 

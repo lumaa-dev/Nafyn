@@ -28,7 +28,7 @@ function rowToUser(row: UserRow): NafynUser {
 }
 
 // creates a `NafynUser`, id is generated as a UUID if not given
-export function createUser(user: Omit<NafynUser, "id"> & { id?: UUID }, passwordHash: string): NafynUser {
+export async function createUser(user: Omit<NafynUser, "id"> & { id?: UUID }, passwordHash: string): Promise<NafynUser> {
     const id = (user.id ?? randomUUID()) as string;
 
     let permcount = typeof user.permissions == "number" ? user.permissions : 0;
@@ -38,9 +38,9 @@ export function createUser(user: Omit<NafynUser, "id"> & { id?: UUID }, password
 
     user.permissions = permcount;
 
-    getUsersDb().prepare(`
+    await getUsersDb().prepare(`
         INSERT INTO users (id, username, passwordHash, displayName, avatar, permissions, lastFm, discogs)
-        VALUES (@id, @username, @passwordHash, @displayName, @avatar, @permissions, @lastFm, @discogs)
+        VALUES (:id, :username, :passwordHash, :displayName, :avatar, :permissions, :lastFm, :discogs)
     `).run({
         id,
         username: user.username,
@@ -56,44 +56,44 @@ export function createUser(user: Omit<NafynUser, "id"> & { id?: UUID }, password
     return { ...user, id } as NafynUser;
 }
 
-export function getUserById(id: UUID | string, compact: boolean = false): NafynUser | null {
+export async function getUserById(id: UUID | string, compact: boolean = false): Promise<NafynUser | null> {
     let v: string = compact ? `id, username, displayName, avatar` : `*`
-    const row = getUsersDb().prepare(`SELECT ${v} FROM users WHERE id = ?`).get(id) as UserRow | undefined;
+    const row = await getUsersDb().prepare(`SELECT ${v} FROM users WHERE id = ?`).get(id) as UserRow | undefined;
     return row ? rowToUser(row) : null;
 }
 
-export function getUserByUsername(username: string): NafynUser | null {
-    const row = getUsersDb().prepare(`SELECT * FROM users WHERE username = ?`).get(username) as UserRow | undefined;
+export async function getUserByUsername(username: string): Promise<NafynUser | null> {
+    const row = await getUsersDb().prepare(`SELECT * FROM users WHERE username = ?`).get(username) as UserRow | undefined;
     return row ? rowToUser(row) : null;
 }
 
 // gets stored password hash for a username, used by login to verify a password against it
-export function getPasswordHash(username: string): string | null {
-    const row = getUsersDb().prepare(`SELECT passwordHash FROM users WHERE username = ?`).get(username) as { passwordHash: string } | undefined;
+export async function getPasswordHash(username: string): Promise<string | null> {
+    const row = await getUsersDb().prepare(`SELECT passwordHash FROM users WHERE username = ?`).get(username) as { passwordHash: string } | undefined;
     return row?.passwordHash ?? null;
 }
 
 // gets stored password hash for a username, used by login to verify a password against it
-export function getPermissionsById(id: UUID | string): number | null {
-    const row = getUsersDb().prepare(`SELECT permissions FROM users WHERE id = ?`).get(id) as { permissions: number } | undefined;
+export async function getPermissionsById(id: UUID | string): Promise<number | null> {
+    const row = await getUsersDb().prepare(`SELECT permissions FROM users WHERE id = ?`).get(id) as { permissions: number } | undefined;
     return row?.permissions ?? null;
 }
 
-export function isUsernameTaken(username: string): boolean {
-    const row = getUsersDb().prepare(`SELECT 1 FROM users WHERE username = ?`).get(username);
+export async function isUsernameTaken(username: string): Promise<boolean> {
+    const row = await getUsersDb().prepare(`SELECT 1 FROM users WHERE username = ?`).get(username);
     return !!row;
 }
 
 // partially updates a user; only defined fields are changed
-export function updateUser(id: string, changes: Partial<Omit<NafynUser, "id">>): NafynUser | null {
-    const existing = getUserById(id);
+export async function updateUser(id: string, changes: Partial<Omit<NafynUser, "id">>): Promise<NafynUser | null> {
+    const existing = await getUserById(id);
     if (!existing) return null;
 
     const merged = { ...existing, ...changes };
-    getUsersDb().prepare(`
+    await getUsersDb().prepare(`
         UPDATE users
-        SET username = @username, displayName = @displayName, avatar = @avatar, permissions = @permissions, lastFm = @lastFm, discogs = @discogs
-        WHERE id = @id
+        SET username = :username, displayName = :displayName, avatar = :avatar, permissions = :permissions, lastFm = :lastFm, discogs = :discogs
+        WHERE id = :id
     `).run({
         id,
         username: merged.username,
@@ -107,16 +107,16 @@ export function updateUser(id: string, changes: Partial<Omit<NafynUser, "id">>):
     return merged;
 }
 
-export function updatePasswordHash(id: string, passwordHash: string): void {
-    getUsersDb().prepare(`UPDATE users SET passwordHash = ? WHERE id = ?`).run(passwordHash, id);
+export async function updatePasswordHash(id: string, passwordHash: string): Promise<void> {
+    await getUsersDb().prepare(`UPDATE users SET passwordHash = ? WHERE id = ?`).run(passwordHash, id);
 }
 
-export function deleteUser(id: string): boolean {
-    const result = getUsersDb().prepare(`DELETE FROM users WHERE id = ?`).run(id);
+export async function deleteUser(id: string): Promise<boolean> {
+    const result = await getUsersDb().prepare(`DELETE FROM users WHERE id = ?`).run(id);
     return result.changes > 0;
 }
 
-export function listUsers(): NafynUser[] {
-    const rows = getUsersDb().prepare(`SELECT * FROM users`).all() as UserRow[];
+export async function listUsers(): Promise<NafynUser[]> {
+    const rows = await getUsersDb().prepare(`SELECT * FROM users`).all() as UserRow[];
     return rows.map(rowToUser);
 }

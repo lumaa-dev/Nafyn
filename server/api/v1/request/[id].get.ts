@@ -3,10 +3,61 @@ import { getPermissionsById, getUserById } from "~~/server/core/users";
 import { hasPermission, Permission } from "~~/server/entity/Permission";
 import type { NafynRequest } from "~~/server/entity/NafynRequest";
 
+defineRouteMeta({
+    openAPI: {
+        description: "Get a single download request by ID. Only visible to the user who created it, or a MANAGE_REQUESTS user",
+        tags: ["request"],
+        operationId: "getRequest",
+        parameters: [
+            {
+                name: "id",
+                in: "path",
+                required: true,
+                description: "Request ID",
+                schema: { type: "string" }
+            }
+        ],
+        responses: {
+            "200": {
+                description: "",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NafynRequest" }
+                    }
+                }
+            },
+            "400": {
+                description: "Missing request ID, or couldn't match token with user",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NuxtError" }
+                    }
+                }
+            },
+            "401": {
+                description: "Not authenticated",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NuxtError" }
+                    }
+                }
+            },
+            "404": {
+                description: "No request with that ID, or not accessible to the requester",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NuxtError" }
+                    }
+                }
+            }
+        }
+    },
+});
+
 export default defineEventHandler(async (event) => {
   const { sub: userId } = requireAuthToken(event);
 
-  const user = getUserById(userId);
+  const user = await getUserById(userId);
   const reqId = getRouterParam(event, 'id');
 
   if (!user) {
@@ -22,7 +73,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: "No request with ID " + reqId })
   }
 
-  const inaccessible: boolean = request.requestedBy != userId && !hasPermission(getPermissionsById(userId) ?? 0, Permission.MANAGE_REQUESTS);
+  const inaccessible: boolean = request.requestedBy != userId && !hasPermission(await getPermissionsById(userId) ?? 0, Permission.MANAGE_REQUESTS);
   if (inaccessible) {
     throw createError({ statusCode: 404, message: "No request with ID " + reqId })
   }

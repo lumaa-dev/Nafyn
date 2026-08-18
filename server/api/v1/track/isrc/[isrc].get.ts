@@ -7,6 +7,69 @@ const WINDOW_MS = 60 * 1000;
 
 const ISRC_PATTERN = /^[A-Z]{2}[A-Z0-9]{3}\d{2}\d{5}$/i;
 
+defineRouteMeta({
+    openAPI: {
+        description: "Look up a track by its ISRC (International Standard Recording Code)",
+        tags: ["track"],
+        operationId: "getTrackByIsrc",
+        parameters: [
+            {
+                name: "isrc",
+                in: "path",
+                required: true,
+                description: "ISRC, e.g. `USRC17607839`",
+                schema: { type: "string" }
+            }
+        ],
+        responses: {
+            "200": {
+                description: "",
+                content: {
+                    "application/json": {
+                        schema: {
+                            type: "object",
+                            allOf: [
+                                { $ref: "#/components/schemas/MediaInfo" },
+                                {
+                                    type: "object",
+                                    required: ["albumMbid"],
+                                    properties: {
+                                        albumMbid: { type: "string", nullable: true, description: "MusicBrainz release-group ID for the track's release, if any" }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "400": {
+                description: "Invalid or missing ISRC",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NuxtError" }
+                    }
+                }
+            },
+            "401": {
+                description: "Not authenticated",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NuxtError" }
+                    }
+                }
+            },
+            "404": {
+                description: "No song found for that ISRC",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NuxtError" }
+                    }
+                }
+            }
+        }
+    },
+});
+
 export default defineEventHandler(async (event) => {
     requireAuthToken(event);
 

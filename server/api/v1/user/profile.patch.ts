@@ -1,6 +1,62 @@
 import { getUserById, updateUser } from "~~/server/core/users";
 import type { NafynUser } from "~~/server/entity/NafynUser";
 
+defineRouteMeta({
+    openAPI: {
+        description: "Update the currently authenticated user's own profile fields",
+        tags: ["user"],
+        operationId: "updateMyProfile",
+        requestBody: {
+            content: {
+                "application/json": {
+                    schema: {
+                        type: "object",
+                        properties: {
+                            displayName: { type: "string", description: "1-20 characters" },
+                            lastFm: { type: "string", nullable: true, description: "Up to 50 characters" },
+                            discogs: { type: "string", nullable: true, description: "Up to 50 characters" }
+                        }
+                    }
+                }
+            }
+        },
+        responses: {
+            "200": {
+                description: "",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NafynUser" }
+                    }
+                }
+            },
+            "400": {
+                description: "Invalid field value, or no changes provided",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NuxtError" }
+                    }
+                }
+            },
+            "401": {
+                description: "Not authenticated",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NuxtError" }
+                    }
+                }
+            },
+            "404": {
+                description: "User not found",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NuxtError" }
+                    }
+                }
+            }
+        }
+    },
+});
+
 function normalizeOptionalText(value: unknown, maxLength: number): string | null {
     if (value === null || value === undefined) return null;
     if (typeof value !== "string") {
@@ -41,9 +97,9 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 400, statusMessage: "No changes provided" });
     }
 
-    if (!getUserById(sub)) {
+    if (!await getUserById(sub)) {
         throw createError({ statusCode: 404, statusMessage: "User not found" });
     }
 
-    return updateUser(sub, changes);
+    return await updateUser(sub, changes);
 });

@@ -1,7 +1,7 @@
 // custom playlists: owner + collaborating members, entries reference the shared `media` pool directly (not library_entries),
 // so a member can add a track to a shared playlist without owning it in their personal library
 import { randomUUID } from "node:crypto";
-import { getLibrariesDb } from "./db";
+import { getLibrariesDb, withTransaction } from "./db";
 import type { MediaRow } from "./library";
 
 export type PlaylistSortMode = "manual" | "title" | "artist" | "addedBy" | "duration";
@@ -43,7 +43,7 @@ export interface PlaylistEntryWithMedia {
     media: MediaRow
 }
 
-export function createPlaylist(ownerId: string, title: string, description: string | null, privacy: "public" | "private"): PlaylistRow {
+export async function createPlaylist(ownerId: string, title: string, description: string | null, privacy: "public" | "private"): Promise<PlaylistRow> {
     const now = Date.now();
     const row: PlaylistRow = {
         id: randomUUID(),
@@ -57,22 +57,22 @@ export function createPlaylist(ownerId: string, title: string, description: stri
         updatedAt: now
     };
 
-    getLibrariesDb().prepare(`
+    await getLibrariesDb().prepare(`
         INSERT INTO playlists (id, ownerId, title, description, privacy, image, sortMode, createdAt, updatedAt)
-        VALUES (@id, @ownerId, @title, @description, @privacy, @image, @sortMode, @createdAt, @updatedAt)
+        VALUES (:id, :ownerId, :title, :description, :privacy, :image, :sortMode, :createdAt, :updatedAt)
     `).run(row);
 
     return row;
 }
 
-export function getPlaylistById(id: string): PlaylistRow | null {
-    const row = getLibrariesDb().prepare(`SELECT * FROM playlists WHERE id = ?`).get(id) as PlaylistRow | undefined;
+export async function getPlaylistById(id: string): Promise<PlaylistRow | null> {
+    const row = await getLibrariesDb().prepare(`SELECT * FROM playlists WHERE id = ?`).get(id) as PlaylistRow | undefined;
     return row ?? null;
 }
 
 // playlists owned by, or shared with, this user
-export function getPlaylistsForUser(userId: string): PlaylistRow[] {
-    return getLibrariesDb().prepare(`
+export async function getPlaylistsForUser(userId: string): Promise<PlaylistRow[]> {
+    return await getLibrariesDb().prepare(`
         SELECT DISTINCT playlists.*
         FROM playlists
         LEFT JOIN playlist_members ON playlist_members.playlistId = playlists.id
@@ -81,8 +81,8 @@ export function getPlaylistsForUser(userId: string): PlaylistRow[] {
     `).all(userId, userId) as PlaylistRow[];
 }
 
-export function updatePlaylist(id: string, patch: Partial<Pick<PlaylistRow, "title" | "description" | "privacy" | "image" | "sortMode">>): PlaylistRow | null {
-    const existing = getPlaylistById(id);
+export async function updatePlaylist(id: string, patch: Partial<Pick<PlaylistRow, "title" | "description" | "privacy" | "image" | "sortMode">>): Promise<PlaylistRow | null> {
+    const existing = await getPlaylistById(id);
     if (!existing) return null;
 
     const updated: PlaylistRow = {
@@ -91,37 +91,37 @@ export function updatePlaylist(id: string, patch: Partial<Pick<PlaylistRow, "tit
         updatedAt: Date.now()
     };
 
-    getLibrariesDb().prepare(`
-        UPDATE playlists SET title = @title, description = @description, privacy = @privacy, image = @image, sortMode = @sortMode, updatedAt = @updatedAt
-        WHERE id = @id
+    await getLibrariesDb().prepare(`
+        UPDATE playlists SET title = :title, description = :description, privacy = :privacy, image = :image, sortMode = :sortMode, updatedAt = :updatedAt
+        WHERE id = :id
     `).run(updated);
 
     return updated;
 }
 
-export function deletePlaylist(id: string): void {
+export async function deletePlaylist(id: string): Promise<void> {
     const db = getLibrariesDb();
-    db.prepare(`DELETE FROM playlist_entries WHERE playlistId = ?`).run(id);
-    db.prepare(`DELETE FROM playlist_members WHERE playlistId = ?`).run(id);
-    db.prepare(`DELETE FROM playlists WHERE id = ?`).run(id);
+    await db.prepare(`DELETE FROM playlist_entries WHERE playlistId = ?`).run(id);
+    await db.prepare(`DELETE FROM playlist_members WHERE playlistId = ?`).run(id);
+    await db.prepare(`DELETE FROM playlists WHERE id = ?`).run(id);
 }
 
-export function isMember(playlistId: string, userId: string): boolean {
-    const row = getLibrariesDb().prepare(`SELECT 1 FROM playlist_members WHERE playlistId = ? AND userId = ?`).get(playlistId, userId);
+export async function isMember(playlistId: string, userId: string): Promise<boolean> {
+    const row = await getLibrariesDb().prepare(`SELECT 1 FROM playlist_members WHERE playlistId = ? AND userId = ?`).get(playlistId, userId);
     return !!row;
 }
 
 // true if the user can view/add-to/leave the playlist (owner or invited member)
-export function hasAccess(playlist: PlaylistRow, userId: string | null): boolean {
+export async function hasAccess(playlist: PlaylistRow, userId: string | null): Promise<boolean> {
     if (!userId) return false;
-    return playlist.ownerId === userId || isMember(playlist.id, userId);
+    return playlist.ownerId === userId || await isMember(playlist.id, userId);
 }
 
-export function getMembers(playlistId: string): PlaylistMemberRow[] {
-    return getLibrariesDb().prepare(`SELECT * FROM playlist_members WHERE playlistId = ?`).all(playlistId) as PlaylistMemberRow[];
+export async function getMembers(playlistId: string): Promise<PlaylistMemberRow[]> {
+    return await getLibrariesDb().prepare(`SELECT * FROM playlist_members WHERE playlistId = ?`).all(playlistId) as PlaylistMemberRow[];
 }
 
-export function addMember(playlistId: string, userId: string): PlaylistMemberRow {
+export async function addMember(playlistId: string, userId: string): Promise<PlaylistMemberRow> {
     const row: PlaylistMemberRow = {
         id: randomUUID(),
         playlistId,
@@ -129,16 +129,16 @@ export function addMember(playlistId: string, userId: string): PlaylistMemberRow
         addedAt: Date.now()
     };
 
-    getLibrariesDb().prepare(`
+    await getLibrariesDb().prepare(`
         INSERT INTO playlist_members (id, playlistId, userId, addedAt)
-        VALUES (@id, @playlistId, @userId, @addedAt)
+        VALUES (:id, :playlistId, :userId, :addedAt)
     `).run(row);
 
     return row;
 }
 
-export function removeMember(playlistId: string, userId: string): boolean {
-    const result = getLibrariesDb().prepare(`DELETE FROM playlist_members WHERE playlistId = ? AND userId = ?`).run(playlistId, userId);
+export async function removeMember(playlistId: string, userId: string): Promise<boolean> {
+    const result = await getLibrariesDb().prepare(`DELETE FROM playlist_members WHERE playlistId = ? AND userId = ?`).run(playlistId, userId);
     return result.changes > 0;
 }
 
@@ -165,8 +165,8 @@ interface EntryMediaJoinRow {
     mediaAddedAt: number
 }
 
-export function getEntries(playlistId: string): PlaylistEntryWithMedia[] {
-    const rows = getLibrariesDb().prepare(`
+export async function getEntries(playlistId: string): Promise<PlaylistEntryWithMedia[]> {
+    const rows = await getLibrariesDb().prepare(`
         SELECT
             playlist_entries.id AS entryId,
             playlist_entries.playlistId AS playlistId,
@@ -220,21 +220,21 @@ export function getEntries(playlistId: string): PlaylistEntryWithMedia[] {
     }));
 }
 
-export function getEntryById(entryId: string): PlaylistEntryRow | null {
-    const row = getLibrariesDb().prepare(`SELECT * FROM playlist_entries WHERE id = ?`).get(entryId) as PlaylistEntryRow | undefined;
+export async function getEntryById(entryId: string): Promise<PlaylistEntryRow | null> {
+    const row = await getLibrariesDb().prepare(`SELECT * FROM playlist_entries WHERE id = ?`).get(entryId) as PlaylistEntryRow | undefined;
     return row ?? null;
 }
 
 // appends mediaIds to the end of the playlist in order, used for both single-track and full-album adds
-export function addEntries(playlistId: string, mediaIds: string[], addedBy: string): PlaylistEntryRow[] {
+export async function addEntries(playlistId: string, mediaIds: string[], addedBy: string): Promise<PlaylistEntryRow[]> {
     const db = getLibrariesDb();
-    const { max } = db.prepare(`SELECT MAX(position) AS max FROM playlist_entries WHERE playlistId = ?`).get(playlistId) as { max: number | null };
+    const { max } = await db.prepare(`SELECT MAX(position) AS max FROM playlist_entries WHERE playlistId = ?`).get(playlistId) as { max: number | null };
     let nextPosition = (max ?? -1) + 1;
 
-    const insert = db.prepare(`
+    const insertSql = `
         INSERT INTO playlist_entries (id, playlistId, mediaId, addedBy, position, addedAt)
-        VALUES (@id, @playlistId, @mediaId, @addedBy, @position, @addedAt)
-    `);
+        VALUES (:id, :playlistId, :mediaId, :addedBy, :position, :addedAt)
+    `;
 
     const now = Date.now();
     const rows: PlaylistEntryRow[] = mediaIds.map((mediaId) => ({
@@ -246,25 +246,25 @@ export function addEntries(playlistId: string, mediaIds: string[], addedBy: stri
         addedAt: now
     }));
 
-    db.transaction(() => {
-        for (const row of rows) insert.run(row);
-    })();
+    await withTransaction(async (conn) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        for (const row of rows) await conn.execute(insertSql, row as any);
+    });
 
     return rows;
 }
 
-export function removeEntry(entryId: string): void {
-    getLibrariesDb().prepare(`DELETE FROM playlist_entries WHERE id = ?`).run(entryId);
+export async function removeEntry(entryId: string): Promise<void> {
+    await getLibrariesDb().prepare(`DELETE FROM playlist_entries WHERE id = ?`).run(entryId);
 }
 
 // rewrites position 0..n for the given entry IDs, all of which must belong to playlistId
-export function reorderEntries(playlistId: string, orderedEntryIds: string[]): void {
-    const db = getLibrariesDb();
-    const update = db.prepare(`UPDATE playlist_entries SET position = ? WHERE id = ? AND playlistId = ?`);
+export async function reorderEntries(playlistId: string, orderedEntryIds: string[]): Promise<void> {
+    const updateSql = `UPDATE playlist_entries SET position = ? WHERE id = ? AND playlistId = ?`;
 
-    db.transaction(() => {
-        orderedEntryIds.forEach((entryId, index) => {
-            update.run(index, entryId, playlistId);
-        });
-    })();
+    await withTransaction(async (conn) => {
+        for (const [index, entryId] of orderedEntryIds.entries()) {
+            await conn.execute(updateSql, [index, entryId, playlistId]);
+        }
+    });
 }
