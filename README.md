@@ -77,6 +77,7 @@ Configured via environment variables (see `.env.example`):
 | `SOULSEEK_USERNAME` / `SOULSEEK_PASSWORD` | Login for slskd web UI — use dedicated/throwaway account, never personal Soulseek login. |
 | `SOULSEEK_DOWNLOADS_PATH` | Local, readable path to slskd's downloads directory. |
 | `ACOUSTID_API_KEY` | Verifies downloaded audio matches requested MusicBrainz recording. |
+| `DOMAIN_WHITELIST` | Allow some domains to never be rate limited |
 
 <!-- More settings (in-app, user-facing) to be documented here as they land. -->
 
