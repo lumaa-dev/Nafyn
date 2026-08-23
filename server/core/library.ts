@@ -1,6 +1,8 @@
 // per-user music library: shared `media` metadata rows + shared audio file on disk, `library_entries` only grants per-user access
 import { randomUUID, UUID } from "node:crypto";
-import { rm } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { rm, rmdir } from "node:fs/promises";
+import { dirname, join } from "node:path";
 import { getLibrariesDb, withTransaction } from "./db";
 
 export interface MediaRow {
@@ -120,20 +122,32 @@ export async function userOwnsAlbum(userId: string, albumId: string): Promise<bo
     return !!row;
 }
 
-export async function getMediaOfUser(userId: string): Promise<MediaRow[]> {
-    return await getLibrariesDb().prepare(`
+export async function getMediaOfUser(userId: string, limit?: number, offset?: number): Promise<MediaRow[]> {
+    let sql = `
         SELECT media.*
         FROM library_entries
         JOIN media ON media.id = library_entries.mediaId
         WHERE library_entries.userId = ?
-    `).all(userId) as MediaRow[];
+        ORDER BY media.addedAt DESC
+    `;
+    const params: unknown[] = [userId];
+    if (limit !== undefined) {
+        sql += ` LIMIT ? OFFSET ?`;
+        params.push(limit, offset ?? 0);
+    }
+    return await getLibrariesDb().prepare(sql).all(...params) as MediaRow[];
+}
+
+export async function countMediaOfUser(userId: string): Promise<number> {
+    const row = await getLibrariesDb().prepare(`SELECT COUNT(*) AS count FROM library_entries WHERE userId = ?`).get(userId) as { count: number };
+    return Number(row.count);
 }
 
 // one AlbumRow per distinct albumId (release-group MBID) owned by the user, aggregated from their media rows;
 // grouping must key off albumId (not the display title) since SQLite returns an arbitrary row's value for any
 // selected column that isn't in GROUP BY or wrapped in an aggregate, which made `id`/`mbId` nondeterministic
-export async function getAlbumsOfUser(userId: string): Promise<AlbumRow[]> {
-    return await getLibrariesDb().prepare(`
+export async function getAlbumsOfUser(userId: string, limit?: number, offset?: number): Promise<AlbumRow[]> {
+    let sql = `
         SELECT
             media.albumId AS id,
             MIN(media.musicbrainzId) AS mbId,
@@ -148,23 +162,47 @@ export async function getAlbumsOfUser(userId: string): Promise<AlbumRow[]> {
         JOIN media ON media.id = library_entries.mediaId
         WHERE library_entries.userId = ? AND media.album IS NOT NULL AND media.albumId IS NOT NULL AND media.albumId != 'unknown-album'
         GROUP BY media.albumId
-    `).all(userId) as AlbumRow[];
+        ORDER BY MAX(media.addedAt) DESC
+    `;
+    const params: unknown[] = [userId];
+    if (limit !== undefined) {
+        sql += ` LIMIT ? OFFSET ?`;
+        params.push(limit, offset ?? 0);
+    }
+
+    const rows = await getLibrariesDb().prepare(sql).all(...params) as (AlbumRow & { duration: string | number })[];
+    // see getTotalMediaSize: mysql2 returns SUM() as a string
+    return rows.map((row) => ({ ...row, duration: Number(row.duration) }));
+}
+
+export async function countAlbumsOfUser(userId: string): Promise<number> {
+    const row = await getLibrariesDb().prepare(`
+        SELECT COUNT(DISTINCT media.albumId) AS count
+        FROM library_entries
+        JOIN media ON media.id = library_entries.mediaId
+        WHERE library_entries.userId = ? AND media.album IS NOT NULL AND media.albumId IS NOT NULL AND media.albumId != 'unknown-album'
+    `).get(userId) as { count: number };
+    return Number(row.count);
 }
 
 // total bytes across every distinct media row (the shared pool, not per-user)
 export async function getTotalMediaSize(): Promise<number> {
-    const row = await getLibrariesDb().prepare(`SELECT SUM(fileSize) AS total FROM media`).get() as { total: number | null };
-    return row.total ?? 0;
+    // mysql2 returns SUM() as a string (it promotes to DECIMAL/BIGINT to avoid precision loss), so cast explicitly -
+    // leaving it as a string here causes silent string concatenation wherever this value is later added to another
+    const row = await getLibrariesDb().prepare(`SELECT SUM(fileSize) AS total FROM media`).get() as { total: string | number | null };
+    return Number(row.total ?? 0);
 }
 
 // bytes owned per user, summed across their library entries (a shared track counts for each owner)
 export async function getStorageByUser(): Promise<{ userId: string, bytes: number }[]> {
-    return await getLibrariesDb().prepare(`
+    const rows = await getLibrariesDb().prepare(`
         SELECT library_entries.userId AS userId, SUM(media.fileSize) AS bytes
         FROM library_entries
         JOIN media ON media.id = library_entries.mediaId
         GROUP BY library_entries.userId
-    `).all() as { userId: string, bytes: number }[];
+    `).all() as { userId: string, bytes: string | number }[];
+    // see getTotalMediaSize: mysql2 returns SUM() as a string, cast before callers accumulate these
+    return rows.map((row) => ({ userId: row.userId, bytes: Number(row.bytes) }));
 }
 
 export async function updateMediaFileSize(mediaId: string, fileSize: number): Promise<void> {
@@ -172,9 +210,22 @@ export async function updateMediaFileSize(mediaId: string, fileSize: number): Pr
 }
 
 // every media row plus the userIds that own a library entry for it, for the MANAGE_MUSIC "everyone's library" view
-export async function getAllMediaWithOwners(): Promise<(MediaRow & { ownerIds: string[] })[]> {
-    const media = await getLibrariesDb().prepare(`SELECT * FROM media ORDER BY addedAt DESC`).all() as MediaRow[];
-    const entries = await getLibrariesDb().prepare(`SELECT userId, mediaId FROM library_entries`).all() as { userId: string, mediaId: string }[];
+export async function getAllMediaWithOwners(limit?: number, offset?: number): Promise<(MediaRow & { ownerIds: string[] })[]> {
+    let sql = `SELECT * FROM media ORDER BY addedAt DESC`;
+    const params: unknown[] = [];
+    if (limit !== undefined) {
+        sql += ` LIMIT ? OFFSET ?`;
+        params.push(limit, offset ?? 0);
+    }
+
+    const media = await getLibrariesDb().prepare(sql).all(...params) as MediaRow[];
+    if (media.length === 0) return [];
+
+    // only pull ownership for the media rows on this page, not the whole table
+    const placeholders = media.map(() => "?").join(", ");
+    const entries = await getLibrariesDb().prepare(`
+        SELECT userId, mediaId FROM library_entries WHERE mediaId IN (${placeholders})
+    `).all(...media.map((m) => m.id)) as { userId: string, mediaId: string }[];
 
     const ownersByMedia = new Map<string, string[]>();
     for (const entry of entries) {
@@ -184,6 +235,11 @@ export async function getAllMediaWithOwners(): Promise<(MediaRow & { ownerIds: s
     }
 
     return media.map((row) => ({ ...row, ownerIds: ownersByMedia.get(row.id) ?? [] }));
+}
+
+export async function countAllMedia(): Promise<number> {
+    const row = await getLibrariesDb().prepare(`SELECT COUNT(*) AS count FROM media`).get() as { count: number };
+    return Number(row.count);
 }
 
 export async function getMediaId(mediaId: string): Promise<MediaRow | undefined> {
@@ -196,8 +252,27 @@ export async function shareMediaWithUser(userId: string, media: MediaRow, shared
     return addLibraryEntry(userId, media.id, sharedFilePath);
 }
 
-export function libraryFilePath(mediaId: string, extension: string): string {
-    return `${process.cwd()}/music/${mediaId}${extension}`;
+// filesystem-illegal / awkward characters stripped from an album or track name before it becomes a path segment
+function sanitizePathSegment(name: string): string {
+    // eslint-disable-next-line no-control-regex -- deliberately strips control characters too, not just visible punctuation
+    const cleaned = name.replace(/[/\\:*?"<>|\x00-\x1f]/g, "").replace(/\s+/g, " ").trim();
+    return cleaned.slice(0, 200) || "Unknown";
+}
+
+// music/{album}/{track title}.ext - so the library reads as a normal folder-of-albums when browsed directly
+// (e.g. shared back out via slskd). Falls back to the artist name for albumless singles, and disambiguates
+// same-named tracks within an album with a " (2)", " (3)", ... suffix instead of overwriting one another.
+export function libraryFilePath(album: string | null, artistName: string, title: string, extension: string): string {
+    const albumDir = sanitizePathSegment(album ?? artistName);
+    const baseName = sanitizePathSegment(title);
+    const dir = join(process.cwd(), "music", albumDir);
+
+    let candidate = `${baseName}${extension}`;
+    for (let n = 2; existsSync(join(dir, candidate)); n++) {
+        candidate = `${baseName} (${n})${extension}`;
+    }
+
+    return join(dir, candidate);
 }
 
 // revokes every library entry a user has, used when an account is deleted so no orphaned entries linger
@@ -219,6 +294,9 @@ export async function deleteLibraryEntryForUser(userId: string, mediaId: string)
     const { count } = await db.prepare(`SELECT COUNT(*) AS count FROM library_entries WHERE mediaId = ?`).get(mediaId) as { count: number };
     if (count === 0) {
         await rm(entry.filePath, { force: true });
+        // best-effort: drop the album folder once it's the last track in it. rmdir fails (harmlessly)
+        // if other tracks still live there, so no need to check first
+        await rmdir(dirname(entry.filePath)).catch(() => {});
         await withTransaction(async (conn) => {
             await conn.execute(`DELETE FROM playlist_entries WHERE mediaId = ?`, [mediaId]);
             await conn.execute(`DELETE FROM media WHERE id = ?`, [mediaId]);

@@ -15,7 +15,9 @@
         </button>
       </li>
     </ol>
-    <p class="empty" v-else>{{ $t('library.tracks.empty') }}</p>
+    <p class="empty" v-else-if="!initialLoading">{{ $t('library.tracks.empty') }}</p>
+    <div ref="sentinel" class="scroll-sentinel" />
+    <p class="loading-more" v-if="loadingMore">{{ $t('common.loadingMore') }}</p>
 
     <ContextMenu ref="trackMenu" :items="trackMenuItems" />
     <PlaylistPickerModal v-model="showPicker" :media-ids="pickerMediaIds" />
@@ -30,11 +32,12 @@ import PlaylistPickerModal from '~/components/PlaylistPickerModal.vue';
 
 const token = useCookie("nafynToken").value;
 
-const { data: tracks, refresh } = await useAsyncData<MediaRow[]>("library-tracks", () => {
+const { items: tracks, initialLoading, loadingMore, sentinel, loadMore, reset } = useInfiniteList<MediaRow>((page, limit) => {
   return token
-    ? $fetch("/api/v1/library/tracks", { headers: { Authorization: token } })
-    : Promise.resolve([]);
-}, { default: () => [] });
+    ? $fetch("/api/v1/library/tracks", { headers: { Authorization: token }, query: { page, limit } })
+    : Promise.resolve({ items: [], page, limit, total: 0, hasMore: false });
+});
+await loadMore();
 
 const { currentTrack, play } = usePlayer();
 const { errorToast, sendToast } = useToast();
@@ -87,7 +90,7 @@ async function deleteTrack(track: MediaRow) {
 
   if (!result || hasError) { return sendToast(errorToast("Track", "Failed to delete")) }
 
-  return refresh();
+  return reset();
 }
 </script>
 
@@ -100,6 +103,17 @@ async function deleteTrack(track: MediaRow) {
 
 .libtracks .empty {
   color: #666666;
+}
+
+.libtracks .scroll-sentinel {
+  height: 1px;
+}
+
+.libtracks .loading-more {
+  text-align: center;
+  color: #666666;
+  font-size: 0.8em;
+  padding: 10px 0;
 }
 
 .libtracks .tracks {

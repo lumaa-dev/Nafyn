@@ -1,19 +1,18 @@
-import { getAlbumsOfUser } from "~~/server/core/library";
+import { getAlbumsOfUser, countAlbumsOfUser } from "~~/server/core/library";
+import { parsePagination, paginated, paginationQueryParams, paginatedResponseSchema } from "~~/server/utils/pagination";
 
 defineRouteMeta({
     openAPI: {
-        description: "List every album the requesting user owns at least one track from, aggregated from their library",
+        description: "List every album the requesting user owns at least one track from, aggregated from their library, paginated",
         tags: ["library"],
         operationId: "getLibraryAlbums",
+        parameters: paginationQueryParams,
         responses: {
             "200": {
                 description: "",
                 content: {
                     "application/json": {
-                        schema: {
-                            type: "array",
-                            items: { $ref: "#/components/schemas/AlbumRow" }
-                        }
+                        schema: paginatedResponseSchema("#/components/schemas/AlbumRow")
                     }
                 }
             },
@@ -52,6 +51,11 @@ defineRouteMeta({
 
 export default defineEventHandler(async (event) => {
   const { sub: userId } = requireAuthToken(event);
+  const pagination = parsePagination(event);
 
-  return await getAlbumsOfUser(userId);
+  const [items, total] = await Promise.all([
+    getAlbumsOfUser(userId, pagination.limit, pagination.offset),
+    countAlbumsOfUser(userId)
+  ]);
+  return paginated(items, total, pagination);
 })

@@ -71,14 +71,30 @@ export async function getPlaylistById(id: string): Promise<PlaylistRow | null> {
 }
 
 // playlists owned by, or shared with, this user
-export async function getPlaylistsForUser(userId: string): Promise<PlaylistRow[]> {
-    return await getLibrariesDb().prepare(`
+export async function getPlaylistsForUser(userId: string, limit?: number, offset?: number): Promise<PlaylistRow[]> {
+    let sql = `
         SELECT DISTINCT playlists.*
         FROM playlists
         LEFT JOIN playlist_members ON playlist_members.playlistId = playlists.id
         WHERE playlists.ownerId = ? OR playlist_members.userId = ?
         ORDER BY playlists.updatedAt DESC
-    `).all(userId, userId) as PlaylistRow[];
+    `;
+    const params: unknown[] = [userId, userId];
+    if (limit !== undefined) {
+        sql += ` LIMIT ? OFFSET ?`;
+        params.push(limit, offset ?? 0);
+    }
+    return await getLibrariesDb().prepare(sql).all(...params) as PlaylistRow[];
+}
+
+export async function countPlaylistsForUser(userId: string): Promise<number> {
+    const row = await getLibrariesDb().prepare(`
+        SELECT COUNT(DISTINCT playlists.id) AS count
+        FROM playlists
+        LEFT JOIN playlist_members ON playlist_members.playlistId = playlists.id
+        WHERE playlists.ownerId = ? OR playlist_members.userId = ?
+    `).get(userId, userId) as { count: number };
+    return Number(row.count);
 }
 
 export async function updatePlaylist(id: string, patch: Partial<Pick<PlaylistRow, "title" | "description" | "privacy" | "image" | "sortMode">>): Promise<PlaylistRow | null> {
@@ -165,8 +181,8 @@ interface EntryMediaJoinRow {
     mediaAddedAt: number
 }
 
-export async function getEntries(playlistId: string): Promise<PlaylistEntryWithMedia[]> {
-    const rows = await getLibrariesDb().prepare(`
+export async function getEntries(playlistId: string, limit?: number, offset?: number): Promise<PlaylistEntryWithMedia[]> {
+    let sql = `
         SELECT
             playlist_entries.id AS entryId,
             playlist_entries.playlistId AS playlistId,
@@ -192,7 +208,14 @@ export async function getEntries(playlistId: string): Promise<PlaylistEntryWithM
         JOIN media ON media.id = playlist_entries.mediaId
         WHERE playlist_entries.playlistId = ?
         ORDER BY playlist_entries.position ASC
-    `).all(playlistId) as EntryMediaJoinRow[];
+    `;
+    const params: unknown[] = [playlistId];
+    if (limit !== undefined) {
+        sql += ` LIMIT ? OFFSET ?`;
+        params.push(limit, offset ?? 0);
+    }
+
+    const rows = await getLibrariesDb().prepare(sql).all(...params) as EntryMediaJoinRow[];
 
     return rows.map((row) => ({
         entryId: row.entryId,
@@ -218,6 +241,11 @@ export async function getEntries(playlistId: string): Promise<PlaylistEntryWithM
             addedAt: row.mediaAddedAt
         }
     }));
+}
+
+export async function countEntries(playlistId: string): Promise<number> {
+    const row = await getLibrariesDb().prepare(`SELECT COUNT(*) AS count FROM playlist_entries WHERE playlistId = ?`).get(playlistId) as { count: number };
+    return Number(row.count);
 }
 
 export async function getEntryById(entryId: string): Promise<PlaylistEntryRow | null> {

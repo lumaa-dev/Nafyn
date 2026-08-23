@@ -1,20 +1,19 @@
-import { listUsers, getPermissionsById } from "~~/server/core/users";
+import { listUsers, countUsers, getPermissionsById } from "~~/server/core/users";
 import { hasPermission, Permission } from "~~/server/entity/Permission";
+import { parsePagination, paginated, paginationQueryParams, paginatedResponseSchema } from "~~/server/utils/pagination";
 
 defineRouteMeta({
     openAPI: {
-        description: "List every user account. Requires MANAGE_ACCOUNTS",
+        description: "List every user account, paginated. Requires MANAGE_ACCOUNTS",
         tags: ["users"],
         operationId: "getUsers",
+        parameters: paginationQueryParams,
         responses: {
             "200": {
                 description: "",
                 content: {
                     "application/json": {
-                        schema: {
-                            type: "array",
-                            items: { $ref: "#/components/schemas/NafynUser" }
-                        }
+                        schema: paginatedResponseSchema("#/components/schemas/NafynUser")
                     }
                 }
             },
@@ -37,5 +36,10 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 401, statusMessage: "Unsufficient permissions" });
     }
 
-    return await listUsers();
+    const pagination = parsePagination(event);
+    const [items, total] = await Promise.all([
+        listUsers(pagination.limit, pagination.offset),
+        countUsers()
+    ]);
+    return paginated(items, total, pagination);
 });

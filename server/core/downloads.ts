@@ -7,7 +7,7 @@
 //   4. Get song(s) through Soulseek API
 //   5. Verify song(s) fingerprint with AcoustID
 //   6. Edit audio file metadata with song info from MusicBrainz (fetched in step 2)
-//   7. Write the song once under music/{mediaId}.ext and grant the requesting user access
+//   7. Write the song once under music/{album}/{track title}.ext and grant the requesting user access
 //   8. Set request status to "completed"
 //
 // security/anonymity notes:
@@ -332,7 +332,7 @@ async function downloadTrack(
 
             console.log(`[downloads] Musicbrainz'd "${target.title}"`);
 
-            const destPath = libraryFilePath(media.id, extension);
+            const destPath = libraryFilePath(target.album, target.artistName, target.title, extension);
             await mkdir(dirname(destPath), { recursive: true });
             await tagAudioFile(tempPath, destPath, {
                 title: target.title,
@@ -368,6 +368,12 @@ export async function processDownloadRequestId(requestId: UUID | string): Promis
 // entry point: runs the full pipeline for a request and lands it on "completed" or "failed"
 export async function processDownloadRequest(request: NafynRequest): Promise<void> {
     if (!request || request.status === "completed" || request.status === "failed") return;
+
+    if (!useRuntimeConfig().acoustidApiKey) {
+        await updateRequestStatus(request.id, "failed");
+        emitDownloadProgress({ requestId: request.id, stage: "failed", message: "AcoustID API key is not configured" });
+        return;
+    }
 
     try {
         await updateRequestStatus(request.id, "searching");

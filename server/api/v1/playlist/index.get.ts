@@ -1,19 +1,18 @@
-import { getPlaylistsForUser } from "~~/server/core/playlists";
+import { getPlaylistsForUser, countPlaylistsForUser } from "~~/server/core/playlists";
+import { parsePagination, paginated, paginationQueryParams, paginatedResponseSchema } from "~~/server/utils/pagination";
 
 defineRouteMeta({
     openAPI: {
-        description: "List playlists owned by, or shared with, the requesting user",
+        description: "List playlists owned by, or shared with, the requesting user, paginated",
         tags: ["playlist"],
         operationId: "getPlaylists",
+        parameters: paginationQueryParams,
         responses: {
             "200": {
                 description: "",
                 content: {
                     "application/json": {
-                        schema: {
-                            type: "array",
-                            items: { $ref: "#/components/schemas/PlaylistRow" }
-                        }
+                        schema: paginatedResponseSchema("#/components/schemas/PlaylistRow")
                     }
                 }
             },
@@ -52,6 +51,11 @@ defineRouteMeta({
 
 export default defineEventHandler(async (event) => {
     const { sub: userId } = requireAuthToken(event);
+    const pagination = parsePagination(event);
 
-    return await getPlaylistsForUser(userId);
+    const [items, total] = await Promise.all([
+        getPlaylistsForUser(userId, pagination.limit, pagination.offset),
+        countPlaylistsForUser(userId)
+    ]);
+    return paginated(items, total, pagination);
 });

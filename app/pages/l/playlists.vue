@@ -12,7 +12,9 @@
         <p class="privacy">{{ $t(`playlist.privacy.${playlist.privacy}`) }}</p>
       </NuxtLink>
     </div>
-    <p class="empty" v-else>{{ $t('playlist.empty') }}</p>
+    <p class="empty" v-else-if="!initialLoading">{{ $t('playlist.empty') }}</p>
+    <div ref="sentinel" class="scroll-sentinel" />
+    <p class="loading-more" v-if="loadingMore">{{ $t('common.loadingMore') }}</p>
 
     <Teleport to="body">
       <div v-if="showCreate" class="pmodal-backdrop" @click.self="showCreate = false">
@@ -51,11 +53,12 @@ interface PlaylistRow {
 
 const token = useCookie("nafynToken").value ?? "";
 
-const { data: playlists, refresh } = await useAsyncData<PlaylistRow[]>("user-playlists", () => {
+const { items: playlists, initialLoading, loadingMore, sentinel, loadMore, reset } = useInfiniteList<PlaylistRow>((page, limit) => {
   return token
-    ? $fetch("/api/v1/playlist", { headers: { Authorization: token } })
-    : Promise.resolve([]);
-}, { default: () => [] });
+    ? $fetch("/api/v1/playlist", { headers: { Authorization: token }, query: { page, limit } })
+    : Promise.resolve({ items: [], page, limit, total: 0, hasMore: false });
+});
+await loadMore();
 
 const showCreate = ref(false);
 const creating = ref(false);
@@ -79,7 +82,7 @@ async function create() {
     newTitle.value = "";
     newDescription.value = "";
     newPrivacy.value = "private";
-    await refresh();
+    await reset();
   } catch (e) {
     const err = (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error');
     useToast().sendToast({ content: err, tint: "red", icon: null, title: null });
@@ -105,6 +108,17 @@ async function create() {
 
 .libplaylists .empty {
   color: #666666;
+}
+
+.libplaylists .scroll-sentinel {
+  height: 1px;
+}
+
+.libplaylists .loading-more {
+  text-align: center;
+  color: #666666;
+  font-size: 0.8em;
+  padding: 10px 0;
 }
 
 .libplaylists .grid {

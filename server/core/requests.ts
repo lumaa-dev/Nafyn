@@ -91,9 +91,20 @@ export async function getRequestById(id: string): Promise<NafynRequest | null> {
     return row ? rowToRequest(row) : null;
 }
 
-export async function listRequests(): Promise<NafynRequest[]> {
-    const rows = await getRequestsDb().prepare(`SELECT * FROM requests ORDER BY createdAt DESC`).all() as RequestRow[];
+export async function listRequests(limit?: number, offset?: number): Promise<NafynRequest[]> {
+    let sql = `SELECT * FROM requests ORDER BY createdAt DESC`;
+    const params: unknown[] = [];
+    if (limit !== undefined) {
+        sql += ` LIMIT ? OFFSET ?`;
+        params.push(limit, offset ?? 0);
+    }
+    const rows = await getRequestsDb().prepare(sql).all(...params) as RequestRow[];
     return Promise.all(rows.map(rowToRequest));
+}
+
+export async function countRequests(): Promise<number> {
+    const row = await getRequestsDb().prepare(`SELECT COUNT(*) AS count FROM requests`).get() as { count: number };
+    return Number(row.count);
 }
 
 export async function listRequestsByStatus(status: RequestStatus): Promise<NafynRequest[]> {
@@ -101,9 +112,20 @@ export async function listRequestsByStatus(status: RequestStatus): Promise<Nafyn
     return Promise.all(rows.map(rowToRequest));
 }
 
-export async function listRequestsByUser(requestedBy: string): Promise<NafynRequest[]> {
-    const rows = await getRequestsDb().prepare(`SELECT * FROM requests WHERE requestedBy = ? ORDER BY createdAt DESC`).all(requestedBy) as RequestRow[];
+export async function listRequestsByUser(requestedBy: string, limit?: number, offset?: number): Promise<NafynRequest[]> {
+    let sql = `SELECT * FROM requests WHERE requestedBy = ? ORDER BY createdAt DESC`;
+    const params: unknown[] = [requestedBy];
+    if (limit !== undefined) {
+        sql += ` LIMIT ? OFFSET ?`;
+        params.push(limit, offset ?? 0);
+    }
+    const rows = await getRequestsDb().prepare(sql).all(...params) as RequestRow[];
     return Promise.all(rows.map(rowToRequest));
+}
+
+export async function countRequestsByUser(requestedBy: string): Promise<number> {
+    const row = await getRequestsDb().prepare(`SELECT COUNT(*) AS count FROM requests WHERE requestedBy = ?`).get(requestedBy) as { count: number };
+    return Number(row.count);
 }
 
 export async function updateRequestStatus(id: UUID | string, status: RequestStatus, checkValidity: boolean = false): Promise<NafynRequest | null> {

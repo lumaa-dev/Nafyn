@@ -1,42 +1,54 @@
 // every media row across every user's library, view-only for MANAGE_MUSIC users (streaming still enforces per-owner access)
-import { getAllMediaWithOwners } from "~~/server/core/library";
+import { getAllMediaWithOwners, countAllMedia } from "~~/server/core/library";
 import { listUsers, getPermissionsById } from "~~/server/core/users";
 import { hasPermission, Permission } from "~~/server/entity/Permission";
+import { parsePagination, paginated, paginationQueryParams } from "~~/server/utils/pagination";
 
 defineRouteMeta({
     openAPI: {
-        description: "List every media row across every user's library, with owner usernames. Requires MANAGE_MUSIC",
+        description: "List every media row across every user's library, with owner usernames, paginated. Requires MANAGE_MUSIC",
         tags: ["library"],
         operationId: "getAllLibraryMedia",
+        parameters: paginationQueryParams,
         responses: {
             "200": {
                 description: "",
                 content: {
                     "application/json": {
                         schema: {
-                            type: "array",
-                            items: {
-                                type: "object",
-                                allOf: [
-                                    { $ref: "#/components/schemas/MediaRow" },
-                                    {
+                            type: "object",
+                            required: ["items", "page", "limit", "total", "hasMore"],
+                            properties: {
+                                items: {
+                                    type: "array",
+                                    items: {
                                         type: "object",
-                                        required: ["owners"],
-                                        properties: {
-                                            owners: {
-                                                type: "array",
-                                                items: {
-                                                    type: "object",
-                                                    required: ["userId", "username"],
-                                                    properties: {
-                                                        userId: { type: "string" },
-                                                        username: { type: "string" }
+                                        allOf: [
+                                            { $ref: "#/components/schemas/MediaRow" },
+                                            {
+                                                type: "object",
+                                                required: ["owners"],
+                                                properties: {
+                                                    owners: {
+                                                        type: "array",
+                                                        items: {
+                                                            type: "object",
+                                                            required: ["userId", "username"],
+                                                            properties: {
+                                                                userId: { type: "string" },
+                                                                username: { type: "string" }
+                                                            }
+                                                        }
                                                     }
                                                 }
                                             }
-                                        }
+                                        ]
                                     }
-                                ]
+                                },
+                                page: { type: "integer" },
+                                limit: { type: "integer" },
+                                total: { type: "integer" },
+                                hasMore: { type: "boolean" }
                             }
                         }
                     }
@@ -61,10 +73,18 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 401, statusMessage: "Unsufficient permissions" });
     }
 
-    const users = new Map((await listUsers()).map((u) => [u.id, u]));
+    const pagination = parsePagination(event);
+    const [media, total, allUsers] = await Promise.all([
+        getAllMediaWithOwners(pagination.limit, pagination.offset),
+        countAllMedia(),
+        listUsers()
+    ]);
+    const usersById = new Map(allUsers.map((u) => [u.id, u]));
 
-    return (await getAllMediaWithOwners()).map(({ ownerIds, ...media }) => ({
-        ...media,
-        owners: ownerIds.map((id) => ({ userId: id, username: users.get(id)?.username ?? "unknown" }))
+    const items = media.map(({ ownerIds, ...row }) => ({
+        ...row,
+        owners: ownerIds.map((id) => ({ userId: id, username: usersById.get(id)?.username ?? "unknown" }))
     }));
+
+    return paginated(items, total, pagination);
 });

@@ -116,7 +116,18 @@ export async function deleteUser(id: string): Promise<boolean> {
     return result.changes > 0;
 }
 
-export async function listUsers(): Promise<NafynUser[]> {
-    const rows = await getUsersDb().prepare(`SELECT * FROM users`).all() as UserRow[];
+export async function listUsers(limit?: number, offset?: number): Promise<NafynUser[]> {
+    let sql = `SELECT * FROM users ORDER BY username ASC`;
+    const params: unknown[] = [];
+    if (limit !== undefined) {
+        sql += ` LIMIT ? OFFSET ?`;
+        params.push(limit, offset ?? 0);
+    }
+    const rows = await getUsersDb().prepare(sql).all(...params) as UserRow[];
     return rows.map(rowToUser);
+}
+
+export async function countUsers(): Promise<number> {
+    const row = await getUsersDb().prepare(`SELECT COUNT(*) AS count FROM users`).get() as { count: number };
+    return Number(row.count);
 }

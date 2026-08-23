@@ -6,7 +6,9 @@
         <MediaBox :media="toMediaInfo(album)" />
       </NuxtLink>
     </div>
-    <p class="empty" v-else>{{ $t('library.albums.empty') }}</p>
+    <p class="empty" v-else-if="!initialLoading">{{ $t('library.albums.empty') }}</p>
+    <div ref="sentinel" class="scroll-sentinel" />
+    <p class="loading-more" v-if="loadingMore">{{ $t('common.loadingMore') }}</p>
   </div>
 </template>
 
@@ -17,11 +19,12 @@ import type { MediaInfo } from '~~/server/entity/media/MediaInfo';
 
 const token = useCookie("nafynToken").value;
 
-const { data: albums } = await useAsyncData<AlbumRow[]>("library-albums", () => {
+const { items: albums, initialLoading, loadingMore, sentinel, loadMore } = useInfiniteList<AlbumRow>((page, limit) => {
   return token
-    ? $fetch("/api/v1/library/albums", { headers: { Authorization: token } })
-    : Promise.resolve([]);
-}, { default: () => [] });
+    ? $fetch("/api/v1/library/albums", { headers: { Authorization: token }, query: { page, limit } })
+    : Promise.resolve({ items: [], page, limit, total: 0, hasMore: false });
+});
+await loadMore();
 
 function toMediaInfo(album: AlbumRow): MediaInfo {
   return {
@@ -51,6 +54,17 @@ function toMediaInfo(album: AlbumRow): MediaInfo {
 
 .libalbums .empty {
   color: #666666;
+}
+
+.libalbums .scroll-sentinel {
+  height: 1px;
+}
+
+.libalbums .loading-more {
+  text-align: center;
+  color: #666666;
+  font-size: 0.8em;
+  padding: 10px 0;
 }
 
 .libalbums .grid {

@@ -10,7 +10,7 @@
 // into this app's own storage - can actually happen.
 
 import { randomUUID } from "node:crypto";
-import { copyFile, mkdir } from "node:fs/promises";
+import { copyFile, mkdir, rm } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
 export interface SlskSearchResult {
@@ -120,6 +120,24 @@ interface SlskdSearch {
     isComplete: boolean
 }
 
+// slskd flips `isComplete` as soon as its own search timeout elapses, but peer responses are aggregated
+// asynchronously server-side and can still be getting written for a moment after that flag flips - fetching
+// once, right on the heels of isComplete, can race that and read back zero (or too few) results even though
+// slskd's own UI shows plenty a moment later. A transient fetch failure right after isComplete was also being
+// swallowed into a silent empty array with no retry at all. Retry a few times with a short backoff instead of
+// trusting either a failed fetch or a suspiciously-empty one on the first try.
+async function fetchSearchResponses(id: string, attempts = 4): Promise<SlskdResponse[]> {
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+        const res = await slskdFetch(`/api/v0/searches/${id}/responses`);
+        if (res.ok) {
+            const data = await res.json() as SlskdResponse[];
+            if (data.length > 0 || attempt === attempts) return data;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 750));
+    }
+    return [];
+}
+
 export async function searchSoulseek(query: string, timeoutMs = 20000): Promise<SlskSearchResult[]> {
     const id = randomUUID();
 
@@ -142,8 +160,7 @@ export async function searchSoulseek(query: string, timeoutMs = 20000): Promise<
         await new Promise((resolve) => setTimeout(resolve, 400));
     }
 
-    const responsesRes = await slskdFetch(`/api/v0/searches/${id}/responses`);
-    const responses = responsesRes.ok ? await responsesRes.json() as SlskdResponse[] : [];
+    const responses = await fetchSearchResponses(id);
 
     console.log(`[soulseek] ${responses.length} results for ${query} (${id})`);
 
@@ -303,7 +320,11 @@ export async function downloadFromSoulseek(
     const sourcePath = join(downloadsPath, ...relativeSegments);
 
     await mkdir(dirname(destPath), { recursive: true });
+    // copy + unlink instead of rename: destPath and the slskd downloads mount may live on different
+    // filesystems (e.g. a remote SMB/NFS share), where a plain rename would fail across devices.
+    // slskd's own downloads dir must end up empty, so the source is removed once the copy lands.
     await copyFile(sourcePath, destPath);
+    await rm(sourcePath, { force: true });
 
     onProgress?.({ bytesDownloaded: file.size, totalBytes: file.size, speedBytesPerSec: 0, etaSeconds: 0 });
 }

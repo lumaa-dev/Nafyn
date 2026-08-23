@@ -1,11 +1,12 @@
 // playlist detail; public playlists are readable by anonymous visitors, private ones require owner/member access
-import { getPlaylistById, getMembers, getEntries, hasAccess } from "~~/server/core/playlists";
+import { getPlaylistById, getMembers, getEntries, countEntries, hasAccess } from "~~/server/core/playlists";
 import { getUserById } from "~~/server/core/users";
 import { verifyAuthToken } from "~~/server/utils/jwt";
+import { parsePagination, paginationQueryParams } from "~~/server/utils/pagination";
 
 defineRouteMeta({
     openAPI: {
-        description: "Get playlist details: metadata, owner, members, and entries. Public playlists are readable by anonymous visitors (an Authorization header is optional here); private ones require owner/member access",
+        description: "Get playlist details: metadata, owner, members, and the first page of entries (further pages via GET /playlist/{pid}/tracks). Public playlists are readable by anonymous visitors (an Authorization header is optional here); private ones require owner/member access",
         tags: ["playlist"],
         operationId: "getPlaylist",
         parameters: [
@@ -15,7 +16,8 @@ defineRouteMeta({
                 required: true,
                 description: "Playlist ID",
                 schema: { type: "string" }
-            }
+            },
+            ...paginationQueryParams
         ],
         responses: {
             "200": {
@@ -24,7 +26,7 @@ defineRouteMeta({
                     "application/json": {
                         schema: {
                             type: "object",
-                            required: ["playlist", "owner", "members", "entries", "viewer"],
+                            required: ["playlist", "owner", "members", "entries", "entriesTotal", "entriesHasMore", "viewer"],
                             properties: {
                                 playlist: { $ref: "#/components/schemas/PlaylistRow" },
                                 owner: { $ref: "#/components/schemas/NafynUser" },
@@ -34,6 +36,7 @@ defineRouteMeta({
                                 },
                                 entries: {
                                     type: "array",
+                                    description: "First page of entries; page through the rest via GET /playlist/{pid}/tracks",
                                     items: {
                                         type: "object",
                                         required: ["entryId", "addedBy", "position", "addedAt", "media"],
@@ -46,6 +49,8 @@ defineRouteMeta({
                                         }
                                     }
                                 },
+                                entriesTotal: { type: "integer" },
+                                entriesHasMore: { type: "boolean" },
                                 viewer: {
                                     type: "object",
                                     required: ["userId", "isOwner", "isMember"],
@@ -113,7 +118,13 @@ export default defineEventHandler(async (event) => {
     const members = (await Promise.all((await getMembers(playlist.id)).map((m) => getUserById(m.userId, true))))
         .filter((u) => u !== null);
 
-    const entries = await Promise.all((await getEntries(playlist.id)).map(async (entry) => ({
+    const pagination = parsePagination(event);
+    const [rows, entriesTotal] = await Promise.all([
+        getEntries(playlist.id, pagination.limit, pagination.offset),
+        countEntries(playlist.id)
+    ]);
+
+    const entries = await Promise.all(rows.map(async (entry) => ({
         entryId: entry.entryId,
         addedBy: await getUserById(entry.addedBy, true),
         position: entry.position,
@@ -126,6 +137,8 @@ export default defineEventHandler(async (event) => {
         owner,
         members,
         entries,
+        entriesTotal,
+        entriesHasMore: pagination.page * pagination.limit < entriesTotal,
         viewer: { userId, isOwner, isMember }
     };
 });
