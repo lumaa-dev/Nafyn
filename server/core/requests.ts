@@ -1,5 +1,5 @@
 import { randomUUID, UUID } from "node:crypto";
-import { getRequestsDb } from "./db";
+import { getRequestsDb, sqlInt } from "./db";
 import { NafynRequest, RequestStatus } from "../entity/NafynRequest";
 import { getUserById } from "./users";
 import { getMediaInfo } from "../utils/musicbrainz";
@@ -92,13 +92,11 @@ export async function getRequestById(id: string): Promise<NafynRequest | null> {
 }
 
 export async function listRequests(limit?: number, offset?: number): Promise<NafynRequest[]> {
-    let sql = `SELECT * FROM requests ORDER BY createdAt DESC`;
-    const params: unknown[] = [];
+    let sql = `SELECT * FROM requests ORDER BY createdAt DESC, id ASC`;
     if (limit !== undefined) {
-        sql += ` LIMIT ? OFFSET ?`;
-        params.push(limit, offset ?? 0);
+        sql += ` LIMIT ${sqlInt(limit)} OFFSET ${sqlInt(offset ?? 0)}`;
     }
-    const rows = await getRequestsDb().prepare(sql).all(...params) as RequestRow[];
+    const rows = await getRequestsDb().prepare(sql).all() as RequestRow[];
     return Promise.all(rows.map(rowToRequest));
 }
 
@@ -113,11 +111,10 @@ export async function listRequestsByStatus(status: RequestStatus): Promise<Nafyn
 }
 
 export async function listRequestsByUser(requestedBy: string, limit?: number, offset?: number): Promise<NafynRequest[]> {
-    let sql = `SELECT * FROM requests WHERE requestedBy = ? ORDER BY createdAt DESC`;
+    let sql = `SELECT * FROM requests WHERE requestedBy = ? ORDER BY createdAt DESC, id ASC`;
     const params: unknown[] = [requestedBy];
     if (limit !== undefined) {
-        sql += ` LIMIT ? OFFSET ?`;
-        params.push(limit, offset ?? 0);
+        sql += ` LIMIT ${sqlInt(limit)} OFFSET ${sqlInt(offset ?? 0)}`;
     }
     const rows = await getRequestsDb().prepare(sql).all(...params) as RequestRow[];
     return Promise.all(rows.map(rowToRequest));

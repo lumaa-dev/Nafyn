@@ -3,7 +3,7 @@ import { randomUUID, UUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import { rm, rmdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import { getLibrariesDb, withTransaction } from "./db";
+import { getLibrariesDb, withTransaction, sqlInt } from "./db";
 
 export interface MediaRow {
     id: string,
@@ -34,6 +34,10 @@ export interface AlbumRow {
     releaseDate: number | null,
     duration: number,
     trackCount: number,
+    // earliest addedAt among the album's tracks - not a MusicBrainz field, but a stable "added to Nafyn"
+    // timestamp callers can fall back on (e.g. Subsonic's `created` when there's no real releaseDate)
+    // instead of the current time, which would make the album look freshly-changed on every single fetch
+    addedAt: number
 }
 
 export interface LibraryEntry {
@@ -123,17 +127,19 @@ export async function userOwnsAlbum(userId: string, albumId: string): Promise<bo
 }
 
 export async function getMediaOfUser(userId: string, limit?: number, offset?: number): Promise<MediaRow[]> {
+    // secondary `id` tiebreaker: addedAt alone isn't unique (rows added in the same batch/millisecond
+    // sort arbitrarily against each other), so without it repeated LIMIT/OFFSET calls - e.g. a Subsonic
+    // client re-syncing - can return overlapping/duplicate pages instead of a stable partition
     let sql = `
         SELECT media.*
         FROM library_entries
         JOIN media ON media.id = library_entries.mediaId
         WHERE library_entries.userId = ?
-        ORDER BY media.addedAt DESC
+        ORDER BY media.addedAt DESC, media.id ASC
     `;
     const params: unknown[] = [userId];
     if (limit !== undefined) {
-        sql += ` LIMIT ? OFFSET ?`;
-        params.push(limit, offset ?? 0);
+        sql += ` LIMIT ${sqlInt(limit)} OFFSET ${sqlInt(offset ?? 0)}`;
     }
     return await getLibrariesDb().prepare(sql).all(...params) as MediaRow[];
 }
@@ -157,17 +163,17 @@ export async function getAlbumsOfUser(userId: string, limit?: number, offset?: n
             MIN(media.coverArt) AS coverArt,
             MIN(media.releaseDate) AS releaseDate,
             SUM(media.duration) AS duration,
-            COUNT(*) AS trackCount
+            COUNT(*) AS trackCount,
+            MIN(media.addedAt) AS addedAt
         FROM library_entries
         JOIN media ON media.id = library_entries.mediaId
         WHERE library_entries.userId = ? AND media.album IS NOT NULL AND media.albumId IS NOT NULL AND media.albumId != 'unknown-album'
         GROUP BY media.albumId
-        ORDER BY MAX(media.addedAt) DESC
+        ORDER BY MAX(media.addedAt) DESC, media.albumId ASC
     `;
     const params: unknown[] = [userId];
     if (limit !== undefined) {
-        sql += ` LIMIT ? OFFSET ?`;
-        params.push(limit, offset ?? 0);
+        sql += ` LIMIT ${sqlInt(limit)} OFFSET ${sqlInt(offset ?? 0)}`;
     }
 
     const rows = await getLibrariesDb().prepare(sql).all(...params) as (AlbumRow & { duration: string | number })[];
@@ -197,7 +203,8 @@ export async function getAlbumOfUser(userId: string, albumId: string): Promise<A
             MIN(media.coverArt) AS coverArt,
             MIN(media.releaseDate) AS releaseDate,
             SUM(media.duration) AS duration,
-            COUNT(*) AS trackCount
+            COUNT(*) AS trackCount,
+            MIN(media.addedAt) AS addedAt
         FROM library_entries
         JOIN media ON media.id = library_entries.mediaId
         WHERE library_entries.userId = ? AND media.albumId = ?
@@ -218,7 +225,7 @@ export async function getAlbumSongsOfUser(userId: string, albumId: string): Prom
         FROM library_entries
         JOIN media ON media.id = library_entries.mediaId
         WHERE library_entries.userId = ? AND media.albumId = ?
-        ORDER BY media.title ASC
+        ORDER BY media.title ASC, media.id ASC
     `).all(userId, albumId) as SubsonicSong[];
 }
 
@@ -282,7 +289,8 @@ export async function getArtistAlbumsOfUser(userId: string, artistId: string): P
             MIN(media.coverArt) AS coverArt,
             MIN(media.releaseDate) AS releaseDate,
             SUM(media.duration) AS duration,
-            COUNT(*) AS trackCount
+            COUNT(*) AS trackCount,
+            MIN(media.addedAt) AS addedAt
         FROM library_entries
         JOIN media ON media.id = library_entries.mediaId
         WHERE library_entries.userId = ? AND COALESCE(media.artistMbid, media.artistName) = ?
@@ -299,10 +307,14 @@ export type AlbumListSort = "newest" | "alphabeticalByName" | "alphabeticalByArt
 // real protocol aren't tracked by Nafyn (no per-album play counts or starring yet), so callers requesting an
 // unsupported sort fall back to "newest" rather than erroring
 export async function getAlbumListOfUser(userId: string, sort: AlbumListSort, limit: number, offset: number): Promise<AlbumRow[]> {
-    const orderBy = sort === "alphabeticalByName" ? "MIN(media.album) ASC"
-        : sort === "alphabeticalByArtist" ? "MIN(media.artistName) ASC"
+    // every mode but "random" gets an albumId tiebreaker - without one, ties (e.g. many albums added in the
+    // same download batch share one addedAt) sort arbitrarily against each other, so repeated LIMIT/OFFSET
+    // calls (a Subsonic client re-syncing via getAlbumList2) can return overlapping pages: the same album
+    // shows up twice, another gets skipped. "random" is deliberately different on every call, so it's exempt.
+    const orderBy = sort === "alphabeticalByName" ? "MIN(media.album) ASC, media.albumId ASC"
+        : sort === "alphabeticalByArtist" ? "MIN(media.artistName) ASC, media.albumId ASC"
         : sort === "random" ? "RAND()"
-        : "MAX(media.addedAt) DESC";
+        : "MAX(media.addedAt) DESC, media.albumId ASC";
 
     const rows = await getLibrariesDb().prepare(`
         SELECT
@@ -314,14 +326,15 @@ export async function getAlbumListOfUser(userId: string, sort: AlbumListSort, li
             MIN(media.coverArt) AS coverArt,
             MIN(media.releaseDate) AS releaseDate,
             SUM(media.duration) AS duration,
-            COUNT(*) AS trackCount
+            COUNT(*) AS trackCount,
+            MIN(media.addedAt) AS addedAt
         FROM library_entries
         JOIN media ON media.id = library_entries.mediaId
         WHERE library_entries.userId = ? AND media.album IS NOT NULL AND media.albumId IS NOT NULL AND media.albumId != 'unknown-album'
         GROUP BY media.albumId
         ORDER BY ${orderBy}
-        LIMIT ? OFFSET ?
-    `).all(userId, limit, offset) as (AlbumRow & { duration: string | number })[];
+        LIMIT ${sqlInt(limit)} OFFSET ${sqlInt(offset)}
+    `).all(userId) as (AlbumRow & { duration: string | number })[];
     return rows.map((row) => ({ ...row, duration: Number(row.duration) }));
 }
 
@@ -346,9 +359,9 @@ export async function searchLibraryOfUser(userId: string, query: string, artistC
         JOIN media ON media.id = library_entries.mediaId
         WHERE library_entries.userId = ? AND media.artistName LIKE ?
         GROUP BY COALESCE(media.artistMbid, media.artistName)
-        ORDER BY name ASC
-        LIMIT ?
-    `).all(userId, like, artistCount) as ArtistRow[];
+        ORDER BY name ASC, id ASC
+        LIMIT ${sqlInt(artistCount)}
+    `).all(userId, like) as ArtistRow[];
 
     const albumRows = await db.prepare(`
         SELECT
@@ -360,24 +373,25 @@ export async function searchLibraryOfUser(userId: string, query: string, artistC
             MIN(media.coverArt) AS coverArt,
             MIN(media.releaseDate) AS releaseDate,
             SUM(media.duration) AS duration,
-            COUNT(*) AS trackCount
+            COUNT(*) AS trackCount,
+            MIN(media.addedAt) AS addedAt
         FROM library_entries
         JOIN media ON media.id = library_entries.mediaId
         WHERE library_entries.userId = ? AND media.album LIKE ?
           AND media.albumId IS NOT NULL AND media.albumId != 'unknown-album'
         GROUP BY media.albumId
-        ORDER BY MIN(media.album) ASC
-        LIMIT ?
-    `).all(userId, like, albumCount) as (AlbumRow & { duration: string | number })[];
+        ORDER BY MIN(media.album) ASC, media.albumId ASC
+        LIMIT ${sqlInt(albumCount)}
+    `).all(userId, like) as (AlbumRow & { duration: string | number })[];
 
     const songs = await db.prepare(`
         SELECT media.*, library_entries.filePath AS filePath
         FROM library_entries
         JOIN media ON media.id = library_entries.mediaId
         WHERE library_entries.userId = ? AND media.title LIKE ?
-        ORDER BY media.title ASC
-        LIMIT ?
-    `).all(userId, like, songCount) as SubsonicSong[];
+        ORDER BY media.title ASC, media.id ASC
+        LIMIT ${sqlInt(songCount)}
+    `).all(userId, like) as SubsonicSong[];
 
     return {
         artists,
@@ -412,14 +426,12 @@ export async function updateMediaFileSize(mediaId: string, fileSize: number): Pr
 
 // every media row plus the userIds that own a library entry for it, for the MANAGE_MUSIC "everyone's library" view
 export async function getAllMediaWithOwners(limit?: number, offset?: number): Promise<(MediaRow & { ownerIds: string[] })[]> {
-    let sql = `SELECT * FROM media ORDER BY addedAt DESC`;
-    const params: unknown[] = [];
+    let sql = `SELECT * FROM media ORDER BY addedAt DESC, id ASC`;
     if (limit !== undefined) {
-        sql += ` LIMIT ? OFFSET ?`;
-        params.push(limit, offset ?? 0);
+        sql += ` LIMIT ${sqlInt(limit)} OFFSET ${sqlInt(offset ?? 0)}`;
     }
 
-    const media = await getLibrariesDb().prepare(sql).all(...params) as MediaRow[];
+    const media = await getLibrariesDb().prepare(sql).all() as MediaRow[];
     if (media.length === 0) return [];
 
     // only pull ownership for the media rows on this page, not the whole table

@@ -1,6 +1,6 @@
 // `NafynUser`s stuff
 import { randomUUID, UUID } from "node:crypto";
-import { getUsersDb } from "./db";
+import { getUsersDb, sqlInt } from "./db";
 import type { NafynUser } from "../entity/NafynUser";
 import { Permission } from "../entity/Permission";
 
@@ -118,12 +118,10 @@ export async function deleteUser(id: string): Promise<boolean> {
 
 export async function listUsers(limit?: number, offset?: number): Promise<NafynUser[]> {
     let sql = `SELECT * FROM users ORDER BY username ASC`;
-    const params: unknown[] = [];
     if (limit !== undefined) {
-        sql += ` LIMIT ? OFFSET ?`;
-        params.push(limit, offset ?? 0);
+        sql += ` LIMIT ${sqlInt(limit)} OFFSET ${sqlInt(offset ?? 0)}`;
     }
-    const rows = await getUsersDb().prepare(sql).all(...params) as UserRow[];
+    const rows = await getUsersDb().prepare(sql).all() as UserRow[];
     return rows.map(rowToUser);
 }
 

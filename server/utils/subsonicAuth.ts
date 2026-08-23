@@ -1,12 +1,17 @@
 // Subsonic auth over Nafyn accounts: the protocol supports both a plaintext `p=` password and a
-// token/salt pair (`t`/`s`, token = md5(password + salt)) so the server never has to see the raw password.
-// Token auth is impossible here - passwords are stored as bcrypt hashes (one-way), and verifying a token
-// would require the plaintext to hash against, which bcrypt deliberately never gives back. So only `p=`
-// (plain, or hex-encoded as `enc:...` per the spec) is supported; clients must be configured for password
-// auth rather than token auth against Nafyn.
+// token/salt pair (`t`/`s`, token = md5(secret + salt)) so the server never has to see the raw secret over
+// the wire. The real Nafyn account password is bcrypt-hashed (one-way) and can never support the t/s
+// challenge - verifying a token needs a secret the server can re-hash and compare, which a one-way hash
+// deliberately never allows. So:
+//   - `p=` (plain, or hex-encoded as `enc:...`) works against either the real account password, or one of
+//     the user's own API tokens (server/core/apiTokens.ts) used directly as the password.
+//   - `t=`/`s=` only works against an API token, never the real account password. Users generate tokens
+//     themselves in Settings and use one as the client's "password" instead of their real one.
 import type { H3Event } from "h3";
 import bcrypt from "bcrypt";
+import { createHash } from "node:crypto";
 import { getUserByUsername, getPasswordHash } from "../core/users";
+import { listApiTokenSecretsForUser, touchApiToken } from "../core/apiTokens";
 import type { NafynUser } from "../entity/NafynUser";
 import { consumeRateLimit, isWhitelisted, resetRateLimit } from "./rateLimit";
 import { SubsonicErrors, SubsonicApiError } from "./subsonicResponse";
@@ -22,16 +27,19 @@ function decodePassword(raw: string): string {
     return Buffer.from(raw.slice(4), "hex").toString("utf8");
 }
 
+function md5(value: string): string {
+    return createHash("md5").update(value).digest("hex");
+}
+
 export async function authenticateSubsonic(event: H3Event, query: Record<string, unknown>): Promise<NafynUser> {
     const username = typeof query.u === "string" ? query.u.trim() : "";
     const rawPassword = typeof query.p === "string" ? query.p : undefined;
-    const hasTokenAuth = typeof query.t === "string";
+    const t = typeof query.t === "string" ? query.t.toLowerCase() : undefined;
+    const s = typeof query.s === "string" ? query.s : undefined;
+    const hasChallenge = !!t && !!s;
 
-    if (!username || (!rawPassword && !hasTokenAuth)) {
+    if (!username || (!rawPassword && !hasChallenge)) {
         throw new SubsonicApiError(SubsonicErrors.missingParameter);
-    }
-    if (!rawPassword) {
-        throw new SubsonicApiError(SubsonicErrors.tokenAuthNotSupported);
     }
 
     const ip = getRequestIP(event, { xForwardedFor: true }) ?? "unknown";
@@ -44,20 +52,45 @@ export async function authenticateSubsonic(event: H3Event, query: Record<string,
         }
     }
 
-    const password = decodePassword(rawPassword);
-    const passwordHash = await getPasswordHash(username);
+    const user = await getUserByUsername(username);
+
+    if (hasChallenge) {
+        // no real password path can ever satisfy this - only API tokens are stored in a form the
+        // server can re-hash. An unknown username still checks against an empty token list rather
+        // than short-circuiting, so response timing doesn't reveal whether the account exists.
+        const tokens = user ? await listApiTokenSecretsForUser(user.id) : [];
+        const match = tokens.find((row) => md5(`${row.token}${s}`) === t);
+
+        if (!match || !user) {
+            throw new SubsonicApiError(SubsonicErrors.wrongCredentials);
+        }
+
+        resetRateLimit(rateLimitKey);
+        touchApiToken(match.id).catch(() => {});
+        return user;
+    }
+
+    const password = decodePassword(rawPassword!);
+    const passwordHash = user ? await getPasswordHash(username) : null;
 
     // always run bcrypt.compare, even for an unknown username, so early/late response timing can't leak account existence
-    const valid = await bcrypt.compare(password, passwordHash ?? DUMMY_HASH);
-    if (!passwordHash || !valid) {
-        throw new SubsonicApiError(SubsonicErrors.wrongCredentials);
+    const passwordValid = await bcrypt.compare(password, passwordHash ?? DUMMY_HASH);
+
+    if (passwordValid && user && passwordHash) {
+        resetRateLimit(rateLimitKey);
+        return user;
     }
 
-    const user = await getUserByUsername(username);
-    if (!user) {
-        throw new SubsonicApiError(SubsonicErrors.wrongCredentials);
+    // not the real account password - maybe it's an API token used directly as the password instead
+    if (user) {
+        const tokens = await listApiTokenSecretsForUser(user.id);
+        const match = tokens.find((row) => row.token === password);
+        if (match) {
+            resetRateLimit(rateLimitKey);
+            touchApiToken(match.id).catch(() => {});
+            return user;
+        }
     }
 
-    resetRateLimit(rateLimitKey);
-    return user;
+    throw new SubsonicApiError(SubsonicErrors.wrongCredentials);
 }

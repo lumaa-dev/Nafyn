@@ -1,7 +1,7 @@
 // custom playlists: owner + collaborating members, entries reference the shared `media` pool directly (not library_entries),
 // so a member can add a track to a shared playlist without owning it in their personal library
 import { randomUUID } from "node:crypto";
-import { getLibrariesDb, withTransaction } from "./db";
+import { getLibrariesDb, withTransaction, sqlInt } from "./db";
 import type { MediaRow } from "./library";
 
 export type PlaylistSortMode = "manual" | "title" | "artist" | "addedBy" | "duration";
@@ -77,12 +77,11 @@ export async function getPlaylistsForUser(userId: string, limit?: number, offset
         FROM playlists
         LEFT JOIN playlist_members ON playlist_members.playlistId = playlists.id
         WHERE playlists.ownerId = ? OR playlist_members.userId = ?
-        ORDER BY playlists.updatedAt DESC
+        ORDER BY playlists.updatedAt DESC, playlists.id ASC
     `;
     const params: unknown[] = [userId, userId];
     if (limit !== undefined) {
-        sql += ` LIMIT ? OFFSET ?`;
-        params.push(limit, offset ?? 0);
+        sql += ` LIMIT ${sqlInt(limit)} OFFSET ${sqlInt(offset ?? 0)}`;
     }
     return await getLibrariesDb().prepare(sql).all(...params) as PlaylistRow[];
 }
@@ -211,8 +210,7 @@ export async function getEntries(playlistId: string, limit?: number, offset?: nu
     `;
     const params: unknown[] = [playlistId];
     if (limit !== undefined) {
-        sql += ` LIMIT ? OFFSET ?`;
-        params.push(limit, offset ?? 0);
+        sql += ` LIMIT ${sqlInt(limit)} OFFSET ${sqlInt(offset ?? 0)}`;
     }
 
     const rows = await getLibrariesDb().prepare(sql).all(...params) as EntryMediaJoinRow[];

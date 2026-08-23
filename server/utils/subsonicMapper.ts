@@ -3,7 +3,7 @@
 import { extname } from "node:path";
 import type { AlbumRow, ArtistRow, SubsonicSong } from "./library";
 import type { PlaylistRow, PlaylistEntryWithMedia } from "./playlists";
-import { el, type SubsonicNode } from "./subsonicResponse";
+import { el, asList, type SubsonicNode } from "./subsonicResponse";
 
 const MIME_TYPES: Record<string, string> = {
     ".mp3": "audio/mpeg",
@@ -67,14 +67,17 @@ export function albumNode(album: AlbumRow): SubsonicNode {
         songCount: album.trackCount,
         duration: Math.round(album.duration),
         year: album.releaseDate ? new Date(album.releaseDate * 1000).getUTCFullYear() : undefined,
-        created: album.releaseDate ? isoDate(album.releaseDate, true) : isoDate(Date.now())
+        // must be a fixed point in time, not "now" - a client using `created`/`changed` to decide whether
+        // an item is new since its last sync would otherwise see a different value on every single fetch
+        // and treat the whole album (and its tracks) as freshly added or modified every time
+        created: album.releaseDate ? isoDate(album.releaseDate, true) : isoDate(album.addedAt)
     });
 }
 
 export function albumWithSongsNode(album: AlbumRow, songs: SubsonicSong[]): SubsonicNode {
     const node = albumNode(album);
     node.tag = "album";
-    node.children = songs.map(songNode);
+    node.children = asList(songs.map(songNode));
     return node;
 }
 
@@ -88,7 +91,7 @@ export function artistNode(artist: ArtistRow): SubsonicNode {
 
 export function artistWithAlbumsNode(artist: ArtistRow, albums: AlbumRow[]): SubsonicNode {
     const node = artistNode(artist);
-    node.children = albums.map(albumNode);
+    node.children = asList(albums.map(albumNode));
     return node;
 }
 
@@ -109,11 +112,16 @@ export function playlistNode(playlist: PlaylistRow, songCount: number, durationS
 export function playlistWithSongsNode(playlist: PlaylistRow, entries: PlaylistEntryWithMedia[], filePathByMediaId: Map<string, string>): SubsonicNode {
     const durationSeconds = entries.reduce((sum, e) => sum + e.media.duration, 0);
     const node = playlistNode(playlist, entries.length, durationSeconds);
-    node.children = entries
+    const songs = entries
         .map((e) => {
             const filePath = filePathByMediaId.get(e.media.id);
-            return filePath ? songNode({ ...e.media, filePath }) : null;
+            if (!filePath) return null;
+            // playlist tracks use the same Child type/attributes as a plain song, but the schema names
+            // the element "entry" here, not "song" - a client parsing strictly against the XSD (or a
+            // typed JSON model) rejects the response if this tag is wrong even though the content is fine
+            return { ...songNode({ ...e.media, filePath }), tag: "entry" };
         })
         .filter((n): n is SubsonicNode => n !== null);
+    node.children = asList(songs);
     return node;
 }

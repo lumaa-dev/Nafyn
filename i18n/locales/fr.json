@@ -164,8 +164,21 @@
       "username": "Nom d'utilisateur",
       "copy": "Copier",
       "copied": "Copié dans le presse-papiers",
-      "passwordNote": "Utilisez votre mot de passe Nafyn habituel.",
-      "tokenNote": "Si l'application propose un choix, préférez la connexion par mot de passe plutôt que par jeton - Nafyn ne peut pas prendre en charge l'authentification par jeton car les mots de passe sont stockés sous forme de hachages à sens unique."
+      "passwordNote": "Votre mot de passe Nafyn habituel fonctionne pour la connexion par mot de passe. Pour la connexion par jeton, générez un jeton API ci-dessous et utilisez-le comme mot de passe.",
+      "tokens": {
+        "title": "Jetons API",
+        "intro": "Mots de passe d'application pour les clients tiers. Requis pour la connexion Subsonic par jeton (votre mot de passe réel ne peut pas y être utilisé) ; fonctionnent aussi comme mot de passe classique.",
+        "revealWarning": "Copiez-le maintenant - il ne sera plus affiché ensuite.",
+        "dismiss": "Terminé",
+        "unnamed": "Jeton sans nom",
+        "created": "Créé le {date}",
+        "lastUsed": "Utilisé le {date}",
+        "neverUsed": "Jamais utilisé",
+        "delete": "Révoquer",
+        "empty": "Aucun jeton API pour l'instant.",
+        "namePlaceholder": "Label (ex : Arpeggi sur iPhone)",
+        "generate": "Générer un jeton"
+      }
     }
   },
   "playlist": {

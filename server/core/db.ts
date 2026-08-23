@@ -36,6 +36,18 @@ function bind(params: unknown[]): any {
     return params;
 }
 
+// mysql2's `.execute()` (server-side prepared statements) rejects `LIMIT ?`/`OFFSET ?` placeholders with
+// "Incorrect arguments to mysqld_stmt_execute" (ER_WRONG_ARGUMENTS) - a known mysql2/MySQL protocol
+// limitation, not something bind() above can work around. Every caller that needs LIMIT/OFFSET has to inline
+// a validated integer straight into the SQL string instead; this is what makes that safe to do.
+export function sqlInt(n: number): number {
+    const int = Math.trunc(n);
+    if (!Number.isFinite(int) || int < 0) {
+        throw new Error(`Invalid LIMIT/OFFSET value: ${n}`);
+    }
+    return int;
+}
+
 // thin better-sqlite3-shaped wrapper over a mysql2 pool; `.get`/`.all`/`.run` are async now (MySQL is async),
 // but the call shape (`db.prepare(sql).get(id)`) is otherwise identical to the old SQLite code
 class Statement {
@@ -150,6 +162,20 @@ export async function initDatabases(): Promise<void> {
             createdAt BIGINT NOT NULL,
             expiresAt BIGINT NOT NULL,
             usedAt BIGINT
+        );
+
+        -- user-generated, revocable app passwords: stored as plaintext (not bcrypt-hashed like the account
+        -- password) because Subsonic's token-auth challenge (t = md5(secret + s)) requires the server to
+        -- hold something it can re-hash and compare against, which a one-way bcrypt hash can never allow.
+        -- Also usable directly as a password (p=) by clients that don't do the challenge.
+        CREATE TABLE IF NOT EXISTS api_tokens (
+            id VARCHAR(36) PRIMARY KEY,
+            userId VARCHAR(36) NOT NULL,
+            name VARCHAR(100),
+            token VARCHAR(64) NOT NULL UNIQUE,
+            createdAt BIGINT NOT NULL,
+            lastUsedAt BIGINT,
+            INDEX idx_api_tokens_userId (userId)
         );
     `);
 

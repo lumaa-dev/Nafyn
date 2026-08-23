@@ -26,12 +26,23 @@ import {
     searchLibraryOfUser,
     type AlbumListSort
 } from "~~/server/core/library";
-import { getPlaylistsForUser, getPlaylistById, getEntries, hasAccess } from "~~/server/core/playlists";
+import {
+    getPlaylistsForUser,
+    getPlaylistById,
+    getEntries,
+    hasAccess,
+    createPlaylist as createPlaylistRow,
+    updatePlaylist as updatePlaylistRow,
+    deletePlaylist as deletePlaylistRow,
+    addEntries,
+    removeEntry,
+    type PlaylistRow
+} from "~~/server/core/playlists";
 import { recordRecentlyPlayed } from "~~/server/core/recentlyPlayed";
 import { playlistImageFilePath } from "~~/server/utils/playlistImage";
 import { getLastfmArtistInfo } from "~~/server/utils/lastfm";
 import { authenticateSubsonic } from "~~/server/utils/subsonicAuth";
-import { sendSubsonicResponse, errorNode, SubsonicErrors, SubsonicApiError, el, type SubsonicNode, type SubsonicFormat } from "~~/server/utils/subsonicResponse";
+import { sendSubsonicResponse, errorNode, SubsonicErrors, SubsonicApiError, el, asList, type SubsonicNode, type SubsonicFormat } from "~~/server/utils/subsonicResponse";
 import { songNode, albumNode, albumWithSongsNode, artistNode, artistWithAlbumsNode, playlistNode, playlistWithSongsNode, contentTypeFor } from "~~/server/utils/subsonicMapper";
 import type { NafynUser } from "~~/server/entity/NafynUser";
 
@@ -53,16 +64,49 @@ function requireParam(query: Record<string, unknown>, key: string): string {
     return v;
 }
 
+// repeatable params (songId, songIdToAdd, songIndexToRemove, ...) arrive as an array once the client sends
+// the same key twice, but as a bare string when there's only one - normalize to always-an-array
+function allStr(query: Record<string, unknown>, key: string): string[] {
+    const v = query[key];
+    if (Array.isArray(v)) return v.filter((x): x is string => typeof x === "string");
+    return typeof v === "string" ? [v] : [];
+}
+
 type Handler = (event: H3Event, query: Record<string, unknown>, user: NafynUser) => Promise<SubsonicNode[]>;
 
 const ALBUM_LIST_SORTS = new Set<AlbumListSort>(["newest", "alphabeticalByName", "alphabeticalByArtist", "random"]);
+
+// shared by getPlaylist/createPlaylist: full playlist + resolved song list, in the shape getPlaylist.view
+// and createPlaylist.view both return
+async function buildPlaylistNode(playlist: PlaylistRow): Promise<SubsonicNode> {
+    const entries = await getEntries(playlist.id);
+    // playlist entries reference the shared media pool directly (server/core/playlists.ts), not this
+    // viewer's own library_entries, so filePath for display comes from whichever owner has the file -
+    // actual stream.view access is still gated per-viewer via findLibraryEntry, same as the rest of the app
+    const filePathByMediaId = new Map<string, string>();
+    for (const entry of entries) {
+        const source = await findAnyLibraryEntryForMedia(entry.media.id);
+        if (source) filePathByMediaId.set(entry.media.id, source.filePath);
+    }
+    return playlistWithSongsNode(playlist, entries, filePathByMediaId);
+}
+
+// addEntries() relies on playlist_entries' FK constraint on mediaId to reject unknown songs - translate
+// that into a Subsonic-shaped error instead of letting a raw DB error escape as an HTTP 500
+async function addSongsSafely(playlistId: string, mediaIds: string[], addedBy: string): Promise<void> {
+    try {
+        await addEntries(playlistId, mediaIds, addedBy);
+    } catch {
+        throw new SubsonicApiError(SubsonicErrors.notFound);
+    }
+}
 
 const handlers: Record<string, Handler> = {
     ping: async () => [],
 
     getLicense: async () => [el("license", { valid: true })],
 
-    getMusicFolders: async () => [el("musicFolders", {}, [el("musicFolder", { id: 0, name: "Nafyn" })])],
+    getMusicFolders: async () => [el("musicFolders", {}, asList([el("musicFolder", { id: 0, name: "Nafyn" })]))],
 
     getArtists: async (_event, _query, user) => {
         const artists = await getArtistsOfUser(user.id);
@@ -78,9 +122,9 @@ const handlers: Record<string, Handler> = {
 
         const indices = [...groups.entries()]
             .sort(([a], [b]) => a.localeCompare(b))
-            .map(([letter, groupArtists]) => el("index", { name: letter }, groupArtists.map(artistNode)));
+            .map(([letter, groupArtists]) => el("index", { name: letter }, asList(groupArtists.map(artistNode))));
 
-        return [el("artists", { ignoredArticles: "" }, indices)];
+        return [el("artists", { ignoredArticles: "" }, asList(indices))];
     },
 
     getArtist: async (_event, query, user) => {
@@ -128,7 +172,7 @@ const handlers: Record<string, Handler> = {
         const offset = Math.max(firstNum(query, "offset", 0), 0);
 
         const albums = await getAlbumListOfUser(user.id, sort, size, offset);
-        return [el("albumList2", {}, albums.map(albumNode))];
+        return [el("albumList2", {}, asList(albums.map(albumNode)))];
     },
 
     getSong: async (_event, query, user) => {
@@ -146,9 +190,9 @@ const handlers: Record<string, Handler> = {
 
         const results = await searchLibraryOfUser(user.id, q, artistCount, albumCount, songCount);
         return [el("searchResult3", {}, [
-            ...results.artists.map(artistNode),
-            ...results.albums.map(albumNode),
-            ...results.songs.map(songNode)
+            ...asList(results.artists.map(artistNode)),
+            ...asList(results.albums.map(albumNode)),
+            ...asList(results.songs.map(songNode))
         ])];
     },
 
@@ -159,7 +203,7 @@ const handlers: Record<string, Handler> = {
             const duration = entries.reduce((sum, e) => sum + e.media.duration, 0);
             return playlistNode(playlist, entries.length, duration);
         }));
-        return [el("playlists", {}, nodes)];
+        return [el("playlists", {}, asList(nodes))];
     },
 
     getPlaylist: async (_event, query, user) => {
@@ -172,17 +216,86 @@ const handlers: Record<string, Handler> = {
             throw new SubsonicApiError(SubsonicErrors.notFound);
         }
 
-        const entries = await getEntries(playlist.id);
-        // playlist entries reference the shared media pool directly (server/core/playlists.ts), not this
-        // viewer's own library_entries, so filePath for display comes from whichever owner has the file -
-        // actual stream.view access is still gated per-viewer via findLibraryEntry, same as the rest of the app
-        const filePathByMediaId = new Map<string, string>();
-        for (const entry of entries) {
-            const source = await findAnyLibraryEntryForMedia(entry.media.id);
-            if (source) filePathByMediaId.set(entry.media.id, source.filePath);
+        return [await buildPlaylistNode(playlist)];
+    },
+
+    // creates a new playlist (name + optional initial songId list), or - if playlistId is given - replaces
+    // an existing playlist's entire song list, per the Subsonic spec's dual behavior for this one endpoint
+    createPlaylist: async (_event, query, user) => {
+        const existingId = firstStr(query, "playlistId");
+        const name = firstStr(query, "name");
+        const songIds = allStr(query, "songId");
+
+        let playlist;
+        if (existingId) {
+            playlist = await getPlaylistById(existingId);
+            if (!playlist) throw new SubsonicApiError(SubsonicErrors.notFound);
+            if (playlist.ownerId !== user.id && !(await hasAccess(playlist, user.id))) {
+                throw new SubsonicApiError(SubsonicErrors.notAuthorized);
+            }
+
+            for (const entry of await getEntries(playlist.id)) await removeEntry(entry.entryId);
+            if (songIds.length > 0) await addSongsSafely(playlist.id, songIds, user.id);
+        } else {
+            if (!name) throw new SubsonicApiError(SubsonicErrors.missingParameter);
+            playlist = await createPlaylistRow(user.id, name.slice(0, 100), null, "private");
+            if (songIds.length > 0) await addSongsSafely(playlist.id, songIds, user.id);
         }
 
-        return [playlistWithSongsNode(playlist, entries, filePathByMediaId)];
+        return [await buildPlaylistNode(playlist)];
+    },
+
+    // incremental edit: rename/re-describe/re-privacy an existing playlist, and/or add and remove specific
+    // tracks, rather than createPlaylist's "replace the whole song list" approach
+    updatePlaylist: async (_event, query, user) => {
+        const id = requireParam(query, "playlistId");
+        const playlist = await getPlaylistById(id);
+        if (!playlist) throw new SubsonicApiError(SubsonicErrors.notFound);
+
+        const isOwner = playlist.ownerId === user.id;
+        if (!isOwner && !(await hasAccess(playlist, user.id))) {
+            throw new SubsonicApiError(SubsonicErrors.notAuthorized);
+        }
+
+        const name = firstStr(query, "name");
+        const comment = firstStr(query, "comment");
+        const isPublic = firstStr(query, "public");
+        if (name !== undefined || comment !== undefined || isPublic !== undefined) {
+            await updatePlaylistRow(id, {
+                ...(name !== undefined ? { title: name.slice(0, 100) } : {}),
+                ...(comment !== undefined ? { description: comment || null } : {}),
+                ...(isPublic !== undefined ? { privacy: (isPublic === "true" ? "public" : "private") as "public" | "private" } : {})
+            });
+        }
+
+        const indicesToRemove = allStr(query, "songIndexToRemove").map(Number).filter(Number.isInteger);
+        if (indicesToRemove.length > 0) {
+            // indices refer to position in the playlist's current order at the time of the request, so this
+            // has to be resolved to entry IDs before any add below could shift what "index" would even mean
+            const currentEntries = await getEntries(id);
+            const removable = indicesToRemove
+                .map((i) => currentEntries[i])
+                .filter((e): e is typeof currentEntries[number] => !!e)
+                // mirrors server/api/v1/playlist/[pid]/tracks/[eid].delete.ts: owner removes anything, a
+                // member only what they personally added
+                .filter((e) => isOwner || e.addedBy === user.id);
+            for (const entry of removable) await removeEntry(entry.entryId);
+        }
+
+        const idsToAdd = allStr(query, "songIdToAdd");
+        if (idsToAdd.length > 0) await addSongsSafely(id, idsToAdd, user.id);
+
+        return [];
+    },
+
+    deletePlaylist: async (_event, query, user) => {
+        const id = requireParam(query, "id");
+        const playlist = await getPlaylistById(id);
+        if (!playlist) throw new SubsonicApiError(SubsonicErrors.notFound);
+        if (playlist.ownerId !== user.id) throw new SubsonicApiError(SubsonicErrors.notAuthorized);
+
+        await deletePlaylistRow(id);
+        return [];
     },
 
     scrobble: async (_event, query, user) => {

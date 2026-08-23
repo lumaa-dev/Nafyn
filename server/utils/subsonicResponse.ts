@@ -8,11 +8,23 @@ export type NodeValue = string | number | boolean | undefined | null;
 export interface SubsonicNode {
     tag: string,
     attrs?: Record<string, NodeValue>,
-    children?: SubsonicNode[]
+    children?: SubsonicNode[],
+    // JSON only: forces this node to serialize as a single-element array even when it turns out to be the
+    // only occurrence of its tag among its siblings. The Subsonic schema fixes, per element, whether it's
+    // singular (maxOccurs=1, e.g. the `album` in getAlbum.view) or repeatable (maxOccurs=unbounded, e.g. the
+    // `song`s inside it) - XML doesn't care, but JSON does, and strict/typed clients (Codable on iOS
+    // especially) reject the wrong shape outright ("data couldn't be read"). Callers building a repeatable
+    // list must mark every item with this via asList() below, even when the list currently has just 1 item.
+    list?: boolean
 }
 
-export function el(tag: string, attrs: Record<string, NodeValue> = {}, children: SubsonicNode[] = []): SubsonicNode {
-    return { tag, attrs, children };
+export function el(tag: string, attrs: Record<string, NodeValue> = {}, children: SubsonicNode[] = [], list: boolean = false): SubsonicNode {
+    return { tag, attrs, children, list };
+}
+
+// marks a set of sibling nodes as a repeatable list for JSON serialization - see SubsonicNode.list
+export function asList(nodes: SubsonicNode[]): SubsonicNode[] {
+    return nodes.map((n) => ({ ...n, list: true }));
 }
 
 function xmlEscape(value: string): string {
@@ -34,21 +46,29 @@ function nodeToXml(node: SubsonicNode): string {
     return `<${node.tag}${attrs}>${node.children.map(nodeToXml).join("")}</${node.tag}>`;
 }
 
-// Subsonic's JSON mapping: attributes become plain fields, and every repeatable child element becomes an
-// array keyed by its tag name (even a single occurrence), since JSON has no XML-style repeated-element concept
+// Subsonic's JSON mapping: attributes become plain fields. A child tag serializes as an array only when
+// it's marked repeatable (SubsonicNode.list, see above) or there's genuinely more than one of it; a lone
+// occurrence of a non-list tag collapses to a plain object, matching the XSD's maxOccurs=1 elements
+// (license, the album in getAlbum.view, etc) - getting this wrong is why strict/typed JSON clients reject
+// the response outright with a "wrong format" style error even though the XML equivalent looks identical.
 function nodeToJson(node: SubsonicNode): Record<string, unknown> {
     const obj: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(node.attrs ?? {})) {
         if (v !== undefined && v !== null) obj[k] = v;
     }
 
-    const grouped = new Map<string, unknown[]>();
+    const grouped = new Map<string, SubsonicNode[]>();
     for (const child of node.children ?? []) {
-        const arr = grouped.get(child.tag) ?? [];
-        arr.push(nodeToJson(child));
-        grouped.set(child.tag, arr);
+        const group = grouped.get(child.tag) ?? [];
+        group.push(child);
+        grouped.set(child.tag, group);
     }
-    for (const [tag, arr] of grouped) obj[tag] = arr;
+
+    for (const [tag, group] of grouped) {
+        const values = group.map(nodeToJson);
+        const isArray = group.length > 1 || group[0]?.list === true;
+        obj[tag] = isArray ? values : values[0];
+    }
 
     return obj;
 }
@@ -58,13 +78,15 @@ export type SubsonicFormat = "xml" | "json" | "jsonp";
 // wraps `body` (the endpoint-specific children, e.g. an `artists` node for getArtists) in the standard
 // subsonic-response envelope and writes it in the requested format; `callback` is only used for jsonp
 export function sendSubsonicResponse(event: import("h3").H3Event, format: SubsonicFormat, status: "ok" | "failed", body: SubsonicNode[] = [], callback?: string): string {
-    const root = el("subsonic-response", { status, version: SUBSONIC_API_VERSION, type: "nafyn" }, body);
-
     if (format === "xml") {
+        // xmlns is required on the XML root per the spec - a client parsing against the schema's namespace
+        // will reject the response as malformed without it, even though the rest of the document is fine
+        const root = el("subsonic-response", { xmlns: "http://subsonic.org/restapi", status, version: SUBSONIC_API_VERSION, type: "nafyn" }, body);
         setResponseHeader(event, "Content-Type", "text/xml; charset=utf-8");
         return `<?xml version="1.0" encoding="UTF-8"?>${nodeToXml(root)}`;
     }
 
+    const root = el("subsonic-response", { status, version: SUBSONIC_API_VERSION, type: "nafyn" }, body);
     const json = JSON.stringify({ "subsonic-response": nodeToJson(root) });
     if (format === "jsonp") {
         setResponseHeader(event, "Content-Type", "application/javascript; charset=utf-8");
@@ -84,7 +106,6 @@ export const SubsonicErrors = {
     generic: (message: string): SubsonicErrorCode => ({ code: 0, message }),
     missingParameter: { code: 10, message: "Required parameter is missing" },
     wrongCredentials: { code: 40, message: "Wrong username or password" },
-    tokenAuthNotSupported: { code: 41, message: "Token authentication not supported for this account; use password authentication (p=) instead" },
     notAuthorized: { code: 50, message: "User is not authorized for the given operation" },
     notFound: { code: 70, message: "Requested data was not found" }
 } as const;

@@ -165,8 +165,21 @@
       "username": "Username",
       "copy": "Copy",
       "copied": "Copied to clipboard",
-      "passwordNote": "Use your regular Nafyn account password.",
-      "tokenNote": "If the app offers a choice, pick password-based login rather than token-based - Nafyn can't support token auth since passwords are stored as one-way hashes."
+      "passwordNote": "Your regular Nafyn account password works for password-based login. For token-based login, generate an API token below and use that as the password instead.",
+      "tokens": {
+        "title": "API tokens",
+        "intro": "App passwords for third-party clients. Required for token-based Subsonic login (your real account password can't be used there); also work as a regular password.",
+        "revealWarning": "Copy this now - it won't be shown again.",
+        "dismiss": "Done",
+        "unnamed": "Unnamed token",
+        "created": "Created {date}",
+        "lastUsed": "Last used {date}",
+        "neverUsed": "Never used",
+        "delete": "Revoke",
+        "empty": "No API tokens yet.",
+        "namePlaceholder": "Label (e.g. Arpeggi on iPhone)",
+        "generate": "Generate token"
+      }
     }
   },
   "playlist": {

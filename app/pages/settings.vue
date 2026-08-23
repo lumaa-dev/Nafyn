@@ -160,7 +160,36 @@
         </div>
 
         <p class="subsonic-note">{{ $t('settings.subsonic.passwordNote') }}</p>
-        <p class="subsonic-note">{{ $t('settings.subsonic.tokenNote') }}</p>
+
+        <section class="subsection">
+          <h2>{{ $t('settings.subsonic.tokens.title') }}</h2>
+          <p class="subsonic-intro">{{ $t('settings.subsonic.tokens.intro') }}</p>
+
+          <div v-if="newToken" class="new-token-reveal">
+            <p class="new-token-warning">{{ $t('settings.subsonic.tokens.revealWarning') }}</p>
+            <div class="copy-field">
+              <input type="text" readonly :value="newToken.token" @click="($event.target as HTMLInputElement).select()">
+              <button type="button" filled="hollow" @click="copyToClipboard(newToken.token)">{{ $t('settings.subsonic.copy') }}</button>
+            </div>
+            <button type="button" filled="hollow" @click="newToken = null">{{ $t('settings.subsonic.tokens.dismiss') }}</button>
+          </div>
+
+          <ul v-if="apiTokens.length > 0" class="api-token-list">
+            <li v-for="t in apiTokens" :key="t.id">
+              <span class="col">
+                <span class="title">{{ t.name || $t('settings.subsonic.tokens.unnamed') }}</span>
+                <span class="artist">{{ $t('settings.subsonic.tokens.created', { date: formatDate(t.createdAt) }) }} &middot; {{ t.lastUsedAt ? $t('settings.subsonic.tokens.lastUsed', { date: formatDate(t.lastUsedAt) }) : $t('settings.subsonic.tokens.neverUsed') }}</span>
+              </span>
+              <button class="danger" type="button" filled="hollow" :disabled="deletingTokenId === t.id" @click="removeApiToken(t.id)">{{ $t('settings.subsonic.tokens.delete') }}</button>
+            </li>
+          </ul>
+          <p v-else class="subsonic-note">{{ $t('settings.subsonic.tokens.empty') }}</p>
+
+          <div class="token-generator">
+            <input v-model="newTokenName" type="text" maxlength="100" :placeholder="$t('settings.subsonic.tokens.namePlaceholder')">
+            <button type="button" filled="hollow" :disabled="generatingApiToken" @click="generateApiToken">{{ $t('settings.subsonic.tokens.generate') }}</button>
+          </div>
+        </section>
       </div>
     </section>
   </div>
@@ -170,6 +199,7 @@
 import type { NafynUser } from '~~/server/entity/NafynUser';
 import { hasPermission, Permission } from '~~/server/entity/Permission';
 import type { RegisterTokenRow } from '~~/server/core/registerTokens';
+import type { ApiTokenSummary, ApiTokenRow } from '~~/server/core/apiTokens';
 
 const token = useCookie("nafynToken").value ?? "";
 
@@ -203,9 +233,10 @@ const categories = computed(() => {
   return cats;
 });
 
-// Subsonic-compatible clients (Navidrome apps, Sound Room, DSub, ...) connect to this same origin's
-// /rest endpoint (server/routes/rest/[method].ts) using the account's normal username/password
-const subsonicUrl = computed(() => (import.meta.client ? `${location.origin}/rest` : ""));
+// Subsonic-compatible clients (Navidrome apps, Sound Room, DSub, ...) want the bare server origin here -
+// they append /rest/{method}.view themselves (server/routes/rest/[method].ts), so handing out a URL that
+// already ends in /rest doubles up into /rest/rest/... and 404s (this bit a real user - keep it bare)
+const subsonicUrl = computed(() => (import.meta.client ? location.origin : ""));
 
 async function copyToClipboard(value: string) {
   if (!value) return;
@@ -214,6 +245,48 @@ async function copyToClipboard(value: string) {
     sendToast($t('settings.subsonic.title'), $t('settings.subsonic.copied'));
   } catch {
     // clipboard access denied (permissions, insecure context, ...) - the field is still selectable/copyable by hand
+  }
+}
+
+// -- API tokens (app passwords, currently used for Subsonic auth - server/utils/subsonicAuth.ts) --
+
+const apiTokens = ref<ApiTokenSummary[]>([]);
+const newTokenName = ref("");
+const newToken = ref<ApiTokenRow | null>(null);
+const generatingApiToken = ref(false);
+const deletingTokenId = ref<string | null>(null);
+
+async function loadApiTokens() {
+  apiTokens.value = await $fetch<ApiTokenSummary[]>("/api/v1/user/tokens", { headers: { Authorization: token } });
+}
+
+async function generateApiToken() {
+  generatingApiToken.value = true;
+  try {
+    const created = await $fetch<ApiTokenRow>("/api/v1/user/tokens", {
+      method: "POST",
+      headers: { Authorization: token },
+      body: { name: newTokenName.value.trim() || null }
+    });
+    newToken.value = created;
+    newTokenName.value = "";
+    await loadApiTokens();
+  } catch (e) {
+    sendToast($t('settings.subsonic.tokens.title'), (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error'), false);
+  } finally {
+    generatingApiToken.value = false;
+  }
+}
+
+async function removeApiToken(id: string) {
+  deletingTokenId.value = id;
+  try {
+    await $fetch(`/api/v1/user/tokens/${id}`, { method: "DELETE", headers: { Authorization: token } });
+    apiTokens.value = apiTokens.value.filter((t) => t.id !== id);
+  } catch (e) {
+    sendToast($t('settings.subsonic.tokens.title'), (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error'), false);
+  } finally {
+    deletingTokenId.value = null;
   }
 }
 
@@ -525,6 +598,7 @@ function onPieHover(e: MouseEvent) {
 watch(activeCategory, async (cat) => {
   if (cat === 'accounts' && users.value.length === 0) await loadAccountsPanel();
   if (cat === 'storage' && !storage.value) await loadStoragePanel();
+  if (cat === 'subsonic' && apiTokens.value.length === 0) await loadApiTokens();
 });
 </script>
 
@@ -871,6 +945,57 @@ watch(activeCategory, async (cat) => {
 
 .subsonic-note {
   font-size: 0.7em;
+  color: #666666;
+}
+
+.new-token-reveal {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #93c47d1a;
+  border: 1px solid #93c47d55;
+}
+
+.new-token-warning {
+  font-size: 0.75em;
+  color: #93c47d;
+}
+
+.api-token-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+  padding: 0;
+}
+
+.api-token-list li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #00000030;
+}
+
+.api-token-list .col {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.api-token-list .title {
+  font-size: 0.85em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.api-token-list .artist {
+  font-size: 0.65em;
   color: #666666;
 }
 
