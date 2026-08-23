@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
-import { createUser, isUsernameTaken, listUsers } from "../../../core/users";
+import { createUser, isUsernameTaken, countUsers, updateUser } from "../../../core/users";
 import { consumeRateLimit, isWhitelisted } from "../../../utils/rateLimit";
+import { getClientIP } from "../../../utils/clientIp";
 import { signAuthToken } from "../../../utils/jwt";
 import { Permission } from "../../../entity/Permission";
 import { isRegistrationOpen } from "../../../core/appSettings";
@@ -121,8 +122,8 @@ defineRouteMeta({
 });
 
 export default defineEventHandler(async (event) => {
-    const ip = getRequestIP(event, { xForwardedFor: true }) ?? "unknown";    
-    if (!isWhitelisted(ip)) {
+    const ip = getClientIP(event);
+    if (!await isWhitelisted(ip)) {
         const rateLimit = consumeRateLimit(`register:${ip}`, MAX_ATTEMPTS, WINDOW_MS);
     
         if (!rateLimit.allowed) {
@@ -154,7 +155,10 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 409, statusMessage: "Username is already taken" });
     }
 
-    let defaultPerms: Permission | Permission[] = (await listUsers()).length <= 0 ? Permission.ADMIN : [Permission.REQUEST_TRACKS, Permission.REQUEST_ALBUMS];
+    // SECURITY: the very first account bootstraps as ADMIN. Deciding that by pulling every user row was
+    // both wasteful and a race - two registrations landing together could each see an empty table and each
+    // claim ADMIN. countUsers() is cheap, and the re-check after the insert below closes the window.
+    let defaultPerms: Permission | Permission[] = (await countUsers()) === 0 ? Permission.ADMIN : [Permission.REQUEST_TRACKS, Permission.REQUEST_ALBUMS];
 
     const passwordHash = bcrypt.hashSync(password, 12);
 
@@ -166,6 +170,14 @@ export default defineEventHandler(async (event) => {
         lastFm: null,
         discogs: null
     }, passwordHash);
+
+    // race guard for the bootstrap-admin grant above: if another registration won the insert first, this
+    // account is not actually the first one and must not keep ADMIN
+    if (defaultPerms === Permission.ADMIN && (await countUsers()) > 1) {
+        const downgraded = Permission.REQUEST_TRACKS | Permission.REQUEST_ALBUMS;
+        await updateUser(user.id, { permissions: downgraded });
+        user.permissions = downgraded;
+    }
 
     if (tokenRow) {
         await consumeRegisterToken(tokenRow.id);

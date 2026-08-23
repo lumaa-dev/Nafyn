@@ -5,6 +5,7 @@ import type { TrackInfo } from "~~/server/entity/media/TrackInfo";
 import type { ArtistInfo } from "~~/server/entity/media/ArtistInfo";
 import { findLibraryEntry, findMediaByMusicbrainzId } from "~~/server/core/library";
 import { hasActiveRequest } from "~~/server/core/requests";
+import { assertMbid } from "~~/server/utils/ids";
 
 defineRouteMeta({
     openAPI: {
@@ -118,10 +119,8 @@ defineRouteMeta({
 export default defineEventHandler(async (event): Promise<AlbumDetail> => {
     const { sub: userId } = requireAuthToken(event);
 
-    const aid = getRouterParam(event, "aid");
-    if (!aid) {
-        throw createError({ statusCode: 400, message: "Missing album ID" });
-    }
+    // SECURITY: see the note in track/[tid].get.ts - this reaches an upstream MusicBrainz REST path
+    const aid = assertMbid(getRouterParam(event, "aid"), "album ID");
 
     const client = getMusicBrainzClient();
 

@@ -4,6 +4,8 @@ import { createRequest } from "~~/server/core/requests";
 import { getPermissionsById } from "~~/server/core/users";
 import { hasPermission, Permission } from "~~/server/entity/Permission";
 import { NafynRequest } from "~~/server/entity/NafynRequest";
+import { assertMbid } from "~~/server/utils/ids";
+import { consumeRateLimit } from "~~/server/utils/rateLimit";
 
 defineRouteMeta({
     openAPI: {
@@ -82,22 +84,41 @@ defineRouteMeta({
     },
 });
 
+// each request triggers a MusicBrainz lookup and, with AUTOACCEPT, a Soulseek search + download - a
+// per-account ceiling keeps one account from queueing thousands of them
+const MAX_REQUESTS = 30;
+const REQUEST_WINDOW_MS = 10 * 60 * 1000;
+
 export default defineEventHandler(async (event) => {
     const { sub: userId } = requireAuthToken(event);
 
-    const body = await readBody(event);
-    const mbId: string | null = typeof body?.id == "string" ? body?.id : null;
-    const type: string | null = typeof body?.type == "string" ? body?.type : null
-
-    if (!mbId) {
-        throw createError({ statusCode: 400, message: "Incorrect MusicBrainz ID" })
+    const rateLimit = consumeRateLimit(`request:${userId}`, MAX_REQUESTS, REQUEST_WINDOW_MS);
+    if (!rateLimit.allowed) {
+        setResponseHeader(event, "Retry-After", rateLimit.retryAfterSeconds);
+        throw createError({ statusCode: 429, message: "Too many requests queued, try again later" });
     }
+
+    const body = await readBody(event);
+    const type: string | null = typeof body?.type == "string" ? body?.type : null
 
     if (type !== "album" && type !== "track") {
         throw createError({ statusCode: 400, message: "Incorrect media type" })
     }
 
+    // SECURITY: a MusicBrainz ID is a UUID, and it is interpolated into an upstream MusicBrainz REST path
+    // (`/ws/2/recording/<id>`) by resolveTargets. Validating the shape stops extra path segments or a query
+    // string being spliced into that upstream request.
+    const mbId: string = assertMbid(body?.id);
+
     let permcount: number = await getPermissionsById(userId) ?? 0
+
+    // SECURITY: the REQUEST_ALBUMS / REQUEST_TRACKS permission bits were declared but never checked here,
+    // so every authenticated account could queue downloads regardless of what an admin had granted it.
+    const required = type == "album" ? Permission.REQUEST_ALBUMS : Permission.REQUEST_TRACKS;
+    if (!hasPermission(permcount, required)) {
+        throw createError({ statusCode: 403, message: "Unsufficient permissions" })
+    }
+
     let autoAccept: boolean = hasPermission(permcount, type == "album" ? Permission.AUTOACCEPT_ALBUMS : Permission.AUTOACCEPT_TRACKS);
 
     let newRequest: NafynRequest = await createRequest(mbId as UUID, type, userId as UUID, autoAccept ? "searching" : "waiting");

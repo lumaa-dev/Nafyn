@@ -100,9 +100,12 @@ export default defineEventHandler(async (event) => {
         countEntries(playlist.id)
     ]);
 
+    // SECURITY: mirrors GET /api/v1/playlist/{pid} - `addedBy` identifies a real account, so it is only
+    // resolved for the owner and invited members, never for an outside viewer of a public playlist
+    const isInsider = isOwner || isMember;
     const items = await Promise.all(rows.map(async (entry) => ({
         entryId: entry.entryId,
-        addedBy: await getUserById(entry.addedBy, true),
+        addedBy: isInsider ? await getUserById(entry.addedBy, true) : null,
         position: entry.position,
         addedAt: entry.addedAt,
         media: entry.media

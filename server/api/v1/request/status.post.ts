@@ -4,6 +4,8 @@ import { getPermissionsById } from "~~/server/core/users";
 import { hasPermission, Permission } from "~~/server/entity/Permission";
 import type { RequestStatus } from "~~/server/entity/NafynRequest";
 
+const REQUEST_STATUSES: RequestStatus[] = ["waiting", "searching", "downloading", "processing", "completed", "failed"];
+
 defineRouteMeta({
     openAPI: {
         description: "Update a waiting request's status. Requires MANAGE_REQUESTS. Setting status to \"searching\" starts the download pipeline for it",
@@ -75,11 +77,15 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event);
 
   const requestId: string | null = typeof body?.requestId == "string" ? body?.requestId : null;
-  const newStatus: RequestStatus | null = typeof body?.status == "string" ? body?.status as RequestStatus : null;
+  const rawStatus: unknown = body?.status;
 
-  if (!requestId || !newStatus) {
+  // the old code cast whatever string arrived straight to RequestStatus and handed it to the UPDATE, so an
+  // arbitrary value reached the column's CHECK constraint and came back as an unhandled 500. Validate here.
+  if (!requestId || typeof rawStatus !== "string" || !REQUEST_STATUSES.includes(rawStatus as RequestStatus)) {
     throw createError({ statusCode: 400, message: "Malformed request" })
   }
+
+  const newStatus = rawStatus as RequestStatus;
 
   if (await updateRequestStatus(requestId, newStatus, true)) {
     if (newStatus == "searching") {

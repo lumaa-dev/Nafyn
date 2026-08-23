@@ -4,6 +4,7 @@ import { getLastfmArtistInfo } from "~~/server/utils/lastfm";
 import { userOwnsAlbum } from "~~/server/core/library";
 import type { ArtistDetail } from "~~/server/entity/media/ArtistDetail";
 import type { MediaInfo } from "~~/server/entity/media/MediaInfo";
+import { assertMbid } from "~~/server/utils/ids";
 
 defineRouteMeta({
     openAPI: {
@@ -80,10 +81,8 @@ defineRouteMeta({
 export default defineEventHandler(async (event) => {
     const { sub: userId } = requireAuthToken(event);
 
-    const aid = getRouterParam(event, "aid");
-    if (!aid) {
-        throw createError({ statusCode: 400, statusMessage: "Missing artist ID" });
-    }
+    // SECURITY: see the note in track/[tid].get.ts - this reaches an upstream MusicBrainz REST path
+    const aid = assertMbid(getRouterParam(event, "aid"), "artist ID");
 
     const client = getMusicBrainzClient();
 

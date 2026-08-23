@@ -39,7 +39,9 @@ import {
     type PlaylistRow
 } from "~~/server/core/playlists";
 import { recordRecentlyPlayed } from "~~/server/core/recentlyPlayed";
-import { playlistImageFilePath } from "~~/server/utils/playlistImage";
+import { playlistImageFilePath, deletePlaylistImage } from "~~/server/utils/playlistImage";
+import { isUuid, escapeLike } from "~~/server/utils/ids";
+import { isAllowedCoverArtUrl } from "~~/server/utils/coverArt";
 import { getLastfmArtistInfo } from "~~/server/utils/lastfm";
 import { authenticateSubsonic } from "~~/server/utils/subsonicAuth";
 import { sendSubsonicResponse, errorNode, SubsonicErrors, SubsonicApiError, el, asList, type SubsonicNode, type SubsonicFormat } from "~~/server/utils/subsonicResponse";
@@ -76,6 +78,10 @@ type Handler = (event: H3Event, query: Record<string, unknown>, user: NafynUser)
 
 const ALBUM_LIST_SORTS = new Set<AlbumListSort>(["newest", "alphabeticalByName", "alphabeticalByArtist", "random"]);
 
+// mirrors server/api/v1/playlist/[pid]/tracks.post.ts - one request must not drive an unbounded number of
+// per-song inserts
+const MAX_TRACKS_PER_ADD = 500;
+
 // shared by getPlaylist/createPlaylist: full playlist + resolved song list, in the shape getPlaylist.view
 // and createPlaylist.view both return
 async function buildPlaylistNode(playlist: PlaylistRow): Promise<SubsonicNode> {
@@ -94,6 +100,9 @@ async function buildPlaylistNode(playlist: PlaylistRow): Promise<SubsonicNode> {
 // addEntries() relies on playlist_entries' FK constraint on mediaId to reject unknown songs - translate
 // that into a Subsonic-shaped error instead of letting a raw DB error escape as an HTTP 500
 async function addSongsSafely(playlistId: string, mediaIds: string[], addedBy: string): Promise<void> {
+    if (mediaIds.length > MAX_TRACKS_PER_ADD) {
+        throw new SubsonicApiError(SubsonicErrors.generic(`At most ${MAX_TRACKS_PER_ADD} songs can be added at once`));
+    }
     try {
         await addEntries(playlistId, mediaIds, addedBy);
     } catch {
@@ -183,7 +192,7 @@ const handlers: Record<string, Handler> = {
     },
 
     search3: async (_event, query, user) => {
-        const q = firstStr(query, "query")?.replace(/^"|"$/g, "") ?? "";
+        const q = escapeLike(firstStr(query, "query")?.replace(/^"|"$/g, "") ?? "");
         const artistCount = Math.min(Math.max(firstNum(query, "artistCount", 20), 0), 200);
         const albumCount = Math.min(Math.max(firstNum(query, "albumCount", 20), 0), 200);
         const songCount = Math.min(Math.max(firstNum(query, "songCount", 20), 0), 200);
@@ -261,6 +270,11 @@ const handlers: Record<string, Handler> = {
         const comment = firstStr(query, "comment");
         const isPublic = firstStr(query, "public");
         if (name !== undefined || comment !== undefined || isPublic !== undefined) {
+            // SECURITY: details (and crucially `public`) are owner-only, matching
+            // PATCH /api/v1/playlist/{pid}. Letting any invited member set public=true would hand every
+            // collaborator a switch that publishes the owner's private playlist to anonymous visitors.
+            if (!isOwner) throw new SubsonicApiError(SubsonicErrors.notAuthorized);
+
             await updatePlaylistRow(id, {
                 ...(name !== undefined ? { title: name.slice(0, 100) } : {}),
                 ...(comment !== undefined ? { description: comment || null } : {}),
@@ -295,6 +309,8 @@ const handlers: Record<string, Handler> = {
         if (playlist.ownerId !== user.id) throw new SubsonicApiError(SubsonicErrors.notAuthorized);
 
         await deletePlaylistRow(id);
+        // otherwise the cover file outlives the playlist row that gated access to it
+        await deletePlaylistImage(id).catch(() => {});
         return [];
     },
 
@@ -315,8 +331,14 @@ async function handleStream(event: H3Event, query: Record<string, unknown>, user
     const entry = await findLibraryEntry(user.id, id);
     if (!entry) throw new SubsonicApiError(SubsonicErrors.notFound);
 
-    const stat = statSync(entry.filePath);
-    const fileSize = stat.size;
+    // see server/api/v1/library/[id]/stream.get.ts: a missing file is a 404, not an ENOENT 500 that would
+    // echo the server's filesystem path back to the client
+    let fileSize: number;
+    try {
+        fileSize = statSync(entry.filePath).size;
+    } catch {
+        throw new SubsonicApiError(SubsonicErrors.notFound);
+    }
     const mime = contentTypeFor(entry.filePath);
 
     setResponseHeader(event, "Accept-Ranges", "bytes");
@@ -364,6 +386,19 @@ async function handleCoverArt(event: H3Event, query: Record<string, unknown>, us
         const album = await getAlbumOfUser(user.id, rawId);
         sourceUrl = album?.coverArt ?? null;
     } else if (prefix === "pl") {
+        // SECURITY: this used to read the file straight off disk from the caller-supplied id - no access
+        // check at all (so any authenticated Subsonic client could pull *any* private playlist's cover, by
+        // id alone) and no id validation (so `pl-../../..` traversed out of the image directory). Gate it on
+        // the same owner/member rule GET /api/v1/playlist/{pid}/image enforces, and let
+        // playlistImageFilePath reject non-UUID ids.
+        if (!isUuid(rawId)) throw new SubsonicApiError(SubsonicErrors.notFound);
+
+        const playlist = await getPlaylistById(rawId);
+        if (!playlist) throw new SubsonicApiError(SubsonicErrors.notFound);
+        if (playlist.privacy === "private" && playlist.ownerId !== user.id && !(await hasAccess(playlist, user.id))) {
+            throw new SubsonicApiError(SubsonicErrors.notFound);
+        }
+
         const path = playlistImageFilePath(rawId);
         if (existsSync(path)) localFile = path;
     }
@@ -375,9 +410,9 @@ async function handleCoverArt(event: H3Event, query: Record<string, unknown>, us
         return;
     }
 
-    if (!sourceUrl) throw new SubsonicApiError(SubsonicErrors.notFound);
+    if (!sourceUrl || !isAllowedCoverArtUrl(sourceUrl)) throw new SubsonicApiError(SubsonicErrors.notFound);
 
-    const upstream = await fetch(sourceUrl).catch(() => null);
+    const upstream = await fetch(sourceUrl, { redirect: "follow" }).catch(() => null);
     if (!upstream || !upstream.ok || !upstream.body) throw new SubsonicApiError(SubsonicErrors.notFound);
 
     setResponseHeader(event, "Content-Type", upstream.headers.get("Content-Type") ?? "image/jpeg");

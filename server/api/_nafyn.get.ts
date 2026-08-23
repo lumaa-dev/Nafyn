@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto"
-import { isWhitelisted } from "~~/server/utils/rateLimit";
+import { consumeRateLimit, isWhitelisted } from "~~/server/utils/rateLimit";
+import { getClientIP } from "~~/server/utils/clientIp";
 
 const MAX_ATTEMPTS = 10;
 const WINDOW_MS = 5 * 60 * 1000;
@@ -98,8 +99,8 @@ defineRouteMeta({
 });
 
 export default defineEventHandler(async (event) => {
-    const ip = getRequestIP(event, { xForwardedFor: true }) ?? "unknown";
-    if (!isWhitelisted(ip)) {
+    const ip = getClientIP(event);
+    if (!await isWhitelisted(ip)) {
         const rateLimit = consumeRateLimit(`verify:${ip}`, MAX_ATTEMPTS, WINDOW_MS);
 
         if (!rateLimit.allowed) {

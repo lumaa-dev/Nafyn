@@ -5,6 +5,8 @@ import { getMediaId } from "~~/server/core/library";
 import { getPermissionsById } from "~~/server/core/users";
 import { hasPermission, Permission } from "~~/server/entity/Permission";
 
+const MAX_TRACKS_PER_ADD = 500;
+
 defineRouteMeta({
     openAPI: {
         description: "Add one or more tracks to a playlist (single track = 1-length array, full album/EP = the album's track IDs). Owner, invited member, or a MANAGE_MUSIC user",
@@ -124,6 +126,12 @@ export default defineEventHandler(async (event) => {
     const mediaIds: unknown = body?.mediaIds;
     if (!Array.isArray(mediaIds) || mediaIds.length === 0 || !mediaIds.every((id) => typeof id === "string")) {
         throw createError({ statusCode: 400, statusMessage: "`mediaIds` must be a non-empty array of media IDs" });
+    }
+
+    // an unbounded array here means one request drives one DB round trip per element below - cap it so a
+    // single POST can't tie up a connection indefinitely. The largest legitimate add is one full album.
+    if (mediaIds.length > MAX_TRACKS_PER_ADD) {
+        throw createError({ statusCode: 400, statusMessage: `At most ${MAX_TRACKS_PER_ADD} tracks can be added at once` });
     }
 
     for (const mediaId of mediaIds) {

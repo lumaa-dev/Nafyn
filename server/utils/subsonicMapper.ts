@@ -1,6 +1,6 @@
 // maps Nafyn's own row shapes (server/core/library.ts, playlists.ts) onto Subsonic API "ID3" elements
 // (artist/album/song) - see server/routes/rest/[method].ts for how these get assembled per endpoint
-import { extname } from "node:path";
+import { extname, relative, isAbsolute, sep } from "node:path";
 import type { AlbumRow, ArtistRow, SubsonicSong } from "./library";
 import type { PlaylistRow, PlaylistEntryWithMedia } from "./playlists";
 import { el, asList, type SubsonicNode } from "./subsonicResponse";
@@ -21,6 +21,21 @@ export function contentTypeFor(filePath: string): string {
 
 export function suffixFor(filePath: string): string {
     return extname(filePath).replace(/^\./, "") || "bin";
+}
+
+// SECURITY: Subsonic's `path` attribute used to carry the raw absolute path on disk
+// (`/srv/nafyn/music/Album/Track.mp3`), handing every client - and anyone who can read a client's cache or
+// a proxy log - the server's directory layout, its OS user, and its deployment root. Clients only ever use
+// this as a display/sort hint, so expose the library-relative path instead.
+export function libraryRelativePath(filePath: string): string {
+    const root = process.cwd() + sep + "music" + sep;
+    if (filePath.startsWith(root)) return filePath.slice(root.length).split(sep).join("/");
+
+    const rel = relative(process.cwd(), filePath);
+    // a path outside the working directory would relativize to `../..`-style output, which leaks layout
+    // just as effectively - fall back to the bare filename in that case
+    if (!rel || rel.startsWith("..") || isAbsolute(rel)) return filePath.split(sep).pop() ?? "";
+    return rel.split(sep).join("/");
 }
 
 // prefixed so getCoverArt.view can tell which table an id came from without a second lookup
@@ -48,7 +63,7 @@ export function songNode(song: SubsonicSong): SubsonicNode {
         contentType: contentTypeFor(song.filePath),
         suffix: suffixFor(song.filePath),
         duration: song.duration,
-        path: song.filePath,
+        path: libraryRelativePath(song.filePath),
         created: isoDate(song.addedAt),
         albumId: song.albumId ?? undefined,
         artistId: song.artistMbid ?? song.artistName,

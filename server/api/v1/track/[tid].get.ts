@@ -3,6 +3,7 @@ import { getMusicBrainzClient, parseReleaseDate } from "~~/server/utils/musicbra
 import type { MediaInfo } from "~~/server/entity/media/MediaInfo";
 import type { ArtistInfo } from "~~/server/entity/media/ArtistInfo";
 import { IRecording } from "musicbrainz-api";
+import { assertMbid } from "~~/server/utils/ids";
 
 defineRouteMeta({
     openAPI: {
@@ -70,10 +71,9 @@ defineRouteMeta({
 export default defineEventHandler(async (event) => {
     requireAuthToken(event);
 
-    const tid = getRouterParam(event, "tid");
-    if (!tid) {
-        throw createError({ statusCode: 400, statusMessage: "Missing track ID" });
-    }
+    // SECURITY: interpolated into the upstream MusicBrainz REST path, so it must be a bare UUID and not
+    // extra path segments or a query string of the caller's choosing
+    const tid = assertMbid(getRouterParam(event, "tid"), "track ID");
 
     const client = getMusicBrainzClient();
 

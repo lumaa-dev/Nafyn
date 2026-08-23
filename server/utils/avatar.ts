@@ -1,10 +1,11 @@
 // avatar image storage: validates + crops uploads to a fixed 250x250 webp on disk under .data/avatars/<userId>.webp
 import { randomUUID } from "node:crypto";
-import { join } from "node:path";
+import { join, resolve, sep } from "node:path";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegPath from "ffmpeg-static";
 import { imageSize } from "image-size";
+import { assertUuid } from "./ids";
 
 if (ffmpegPath) {
     ffmpeg.setFfmpegPath(ffmpegPath);
@@ -16,8 +17,18 @@ const AVATAR_SIZE = 250;
 const MAX_UPLOAD_BYTES = 16 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(["png", "jpg", "jpeg", "webp"]);
 
+// SECURITY: `userId` reaches here straight from a route param (GET /api/v1/user/{id}/avatar). Interpolating
+// it into a path unchecked makes `../../..` a directory-traversal read of any .webp on the host. Every id
+// Nafyn issues is a UUID, so requiring that shape removes every traversal character; the resolve() check
+// below is a belt-and-braces containment assertion in case the format ever loosens.
 export function avatarFilePath(userId: string): string {
-    return join(AVATAR_DIR, `${userId}.webp`);
+    assertUuid(userId, "user ID");
+
+    const path = resolve(AVATAR_DIR, `${userId}.webp`);
+    if (!path.startsWith(resolve(AVATAR_DIR) + sep)) {
+        throw createError({ statusCode: 400, statusMessage: "Invalid user ID" });
+    }
+    return path;
 }
 
 // validates, center-crops to 250x250 and writes the avatar for `userId`, replacing any existing one

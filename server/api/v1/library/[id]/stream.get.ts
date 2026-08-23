@@ -123,8 +123,14 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 404, statusMessage: "Track not found in your library" });
     }
 
-    const stat = statSync(entry.filePath);
-    const fileSize = stat.size;
+    // the row can outlive the file on disk (manual deletion, a half-finished download). Report that as a
+    // plain 404 rather than letting an ENOENT escape as a 500 carrying a filesystem path in its message.
+    let fileSize: number;
+    try {
+        fileSize = statSync(entry.filePath).size;
+    } catch {
+        throw createError({ statusCode: 404, statusMessage: "Track file is missing" });
+    }
     const mime = MIME_TYPES[extname(entry.filePath).toLowerCase()] ?? "application/octet-stream";
 
     setResponseHeader(event, "Accept-Ranges", "bytes");

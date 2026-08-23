@@ -413,9 +413,21 @@ export async function processDownloadRequest(request: NafynRequest): Promise<voi
             }
         }
 
+        // `getRequestById` resolves `requestedBy` into a full NafynUser whenever that account still exists
+        // (so the MANAGE_REQUESTS approval path, which goes through processDownloadRequestId, hands us an
+        // object here while the auto-accept path hands us a bare UUID). Normalize before it is used as a
+        // user id, or the resulting library_entries row is granted to the string "[object Object]" - i.e.
+        // to nobody, leaving the file unreachable by the person who requested it.
+        const requestedById = typeof request.requestedBy === "string" ? request.requestedBy : request.requestedBy?.id;
+        if (!requestedById) {
+            await updateRequestStatus(request.id, "failed");
+            emitDownloadProgress({ requestId: request.id, stage: "failed", message: "Request has no valid requester" });
+            return;
+        }
+
         let anyFailed = false;
         for (const [i, target] of targets.entries()) {
-            const ok = await downloadTrack(request.id, request.requestedBy, target, i + 1, targets.length, primaryResults, poolResults);
+            const ok = await downloadTrack(request.id, requestedById, target, i + 1, targets.length, primaryResults, poolResults);
             if (!ok) anyFailed = true;
         }
 

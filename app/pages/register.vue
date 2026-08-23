@@ -43,7 +43,16 @@ async function register() {
   if (!result || hasError.value) return hasError.value = $t("auth.register.error");;
 
   // see login.vue: explicit maxAge so iOS Safari doesn't drop this as a session cookie before the JWT expires
-  const tokenCookie = useCookie("nafynToken", { maxAge: 60 * 60 * 24 * 7, sameSite: "lax", path: "/" });
+  // `secure` over https so the token never rides a plain-http request; `sameSite: "lax"` keeps it off
+  // cross-site requests. It deliberately isn't httpOnly - the app reads it to build the Authorization
+  // header - which is exactly why the CSP in server/middleware/security-headers.ts matters: an XSS on this
+  // origin is the only realistic way to reach this cookie.
+  const tokenCookie = useCookie("nafynToken", {
+    maxAge: 60 * 60 * 24 * 7,
+    sameSite: "lax",
+    secure: window.location.protocol === "https:",
+    path: "/"
+  });
   tokenCookie.value = `Bearer ${result.token}`;
   navigateTo(`/`);
 }

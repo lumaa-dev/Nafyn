@@ -2,11 +2,17 @@ import type { IArtist, IArtistCredit, IRecording, IReleaseGroup } from "musicbra
 import { getMusicBrainzClient } from "../../utils/musicbrainz";
 import { getLastfmArtistInfo } from "../../utils/lastfm";
 import { requireAuthToken } from "../../utils/requireAuth";
+import { consumeRateLimit } from "../../utils/rateLimit";
 import type { MediaInfo } from "../../entity/media/MediaInfo";
 import type { ArtistInfo } from "../../entity/media/ArtistInfo";
 
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 50;
+
+// this endpoint fans out to MusicBrainz (and Last.fm) on every call, so an authenticated account could
+// otherwise use Nafyn as a free proxy to hammer those upstreams - and get Nafyn's own IP blocked there
+const MAX_SEARCHES = 60;
+const SEARCH_WINDOW_MS = 60 * 1000;
 
 type Filter = "album" | "track" | "artist" | "all";
 
@@ -201,10 +207,16 @@ function recordingToMediaInfo(recording: IRecording): MediaInfo {
 }
 
 export default defineEventHandler(async (event) => {
-    requireAuthToken(event);
+    const { sub: userId } = requireAuthToken(event);
+
+    const rateLimit = consumeRateLimit(`search:${userId}`, MAX_SEARCHES, SEARCH_WINDOW_MS);
+    if (!rateLimit.allowed) {
+        setResponseHeader(event, "Retry-After", rateLimit.retryAfterSeconds);
+        throw createError({ statusCode: 429, statusMessage: "Too many searches, slow down" });
+    }
 
     const query = getQuery(event);
-    const q = typeof query?.q === "string" ? query.q.trim() : "";
+    const q = (typeof query?.q === "string" ? query.q.trim() : "").slice(0, 200);
     const filter: Filter = query?.filter === "album" || query?.filter === "track" || query?.filter === "artist" ? query.filter : "all";
 
     if (!q) {

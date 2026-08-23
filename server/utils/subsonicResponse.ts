@@ -75,6 +75,20 @@ function nodeToJson(node: SubsonicNode): Record<string, unknown> {
 
 export type SubsonicFormat = "xml" | "json" | "jsonp";
 
+// SECURITY: the jsonp callback name is echoed into a response served as executable JavaScript. Unvalidated,
+// `?f=jsonp&callback=<anything>` turns this endpoint into an arbitrary-script generator hosted on Nafyn's
+// own origin - a reflected XSS primitive, and a Rosetta-Flash-style content-smuggling one. Only a plain
+// identifier (optionally dotted, as clients sometimes pass `window.cb`) is ever allowed through, and it is
+// length-capped so no payload can hide inside a "valid" name.
+const JSONP_CALLBACK_RE = /^[A-Za-z_$][A-Za-z0-9_$]*(?:\.[A-Za-z_$][A-Za-z0-9_$]*)*$/;
+const MAX_JSONP_CALLBACK_LENGTH = 64;
+
+export function safeJsonpCallback(callback: string | undefined): string {
+    if (!callback) return "callback";
+    if (callback.length > MAX_JSONP_CALLBACK_LENGTH || !JSONP_CALLBACK_RE.test(callback)) return "callback";
+    return callback;
+}
+
 // wraps `body` (the endpoint-specific children, e.g. an `artists` node for getArtists) in the standard
 // subsonic-response envelope and writes it in the requested format; `callback` is only used for jsonp
 export function sendSubsonicResponse(event: import("h3").H3Event, format: SubsonicFormat, status: "ok" | "failed", body: SubsonicNode[] = [], callback?: string): string {
@@ -90,7 +104,8 @@ export function sendSubsonicResponse(event: import("h3").H3Event, format: Subson
     const json = JSON.stringify({ "subsonic-response": nodeToJson(root) });
     if (format === "jsonp") {
         setResponseHeader(event, "Content-Type", "application/javascript; charset=utf-8");
-        return `${callback ?? "callback"}(${json})`;
+        // never the raw caller-supplied value - see safeJsonpCallback
+        return `${safeJsonpCallback(callback)}(${json});`;
     }
 
     setResponseHeader(event, "Content-Type", "application/json; charset=utf-8");

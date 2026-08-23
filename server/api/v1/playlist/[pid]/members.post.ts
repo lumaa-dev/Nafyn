@@ -1,6 +1,8 @@
 // invite a member, owner-only
-import { getPlaylistById, isMember, addMember } from "~~/server/core/playlists";
+import { getPlaylistById, isMember, addMember, getMembers } from "~~/server/core/playlists";
 import { getUserByUsername } from "~~/server/core/users";
+
+const MAX_MEMBERS = 100;
 
 defineRouteMeta({
     openAPI: {
@@ -133,6 +135,12 @@ export default defineEventHandler(async (event) => {
 
     if (await isMember(pid, targetUserId)) {
         throw createError({ statusCode: 409, statusMessage: "User is already a member" });
+    }
+
+    // every member is one more account that can read this playlist - bound the roster rather than letting
+    // it grow without limit
+    if ((await getMembers(pid)).length >= MAX_MEMBERS) {
+        throw createError({ statusCode: 400, statusMessage: `A playlist can have at most ${MAX_MEMBERS} members` });
     }
 
     return await addMember(pid, targetUserId);

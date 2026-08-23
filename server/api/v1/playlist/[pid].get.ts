@@ -114,9 +114,16 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 404, statusMessage: "Playlist not found" });
     }
 
+    // SECURITY: a public playlist is readable by anonymous visitors, but its *collaborator list* is not
+    // public information - it enumerates real accounts (usernames, display names, avatars) of people who
+    // never chose to be listed publicly. Only the owner and the members themselves see the roster; an
+    // outside viewer gets the owner (the playlist's public attribution) and nothing else.
+    const isInsider = isOwner || isMember;
+
     const owner = await getUserById(playlist.ownerId, true);
-    const members = (await Promise.all((await getMembers(playlist.id)).map((m) => getUserById(m.userId, true))))
-        .filter((u) => u !== null);
+    const members = isInsider
+        ? (await Promise.all((await getMembers(playlist.id)).map((m) => getUserById(m.userId, true)))).filter((u) => u !== null)
+        : [];
 
     const pagination = parsePagination(event);
     const [rows, entriesTotal] = await Promise.all([
@@ -124,9 +131,10 @@ export default defineEventHandler(async (event) => {
         countEntries(playlist.id)
     ]);
 
+    // same reasoning as `members` above: who added which track identifies collaborators to outsiders
     const entries = await Promise.all(rows.map(async (entry) => ({
         entryId: entry.entryId,
-        addedBy: await getUserById(entry.addedBy, true),
+        addedBy: isInsider ? await getUserById(entry.addedBy, true) : null,
         position: entry.position,
         addedAt: entry.addedAt,
         media: entry.media

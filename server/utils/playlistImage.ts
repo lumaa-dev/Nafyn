@@ -1,10 +1,11 @@
 // playlist cover image storage: validates + crops uploads to a fixed 500x500 webp on disk under .data/playlists/<playlistId>.webp
 import { randomUUID } from "node:crypto";
-import { join } from "node:path";
+import { join, resolve, sep } from "node:path";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegPath from "ffmpeg-static";
 import { imageSize } from "image-size";
+import { assertUuid } from "./ids";
 
 if (ffmpegPath) {
     ffmpeg.setFfmpegPath(ffmpegPath);
@@ -16,8 +17,16 @@ const PLAYLIST_IMAGE_SIZE = 500;
 const MAX_UPLOAD_BYTES = 16 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(["png", "jpg", "jpeg", "webp"]);
 
+// SECURITY: same reasoning as avatarFilePath - `playlistId` arrives from a route param and, via Subsonic's
+// getCoverArt `pl-<id>` form, from a query param. Requiring the UUID shape stops `../` traversal reads.
 export function playlistImageFilePath(playlistId: string): string {
-    return join(PLAYLIST_IMAGE_DIR, `${playlistId}.webp`);
+    assertUuid(playlistId, "playlist ID");
+
+    const path = resolve(PLAYLIST_IMAGE_DIR, `${playlistId}.webp`);
+    if (!path.startsWith(resolve(PLAYLIST_IMAGE_DIR) + sep)) {
+        throw createError({ statusCode: 400, statusMessage: "Invalid playlist ID" });
+    }
+    return path;
 }
 
 // validates, center-crops to 500x500 and writes the cover image for `playlistId`, replacing any existing one

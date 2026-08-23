@@ -73,7 +73,15 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: "No request with ID " + reqId })
   }
 
-  const inaccessible: boolean = request.requestedBy != userId && !hasPermission(await getPermissionsById(userId) ?? 0, Permission.MANAGE_REQUESTS);
+  // SECURITY: `getRequestById` resolves `requestedBy` into a full NafynUser whenever that account still
+  // exists, so the old `request.requestedBy != userId` compared an object against a string and was
+  // therefore *always* true - the ownership half of this check never fired, and any authenticated user
+  // could read any other user's request by guessing/enumerating its ID. Resolve to the plain id first.
+  const requestedById: string | undefined = typeof request.requestedBy === "string"
+    ? request.requestedBy
+    : request.requestedBy?.id;
+
+  const inaccessible: boolean = requestedById !== userId && !hasPermission(await getPermissionsById(userId) ?? 0, Permission.MANAGE_REQUESTS);
   if (inaccessible) {
     throw createError({ statusCode: 404, message: "No request with ID " + reqId })
   }

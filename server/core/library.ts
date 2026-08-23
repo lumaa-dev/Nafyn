@@ -348,6 +348,9 @@ export interface LibrarySearchResults {
 // search here means "find something I've already downloaded", same as the in-app library search
 export async function searchLibraryOfUser(userId: string, query: string, artistCount: number, albumCount: number, songCount: number): Promise<LibrarySearchResults> {
     const db = getLibrariesDb();
+    // `query` reaches here already escaped for LIKE (see escapeLike in server/utils/ids.ts) so a search for
+    // "%" matches a literal percent sign instead of every row in the table. The explicit ESCAPE below makes
+    // that escaping hold regardless of the server's NO_BACKSLASH_ESCAPES sql_mode.
     const like = `%${query}%`;
 
     const artists = await db.prepare(`
@@ -357,7 +360,7 @@ export async function searchLibraryOfUser(userId: string, query: string, artistC
             COUNT(DISTINCT media.albumId) AS albumCount
         FROM library_entries
         JOIN media ON media.id = library_entries.mediaId
-        WHERE library_entries.userId = ? AND media.artistName LIKE ?
+        WHERE library_entries.userId = ? AND media.artistName LIKE ? ESCAPE '\\'
         GROUP BY COALESCE(media.artistMbid, media.artistName)
         ORDER BY name ASC, id ASC
         LIMIT ${sqlInt(artistCount)}
@@ -377,7 +380,7 @@ export async function searchLibraryOfUser(userId: string, query: string, artistC
             MIN(media.addedAt) AS addedAt
         FROM library_entries
         JOIN media ON media.id = library_entries.mediaId
-        WHERE library_entries.userId = ? AND media.album LIKE ?
+        WHERE library_entries.userId = ? AND media.album LIKE ? ESCAPE '\\'
           AND media.albumId IS NOT NULL AND media.albumId != 'unknown-album'
         GROUP BY media.albumId
         ORDER BY MIN(media.album) ASC, media.albumId ASC
@@ -388,7 +391,7 @@ export async function searchLibraryOfUser(userId: string, query: string, artistC
         SELECT media.*, library_entries.filePath AS filePath
         FROM library_entries
         JOIN media ON media.id = library_entries.mediaId
-        WHERE library_entries.userId = ? AND media.title LIKE ?
+        WHERE library_entries.userId = ? AND media.title LIKE ? ESCAPE '\\'
         ORDER BY media.title ASC, media.id ASC
         LIMIT ${sqlInt(songCount)}
     `).all(userId, like) as SubsonicSong[];

@@ -34,7 +34,16 @@ async function logIn() {
 
   // no maxAge = session cookie, which iOS Safari can wipe on a tab relaunch well before the JWT's
   // own 7-day expiry (server/utils/jwt.ts) - keep the cookie's lifetime matching the token's
-  const tokenCookie = useCookie("nafynToken", { maxAge: 60 * 60 * 24 * 7, sameSite: "lax", path: "/" });
+  // `secure` over https so the token never rides a plain-http request; `sameSite: "lax"` keeps it off
+  // cross-site requests. It deliberately isn't httpOnly - the app reads it to build the Authorization
+  // header - which is exactly why the CSP in server/middleware/security-headers.ts matters: an XSS on this
+  // origin is the only realistic way to reach this cookie.
+  const tokenCookie = useCookie("nafynToken", {
+    maxAge: 60 * 60 * 24 * 7,
+    sameSite: "lax",
+    secure: window.location.protocol === "https:",
+    path: "/"
+  });
   tokenCookie.value = `Bearer ${result.token}`;
   navigateTo(`/`);
 }

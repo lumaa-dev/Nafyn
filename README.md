@@ -78,10 +78,10 @@ Configured via environment variables (see `.env.example`):
 | `SOULSEEK_USERNAME` / `SOULSEEK_PASSWORD` | Login for slskd web UI — use dedicated/throwaway account, never personal Soulseek login. |
 | `SOULSEEK_DOWNLOADS_PATH` | Local, readable path to slskd's downloads directory. |
 | `ACOUSTID_API_KEY` | Verifies downloaded audio matches requested MusicBrainz recording. |
-| `DOMAIN_WHITELIST` | Allow some domains to never be rate limited |
 | `LASTFM_API_KEY` | Artist bios/images on the artist page, search results, and Subsonic's `getArtistInfo2`. Optional — those surfaces just show less without it. |
-
-<!-- More settings (in-app, user-facing) to be documented here as they land. -->
+| `DOMAINS_WHITELIST` | Comma-separated hostnames exempt from the login/register rate limits. Leave empty unless you specifically need it — every entry is an IP that can brute-force passwords freely. |
+| `TRUST_PROXY` | Number of reverse proxies in front of Nafyn (nginx/Caddy/Traefik/Cloudflare). `0` (default) when Nafyn is directly exposed. Gates whether `X-Forwarded-For` is trusted at all — wrong in either direction breaks or defeats rate limiting, see [`server/utils/clientIp.ts`](server/utils/clientIp.ts). |
+| `NAFYN_PUBLIC_OPENAPI` | Set `true` to publish the auto-generated OpenAPI spec + Scalar docs UI in production. Off by default — the spec enumerates every endpoint, parameter and auth requirement to anonymous visitors. |
 
 ## Subsonic API
 
