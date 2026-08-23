@@ -32,7 +32,9 @@ async function logIn() {
 
   if (!result || hasError.value) return hasError.value = $t("auth.login.error");
 
-  const tokenCookie = useCookie("nafynToken");
+  // no maxAge = session cookie, which iOS Safari can wipe on a tab relaunch well before the JWT's
+  // own 7-day expiry (server/utils/jwt.ts) - keep the cookie's lifetime matching the token's
+  const tokenCookie = useCookie("nafynToken", { maxAge: 60 * 60 * 24 * 7, sameSite: "lax", path: "/" });
   tokenCookie.value = `Bearer ${result.token}`;
   navigateTo(`/`);
 }

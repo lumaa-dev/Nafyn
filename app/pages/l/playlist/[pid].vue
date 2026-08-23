@@ -86,6 +86,8 @@
       </li>
     </ol>
     <p class="empty" v-else>{{ $t('playlist.tracksEmpty') }}</p>
+    <div v-if="sortMode === 'manual'" ref="sentinel" class="scroll-sentinel" />
+    <p class="loading-more" v-if="loadingMoreEntries">{{ $t('common.loadingMore') }}</p>
 
     <ContextMenu ref="rowMenu" :items="rowMenuItems" v-if="viewer.userId" />
     <AddTracksModal v-model="showAddTracks" :playlist-id="pid" :existing-media-ids="tracks.map((t) => t.id)" @added="refresh" />
@@ -173,12 +175,33 @@ const route = useRoute();
 const pid = route.params.pid as string;
 const token = useCookie("nafynToken").value ?? "";
 
-const { data: detail, refresh } = await useAsyncData<PlaylistDetail | null>(`playlist-${pid}`, () => {
+interface PlaylistEntry {
+  entryId: string;
+  addedBy: CompactUser | null;
+  position: number;
+  addedAt: number;
+  media: MediaRow;
+}
+
+const { data: detail, refresh } = await useAsyncData<(PlaylistDetail & { entriesTotal: number; entriesHasMore: boolean }) | null>(`playlist-${pid}`, () => {
   return $fetch(`/api/v1/playlist/${pid}`, { headers: token ? { Authorization: token } : {} }).catch(() => null);
 });
 
 const viewer = computed(() => detail.value?.viewer ?? { userId: null, isOwner: false, isMember: false });
-const tracks = computed<MediaRow[]>(() => detail.value?.entries.map((e) => e.media) ?? []);
+
+// entries page further beyond what's embedded in the playlist detail response (server/api/v1/playlist/[pid]/tracks)
+const { items: entries, page: entriesPage, hasMore: entriesHasMore, loadingMore: loadingMoreEntries, sentinel, loadMore: loadMoreEntries } = useInfiniteList<PlaylistEntry>((page, limit) => {
+  return $fetch(`/api/v1/playlist/${pid}/tracks`, { headers: token ? { Authorization: token } : {}, query: { page, limit } });
+});
+
+watch(detail, (d) => {
+  if (!d) return;
+  entries.value = [...d.entries];
+  entriesPage.value = 1;
+  entriesHasMore.value = d.entriesHasMore;
+}, { immediate: true });
+
+const tracks = computed<MediaRow[]>(() => entries.value.map((e) => e.media));
 
 type SortMode = "manual" | "title" | "artist" | "addedBy" | "duration";
 
@@ -207,11 +230,17 @@ watch(sortMode, async (mode) => {
   }
 });
 
-const sortedEntries = computed(() => {
-  const entries = detail.value?.entries ?? [];
-  if (sortMode.value === "manual") return entries;
+// sorting requires the complete entry set to be meaningful (sorting only what's scrolled into view
+// so far would silently miss tracks), so switching off "manual" eagerly pages in the rest once
+watch(sortMode, async (mode) => {
+  if (mode === "manual") return;
+  while (entriesHasMore.value) await loadMoreEntries();
+}, { immediate: true });
 
-  const copy = [...entries];
+const sortedEntries = computed(() => {
+  if (sortMode.value === "manual") return entries.value;
+
+  const copy = [...entries.value];
   switch (sortMode.value) {
     case "title": return copy.sort((a, b) => a.media.title.localeCompare(b.media.title));
     case "artist": return copy.sort((a, b) => a.media.artistName.localeCompare(b.media.artistName));
@@ -223,9 +252,9 @@ const sortedEntries = computed(() => {
 
 // manual order is mirrored into a local, mutable array so drag-and-drop can
 // reorder it live before the server confirms the persisted order
-const dragEntries = ref<PlaylistDetail["entries"]>([]);
-watch(() => detail.value?.entries, (entries) => {
-  dragEntries.value = entries ? [...entries] : [];
+const dragEntries = ref<PlaylistEntry[]>([]);
+watch(entries, (list) => {
+  dragEntries.value = [...list];
 }, { immediate: true });
 
 const displayEntries = computed(() => sortMode.value === "manual" ? dragEntries.value : sortedEntries.value);
@@ -269,11 +298,11 @@ const showAddTracks = ref(false);
 const rowMenu = ref<InstanceType<typeof ContextMenu> | null>(null);
 const rowMenuItems = ref<ContextMenuItem[]>([]);
 
-function canRemove(entry: PlaylistDetail["entries"][number]): boolean {
+function canRemove(entry: PlaylistEntry): boolean {
   return viewer.value.isOwner || entry.addedBy?.id === viewer.value.userId;
 }
 
-function buildRowMenu(entry: PlaylistDetail["entries"][number]) {
+function buildRowMenu(entry: PlaylistEntry) {
   const items: ContextMenuItem[] = [];
   if (canRemove(entry)) {
     items.push({ label: $t('playlist.removeTrack'), danger: true, action: () => removeEntry(entry.entryId) });
@@ -281,12 +310,12 @@ function buildRowMenu(entry: PlaylistDetail["entries"][number]) {
   rowMenuItems.value = items;
 }
 
-function onRowContextMenu(e: MouseEvent, entry: PlaylistDetail["entries"][number]) {
+function onRowContextMenu(e: MouseEvent, entry: PlaylistEntry) {
   buildRowMenu(entry);
   rowMenu.value?.openAt(e.clientX, e.clientY);
 }
 
-function onRowEllipsis(e: MouseEvent, entry: PlaylistDetail["entries"][number]) {
+function onRowEllipsis(e: MouseEvent, entry: PlaylistEntry) {
   buildRowMenu(entry);
   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
   rowMenu.value?.openAt(rect.left, rect.bottom);
@@ -301,17 +330,17 @@ async function removeEntry(entryId: string) {
   }
 }
 
-async function persistOrder(entries: PlaylistDetail["entries"]) {
+async function persistOrder(ordered: PlaylistEntry[]) {
   try {
     await $fetch(`/api/v1/playlist/${pid}/order`, {
       method: "POST",
       headers: { Authorization: token },
-      body: { order: entries.map((e) => e.entryId) }
+      body: { order: ordered.map((e) => e.entryId) }
     });
     await refresh();
   } catch (e) {
     sendError(e);
-    dragEntries.value = detail.value ? [...detail.value.entries] : [];
+    dragEntries.value = [...entries.value];
   }
 }
 
@@ -571,6 +600,17 @@ function sendError(e: unknown) {
 
 .playlistpage .empty {
   color: #666666;
+}
+
+.playlistpage .scroll-sentinel {
+  height: 1px;
+}
+
+.playlistpage .loading-more {
+  text-align: center;
+  color: #666666;
+  font-size: 0.8em;
+  padding: 10px 0;
 }
 
 .playlistpage .tracks {

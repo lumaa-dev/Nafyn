@@ -215,8 +215,11 @@ button[filled].danger:hover, a[filled].danger:hover {
 }
 
 @media screen and (max-width: 800px) {
+	/* sidebar is a permanent column (not a toggled overlay) at this breakpoint - see Sidebar.vue and
+	   the mobile branch of toggleSidebar() below - so page content shifts right to sit clear of it */
 	.view {
 		margin: calc(20vh - 10px) 1.2em;
+		margin-left: calc(200px + 1.2em);
 		padding-bottom: 6em;
 	}
 }
@@ -248,11 +251,30 @@ if (isNotLogging && !isViewingPlaylist && !hasToken.value) {
 	useRouter().push(`/login`);
 }
 
+const isMobileWidth = () => window.matchMedia("(max-width: 800px)").matches;
+
 function toggleSidebar() {
 	if (!hasToken.value) return;
+	// sidebar is permanently visible below 800px (see Sidebar.vue) - nothing to toggle there, and
+	// flipping showSidebar anyway would still trigger lockScroll and leave the page stuck unscrollable
+	if (isMobileWidth()) return;
 	showSidebar.value = !showSidebar.value;
 	lockScroll(showSidebar.value);
 }
+
+// keeps the mobile sidebar shown (once logged in) without going through the toggle/lockScroll path above,
+// and re-syncs if the viewport crosses the 800px breakpoint (e.g. rotating a tablet, resizing a window)
+onMounted(() => {
+	const mq = window.matchMedia("(max-width: 800px)");
+	const sync = () => {
+		// mobile: permanently on once logged in. desktop: back to closed-by-default, since it was only
+		// ever forced open here because of the mobile rule, not because the user toggled it themselves
+		showSidebar.value = mq.matches && hasToken.value;
+	};
+	sync();
+	mq.addEventListener("change", sync);
+	onUnmounted(() => mq.removeEventListener("change", sync));
+});
 
 function lockScroll(lock: boolean = true) {
 	if (lock) {

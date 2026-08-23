@@ -30,8 +30,15 @@ const playlists = ref<PlaylistRow[]>([]);
 
 watch(() => props.modelValue, async (isOpen) => {
   if (!isOpen) return;
-  const path = props.admin ? "/api/v1/playlist/all" : "/api/v1/playlist";
-  playlists.value = await $fetch<PlaylistRow[]>(path, { headers: { Authorization: token } }).catch(() => []);
+
+  if (props.admin) {
+    playlists.value = await $fetch<PlaylistRow[]>("/api/v1/playlist/all", { headers: { Authorization: token } }).catch(() => []);
+    return;
+  }
+
+  // paginated (server/utils/pagination.ts); a picker realistically never needs more than one generous page
+  const result = await $fetch<{ items: PlaylistRow[] }>("/api/v1/playlist", { headers: { Authorization: token }, query: { limit: 200 } }).catch(() => ({ items: [] }));
+  playlists.value = result.items;
 });
 
 function playlistImageUrl(playlist: PlaylistRow): string {

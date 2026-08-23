@@ -1,0 +1,13 @@
+{
+  "name": "Nafyn",
+  "short_name": "Nafyn",
+  "description": "Self-hosted Soulseek music downloader and player",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "lang": "en",
+  "icons": []
+}

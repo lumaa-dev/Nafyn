@@ -16,7 +16,9 @@
         </button>
       </li>
     </ol>
-    <p class="empty" v-else>{{ $t('library.all.empty') }}</p>
+    <p class="empty" v-else-if="!initialLoading">{{ $t('library.all.empty') }}</p>
+    <div ref="sentinel" class="scroll-sentinel" />
+    <p class="loading-more" v-if="loadingMore">{{ $t('common.loadingMore') }}</p>
 
     <ContextMenu ref="trackMenu" :items="trackMenuItems" />
     <PlaylistPickerModal v-model="showPicker" :media-ids="pickerMediaIds" admin />
@@ -41,11 +43,12 @@ interface AllMediaRow {
 
 const token = useCookie("nafynToken").value;
 
-const { data: tracks, refresh } = await useAsyncData<AllMediaRow[]>("library-all", () => {
+const { items: tracks, initialLoading, loadingMore, sentinel, loadMore, reset } = useInfiniteList<AllMediaRow>((page, limit) => {
   return token
-    ? $fetch("/api/v1/library/all", { headers: { Authorization: token } })
-    : Promise.resolve([]);
-}, { default: () => [] });
+    ? $fetch("/api/v1/library/all", { headers: { Authorization: token }, query: { page, limit } })
+    : Promise.resolve({ items: [], page, limit, total: 0, hasMore: false });
+});
+await loadMore();
 
 const { errorToast, sendToast } = useToast();
 
@@ -103,7 +106,7 @@ async function deleteTrack(track: AllMediaRow, ownerId: string) {
 
   if (!result || hasError) { return sendToast(errorToast("Track", "Failed to delete")) }
 
-  return refresh();
+  return reset();
 }
 </script>
 
@@ -116,6 +119,17 @@ async function deleteTrack(track: AllMediaRow, ownerId: string) {
 
 .libtracks .empty {
   color: #666666;
+}
+
+.libtracks .scroll-sentinel {
+  height: 1px;
+}
+
+.libtracks .loading-more {
+  text-align: center;
+  color: #666666;
+  font-size: 0.8em;
+  padding: 10px 0;
 }
 
 .libtracks .tracks {

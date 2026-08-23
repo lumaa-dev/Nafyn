@@ -1,7 +1,6 @@
 <template>
   <div class="sidebar">
     <div class="actions">
-      <NuxtLink to="/">{{ $t('sidebar.home') }}</NuxtLink>
       <NuxtLink to="/library" class="s">{{ $t('sidebar.library') }}</NuxtLink>
       <NuxtLink to="/l/albums" class="b">{{ $t('sidebar.albums') }}</NuxtLink>
       <NuxtLink to="/l/tracks" class="b">{{ $t('sidebar.tracks') }}</NuxtLink>
@@ -54,9 +53,14 @@ import SidebarProgressiveBlur from './SidebarProgressiveBlur.vue';
 }
 
 @media screen and (max-width: 800px) {
+  /* permanent narrow column instead of the full-screen toggled overlay used above 800px */
+  .sidebar {
+    width: 200px;
+  }
+
   .sidebar .actions {
     font-size: 0.8em;
-    width: 90%;
+    width: 100%;
     top: 50px;
     height: 80%;
   }

@@ -108,6 +108,7 @@ header .search-toggle {
   header > span {
     justify-content: center;
     align-items: center;
+    gap: 12px;
   }
 
   header img {
@@ -126,7 +127,9 @@ header .search-toggle {
 
   header input.mobile-active {
     display: block !important;
-    width: 100%;
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
     max-width: 400px;
   }
 
@@ -140,11 +143,13 @@ header .search-toggle {
     width: 40px;
     height: 40px;
     aspect-ratio: 1 / 1;
+    flex-shrink: 0;
     z-index: 100;
   }
 
   header .search-toggle.active {
-    display: none !important;
+    background: #ffffff40;
+    flex-shrink: 0;
   }
 
   header .search-toggle img {

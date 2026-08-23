@@ -1,10 +1,10 @@
 {
   "common": {
     "search": "Search...",
-    "unknownAlbum": "Unknown Album"
+    "unknownAlbum": "Unknown Album",
+    "loadingMore": "Loading more..."
   },
   "sidebar": {
-    "home": "Home",
     "library": "Library",
     "albums": "My Albums",
     "tracks": "My Tracks",

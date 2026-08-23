@@ -42,7 +42,8 @@ async function register() {
 
   if (!result || hasError.value) return hasError.value = $t("auth.register.error");;
 
-  const tokenCookie = useCookie("nafynToken");
+  // see login.vue: explicit maxAge so iOS Safari doesn't drop this as a session cookie before the JWT expires
+  const tokenCookie = useCookie("nafynToken", { maxAge: 60 * 60 * 24 * 7, sameSite: "lax", path: "/" });
   tokenCookie.value = `Bearer ${result.token}`;
   navigateTo(`/`);
 }

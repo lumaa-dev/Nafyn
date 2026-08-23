@@ -72,9 +72,6 @@
                   <span class="title">{{ u.displayName ?? u.username }}</span>
                   <span class="artist">@{{ u.username }}</span>
                 </span>
-                <span class="perm-chips">
-                  <span v-for="p in permBitsOf(u)" :key="p" class="chip">{{ $t(`settings.accounts.permissions.${Permission[p]}`) }}</span>
-                </span>
                 <button type="button" filled="hollow" :disabled="!canManage(u)" @click="toggleEdit(u)">{{ editingId === u.id ? $t('settings.accounts.users.cancel') : $t('settings.accounts.users.edit') }}</button>
               </div>
 
@@ -108,6 +105,8 @@
               </div>
             </li>
           </ul>
+          <div ref="usersSentinel" class="scroll-sentinel" />
+          <p class="loading-more" v-if="usersLoadingMore">{{ $t('common.loadingMore') }}</p>
         </section>
       </div>
 
@@ -125,9 +124,15 @@
         <section class="subsection" v-if="storage && storage.perUser.length > 0">
           <h2>{{ $t('settings.storage.perUser.title') }}</h2>
           <div class="pie-wrap">
-            <div class="pie" :style="{ background: pieGradient }" />
+            <div class="pie" :style="{ background: pieGradient }" @mousemove="onPieHover" @mouseleave="hoveredUserIndex = null" />
             <ul class="legend">
-              <li v-for="(u, i) in storage.perUser" :key="u.userId">
+              <li
+                v-for="(u, i) in storage.perUser"
+                :key="u.userId"
+                :class="{ active: hoveredUserIndex === i }"
+                @mouseenter="hoveredUserIndex = i"
+                @mouseleave="hoveredUserIndex = null"
+              >
                 <span class="swatch" :style="{ background: paletteColor(i) }" />
                 {{ u.displayName ?? u.username }} — {{ formatBytes(u.bytes) }}
               </li>
@@ -303,7 +308,9 @@ function formatBytes(bytes: number): string {
 const registerOpen = ref(true);
 const generatingToken = ref(false);
 const activeTokens = ref<RegisterTokenRow[]>([]);
-const users = ref<NafynUser[]>([]);
+const { items: users, loadingMore: usersLoadingMore, sentinel: usersSentinel, loadMore: loadMoreUsers } = useInfiniteList<NafynUser>((page, limit) => {
+  return $fetch("/api/v1/users", { headers: { Authorization: token }, query: { page, limit } });
+});
 const editingId = ref<string | null>(null);
 const editDraft = reactive({ displayName: "", username: "", lastFm: "", discogs: "", permissions: 0 });
 const savingUser = ref(false);
@@ -312,11 +319,6 @@ const permOptions = Object.values(Permission).filter((v) => typeof v === "number
 
 function isRestrictedBit(p: Permission): boolean {
   return p === Permission.MANAGE_ACCOUNTS || p === Permission.ADMIN;
-}
-
-function permBitsOf(u: NafynUser): Permission[] {
-  const bits = typeof u.permissions === "number" ? u.permissions : 0;
-  return permOptions.filter((p) => bits & p);
 }
 
 function canManage(u: NafynUser): boolean {
@@ -336,14 +338,13 @@ function tokenUrl(t: string): string {
 }
 
 async function loadAccountsPanel() {
-  const [reg, tokens, list] = await Promise.all([
+  const [reg, tokens] = await Promise.all([
     $fetch<{ open: boolean }>("/api/v1/settings/register"),
     $fetch<RegisterTokenRow[]>("/api/v1/settings/register-tokens", { headers: { Authorization: token } }),
-    $fetch<NafynUser[]>("/api/v1/users", { headers: { Authorization: token } })
+    loadMoreUsers()
   ]);
   registerOpen.value = reg.open;
   activeTokens.value = tokens;
-  users.value = list;
 }
 
 async function toggleRegisterOpen() {
@@ -447,22 +448,44 @@ function paletteColor(i: number): string {
   return PALETTE[i % PALETTE.length];
 }
 
-const pieGradient = computed(() => {
-  if (!storage.value || storage.value.perUser.length === 0) return "none";
+// percent-of-circle [start, end) for each perUser slice, in the same order as the conic-gradient stops
+const sliceBoundaries = computed(() => {
+  if (!storage.value || storage.value.perUser.length === 0) return [];
   const total = storage.value.perUser.reduce((sum, u) => sum + u.bytes, 0);
-  if (total === 0) return "none";
+  if (total === 0) return [];
 
   let cumulative = 0;
-  const stops: string[] = [];
-  storage.value.perUser.forEach((u, i) => {
+  return storage.value.perUser.map((u) => {
     const start = (cumulative / total) * 100;
     cumulative += u.bytes;
     const end = (cumulative / total) * 100;
-    stops.push(`${paletteColor(i)} ${start}% ${end}%`);
+    return { start, end };
   });
+});
 
+const pieGradient = computed(() => {
+  if (!storage.value || sliceBoundaries.value.length === 0) return "none";
+  const stops = sliceBoundaries.value.map(({ start, end }, i) => `${paletteColor(i)} ${start}% ${end}%`);
   return `conic-gradient(${stops.join(", ")})`;
 });
+
+const hoveredUserIndex = ref<number | null>(null);
+
+function onPieHover(e: MouseEvent) {
+  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const dx = e.clientX - cx;
+  const dy = e.clientY - cy;
+
+  // conic-gradient's 0% is straight up (12 o'clock), going clockwise; atan2 measures clockwise from
+  // 3 o'clock (since screen y grows downward), so rotate by 90deg to line the two up
+  const angle = (Math.atan2(dy, dx) * 180 / Math.PI + 90 + 360) % 360;
+  const percent = (angle / 360) * 100;
+
+  const index = sliceBoundaries.value.findIndex(({ start, end }) => percent >= start && percent < end);
+  hoveredUserIndex.value = index === -1 ? null : index;
+}
 
 watch(activeCategory, async (cat) => {
   if (cat === 'accounts' && users.value.length === 0) await loadAccountsPanel();
@@ -642,6 +665,17 @@ watch(activeCategory, async (cat) => {
   padding: 0;
 }
 
+.scroll-sentinel {
+  height: 1px;
+}
+
+.loading-more {
+  text-align: center;
+  color: #666666;
+  font-size: 0.8em;
+  padding: 10px 0;
+}
+
 .user-row {
   display: flex;
   flex-direction: column;
@@ -680,21 +714,6 @@ watch(activeCategory, async (cat) => {
 .user-summary .artist {
   font-size: 0.7em;
   color: #666666;
-}
-
-.perm-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  max-width: 130px;
-  flex-shrink: 0;
-}
-
-.chip {
-  font-size: 0.6em;
-  padding: 2px 8px;
-  border-radius: 100px;
-  background: #ffffff1a;
 }
 
 .edit-form {
@@ -756,6 +775,7 @@ watch(activeCategory, async (cat) => {
   height: 140px;
   border-radius: 50%;
   flex-shrink: 0;
+  cursor: pointer;
 }
 
 .legend {
@@ -771,6 +791,15 @@ watch(activeCategory, async (cat) => {
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 3px 6px;
+  margin: -3px -6px;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.legend li.active {
+  background: #ffffff1a;
+  font-weight: bold;
 }
 
 .swatch {
@@ -817,10 +846,6 @@ watch(activeCategory, async (cat) => {
 
   .user-summary button {
     flex: 1 0 100%;
-  }
-
-  .perm-chips {
-    max-width: 100%;
   }
 
   .perm-grid {

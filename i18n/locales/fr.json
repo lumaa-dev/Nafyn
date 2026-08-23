@@ -1,10 +1,10 @@
 {
   "common": {
     "search": "Rechercher...",
-    "unknownAlbum": "Album inconnu"
+    "unknownAlbum": "Album inconnu",
+    "loadingMore": "Chargement..."
   },
   "sidebar": {
-    "home": "Accueil",
     "library": "Librairie",
     "albums": "Mes albums",
     "tracks": "Mes titres",

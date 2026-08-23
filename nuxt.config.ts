@@ -3,6 +3,27 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
 
+  // no home page yet - land on the tracks library instead
+  routeRules: {
+    '/': { redirect: '/l/tracks' }
+  },
+
+  app: {
+    head: {
+      title: 'Nafyn',
+      link: [
+        { rel: 'manifest', href: '/manifest.json' }
+      ],
+      meta: [
+        { name: 'theme-color', content: '#000000' },
+        { name: 'mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
+        { name: 'apple-mobile-web-app-title', content: 'Nafyn' }
+      ]
+    }
+  },
+
   runtimeConfig: {
     jwtSecret: process.env.JWT_SECRET || '',
 
