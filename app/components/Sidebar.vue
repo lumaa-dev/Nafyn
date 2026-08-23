@@ -25,13 +25,14 @@ import SidebarProgressiveBlur from './SidebarProgressiveBlur.vue';
   display: initial;
 }
 
+/* permanent left column above 800px - always visible, not toggleable (see app.vue) */
 .sidebar {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
+  width: 220px;
   height: 100%;
-  font-size: 2.2em;
+  font-size: 1.3em;
   z-index: 50;
 }
 
@@ -43,7 +44,7 @@ import SidebarProgressiveBlur from './SidebarProgressiveBlur.vue';
   justify-content: center;
   z-index: 51;
   gap: 20px;
-  width: 45%;
+  width: 100%;
   height: 95%;
 }
 
@@ -53,14 +54,15 @@ import SidebarProgressiveBlur from './SidebarProgressiveBlur.vue';
 }
 
 @media screen and (max-width: 800px) {
-  /* permanent narrow column instead of the full-screen toggled overlay used above 800px */
+  /* full-screen overlay below 800px, toggled open/closed via the Wordmark button in Header.vue */
   .sidebar {
-    width: 200px;
+    width: 100%;
+    font-size: 2.2em;
   }
 
   .sidebar .actions {
     font-size: 0.8em;
-    width: 100%;
+    width: 90%;
     top: 50px;
     height: 80%;
   }

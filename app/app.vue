@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<Header :toggleSidebar="toggleSidebar" :class="`hd ${hasToken ? '' : 'out'}`" :sidebarActive="showSidebar" />
+		<Header :toggleSidebar="toggleSidebar" :class="`hd ${hasToken ? '' : 'out'}`" :sidebarActive="showSidebar && isMobileWidth()" />
 		<Sidebar :class="`sb ${showSidebar ? '' : 'hide'}`" @click="toggleSidebar" />
 		<NuxtPage class="view" />
 		<TransitionGroup tag="span" name="pill" class="toasts">
@@ -164,6 +164,8 @@ button[filled].danger:hover, a[filled].danger:hover {
 
 .view {
 	margin: calc(15vh - 10px) 1.2em;
+	/* sidebar is a permanent column above 800px (see Sidebar.vue), so content shifts right to sit clear of it */
+	margin-left: calc(220px + 1.2em);
 	padding-bottom: 6em;
 }
 
@@ -215,11 +217,10 @@ button[filled].danger:hover, a[filled].danger:hover {
 }
 
 @media screen and (max-width: 800px) {
-	/* sidebar is a permanent column (not a toggled overlay) at this breakpoint - see Sidebar.vue and
-	   the mobile branch of toggleSidebar() below - so page content shifts right to sit clear of it */
+	/* sidebar is a toggled full-screen overlay below 800px (see Sidebar.vue), not a permanent column,
+	   so content isn't shifted here - back to the plain default margin */
 	.view {
 		margin: calc(20vh - 10px) 1.2em;
-		margin-left: calc(200px + 1.2em);
 		padding-bottom: 6em;
 	}
 }
@@ -255,21 +256,21 @@ const isMobileWidth = () => window.matchMedia("(max-width: 800px)").matches;
 
 function toggleSidebar() {
 	if (!hasToken.value) return;
-	// sidebar is permanently visible below 800px (see Sidebar.vue) - nothing to toggle there, and
+	// sidebar is permanently visible above 800px (see Sidebar.vue) - nothing to toggle there, and
 	// flipping showSidebar anyway would still trigger lockScroll and leave the page stuck unscrollable
-	if (isMobileWidth()) return;
+	if (!isMobileWidth()) return;
 	showSidebar.value = !showSidebar.value;
 	lockScroll(showSidebar.value);
 }
 
-// keeps the mobile sidebar shown (once logged in) without going through the toggle/lockScroll path above,
+// keeps the desktop sidebar shown (once logged in) without going through the toggle/lockScroll path above,
 // and re-syncs if the viewport crosses the 800px breakpoint (e.g. rotating a tablet, resizing a window)
 onMounted(() => {
 	const mq = window.matchMedia("(max-width: 800px)");
 	const sync = () => {
-		// mobile: permanently on once logged in. desktop: back to closed-by-default, since it was only
-		// ever forced open here because of the mobile rule, not because the user toggled it themselves
-		showSidebar.value = mq.matches && hasToken.value;
+		// desktop: permanently on once logged in. mobile: back to closed-by-default (toggled via Wordmark),
+		// since it was only ever forced open here because of the desktop rule, not because the user toggled it
+		showSidebar.value = !mq.matches && hasToken.value;
 	};
 	sync();
 	mq.addEventListener("change", sync);
