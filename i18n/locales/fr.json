@@ -65,6 +65,11 @@
     "requested": "Demandé",
     "viewInMusicbrainz": "Voir dans MusicBrainz"
   },
+  "artist": {
+    "discography": "Discographie",
+    "viewInMusicbrainz": "Voir dans MusicBrainz",
+    "listeners": "{count} auditeurs sur Last.fm"
+  },
   "search": {
     "albums": "Albums",
     "artists": "Artistes",
@@ -94,7 +99,8 @@
     "categories": {
       "profile": "Profil",
       "accounts": "Comptes",
-      "storage": "Stockage"
+      "storage": "Stockage",
+      "subsonic": "Subsonic"
     },
     "profile": {
       "title": "Profil",
@@ -150,6 +156,16 @@
         "title": "Stockage par utilisateur"
       },
       "everyoneLibraryLink": "Voir la bibliothèque de tous"
+    },
+    "subsonic": {
+      "title": "Subsonic",
+      "intro": "Connectez une application compatible Subsonic (clients Navidrome, Sound Room sur iOS, DSub, Substreamer, et d'autres) à votre bibliothèque Nafyn avec ces informations.",
+      "serverUrl": "URL du serveur",
+      "username": "Nom d'utilisateur",
+      "copy": "Copier",
+      "copied": "Copié dans le presse-papiers",
+      "passwordNote": "Utilisez votre mot de passe Nafyn habituel.",
+      "tokenNote": "Si l'application propose un choix, préférez la connexion par mot de passe plutôt que par jeton - Nafyn ne peut pas prendre en charge l'authentification par jeton car les mots de passe sont stockés sous forme de hachages à sens unique."
     }
   },
   "playlist": {

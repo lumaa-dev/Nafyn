@@ -66,6 +66,11 @@
     "viewInMusicbrainz": "View in MusicBrainz",
     "delete": "Delete track"
   },
+  "artist": {
+    "discography": "Discography",
+    "viewInMusicbrainz": "View in MusicBrainz",
+    "listeners": "{count} listeners on Last.fm"
+  },
   "search": {
     "albums": "Albums",
     "artists": "Artists",
@@ -95,7 +100,8 @@
     "categories": {
       "profile": "Profile",
       "accounts": "Accounts",
-      "storage": "Storage"
+      "storage": "Storage",
+      "subsonic": "Subsonic"
     },
     "profile": {
       "title": "Profile",
@@ -151,6 +157,16 @@
         "title": "Storage by user"
       },
       "everyoneLibraryLink": "View everyone's library"
+    },
+    "subsonic": {
+      "title": "Subsonic",
+      "intro": "Connect a Subsonic-compatible app (Navidrome's clients, Sound Room on iOS, DSub, Substreamer, and others) to your Nafyn library using these details.",
+      "serverUrl": "Server URL",
+      "username": "Username",
+      "copy": "Copy",
+      "copied": "Copied to clipboard",
+      "passwordNote": "Use your regular Nafyn account password.",
+      "tokenNote": "If the app offers a choice, pick password-based login rather than token-based - Nafyn can't support token auth since passwords are stored as one-way hashes."
     }
   },
   "playlist": {

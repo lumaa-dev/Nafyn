@@ -34,7 +34,8 @@ export default defineNuxtConfig({
 
     domainsWhitelist: process.env.DOMAINS_WHITELIST || '',
 
-    acoustidApiKey: process.env.ACOUSTID_API_KEY || ''
+    acoustidApiKey: process.env.ACOUSTID_API_KEY || '',
+    lastfmApiKey: process.env.LASTFM_API_KEY || ''
   },
 
   vite: {

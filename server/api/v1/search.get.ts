@@ -1,5 +1,6 @@
 import type { IArtist, IArtistCredit, IRecording, IReleaseGroup } from "musicbrainz-api";
 import { getMusicBrainzClient } from "../../utils/musicbrainz";
+import { getLastfmArtistInfo } from "../../utils/lastfm";
 import { requireAuthToken } from "../../utils/requireAuth";
 import type { MediaInfo } from "../../entity/media/MediaInfo";
 import type { ArtistInfo } from "../../entity/media/ArtistInfo";
@@ -142,6 +143,14 @@ function toArtistInfo(artist: IArtist): ArtistInfo {
     };
 }
 
+// only applied to the top-level "artists" results (where ArtistBox.vue actually renders `image`) - not to
+// every album/track's artist credit too, which would multiply Last.fm calls for no visible benefit
+async function withLastfmImage(info: ArtistInfo): Promise<ArtistInfo> {
+    if (!info.musicbrainzId) return info;
+    const lastfm = await getLastfmArtistInfo(info.name, info.musicbrainzId);
+    return lastfm?.image ? { ...info, image: lastfm.image } : info;
+}
+
 function creditToArtistInfo(credit: IArtistCredit[] | undefined): ArtistInfo {
     const artist = credit?.[0]?.artist;
     return artist ? toArtistInfo(artist) : { name: "Unknown Artist", musicbrainzId: "", description: null, image: null };
@@ -219,9 +228,11 @@ export default defineEventHandler(async (event) => {
             : null
     ]);
 
+    const artistInfos = artists ? await Promise.all(artists.artists.map(toArtistInfo).map(withLastfmImage)) : [];
+
     return {
         albums: albums ? albums["release-groups"].map(releaseGroupToMediaInfo) : [],
         tracks: tracks ? tracks.recordings.map(recordingToMediaInfo) : [],
-        artists: artists ? artists.artists.map(toArtistInfo) : []
+        artists: artistInfos
     };
 });

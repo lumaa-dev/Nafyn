@@ -185,6 +185,207 @@ export async function countAlbumsOfUser(userId: string): Promise<number> {
     return Number(row.count);
 }
 
+// single AlbumRow for one albumId, scoped to what the user owns - used by the Subsonic layer's getAlbum
+export async function getAlbumOfUser(userId: string, albumId: string): Promise<AlbumRow | null> {
+    const row = await getLibrariesDb().prepare(`
+        SELECT
+            media.albumId AS id,
+            MIN(media.musicbrainzId) AS mbId,
+            MIN(media.album) AS title,
+            MIN(media.artistName) AS artistName,
+            MIN(media.artistMbid) AS artistMbid,
+            MIN(media.coverArt) AS coverArt,
+            MIN(media.releaseDate) AS releaseDate,
+            SUM(media.duration) AS duration,
+            COUNT(*) AS trackCount
+        FROM library_entries
+        JOIN media ON media.id = library_entries.mediaId
+        WHERE library_entries.userId = ? AND media.albumId = ?
+        GROUP BY media.albumId
+    `).get(userId, albumId) as (AlbumRow & { duration: string | number }) | undefined;
+    return row ? { ...row, duration: Number(row.duration) } : null;
+}
+
+// a MediaRow plus the caller's own filePath for it - filePath lives on library_entries (per-owner), not
+// media (shared pool), and the Subsonic layer needs it for content-type/size/streaming
+export type SubsonicSong = MediaRow & { filePath: string };
+
+// every owned track from one album, for the Subsonic layer's getAlbum - track order falls back to title
+// since trackNumber is only ever embedded in the audio file's own tags, never persisted on the media row
+export async function getAlbumSongsOfUser(userId: string, albumId: string): Promise<SubsonicSong[]> {
+    return await getLibrariesDb().prepare(`
+        SELECT media.*, library_entries.filePath AS filePath
+        FROM library_entries
+        JOIN media ON media.id = library_entries.mediaId
+        WHERE library_entries.userId = ? AND media.albumId = ?
+        ORDER BY media.title ASC
+    `).all(userId, albumId) as SubsonicSong[];
+}
+
+// single owned track by media ID, for the Subsonic layer's getSong/stream/download
+export async function getSongOfUser(userId: string, mediaId: string): Promise<SubsonicSong | null> {
+    const row = await getLibrariesDb().prepare(`
+        SELECT media.*, library_entries.filePath AS filePath
+        FROM library_entries
+        JOIN media ON media.id = library_entries.mediaId
+        WHERE library_entries.userId = ? AND media.id = ?
+    `).get(userId, mediaId) as SubsonicSong | undefined;
+    return row ?? null;
+}
+
+export interface ArtistRow {
+    id: string,
+    name: string,
+    albumCount: number
+}
+
+// one ArtistRow per distinct artist owned by the user - grouped by artistMbid where known, falling back to
+// the display name for tracks with no MusicBrainz artist credit, so those still collect under one entry
+export async function getArtistsOfUser(userId: string): Promise<ArtistRow[]> {
+    return await getLibrariesDb().prepare(`
+        SELECT
+            COALESCE(media.artistMbid, media.artistName) AS id,
+            MIN(media.artistName) AS name,
+            COUNT(DISTINCT media.albumId) AS albumCount
+        FROM library_entries
+        JOIN media ON media.id = library_entries.mediaId
+        WHERE library_entries.userId = ?
+        GROUP BY COALESCE(media.artistMbid, media.artistName)
+        ORDER BY name ASC
+    `).all(userId) as ArtistRow[];
+}
+
+// single ArtistRow (see getArtistsOfUser for the id scheme), scoped to what the user owns
+export async function getArtistOfUser(userId: string, artistId: string): Promise<ArtistRow | null> {
+    const row = await getLibrariesDb().prepare(`
+        SELECT
+            COALESCE(media.artistMbid, media.artistName) AS id,
+            MIN(media.artistName) AS name,
+            COUNT(DISTINCT media.albumId) AS albumCount
+        FROM library_entries
+        JOIN media ON media.id = library_entries.mediaId
+        WHERE library_entries.userId = ? AND COALESCE(media.artistMbid, media.artistName) = ?
+        GROUP BY COALESCE(media.artistMbid, media.artistName)
+    `).get(userId, artistId) as ArtistRow | undefined;
+    return row ?? null;
+}
+
+// albums by one artist (see getArtistsOfUser for the id scheme), scoped to what the user owns
+export async function getArtistAlbumsOfUser(userId: string, artistId: string): Promise<AlbumRow[]> {
+    const rows = await getLibrariesDb().prepare(`
+        SELECT
+            media.albumId AS id,
+            MIN(media.musicbrainzId) AS mbId,
+            MIN(media.album) AS title,
+            MIN(media.artistName) AS artistName,
+            MIN(media.artistMbid) AS artistMbid,
+            MIN(media.coverArt) AS coverArt,
+            MIN(media.releaseDate) AS releaseDate,
+            SUM(media.duration) AS duration,
+            COUNT(*) AS trackCount
+        FROM library_entries
+        JOIN media ON media.id = library_entries.mediaId
+        WHERE library_entries.userId = ? AND COALESCE(media.artistMbid, media.artistName) = ?
+          AND media.album IS NOT NULL AND media.albumId IS NOT NULL AND media.albumId != 'unknown-album'
+        GROUP BY media.albumId
+        ORDER BY MIN(media.releaseDate) ASC
+    `).all(userId, artistId) as (AlbumRow & { duration: string | number })[];
+    return rows.map((row) => ({ ...row, duration: Number(row.duration) }));
+}
+
+export type AlbumListSort = "newest" | "alphabeticalByName" | "alphabeticalByArtist" | "random";
+
+// paged album listing for the Subsonic layer's getAlbumList2 - "frequent"/"recent"/"starred" etc. from the
+// real protocol aren't tracked by Nafyn (no per-album play counts or starring yet), so callers requesting an
+// unsupported sort fall back to "newest" rather than erroring
+export async function getAlbumListOfUser(userId: string, sort: AlbumListSort, limit: number, offset: number): Promise<AlbumRow[]> {
+    const orderBy = sort === "alphabeticalByName" ? "MIN(media.album) ASC"
+        : sort === "alphabeticalByArtist" ? "MIN(media.artistName) ASC"
+        : sort === "random" ? "RAND()"
+        : "MAX(media.addedAt) DESC";
+
+    const rows = await getLibrariesDb().prepare(`
+        SELECT
+            media.albumId AS id,
+            MIN(media.musicbrainzId) AS mbId,
+            MIN(media.album) AS title,
+            MIN(media.artistName) AS artistName,
+            MIN(media.artistMbid) AS artistMbid,
+            MIN(media.coverArt) AS coverArt,
+            MIN(media.releaseDate) AS releaseDate,
+            SUM(media.duration) AS duration,
+            COUNT(*) AS trackCount
+        FROM library_entries
+        JOIN media ON media.id = library_entries.mediaId
+        WHERE library_entries.userId = ? AND media.album IS NOT NULL AND media.albumId IS NOT NULL AND media.albumId != 'unknown-album'
+        GROUP BY media.albumId
+        ORDER BY ${orderBy}
+        LIMIT ? OFFSET ?
+    `).all(userId, limit, offset) as (AlbumRow & { duration: string | number })[];
+    return rows.map((row) => ({ ...row, duration: Number(row.duration) }));
+}
+
+export interface LibrarySearchResults {
+    artists: ArtistRow[],
+    albums: AlbumRow[],
+    songs: SubsonicSong[]
+}
+
+// Subsonic search3: a simple substring match across the user's own library, not a MusicBrainz lookup -
+// search here means "find something I've already downloaded", same as the in-app library search
+export async function searchLibraryOfUser(userId: string, query: string, artistCount: number, albumCount: number, songCount: number): Promise<LibrarySearchResults> {
+    const db = getLibrariesDb();
+    const like = `%${query}%`;
+
+    const artists = await db.prepare(`
+        SELECT
+            COALESCE(media.artistMbid, media.artistName) AS id,
+            MIN(media.artistName) AS name,
+            COUNT(DISTINCT media.albumId) AS albumCount
+        FROM library_entries
+        JOIN media ON media.id = library_entries.mediaId
+        WHERE library_entries.userId = ? AND media.artistName LIKE ?
+        GROUP BY COALESCE(media.artistMbid, media.artistName)
+        ORDER BY name ASC
+        LIMIT ?
+    `).all(userId, like, artistCount) as ArtistRow[];
+
+    const albumRows = await db.prepare(`
+        SELECT
+            media.albumId AS id,
+            MIN(media.musicbrainzId) AS mbId,
+            MIN(media.album) AS title,
+            MIN(media.artistName) AS artistName,
+            MIN(media.artistMbid) AS artistMbid,
+            MIN(media.coverArt) AS coverArt,
+            MIN(media.releaseDate) AS releaseDate,
+            SUM(media.duration) AS duration,
+            COUNT(*) AS trackCount
+        FROM library_entries
+        JOIN media ON media.id = library_entries.mediaId
+        WHERE library_entries.userId = ? AND media.album LIKE ?
+          AND media.albumId IS NOT NULL AND media.albumId != 'unknown-album'
+        GROUP BY media.albumId
+        ORDER BY MIN(media.album) ASC
+        LIMIT ?
+    `).all(userId, like, albumCount) as (AlbumRow & { duration: string | number })[];
+
+    const songs = await db.prepare(`
+        SELECT media.*, library_entries.filePath AS filePath
+        FROM library_entries
+        JOIN media ON media.id = library_entries.mediaId
+        WHERE library_entries.userId = ? AND media.title LIKE ?
+        ORDER BY media.title ASC
+        LIMIT ?
+    `).all(userId, like, songCount) as SubsonicSong[];
+
+    return {
+        artists,
+        albums: albumRows.map((row) => ({ ...row, duration: Number(row.duration) })),
+        songs
+    };
+}
+
 // total bytes across every distinct media row (the shared pool, not per-user)
 export async function getTotalMediaSize(): Promise<number> {
     // mysql2 returns SUM() as a string (it promotes to DECIMAL/BIGINT to avoid precision loss), so cast explicitly -

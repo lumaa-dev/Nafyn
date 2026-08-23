@@ -3,7 +3,7 @@
     <hr />
 </div>
 
-Self-hosted web service. Download music from Soulseek, play through web player or third-party app via Nafyn API.
+Self-hosted web service. Download music from Soulseek, play through web player, a Subsonic-compatible app, or third-party app via Nafyn API.
 
 Multi-user: separate libraries, separate permissions per user. Users request songs (matched via MusicBrainz), Nafyn fetches through Soulseek (via slskd).
 
@@ -12,6 +12,7 @@ Multi-user: separate libraries, separate permissions per user. Users request son
 - [How it works](#how-it-works)
 - [How to setup](#how-to-setup)
 - [Settings](#settings)
+- [Subsonic API](#subsonic-api)
 - [Tech stack](#tech-stack)
 - [Development](#development)
 
@@ -78,8 +79,17 @@ Configured via environment variables (see `.env.example`):
 | `SOULSEEK_DOWNLOADS_PATH` | Local, readable path to slskd's downloads directory. |
 | `ACOUSTID_API_KEY` | Verifies downloaded audio matches requested MusicBrainz recording. |
 | `DOMAIN_WHITELIST` | Allow some domains to never be rate limited |
+| `LASTFM_API_KEY` | Artist bios/images on the artist page, search results, and Subsonic's `getArtistInfo2`. Optional — those surfaces just show less without it. |
 
 <!-- More settings (in-app, user-facing) to be documented here as they land. -->
+
+## Subsonic API
+
+Nafyn exposes a [Subsonic API](http://www.subsonic.org/pages/api.jsp)-compatible endpoint at `/rest`, so any Subsonic client (Navidrome's own apps, [Sound Room](https://apps.apple.com/app/sound-room) on iOS, DSub, Substreamer, ...) can browse and stream a Nafyn library directly — point the app at your Nafyn server URL and log in with your normal Nafyn username/password. Each user's Subsonic connection details are shown in-app under **Settings → Subsonic**.
+
+Covers authentication, ID3-mode browsing (artists/albums/songs), search, playlists, cover art, streaming, and scrobbling. Not covered: folder/index browsing (non-ID3 clients), podcasts, radio, jukebox, shares, bookmarks, chat, starring/ratings, transcoding.
+
+Only password-based login (`p=`) works — token-based auth (`t=`/`s=`) can't be supported since Nafyn stores passwords as one-way bcrypt hashes, which a token can never be verified against. If a client offers a choice, pick password/legacy auth. See [`server/utils/subsonicAuth.ts`](server/utils/subsonicAuth.ts) for details, and [`server/routes/rest/[method].ts`](server/routes/rest/%5Bmethod%5D.ts) for the endpoint implementations.
 
 ## Tech stack
 
@@ -87,6 +97,7 @@ Configured via environment variables (see `.env.example`):
 - `mysql2` — database
 - `bullmq` — download job queue
 - `musicbrainz-api` — track/album metadata search
+- Last.fm API — artist bios/images (optional, `LASTFM_API_KEY`)
 - `slskd` (external, self-hosted) — Soulseek network access
 - `fpcalc` + AcoustID — audio fingerprint verification
 - `music-metadata` — tag reading/writing

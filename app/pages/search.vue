@@ -12,7 +12,9 @@
     <span class="results" v-if="results.artists">
       <h2>{{ $t('search.artists') }}</h2>
       <div class="xs one">
-        <ArtistBox v-for="art in results?.artists" :key="art.musicbrainzId" :artist="art" />
+        <NuxtLink class="trad" :to="`/ar/${art.musicbrainzId}`" v-for="art in results?.artists" :key="art.musicbrainzId">
+          <ArtistBox :artist="art" />
+        </NuxtLink>
       </div>
     </span>
     <span class="results" v-if="results.tracks">

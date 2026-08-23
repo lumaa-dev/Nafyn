@@ -142,6 +142,26 @@
 
         <NuxtLink to="/l/all" class="everyone-link">{{ $t('settings.storage.everyoneLibraryLink') }}</NuxtLink>
       </div>
+
+      <div v-else-if="activeCategory === 'subsonic'" class="panel">
+        <h1>{{ $t('settings.subsonic.title') }}</h1>
+        <p class="subsonic-intro">{{ $t('settings.subsonic.intro') }}</p>
+
+        <label>{{ $t('settings.subsonic.serverUrl') }}</label>
+        <div class="copy-field">
+          <input type="text" readonly :value="subsonicUrl" @click="($event.target as HTMLInputElement).select()">
+          <button type="button" filled="hollow" @click="copyToClipboard(subsonicUrl)">{{ $t('settings.subsonic.copy') }}</button>
+        </div>
+
+        <label>{{ $t('settings.subsonic.username') }}</label>
+        <div class="copy-field">
+          <input type="text" readonly :value="user?.username ?? ''" @click="($event.target as HTMLInputElement).select()">
+          <button type="button" filled="hollow" @click="copyToClipboard(user?.username ?? '')">{{ $t('settings.subsonic.copy') }}</button>
+        </div>
+
+        <p class="subsonic-note">{{ $t('settings.subsonic.passwordNote') }}</p>
+        <p class="subsonic-note">{{ $t('settings.subsonic.tokenNote') }}</p>
+      </div>
     </section>
   </div>
 </template>
@@ -154,7 +174,7 @@ import type { RegisterTokenRow } from '~~/server/core/registerTokens';
 const token = useCookie("nafynToken").value ?? "";
 
 interface Category {
-  id: "profile" | "accounts" | "storage",
+  id: "profile" | "accounts" | "storage" | "subsonic",
   label: string
 }
 
@@ -179,8 +199,23 @@ const categories = computed(() => {
   const cats: Category[] = [{ id: 'profile', label: $t('settings.categories.profile') }];
   if (canManageAccounts.value) cats.push({ id: 'accounts', label: $t('settings.categories.accounts') });
   if (canManageMusic.value) cats.push({ id: 'storage', label: $t('settings.categories.storage') });
+  cats.push({ id: 'subsonic', label: $t('settings.categories.subsonic') });
   return cats;
 });
+
+// Subsonic-compatible clients (Navidrome apps, Sound Room, DSub, ...) connect to this same origin's
+// /rest endpoint (server/routes/rest/[method].ts) using the account's normal username/password
+const subsonicUrl = computed(() => (import.meta.client ? `${location.origin}/rest` : ""));
+
+async function copyToClipboard(value: string) {
+  if (!value) return;
+  try {
+    await navigator.clipboard.writeText(value);
+    sendToast($t('settings.subsonic.title'), $t('settings.subsonic.copied'));
+  } catch {
+    // clipboard access denied (permissions, insecure context, ...) - the field is still selectable/copyable by hand
+  }
+}
 
 const avatarPreviewUrl = computed(() => {
   if (avatarObjectUrl.value) return avatarObjectUrl.value;
@@ -812,6 +847,31 @@ watch(activeCategory, async (cat) => {
 .everyone-link {
   font-size: 0.85em;
   margin-top: 10px;
+}
+
+.subsonic-intro {
+  font-size: 0.85em;
+  color: #999999;
+}
+
+.copy-field {
+  display: flex;
+  gap: 10px;
+}
+
+.copy-field input {
+  flex: 1;
+  min-width: 0;
+}
+
+.copy-field button {
+  flex-shrink: 0;
+  font-size: 0.8em;
+}
+
+.subsonic-note {
+  font-size: 0.7em;
+  color: #666666;
 }
 
 @media screen and (max-width: 800px) {
