@@ -69,18 +69,32 @@ async function lookupAcoustId(fingerprint: string, duration: number): Promise<Ac
         fingerprint
     });
 
-    const res = await fetch(ACOUSTID_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body
-    });
+    // transient DNS/TLS hiccups (common on flaky ARM/home-router links) surface as a bare
+    // "TypeError: fetch failed" that hides the real cause and kills an otherwise-good candidate -
+    // retry a couple times before giving up, and log `cause` so a genuine failure is diagnosable
+    let lastError: unknown;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+            const res = await fetch(ACOUSTID_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body
+            });
 
-    const data = await res.json() as AcoustIdResponse;
-    if (data.status !== "ok") {
-        throw new Error("AcoustID lookup failed");
+            const data = await res.json() as AcoustIdResponse;
+            if (data.status !== "ok") {
+                throw new Error("AcoustID lookup failed");
+            }
+
+            return data.results ?? [];
+        } catch (error) {
+            lastError = error;
+            const cause = error instanceof Error && error.cause ? ` (cause: ${error.cause})` : "";
+            console.error(`[fingerprint] AcoustID lookup attempt ${attempt}/3 failed: ${error}${cause}`);
+            if (attempt < 3) await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+        }
     }
-
-    return data.results ?? [];
+    throw lastError;
 }
 
 export interface FingerprintCheck {

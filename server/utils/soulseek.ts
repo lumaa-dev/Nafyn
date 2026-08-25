@@ -126,7 +126,7 @@ interface SlskdSearch {
 // slskd's own UI shows plenty a moment later. A transient fetch failure right after isComplete was also being
 // swallowed into a silent empty array with no retry at all. Retry a few times with a short backoff instead of
 // trusting either a failed fetch or a suspiciously-empty one on the first try.
-async function fetchSearchResponses(id: string, attempts = 4): Promise<SlskdResponse[]> {
+async function fetchSearchResponses(id: string, attempts = 6): Promise<SlskdResponse[]> {
     for (let attempt = 1; attempt <= attempts; attempt++) {
         const res = await slskdFetch(`/api/v0/searches/${id}/responses`);
         if (res.ok) {
@@ -138,12 +138,23 @@ async function fetchSearchResponses(id: string, attempts = 4): Promise<SlskdResp
     return [];
 }
 
+// Soulseek peers match search text against their shared filenames with plain substring/token matching,
+// case-folded but not diacritic-folded - a query with accents ("Bénabar", "Dîner") simply never matches a
+// peer's filename tagged/ripped without them (by far the common case), so a fully correct, high-result-count
+// search can come back with zero hits every single time. Fold to the closest ASCII form before searching;
+// local candidate filtering (`normalize()`) already treats accented and plain forms the same way, so this
+// doesn't cause false matches downstream.
+function foldDiacritics(text: string): string {
+    return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
 export async function searchSoulseek(query: string, timeoutMs = 20000): Promise<SlskSearchResult[]> {
     const id = randomUUID();
+    const searchText = foldDiacritics(query);
 
     const startRes = await slskdFetch("/api/v0/searches", {
         method: "POST",
-        body: JSON.stringify({ id, searchText: query })
+        body: JSON.stringify({ id, searchText })
     });
 
     if (!startRes.ok) {
