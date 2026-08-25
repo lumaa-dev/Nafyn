@@ -69,11 +69,13 @@ async function lookupAcoustId(fingerprint: string, duration: number): Promise<Ac
         fingerprint
     });
 
-    // transient DNS/TLS hiccups (common on flaky ARM/home-router links) surface as a bare
-    // "TypeError: fetch failed" that hides the real cause and kills an otherwise-good candidate -
-    // retry a couple times before giving up, and log `cause` so a genuine failure is diagnosable
+    // transient DNS/TLS hiccups (common on flaky ARM/home-router links, e.g. `getaddrinfo EAI_AGAIN` when
+    // the container's resolver is momentarily unreachable) surface as a bare "TypeError: fetch failed" that
+    // hides the real cause and kills an otherwise-good candidate - retry with backoff before giving up, and
+    // log `cause` so a genuine failure is diagnosable
+    const ATTEMPTS = 5;
     let lastError: unknown;
-    for (let attempt = 1; attempt <= 3; attempt++) {
+    for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
         try {
             const res = await fetch(ACOUSTID_URL, {
                 method: "POST",
@@ -90,8 +92,8 @@ async function lookupAcoustId(fingerprint: string, duration: number): Promise<Ac
         } catch (error) {
             lastError = error;
             const cause = error instanceof Error && error.cause ? ` (cause: ${error.cause})` : "";
-            console.error(`[fingerprint] AcoustID lookup attempt ${attempt}/3 failed: ${error}${cause}`);
-            if (attempt < 3) await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+            console.error(`[fingerprint] AcoustID lookup attempt ${attempt}/${ATTEMPTS} failed: ${error}${cause}`);
+            if (attempt < ATTEMPTS) await new Promise((resolve) => setTimeout(resolve, 1500 * attempt));
         }
     }
     throw lastError;
@@ -100,17 +102,28 @@ async function lookupAcoustId(fingerprint: string, duration: number): Promise<Ac
 export interface FingerprintCheck {
     matched: boolean,
     fingerprint: string,
-    duration: number
+    duration: number,
+    // false when AcoustID itself couldn't be reached (network/DNS) after retries - fpcalc ran fine locally,
+    // there's just no verdict to trust either way. Callers should accept the download rather than fail the
+    // whole request over a network blip that has nothing to do with whether the file is correct.
+    verified: boolean
 }
 
 // downloads a fingerprint for `filePath` and checks whether AcoustID links it to `expectedRecordingId`
 export async function verifyRecordingMatch(filePath: string, expectedRecordingId: string): Promise<FingerprintCheck> {
     const fp = await computeFingerprint(filePath);
-    const results = await lookupAcoustId(fp.fingerprint, fp.duration);
+
+    let results: AcoustIdResult[];
+    try {
+        results = await lookupAcoustId(fp.fingerprint, fp.duration);
+    } catch (error) {
+        console.error(`[fingerprint] AcoustID unreachable, skipping verification: ${error}`);
+        return { matched: false, fingerprint: fp.fingerprint, duration: fp.duration, verified: false };
+    }
 
     const matched = results.some((result) =>
         result.score >= MIN_SCORE && result.recordings?.some((recording) => recording.id === expectedRecordingId)
     );
 
-    return { matched, fingerprint: fp.fingerprint, duration: fp.duration };
+    return { matched, fingerprint: fp.fingerprint, duration: fp.duration, verified: true };
 }

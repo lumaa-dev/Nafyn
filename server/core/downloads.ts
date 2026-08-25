@@ -299,14 +299,16 @@ async function downloadTrack(
             // list before we ever get here (see isExcludedVersion), so trusting duration at this point is safe.
             const check = await verifyRecordingMatch(tempPath, target.recordingId);
             const durationDelta = Math.abs(check.duration - target.duration);
-            
-            if (!check.matched && durationDelta > MAX_DURATION_DELTA_SECONDS) {
+
+            if (!check.verified) {
+                // AcoustID couldn't be reached at all (network/DNS) - that's not evidence the file is wrong,
+                // so don't fail the request over it, just accept the download unverified
+                console.log(`[downloads] ${check.fingerprint} could not be verified against AcoustID (unreachable), accepting anyway`);
+            } else if (!check.matched && durationDelta > MAX_DURATION_DELTA_SECONDS) {
                 await rm(tempPath, { force: true });
                 console.log(`[downloads] ${check.fingerprint} rejected: not matched and duration off by ${durationDelta}s`);
                 continue;
-            }
-
-            if (!check.matched) {
+            } else if (!check.matched) {
                 console.log(`[downloads] ${check.fingerprint} not matched by AcoustID but duration within ${durationDelta}s, accepting`);
             } else {
                 console.log(`[downloads] ${check.fingerprint} matched`);
