@@ -241,16 +241,27 @@ import NowPlaying from "./components/NowPlaying.vue";
 const route = useRoute();
 const showSidebar = ref(false);
 
-const token = useCookie("nafynToken").value;
+const tokenCookie = useCookie("nafynToken");
 
 const { state: tState } = useToast();
 
-const hasToken = ref(await checkTokenValidity(token ?? ""));
-const isNotLogging: boolean = route.path !== "/login" && route.path !== "/register"
-const isViewingPlaylist: boolean = route.path.includes("/l/playlist")
-if (isNotLogging && !isViewingPlaylist && !hasToken.value) {
-	useRouter().push(`/login`);
+const hasToken = ref(await checkTokenValidity(tokenCookie.value ?? ""));
+
+function redirectIfLoggedOut() {
+	const isNotLogging = route.path !== "/login" && route.path !== "/register";
+	const isViewingPlaylist = route.path.includes("/l/playlist");
+	if (isNotLogging && !isViewingPlaylist && !hasToken.value) {
+		useRouter().push(`/login`);
+	}
 }
+redirectIfLoggedOut();
+
+// login/register/logout set the cookie via client-side navigateTo (no app.vue remount), so hasToken
+// must be re-derived reactively here or the Header/Sidebar/NowPlaying stay stuck in their initial state
+watch(tokenCookie, async (val) => {
+	hasToken.value = await checkTokenValidity(val ?? "");
+	redirectIfLoggedOut();
+});
 
 const isMobileWidth = () => window.matchMedia("(max-width: 800px)").matches;
 
@@ -271,22 +282,35 @@ onMounted(() => {
 		// desktop: permanently on once logged in. mobile: back to closed-by-default (toggled via Wordmark),
 		// since it was only ever forced open here because of the desktop rule, not because the user toggled it
 		showSidebar.value = !mq.matches && hasToken.value;
+		// this can flip showSidebar to false without ever going through toggleSidebar's lockScroll(false) -
+		// without this, a scroll lock left over from a mobile-open sidebar can survive a resize/rotation
+		// past the breakpoint and keep fighting the page's own scroll (incl. on navigation) indefinitely
+		if (!showSidebar.value) lockScroll(false);
 	};
 	sync();
 	mq.addEventListener("change", sync);
 	onUnmounted(() => mq.removeEventListener("change", sync));
+
+	// belt-and-braces: never let a stuck scroll lock survive a navigation, regardless of how it got stuck
+	const router = useRouter();
+	const stopGuard = router.afterEach(() => lockScroll(false));
+	onUnmounted(stopGuard);
 });
 
-function lockScroll(lock: boolean = true) {
-	if (lock) {
-		let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-		let scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+let scrollLockHandler: (() => void) | null = null;
 
-		window.onscroll = () => {
-		window.scrollTo(scrollLeft, scrollTop);
-		}
-	} else {
-		window.onscroll = () => {}
+function lockScroll(lock: boolean = true) {
+	if (scrollLockHandler) {
+		window.removeEventListener("scroll", scrollLockHandler);
+		scrollLockHandler = null;
+	}
+
+	if (lock) {
+		const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+		const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+
+		scrollLockHandler = () => window.scrollTo(scrollLeft, scrollTop);
+		window.addEventListener("scroll", scrollLockHandler);
 	}
 }
 

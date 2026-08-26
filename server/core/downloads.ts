@@ -30,7 +30,7 @@ import { statSync } from "node:fs";
 import type { IRelease, IReleaseGroup, MusicBrainzApi } from "musicbrainz-api";
 import type { SlskSearchResult } from "../utils/soulseek";
 import { getMusicBrainzClient, getAppleMusicTrackID } from "../utils/musicbrainz";
-import { searchSoulseek, downloadFromSoulseek } from "../utils/soulseek";
+import { searchSoulseek, downloadFromSoulseek, foldDiacritics } from "../utils/soulseek";
 import { verifyRecordingMatch } from "../utils/fingerprint";
 import { tagAudioFile } from "../utils/audioTag";
 import { getRequestById, updateRequestStatus } from "./requests";
@@ -42,7 +42,8 @@ import {
     addLibraryEntry,
     shareMediaWithUser,
     libraryFilePath,
-    updateMediaFileSize
+    updateMediaFileSize,
+    deleteOrphanMediaRow
 } from "./library";
 import { emitDownloadProgress, clearDownloadEmitter } from "../utils/downloadEvents";
 import { NafynRequest } from "../entity/NafynRequest";
@@ -159,8 +160,10 @@ function pickCandidates(results: SlskSearchResult[]): SlskSearchResult[] {
         .slice(0, MAX_CANDIDATES_PER_TRACK);
 }
 
+// must diacritic-fold the same way soulseek.ts's foldDiacritics does before collapsing non-ASCII runs to
+// spaces, or accented titles ("Dîner" -> "d ner") never substring-match their unaccented filenames ("diner")
 function normalize(s: string): string {
-    return s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    return foldDiacritics(s).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
 
 // true when `fileName` names a different version (instrumental/karaoke/...) than the one actually requested
@@ -275,6 +278,9 @@ async function downloadTrack(
     for (const candidate of candidates) {
         const extension = sanitizeCandidate(candidate)!.extension;
         const tempPath = join(TMP_DIR, `${randomUUID()}${extension}`);
+        // set only when *this* candidate attempt inserts a brand-new media row, so a failure past this point
+        // can roll it back instead of leaving an orphan for the next candidate attempt to duplicate again
+        let insertedMediaId: string | null = null;
 
         try {
             await downloadFromSoulseek(candidate, tempPath, (dl) => {
@@ -315,7 +321,25 @@ async function downloadTrack(
             }
 
             // step 6+7: tag with MusicBrainz metadata, move into the requesting user's library
-            const media = await insertMedia({
+            // re-check here (not just once before the candidate loop): an earlier candidate in this same
+            // loop, or a concurrent request for the same recording, may have inserted a row since we last checked
+            const reusableMedia = await findMediaByMusicbrainzId(target.recordingId);
+            if (reusableMedia) {
+                // someone beat us to it while we were downloading/verifying this candidate - share their
+                // existing file instead of tagging our own copy into a second physical file for the same track
+                const sourceEntry = await findAnyLibraryEntryForMedia(reusableMedia.id);
+                if (sourceEntry) {
+                    await rm(tempPath, { force: true });
+                    await shareMediaWithUser(requestedBy, reusableMedia, sourceEntry.filePath);
+                    progress({ stage: "completed", message: "Granted access to existing library entry" });
+                    return true;
+                }
+                // reusableMedia has no owner yet (the other in-flight attempt hasn't reached addLibraryEntry) -
+                // fall through and finish tagging this download against that already-inserted row instead of
+                // inserting a second one
+            }
+
+            const media = reusableMedia ?? await insertMedia({
                 musicbrainzId: target.recordingId,
                 title: target.title,
                 artistName: target.artistName,
@@ -331,6 +355,7 @@ async function downloadTrack(
                 amId: target.amId,
                 fileSize: null
             });
+            if (!reusableMedia) insertedMediaId = media.id;
 
             console.log(`[downloads] Musicbrainz'd "${target.title}"`);
 
@@ -354,6 +379,12 @@ async function downloadTrack(
         } catch (error) {
             console.error(`[downloads] Error occured for candidates ${error}`);
             await rm(tempPath, { force: true });
+            if (insertedMediaId) {
+                // this attempt's own insertMedia never reached addLibraryEntry - remove it so the next
+                // candidate attempt doesn't insert yet another row for the same recording (the orphaned,
+                // unowned "duplicate media row" bug)
+                await deleteOrphanMediaRow(insertedMediaId).catch(() => {});
+            }
         }
     }
 

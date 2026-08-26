@@ -39,6 +39,10 @@
         <input id="discogs" v-model="discogs" type="text" :placeholder="$t('settings.profile.discogsPlaceholder')">
 
         <button type="button" filled :disabled="!canSave || saving" @click="save">{{ $t('settings.profile.save') }}</button>
+
+        <section class="subsection">
+          <button type="button" filled="hollow" class="danger" @click="logout">{{ $t('settings.profile.logout') }}</button>
+        </section>
       </div>
 
       <div v-else-if="activeCategory === 'accounts'" class="panel">
@@ -394,6 +398,11 @@ function sendToast(title: string | null, message: string, success: boolean = tru
     icon: null,
     title
   })
+}
+
+function logout() {
+  useCookie("nafynToken").value = null;
+  navigateTo("/login");
 }
 
 function formatDate(date: string | number | Date): string {

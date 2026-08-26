@@ -142,9 +142,9 @@ async function fetchSearchResponses(id: string, attempts = 6): Promise<SlskdResp
 // case-folded but not diacritic-folded - a query with accents ("Bénabar", "Dîner") simply never matches a
 // peer's filename tagged/ripped without them (by far the common case), so a fully correct, high-result-count
 // search can come back with zero hits every single time. Fold to the closest ASCII form before searching;
-// local candidate filtering (`normalize()`) already treats accented and plain forms the same way, so this
-// doesn't cause false matches downstream.
-function foldDiacritics(text: string): string {
+// downloads.ts's local candidate filtering (normalize(), which calls this same function) folds the same way,
+// so this doesn't cause false matches downstream.
+export function foldDiacritics(text: string): string {
     return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 

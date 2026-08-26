@@ -35,7 +35,8 @@ const availableTracks = computed(() => {
 watch(() => props.modelValue, async (isOpen) => {
   if (!isOpen) return;
   addedIds.value = new Set();
-  libraryTracks.value = await $fetch<MediaRow[]>("/api/v1/library/tracks", { headers: { Authorization: token } }).catch(() => []);
+  const res = await $fetch<{ items: MediaRow[] }>("/api/v1/library/tracks", { headers: { Authorization: token }, query: { limit: 200 } }).catch(() => ({ items: [] }));
+  libraryTracks.value = res.items;
 });
 
 async function addTrack(mediaId: string) {
