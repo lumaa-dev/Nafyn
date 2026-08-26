@@ -63,7 +63,8 @@
   "track": {
     "request": "Demander",
     "requested": "Demandé",
-    "viewInMusicbrainz": "Voir dans MusicBrainz"
+    "viewInMusicbrainz": "Voir dans MusicBrainz",
+    "delete": "Supprimer la piste"
   },
   "artist": {
     "discography": "Discographie",
