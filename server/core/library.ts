@@ -499,6 +499,12 @@ export async function deleteAllLibraryEntriesForUser(userId: string): Promise<vo
     }
 }
 
+// cleans up a `media` row that was just insertMedia()'d but never reached addLibraryEntry (e.g. a download
+// candidate that failed after insert) - safe only because no library_entries row can exist yet at that point
+export async function deleteOrphanMediaRow(mediaId: string): Promise<void> {
+    await getLibrariesDb().prepare(`DELETE FROM media WHERE id = ?`).run(mediaId);
+}
+
 // revokes `userId`'s access to a song; once no user references it anymore, the shared file and media row are deleted too
 export async function deleteLibraryEntryForUser(userId: string, mediaId: string): Promise<{ removed: boolean, fileDeleted: boolean }> {
     const entry = await findLibraryEntry(userId, mediaId);

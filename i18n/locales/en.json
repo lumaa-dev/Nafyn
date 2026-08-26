@@ -64,7 +64,8 @@
     "request": "Request",
     "requested": "Requested successfully",
     "viewInMusicbrainz": "View in MusicBrainz",
-    "delete": "Delete track"
+    "delete": "Delete track",
+    "viewDetails": "View details"
   },
   "artist": {
     "discography": "Discography",
@@ -115,7 +116,8 @@
       "discogsPlaceholder": "Discogs username",
       "save": "Save changes",
       "saved": "Saved",
-      "error": "Couldn't save your profile"
+      "error": "Couldn't save your profile",
+      "logout": "Log out"
     },
     "accounts": {
       "title": "Accounts",

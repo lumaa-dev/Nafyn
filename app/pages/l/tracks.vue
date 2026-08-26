@@ -8,7 +8,8 @@
           <span class="title">{{ track.title }}</span>
           <span class="artist">{{ track.artistName }}</span>
         </span>
-        <NuxtLink v-if="track.album" :to="`/a/${track.albumId}`" class="album" @click.stop>{{ track.album }}</NuxtLink>
+        <NuxtLink v-if="track.album" :to="`/l/a/${track.albumId}`" class="album" @click.stop>{{ track.album }}</NuxtLink>
+        <span class="filesize" v-if="canSeeFileSize">{{ track.fileSize != null ? formatBytes(track.fileSize) : '—' }}</span>
         <span class="duration">{{ formatDuration(track.duration) }}</span>
         <button type="button" class="ellipsis" @click.stop="onEllipsis($event, track)" :aria-label="$t('playlist.addToPlaylist')">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
@@ -26,11 +27,32 @@
 
 <script lang="ts" setup>
 import type { MediaRow } from '~~/server/core/library';
+import type { NafynUser } from '~~/server/entity/NafynUser';
+import { hasPermission, Permission } from '~~/server/entity/Permission';
 import noCover from '~/assets/no-cover.png';
 import ContextMenu, { type ContextMenuItem } from '~/components/ContextMenu.vue';
 import PlaylistPickerModal from '~/components/PlaylistPickerModal.vue';
 
 const token = useCookie("nafynToken").value;
+
+const { data: me } = await useAsyncData<NafynUser | null>("me-tracks", () => {
+  return token ? $fetch("/api/v1/user/me", { headers: { Authorization: token } }) : Promise.resolve(null);
+});
+const canSeeFileSize = computed(() => {
+  const perms = typeof me.value?.permissions === "number" ? me.value.permissions : 0;
+  return hasPermission(perms, Permission.MANAGE_MUSIC) || hasPermission(perms, Permission.ADMIN);
+});
+
+function formatBytes(bytes: number): string {
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let value = bytes;
+  let unitIndex = 0;
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024;
+    unitIndex++;
+  }
+  return `${value.toFixed(1)} ${units[unitIndex]}`;
+}
 
 const { items: tracks, initialLoading, loadingMore, sentinel, loadMore, reset } = useInfiniteList<MediaRow>((page, limit) => {
   return token
@@ -56,6 +78,9 @@ const trackMenuItems = ref<ContextMenuItem[]>([]);
 
 function buildTrackMenu(track: MediaRow) {
   trackMenuItems.value = [{
+    label: $t('track.viewDetails'),
+    action: () => navigateTo(`/l/t/${track.id}`)
+  }, {
     label: $t('playlist.addToPlaylist'),
     action: () => {
       pickerMediaIds.value = [track.id];
@@ -173,6 +198,13 @@ async function deleteTrack(track: MediaRow) {
   color: #666666;
 }
 
+.libtracks .tracks .filesize {
+  color: #666666;
+  font-variant-numeric: tabular-nums;
+  font-family: "Discy";
+  font-size: 0.7em;
+}
+
 .libtracks .tracks .duration {
   color: #666666;
   font-variant-numeric: tabular-nums;
@@ -197,7 +229,8 @@ async function deleteTrack(track: MediaRow) {
     width: 90vw;
   }
 
-  .libtracks .tracks .album {
+  .libtracks .tracks .album,
+  .libtracks .tracks .filesize {
     display: none;
   }
 

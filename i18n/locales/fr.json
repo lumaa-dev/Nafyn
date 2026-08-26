@@ -64,7 +64,8 @@
     "request": "Demander",
     "requested": "Demandé",
     "viewInMusicbrainz": "Voir dans MusicBrainz",
-    "delete": "Supprimer la piste"
+    "delete": "Supprimer la piste",
+    "viewDetails": "Voir les détails"
   },
   "artist": {
     "discography": "Discographie",
@@ -115,7 +116,8 @@
       "discogsPlaceholder": "Nom d'utilisateur Discogs",
       "save": "Enregistrer",
       "saved": "Enregistré",
-      "error": "Impossible d'enregistrer votre profil"
+      "error": "Impossible d'enregistrer votre profil",
+      "logout": "Se déconnecter"
     },
     "accounts": {
       "title": "Comptes",

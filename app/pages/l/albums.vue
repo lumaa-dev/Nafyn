@@ -2,7 +2,7 @@
   <div class="libalbums">
     <h1>{{ $t('library.albums.title') }}</h1>
     <div class="grid" v-if="albums.length > 0">
-      <NuxtLink v-for="album in albums" :key="album.id" :to="`/a/${album.id}`">
+      <NuxtLink v-for="album in albums" :key="album.id" :to="`/l/a/${album.id}`">
         <MediaBox :media="toMediaInfo(album)" />
       </NuxtLink>
     </div>
