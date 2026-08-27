@@ -49,7 +49,7 @@ import { emitDownloadProgress, clearDownloadEmitter } from "../utils/downloadEve
 import { NafynRequest } from "../entity/NafynRequest";
 
 const TMP_DIR = join(process.cwd(), ".data", "tmp");
-const ALLOWED_EXTENSIONS = [".mp3", ".flac", ".ogg", ".m4a", ".wav"];
+const ALLOWED_EXTENSIONS = [".mp3", ".flac", ".ogg", ".wav"];
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const MAX_CANDIDATES_PER_TRACK = 5;
 const MAX_DURATION_DELTA_SECONDS = 5;
