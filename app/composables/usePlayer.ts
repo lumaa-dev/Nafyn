@@ -1,6 +1,7 @@
 // global "Now Playing" audio engine: one <audio> element shared across every page via useState
 import type { MediaRow } from "~~/server/core/library";
 import type { RecentlyPlayedType } from "~~/server/core/recentlyPlayed";
+import { enqueuePlayEvent, bindPlayTracking, type PlaySource } from "./usePlayTracking";
 
 export type RepeatMode = "off" | "queue" | "track";
 
@@ -20,6 +21,90 @@ function recordRecentlyPlayed(context: PlayContext) {
         headers: { Authorization: token },
         body: { type: context.type, refId: context.refId }
     }).catch(() => {});
+}
+
+// --- listening-history capture ----------------------------------------------------------------------
+//
+// A "segment" is one continuous listen of one track: from the moment it starts playing until it is replaced,
+// skipped, stopped or reaches its end. It exists because the player had no time accounting at all - the
+// audio element reports a position, not how long a human actually spent listening to it.
+//
+// Elapsed time is measured in WALL CLOCK (Date.now() deltas across playing intervals), never as a difference
+// in `currentTime`. That is the whole reason seeking needs no special handling: dragging the scrubber to the
+// last second of a track moves currentTime by three minutes but costs the listener nothing, and only a
+// wall-clock measure refuses to credit it.
+interface Segment {
+    track: MediaRow;
+    playlistId: string | null;
+    source: PlaySource;
+    startedAtMs: number;
+    accumulatedMs: number;
+    /** Date.now() when the current playing interval began; null while paused */
+    lastResumeMs: number | null;
+    /** furthest position reached, in seconds - decides skip vs. complete */
+    maxPositionSec: number;
+}
+
+let segment: Segment | null = null;
+
+// where the current queue came from, so tracks reached by queue advance or repeat are attributed to the same
+// album/playlist the user actually pressed play on
+let currentContext: PlayContext | null = null;
+
+// mirrors insightsConfig.nearCompleteRatio on the server. A play that got this far counts as finished even
+// if the element never fired "ended" - which is what happens when someone hits Next during an outro.
+const NEAR_COMPLETE_RATIO = 0.85;
+
+function contextToSource(context: PlayContext | null): PlaySource {
+    // PlayContext.type already maps 1:1 onto the server's `source` enum; no context means the track was
+    // played straight from the library
+    return context ? (context.type as PlaySource) : "library";
+}
+
+function startSegment(track: MediaRow) {
+    if (!import.meta.client) return;
+    segment = {
+        track,
+        playlistId: currentContext?.type === "playlist" ? currentContext.refId : null,
+        source: contextToSource(currentContext),
+        startedAtMs: Date.now(),
+        accumulatedMs: 0,
+        lastResumeMs: null,
+        maxPositionSec: 0
+    };
+}
+
+// folds the interval in progress into the running total; called on pause and again when the segment ends
+function accumulateSegment() {
+    if (!segment || segment.lastResumeMs === null) return;
+    segment.accumulatedMs += Date.now() - segment.lastResumeMs;
+    segment.lastResumeMs = null;
+}
+
+type SegmentEnd = "ended" | "skipped" | "replaced" | "stopped";
+
+function endSegment(reason: SegmentEnd) {
+    if (!segment) return;
+
+    accumulateSegment();
+    const finished = segment;
+    segment = null;
+
+    if (finished.accumulatedMs <= 0) return;
+
+    const trackDurationSec = finished.track.duration;
+    const completed = reason === "ended"
+        || (trackDurationSec > 0 && finished.maxPositionSec >= trackDurationSec * NEAR_COMPLETE_RATIO);
+
+    enqueuePlayEvent({
+        event_id: crypto.randomUUID(),
+        track_id: finished.track.id,
+        playlist_id: finished.playlistId,
+        started_at: finished.startedAtMs,
+        duration_ms: Math.round(finished.accumulatedMs),
+        completed,
+        source: finished.source
+    });
 }
 
 export interface PlayerState {
@@ -43,16 +128,36 @@ function getAudioEl(state: PlayerState): HTMLAudioElement {
     audioEl.preload = "metadata";
     audioEl.volume = state.volume;
 
-    audioEl.addEventListener("timeupdate", () => { state.currentTime = audioEl!.currentTime; updatePositionState(audioEl!); });
+    audioEl.addEventListener("timeupdate", () => {
+        state.currentTime = audioEl!.currentTime;
+        if (segment && audioEl!.currentTime > segment.maxPositionSec) segment.maxPositionSec = audioEl!.currentTime;
+        updatePositionState(audioEl!);
+    });
     audioEl.addEventListener("durationchange", () => { state.duration = Number.isFinite(audioEl!.duration) ? audioEl!.duration : 0; updatePositionState(audioEl!); });
-    audioEl.addEventListener("play", () => { state.isPlaying = true; if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "playing"; });
-    audioEl.addEventListener("pause", () => { state.isPlaying = false; if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "paused"; });
+    audioEl.addEventListener("play", () => {
+        state.isPlaying = true;
+        if (segment && segment.lastResumeMs === null) segment.lastResumeMs = Date.now();
+        if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "playing";
+    });
+    audioEl.addEventListener("pause", () => {
+        state.isPlaying = false;
+        // paused time is not listening time
+        accumulateSegment();
+        if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "paused";
+    });
     audioEl.addEventListener("waiting", () => { state.isLoading = true; });
     audioEl.addEventListener("canplay", () => { state.isLoading = false; });
     audioEl.addEventListener("ended", () => {
+        const finishedTrack = segment?.track ?? null;
+        endSegment("ended");
+
         if (state.repeat === "track") {
             audioEl!.currentTime = 0;
             audioEl!.play().catch(() => { state.isPlaying = false; });
+            // repeat-track replays without going through loadCurrent(), so nothing else would open a new
+            // segment - this line is what makes looping a track count every single time round, with no caps
+            // and no dampening. That is deliberate and specified; please don't "fix" it.
+            if (finishedTrack) startSegment(finishedTrack);
             return;
         }
         goToOffset(state, 1);
@@ -98,7 +203,12 @@ function loadCurrent(state: PlayerState, autoplay: boolean) {
     const track = state.queue[state.currentIndex];
     if (!track) return;
 
+    // the single chokepoint for "the current track is no longer the current track" - play(), skipToIndex()
+    // and goToOffset() all arrive here, so closing the outgoing segment once covers all three
+    endSegment("replaced");
+
     const el = getAudioEl(state);
+    startSegment(track);
     state.currentTime = 0;
     state.duration = 0;
     state.isLoading = true;
@@ -142,6 +252,7 @@ function goToOffset(state: PlayerState, offset: 1 | -1): boolean {
 }
 
 function stop(state: PlayerState) {
+    endSegment("stopped");
     if (import.meta.client && audioEl) {
         audioEl.pause();
         audioEl.removeAttribute("src");
@@ -208,6 +319,10 @@ export const usePlayer = () => {
                 state.value.currentIndex = state.value.queue.length - 1;
             }
         }
+        // remembered for the whole queue, so a track reached by pressing Next is still attributed to the
+        // album or playlist the user started from
+        currentContext = context ?? null;
+
         loadCurrent(state.value, true);
         if (context) recordRecentlyPlayed(context);
     }
@@ -221,6 +336,10 @@ export const usePlayer = () => {
 
     function next() {
         if (state.value.repeat == "track") {
+            // restarting the same track on purpose is a new listen, not a continuation of the old one
+            const track = currentTrack.value;
+            endSegment("skipped");
+            if (track) startSegment(track);
             seek(0);
         } else {
             goToOffset(state.value, 1);
@@ -232,6 +351,10 @@ export const usePlayer = () => {
         if (!import.meta.client) return;
         const el = getAudioEl(state.value);
         if (el.currentTime > 3) {
+            // same as next()-under-repeat: the user is deliberately hearing it again
+            const track = currentTrack.value;
+            endSegment("skipped");
+            if (track) startSegment(track);
             el.currentTime = 0;
             return;
         }
@@ -285,6 +408,7 @@ export const usePlayer = () => {
     }
 
     bindMediaSessionActions({ togglePlay, next, prev, seek });
+    bindPlayTracking();
 
     return {
         state,

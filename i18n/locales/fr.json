@@ -11,7 +11,8 @@
     "playlists": "Playlists",
     "requests": "Demandes",
     "everyoneLibrary": "Bibliothèque de tous",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "insights": "Statistiques"
   },
   "auth": {
     "login": {
@@ -102,7 +103,8 @@
       "profile": "Profil",
       "accounts": "Comptes",
       "storage": "Stockage",
-      "subsonic": "Subsonic"
+      "subsonic": "Subsonic",
+      "privacy": "Confidentialité"
     },
     "profile": {
       "title": "Profil",
@@ -182,6 +184,28 @@
         "namePlaceholder": "Label (ex : Arpeggi sur iPhone)",
         "generate": "Générer un jeton"
       }
+    },
+    "privacy": {
+      "title": "Confidentialité",
+      "history": {
+        "title": "Historique d'écoute",
+        "label": "Utiliser l'historique d'écoute",
+        "on": "Activé - vos écoutes sont enregistrées et alimentent vos statistiques",
+        "off": "Désactivé - rien n'est enregistré",
+        "note": "Désactiver arrête immédiatement l'enregistrement des nouvelles écoutes. Cela ne supprime pas ce qui existe déjà."
+      },
+      "export": {
+        "title": "Exporter vos données",
+        "button": "Télécharger mes données d'écoute",
+        "note": "Tout ce que Nafyn conserve sur vos écoutes, au format JSON : écoutes brutes, agrégats, Replay Mixes et bilans annuels."
+      },
+      "delete": {
+        "title": "Supprimer votre historique",
+        "button": "Supprimer tout mon historique d'écoute",
+        "note": "Efface définitivement chaque écoute, chaque statistique, chaque Replay Mix et chaque bilan annuel. Action irréversible.",
+        "confirm": "Supprimer définitivement tout votre historique d'écoute ? Action irréversible.",
+        "done": "Votre historique d'écoute a été supprimé."
+      }
     }
   },
   "playlist": {
@@ -258,5 +282,108 @@
     "nothingPlaying": "Aucune lecture en cours.",
     "lyricsLoading": "Chargement des paroles...",
     "lyricsUnavailable": "Aucune parole disponible pour ce titre."
+  },
+  "insights": {
+    "title": "Statistiques",
+    "empty": "Rien pour l'instant.",
+    "unknownEntity": "Inconnu",
+    "tabs": {
+      "weekly": "Cette semaine",
+      "monthly": "Ce mois-ci",
+      "yearly": "Cette année"
+    },
+    "stats": {
+      "minutes": "Minutes écoutées",
+      "plays": "Écoutes",
+      "tracks": "Titres différents",
+      "artists": "Artistes différents",
+      "albums": "Albums différents",
+      "streak": "Plus longue série (jours)"
+    },
+    "top": {
+      "track": "Titres les plus écoutés",
+      "album": "Albums les plus écoutés",
+      "artist": "Artistes les plus écoutés",
+      "playlist": "Playlists les plus écoutées"
+    },
+    "metric": {
+      "minutes": "{count} min",
+      "plays": "{count} écoutes"
+    },
+    "charts": {
+      "byHour": "Quand vous écoutez",
+      "byMonth": "Minutes par mois",
+      "share": "Répartition des écoutes",
+      "other": "Tous les autres"
+    },
+    "weekly": {
+      "title": "Votre semaine",
+      "comparison": "Cette semaine et la précédente",
+      "current": "Cette semaine",
+      "previous": "Semaine dernière"
+    },
+    "monthly": {
+      "title": "Votre mois"
+    },
+    "yearly": {
+      "title": "Votre année",
+      "kicker": "Votre année musicale",
+      "frozen": "Figé le {date}. Voici l'année telle qu'elle s'est terminée.",
+      "live": "Mis à jour au fil de vos écoutes. Figé début décembre.",
+      "openPackage": "Ouvrir le bilan complet de {year}",
+      "openYear": "Ouvrir {year}"
+    },
+    "gate": {
+      "title": "Pas encore assez d'écoutes",
+      "body": "Les classements apparaissent dès que vous avez écouté {tracks} titres différents ou {minutes} minutes.",
+      "tracksProgress": "{have} titres sur {need}",
+      "minutesProgress": "{have} minutes sur {need}"
+    },
+    "disabled": {
+      "body": "L'historique d'écoute est désactivé, il n'y a donc rien à afficher.",
+      "link": "L'activer dans les paramètres"
+    },
+    "share": {
+      "card": "Enregistrer la carte",
+      "heading": "Mes écoutes"
+    },
+    "compare": {
+      "title": "D'une année à l'autre",
+      "artists": "{count} artistes"
+    },
+    "replay": {
+      "link": "Replay Mix",
+      "kicker": "Replay Mix",
+      "allTime": "Depuis toujours",
+      "yearTitle": "Replay {year}",
+      "subtitle": "{count} titres",
+      "refreshed": "Actualisé le {date}",
+      "readOnly": "Généré automatiquement chaque lundi. Non modifiable.",
+      "removed": "Supprimé",
+      "empty": "Ce mix se remplit au fil de vos écoutes.",
+      "openYear": "Ouvrir le Replay Mix {year}"
+    },
+    "reel": {
+      "play": "Lancer la rétrospective",
+      "close": "Fermer",
+      "tapHint": "Touchez pour continuer",
+      "intro": "Votre année musicale",
+      "minutes": "Minutes écoutées",
+      "uniqueTracks": "Titres différents",
+      "uniqueArtists": "Artistes différents",
+      "streak": "Jours d'affilée",
+      "topArtist": "Votre artiste numéro un",
+      "topTrack": "En boucle",
+      "outro": "C'était votre",
+      "videoTitle": "Vidéo à partager",
+      "videoNote": "Un montage des titres les plus écoutés de l'année : pochettes, courts extraits audio et vos chiffres clés. Le rendu se fait en arrière-plan et prend quelques minutes.",
+      "render": "Créer la vidéo",
+      "rerender": "Regénérer la vidéo",
+      "status": {
+        "queued": "En attente de rendu...",
+        "rendering": "Rendu en cours...",
+        "failed": "Le rendu a échoué. Réessayez."
+      }
+    }
   }
 }

@@ -1,5 +1,7 @@
 // central MySQL connection + schema setup for all Nafyn databases
 import mysql from "mysql2/promise";
+import { createInsightsTables } from "./insightsSchema";
+import { runMigrations } from "./migrations";
 
 let pool: mysql.Pool | null = null;
 
@@ -19,6 +21,12 @@ function getPool(): mysql.Pool {
             ...config(),
             namedPlaceholders: true,
             charset: "utf8mb4_general_ci",
+            // MySQL DATE/DATETIME/TIMESTAMP values have no zone of their own, so mysql2 interprets them in
+            // the Node process's local zone unless told otherwise. The listening-insights tables are the
+            // first to use those types, and an hour-of-day histogram that silently shifts when the host's
+            // TZ changes is worse than useless - pin both directions to UTC. Inert for every pre-existing
+            // table, which stores epoch-ms in BIGINT columns.
+            timezone: "Z",
             waitForConnections: true,
             connectionLimit: 10
         });
@@ -113,6 +121,13 @@ export async function withTransaction<T>(fn: (conn: mysql.PoolConnection) => Pro
     } finally {
         conn.release();
     }
+}
+
+// hands out a dedicated pooled connection; the caller MUST release it. Needed for work that is
+// connection-scoped rather than statement-scoped - MySQL's GET_LOCK/RELEASE_LOCK (see migrations.ts) is
+// held by the connection that took it, so it can't go through the pool one statement at a time.
+export async function getConnection(): Promise<mysql.PoolConnection> {
+    return await getPool().getConnection();
 }
 
 export function getUsersDb(): Db {
@@ -276,4 +291,10 @@ export async function initDatabases(): Promise<void> {
             INDEX idx_recently_played_userId_playedAt (userId, playedAt DESC)
         );
     `);
+
+    // listening-insights tables live in their own module (they need one-statement-at-a-time execution that
+    // `exec()`'s split-on-";" can't give them), and migrations run last so they can assume every
+    // CREATE TABLE above has already happened
+    await createInsightsTables();
+    await runMigrations();
 }

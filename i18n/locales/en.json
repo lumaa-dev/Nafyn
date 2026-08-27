@@ -11,7 +11,8 @@
     "playlists": "Playlists",
     "requests": "Requests",
     "everyoneLibrary": "Everyone's Library",
-    "settings": "Settings"
+    "settings": "Settings",
+    "insights": "Insights"
   },
   "auth": {
     "login": {
@@ -102,7 +103,8 @@
       "profile": "Profile",
       "accounts": "Accounts",
       "storage": "Storage",
-      "subsonic": "Subsonic"
+      "subsonic": "Subsonic",
+      "privacy": "Privacy"
     },
     "profile": {
       "title": "Profile",
@@ -182,6 +184,28 @@
         "namePlaceholder": "Label (e.g. Arpeggi on iPhone)",
         "generate": "Generate token"
       }
+    },
+    "privacy": {
+      "title": "Privacy",
+      "history": {
+        "title": "Listening history",
+        "label": "Use listening history",
+        "on": "On - your plays are recorded and power your insights",
+        "off": "Off - nothing is recorded",
+        "note": "Turning this off stops new plays being recorded straight away. It doesn't delete what's already there."
+      },
+      "export": {
+        "title": "Export your data",
+        "button": "Download my listening data",
+        "note": "Everything Nafyn holds about your listening, as a JSON file: raw plays, aggregates, Replay Mixes and year-end summaries."
+      },
+      "delete": {
+        "title": "Delete your history",
+        "button": "Delete all my listening history",
+        "note": "Permanently erases every play, every statistic, every Replay Mix and every year-end summary. This cannot be undone.",
+        "confirm": "Permanently delete your entire listening history? This cannot be undone.",
+        "done": "Your listening history has been deleted."
+      }
     }
   },
   "playlist": {
@@ -258,5 +282,108 @@
     "nothingPlaying": "Nothing playing right now.",
     "lyricsLoading": "Loading lyrics...",
     "lyricsUnavailable": "No lyrics available for this track."
+  },
+  "insights": {
+    "title": "Insights",
+    "empty": "Nothing here yet.",
+    "unknownEntity": "Unknown",
+    "tabs": {
+      "weekly": "This week",
+      "monthly": "This month",
+      "yearly": "This year"
+    },
+    "stats": {
+      "minutes": "Minutes listened",
+      "plays": "Plays",
+      "tracks": "Unique tracks",
+      "artists": "Unique artists",
+      "albums": "Unique albums",
+      "streak": "Longest streak (days)"
+    },
+    "top": {
+      "track": "Top tracks",
+      "album": "Top albums",
+      "artist": "Top artists",
+      "playlist": "Top playlists"
+    },
+    "metric": {
+      "minutes": "{count} min",
+      "plays": "{count} plays"
+    },
+    "charts": {
+      "byHour": "When you listen",
+      "byMonth": "Minutes by month",
+      "share": "Share of listening",
+      "other": "Everyone else"
+    },
+    "weekly": {
+      "title": "Your week",
+      "comparison": "This week vs last week",
+      "current": "This week",
+      "previous": "Last week"
+    },
+    "monthly": {
+      "title": "Your month"
+    },
+    "yearly": {
+      "title": "Your year",
+      "kicker": "Your music year",
+      "frozen": "Locked in on {date}. This is how the year looked when it ended.",
+      "live": "Updating as you listen. It gets locked in at the start of December.",
+      "openPackage": "Open the full {year} package",
+      "openYear": "Open {year}"
+    },
+    "gate": {
+      "title": "Not enough listening yet",
+      "body": "Rankings appear once you've played {tracks} different tracks or listened for {minutes} minutes.",
+      "tracksProgress": "{have} of {need} tracks",
+      "minutesProgress": "{have} of {need} minutes"
+    },
+    "disabled": {
+      "body": "Listening history is off, so there's nothing to show.",
+      "link": "Turn it on in settings"
+    },
+    "share": {
+      "card": "Save share card",
+      "heading": "My listening"
+    },
+    "compare": {
+      "title": "Year on year",
+      "artists": "{count} artists"
+    },
+    "replay": {
+      "link": "Replay Mix",
+      "kicker": "Replay Mix",
+      "allTime": "All time",
+      "yearTitle": "Replay {year}",
+      "subtitle": "{count} tracks",
+      "refreshed": "Refreshed {date}",
+      "readOnly": "Built automatically every Monday. It can't be edited.",
+      "removed": "Removed",
+      "empty": "This mix fills up as you listen.",
+      "openYear": "Open the {year} Replay Mix"
+    },
+    "reel": {
+      "play": "Play highlight reel",
+      "close": "Close",
+      "tapHint": "Tap to continue",
+      "intro": "Your music year",
+      "minutes": "Minutes listened",
+      "uniqueTracks": "Different tracks",
+      "uniqueArtists": "Different artists",
+      "streak": "Day streak",
+      "topArtist": "Your top artist",
+      "topTrack": "On repeat",
+      "outro": "That was your",
+      "videoTitle": "Shareable video",
+      "videoNote": "A montage of the year's top tracks - album art, short audio excerpts and your headline numbers. Rendering runs in the background and takes a few minutes.",
+      "render": "Create video",
+      "rerender": "Rebuild video",
+      "status": {
+        "queued": "Queued for rendering...",
+        "rendering": "Rendering...",
+        "failed": "Rendering failed. Try again."
+      }
+    }
   }
 }

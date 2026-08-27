@@ -195,6 +195,32 @@
           </div>
         </section>
       </div>
+      <div v-else-if="activeCategory === 'privacy'" class="panel">
+        <h1>{{ $t('settings.privacy.title') }}</h1>
+
+        <section class="subsection">
+          <h2>{{ $t('settings.privacy.history.title') }}</h2>
+          <label class="switch-row">
+            <input type="checkbox" v-model="historyEnabled" @change="toggleHistory">
+            {{ $t('settings.privacy.history.label') }}
+          </label>
+          <p class="subsonic-note">{{ historyEnabled ? $t('settings.privacy.history.on') : $t('settings.privacy.history.off') }}</p>
+          <p class="subsonic-note">{{ $t('settings.privacy.history.note') }}</p>
+          <NuxtLink to="/insights" class="everyone-link">{{ $t('insights.title') }}</NuxtLink>
+        </section>
+
+        <section class="subsection">
+          <h2>{{ $t('settings.privacy.export.title') }}</h2>
+          <p class="subsonic-note">{{ $t('settings.privacy.export.note') }}</p>
+          <button type="button" filled="hollow" :disabled="exporting" @click="exportHistory">{{ $t('settings.privacy.export.button') }}</button>
+        </section>
+
+        <section class="subsection">
+          <h2>{{ $t('settings.privacy.delete.title') }}</h2>
+          <p class="subsonic-note">{{ $t('settings.privacy.delete.note') }}</p>
+          <button type="button" filled="hollow" class="danger" :disabled="deletingHistory" @click="deleteHistory">{{ $t('settings.privacy.delete.button') }}</button>
+        </section>
+      </div>
     </section>
   </div>
 </template>
@@ -204,11 +230,12 @@ import type { NafynUser } from '~~/server/entity/NafynUser';
 import { hasPermission, Permission } from '~~/server/entity/Permission';
 import type { RegisterTokenRow } from '~~/server/core/registerTokens';
 import type { ApiTokenSummary, ApiTokenRow } from '~~/server/core/apiTokens';
+import { syncHistorySetting, useHistoryEnabled } from '~/composables/usePlayTracking';
 
 const token = useCookie("nafynToken").value ?? "";
 
 interface Category {
-  id: "profile" | "accounts" | "storage" | "subsonic",
+  id: "profile" | "accounts" | "storage" | "subsonic" | "privacy",
   label: string
 }
 
@@ -231,6 +258,7 @@ const isAdmin = computed(() => hasPermission(perms.value, Permission.ADMIN));
 
 const categories = computed(() => {
   const cats: Category[] = [{ id: 'profile', label: $t('settings.categories.profile') }];
+  cats.push({ id: 'privacy', label: $t('settings.categories.privacy') });
   if (canManageAccounts.value) cats.push({ id: 'accounts', label: $t('settings.categories.accounts') });
   if (canManageMusic.value) cats.push({ id: 'storage', label: $t('settings.categories.storage') });
   cats.push({ id: 'subsonic', label: $t('settings.categories.subsonic') });
@@ -604,10 +632,78 @@ function onPieHover(e: MouseEvent) {
   hoveredUserIndex.value = index === -1 ? null : index;
 }
 
+// -- privacy panel (listening history) --
+
+const insights = useInsights();
+const historyEnabled = useHistoryEnabled();
+const exporting = ref(false);
+const deletingHistory = ref(false);
+
+async function loadPrivacyPanel() {
+  await syncHistorySetting();
+}
+
+async function toggleHistory() {
+  const wanted = historyEnabled.value;
+  try {
+    // the browser's UTC offset goes along with the toggle, so the server can bucket days, weeks and years
+    // in the user's own calendar from the very first play
+    await $fetch("/api/v1/insights/settings", {
+      method: "PATCH",
+      headers: { Authorization: token },
+      body: { historyEnabled: wanted, tzOffsetMinutes: -new Date().getTimezoneOffset() }
+    });
+    sendToast($t('settings.privacy.title'), wanted ? $t('settings.privacy.history.on') : $t('settings.privacy.history.off'));
+  } catch (e) {
+    // put the switch back where it was rather than leaving it showing a state the server never accepted
+    historyEnabled.value = !wanted;
+    sendToast($t('settings.privacy.title'), (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error'), false);
+  }
+}
+
+async function exportHistory() {
+  exporting.value = true;
+  try {
+    // fetched as a blob rather than linked directly: the export endpoint needs an Authorization header, and
+    // a plain <a href> cannot send one
+    const blob = await $fetch<Blob>("/api/v1/insights/export", {
+      headers: { Authorization: token },
+      responseType: "blob"
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `nafyn-listening-history.json`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch (e) {
+    sendToast($t('settings.privacy.title'), (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error'), false);
+  } finally {
+    exporting.value = false;
+  }
+}
+
+async function deleteHistory() {
+  // irreversible and unrecoverable, so it asks first
+  if (!confirm($t('settings.privacy.delete.confirm'))) return;
+
+  deletingHistory.value = true;
+  try {
+    await insights.deleteHistory();
+    sendToast($t('settings.privacy.title'), $t('settings.privacy.delete.done'));
+  } catch (e) {
+    sendToast($t('settings.privacy.title'), (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error'), false);
+  } finally {
+    deletingHistory.value = false;
+  }
+}
+
 watch(activeCategory, async (cat) => {
   if (cat === 'accounts' && users.value.length === 0) await loadAccountsPanel();
   if (cat === 'storage' && !storage.value) await loadStoragePanel();
   if (cat === 'subsonic' && apiTokens.value.length === 0) await loadApiTokens();
+  if (cat === 'privacy') await loadPrivacyPanel();
 });
 </script>
 

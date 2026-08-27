@@ -5,6 +5,7 @@
       <NuxtLink to="/l/albums" class="b">{{ $t('sidebar.albums') }}</NuxtLink>
       <NuxtLink to="/l/tracks" class="b">{{ $t('sidebar.tracks') }}</NuxtLink>
       <NuxtLink to="/l/playlists" class="b">{{ $t('sidebar.playlists') }}</NuxtLink>
+      <NuxtLink to="/insights">{{ $t('sidebar.insights') }}</NuxtLink>
       <NuxtLink to="/requests">{{ $t('sidebar.requests') }}</NuxtLink>
       <NuxtLink to="/settings">{{ $t('sidebar.settings') }}</NuxtLink>
     </div>

@@ -3,6 +3,7 @@
 import { randomUUID } from "node:crypto";
 import { getLibrariesDb, withTransaction, sqlInt } from "./db";
 import type { MediaRow } from "./library";
+import { assertNotReplayPlaylist } from "./replayMix";
 
 export type PlaylistSortMode = "manual" | "title" | "artist" | "addedBy" | "duration";
 
@@ -96,7 +97,13 @@ export async function countPlaylistsForUser(userId: string): Promise<number> {
     return Number(row.count);
 }
 
+// Every mutator below starts with assertNotReplayPlaylist(). Today that guard is unreachable - a Replay Mix
+// lives in user_replay_playlists, never in `playlists`, so a replay id can't resolve to a row here in the
+// first place. It exists so that the day someone mirrors the mix into this table for convenience, the
+// "unmodifiable by anyone, user or admin" guarantee doesn't quietly evaporate. Guarding in core rather than
+// in the seven route handlers means one implementation covers the REST API and the Subsonic layer at once.
 export async function updatePlaylist(id: string, patch: Partial<Pick<PlaylistRow, "title" | "description" | "privacy" | "image" | "sortMode">>): Promise<PlaylistRow | null> {
+    assertNotReplayPlaylist(id);
     const existing = await getPlaylistById(id);
     if (!existing) return null;
 
@@ -115,6 +122,7 @@ export async function updatePlaylist(id: string, patch: Partial<Pick<PlaylistRow
 }
 
 export async function deletePlaylist(id: string): Promise<void> {
+    assertNotReplayPlaylist(id);
     const db = getLibrariesDb();
     await db.prepare(`DELETE FROM playlist_entries WHERE playlistId = ?`).run(id);
     await db.prepare(`DELETE FROM playlist_members WHERE playlistId = ?`).run(id);
@@ -137,6 +145,7 @@ export async function getMembers(playlistId: string): Promise<PlaylistMemberRow[
 }
 
 export async function addMember(playlistId: string, userId: string): Promise<PlaylistMemberRow> {
+    assertNotReplayPlaylist(playlistId);
     const row: PlaylistMemberRow = {
         id: randomUUID(),
         playlistId,
@@ -153,6 +162,7 @@ export async function addMember(playlistId: string, userId: string): Promise<Pla
 }
 
 export async function removeMember(playlistId: string, userId: string): Promise<boolean> {
+    assertNotReplayPlaylist(playlistId);
     const result = await getLibrariesDb().prepare(`DELETE FROM playlist_members WHERE playlistId = ? AND userId = ?`).run(playlistId, userId);
     return result.changes > 0;
 }
@@ -253,6 +263,7 @@ export async function getEntryById(entryId: string): Promise<PlaylistEntryRow | 
 
 // appends mediaIds to the end of the playlist in order, used for both single-track and full-album adds
 export async function addEntries(playlistId: string, mediaIds: string[], addedBy: string): Promise<PlaylistEntryRow[]> {
+    assertNotReplayPlaylist(playlistId);
     const db = getLibrariesDb();
     const { max } = await db.prepare(`SELECT MAX(position) AS max FROM playlist_entries WHERE playlistId = ?`).get(playlistId) as { max: number | null };
     let nextPosition = (max ?? -1) + 1;
@@ -280,12 +291,16 @@ export async function addEntries(playlistId: string, mediaIds: string[], addedBy
     return rows;
 }
 
+// no assertNotReplayPlaylist here: this takes an *entry* id, not a playlist id, and a Replay Mix has no rows
+// in playlist_entries to hand one out. The route that calls it resolves the entry's playlist first, and that
+// lookup is where a replay id would already fail.
 export async function removeEntry(entryId: string): Promise<void> {
     await getLibrariesDb().prepare(`DELETE FROM playlist_entries WHERE id = ?`).run(entryId);
 }
 
 // rewrites position 0..n for the given entry IDs, all of which must belong to playlistId
 export async function reorderEntries(playlistId: string, orderedEntryIds: string[]): Promise<void> {
+    assertNotReplayPlaylist(playlistId);
     const updateSql = `UPDATE playlist_entries SET position = ? WHERE id = ? AND playlistId = ?`;
 
     await withTransaction(async (conn) => {
