@@ -3,14 +3,15 @@ import {
 	Provider,
 	type LyricParagraphs,
 } from "~~/server/utils/lyrics/parser";
-import { fetchLrclibParagraphs } from "~~/server/utils/lyrics/lrclib";
+import { fetchLrclibParagraphs, parseLrcSyncedLyrics, parsePlainLyrics } from "~~/server/utils/lyrics/lrclib";
+import { getMediaLyrics } from "~~/server/core/mediaLyrics";
 import { getMediaId, findLibraryEntry, type MediaRow } from "~~/server/core/library";
 
 const lyricsService = new NafynLyrics();
 
 defineRouteMeta({
 	openAPI: {
-		description: "Get synced lyrics for a library track, tried across providers (Cider, LRCLIB) in order until one has a match",
+		description: "Get synced lyrics for a library track: user-supplied lyrics first, then the fetched providers (Cider, LRCLIB) in order until one has a match. Pass `?source=1` to get the stored user-supplied lyrics verbatim instead.",
 		tags: ["library"],
 		operationId: "getLyrics",
 		parameters: [
@@ -159,6 +160,25 @@ export default defineEventHandler(async (event) => {
 			statusCode: 404,
 			statusMessage: "No media with ID " + id,
 		});
+	}
+
+	// `?source=1` returns the *stored* user lyrics verbatim (or null), which is what the edit form needs to
+	// prefill - the parsed-paragraph shape below is for playback, not for editing
+	if (getQuery(event).source !== undefined) {
+		return await getMediaLyrics(media.id);
+	}
+
+	// user-supplied lyrics win over every fetched provider: someone typed them in for this exact track, and
+	// for a manually imported one no provider can know about it at all
+	const manual = await getMediaLyrics(media.id);
+	if (manual) {
+		const paragraphs = manual.format === "lrc"
+			? parseLrcSyncedLyrics(manual.content)
+			: parsePlainLyrics(manual.content);
+
+		if (paragraphs.length > 0) {
+			return { provider: Provider.Manual, paragraphs };
+		}
 	}
 
 	for (const { provider, fetch } of LYRICS_PROVIDERS) {

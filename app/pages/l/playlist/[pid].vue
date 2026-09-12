@@ -72,7 +72,7 @@
           <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><circle cx="9" cy="6" r="1.5" /><circle cx="15" cy="6" r="1.5" /><circle cx="9" cy="12" r="1.5" /><circle cx="15" cy="12" r="1.5" /><circle cx="9" cy="18" r="1.5" /><circle cx="15" cy="18" r="1.5" /></svg>
         </button>
 
-        <img :src="entry.media.coverArt ?? noCover" @error="($event.target as HTMLImageElement).src = noCover" loading="lazy" draggable="false" @click="playFrom(i)" />
+        <img :src="coverSrc(entry.media)" @error="($event.target as HTMLImageElement).src = noCover" loading="lazy" draggable="false" @click="playFrom(i)" />
         <span class="col" @click="playFrom(i)">
           <span class="title">{{ entry.media.title }}</span>
           <span class="artist">{{ entry.media.artistName }}</span>

@@ -1,5 +1,6 @@
 import type { IRelease, IReleaseGroup } from "musicbrainz-api";
 import { getMusicBrainzClient, parseReleaseDate } from "~~/server/utils/musicbrainz";
+import { pickReleaseForGroup } from "~~/server/utils/release";
 import type { AlbumDetail } from "~~/server/entity/media/AlbumDetail";
 import type { TrackInfo } from "~~/server/entity/media/TrackInfo";
 import type { ArtistInfo } from "~~/server/entity/media/ArtistInfo";
@@ -131,9 +132,10 @@ export default defineEventHandler(async (event): Promise<AlbumDetail> => {
     const browsed = await client.browse("release", { "release-group": aid }, ["recordings", "artist-credits", "labels", "media", "url-rels"]).catch(() => {
         throw createError({ statusCode: 404, message: "No release found for album " + aid });
     });
-    // prefer the "Digital Media" release: it best matches what we actually distribute,
-    // while CD/Vinyl releases (often the first one MusicBrainz returns) can differ in track listing/labels
-    const release: IRelease | undefined = browsed.releases?.find((r) => r.media?.some((m) => m.format === "Digital Media")) ?? browsed.releases?.[0];
+    // every Nafyn surface that resolves a release group into a concrete release goes through
+    // pickReleaseForGroup, so the tracklist shown here is exactly the one the download pipeline will tag
+    // against - and it is the official standard edition, not a promo/bootleg or a +45-track digital deluxe
+    const release: IRelease | undefined = pickReleaseForGroup(releaseGroup, browsed.releases);
     if (!release) {
         throw createError({ statusCode: 404, message: "No release found for album " + aid });
     }

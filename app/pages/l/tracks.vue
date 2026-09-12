@@ -3,7 +3,7 @@
     <h1>{{ $t('library.tracks.title') }}</h1>
     <ol class="tracks" v-if="tracks.length > 0">
       <li v-for="track in tracks" :key="track.id" :class="{ playing: currentTrack?.id === track.id }" @click="play(track, tracks, { type: 'track', refId: track.id })" @contextmenu.prevent="onContextMenu($event, track)">
-        <img :src="track.coverArt ?? noCover" @error="($event.target as HTMLImageElement).src = noCover" loading="lazy" draggable="false" />
+        <img :src="coverSrc(track)" @error="($event.target as HTMLImageElement).src = noCover" loading="lazy" draggable="false" />
         <span class="col">
           <span class="title">{{ track.title }}</span>
           <span class="artist">{{ track.artistName }}</span>
@@ -22,6 +22,7 @@
 
     <ContextMenu ref="trackMenu" :items="trackMenuItems" />
     <PlaylistPickerModal v-model="showPicker" :media-ids="pickerMediaIds" />
+    <MediaEditModal v-model="showEdit" :media="editing" @saved="onEdited" />
   </div>
 </template>
 
@@ -32,6 +33,7 @@ import { hasPermission, Permission } from '~~/server/entity/Permission';
 import noCover from '~/assets/no-cover.png';
 import ContextMenu, { type ContextMenuItem } from '~/components/ContextMenu.vue';
 import PlaylistPickerModal from '~/components/PlaylistPickerModal.vue';
+import MediaEditModal from '~/components/MediaEditModal.vue';
 
 const token = useCookie("nafynToken").value;
 
@@ -73,6 +75,16 @@ function formatDuration(seconds: number): string {
 const showPicker = ref(false);
 const pickerMediaIds = ref<string[]>([]);
 
+const showEdit = ref(false);
+const editing = ref<MediaRow | null>(null);
+
+// patch the edited row in place rather than refetching the whole (infinitely scrolled) list, which would
+// throw away every page after the first
+function onEdited(updated: MediaRow) {
+  const index = tracks.value.findIndex((track) => track.id === updated.id);
+  if (index >= 0) tracks.value[index] = updated;
+}
+
 const trackMenu = ref<InstanceType<typeof ContextMenu> | null>(null);
 const trackMenuItems = ref<ContextMenuItem[]>([]);
 
@@ -85,6 +97,12 @@ function buildTrackMenu(track: MediaRow) {
     action: () => {
       pickerMediaIds.value = [track.id];
       showPicker.value = true;
+    }
+  }, {
+    label: $t("edit.title"),
+    action: () => {
+      editing.value = track;
+      showEdit.value = true;
     }
   }, {
     label: $t("track.delete"),

@@ -178,7 +178,7 @@ function updateMediaSessionMetadata(track: MediaRow) {
         title: track.title,
         artist: track.artistName,
         album: track.album ?? "",
-        artwork: track.coverArt ? [{ src: track.coverArt.replace("front-250", "front-1000"), sizes: "1000x1000", type: "image/jpeg" }] : [{ src: `../assets/no-cover.png`, sizes: "1000x1000", type: "image/png" }]
+        artwork: (track.coverArt || track.hasCustomCover) ? [{ src: coverSrc(track).replace("front-250", "front-1000"), sizes: "1000x1000", type: "image/jpeg" }] : [{ src: `../assets/no-cover.png`, sizes: "1000x1000", type: "image/png" }]
     });
 }
 

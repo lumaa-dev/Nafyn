@@ -10,7 +10,7 @@
       </button>
     </span>
     <li v-for="(track, index) in state.queue" :key="track.id" :class="{ active: index === state.currentIndex }" @click="playFromQueue(index)">
-      <img :src="track.coverArt ?? noCover" @error="($event.target as HTMLImageElement).src = noCover" draggable="false" loading="lazy" />
+      <img :src="coverSrc(track)" @error="($event.target as HTMLImageElement).src = noCover" draggable="false" loading="lazy" />
       <span class="col">
         <span class="title">{{ track.title }}</span>
         <span class="artist">{{ track.artistName }}</span>

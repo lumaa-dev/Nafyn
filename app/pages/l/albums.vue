@@ -33,7 +33,8 @@ function toMediaInfo(album: AlbumRow): MediaInfo {
     artist: album.artistName,
     album: null,
     type: null,
-    coverArt: album.coverArt,
+    // a track in the album may carry a user-uploaded cover, which wins over the Cover Art Archive URL
+    coverArt: coverSrc(album),
     releaseDate: album.releaseDate ? new Date(album.releaseDate * 1000) : null,
     inLibrary: true,
     duration: album.duration,

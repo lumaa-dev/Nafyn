@@ -73,6 +73,43 @@ const MIGRATIONS: Migration[] = [
             if (await indexExists(conn, "play_events", "idx_pe_created")) return;
             await conn.query(`ALTER TABLE play_events ADD INDEX idx_pe_created (created_at)`);
         }
+    },
+    {
+        // manually imported tracks + user-edited metadata.
+        //   `source`         - 'soulseek' for the download pipeline's rows, 'manual' for user uploads
+        //   `trackNumber`    - previously only ever written into the audio file's own tags, never stored
+        //   `hasCustomCover` - a cover image uploaded by a user, served from .data/covers/<mediaId>.webp
+        //                      instead of `coverArt` (which stays a Cover Art Archive URL, see utils/coverArt.ts)
+        id: "2026-08-29-manual-media",
+        up: async (conn) => {
+            if (!await columnExists(conn, "media", "source")) {
+                await conn.query(`ALTER TABLE media ADD COLUMN source VARCHAR(16) NOT NULL DEFAULT 'soulseek'`);
+            }
+            if (!await columnExists(conn, "media", "trackNumber")) {
+                await conn.query(`ALTER TABLE media ADD COLUMN trackNumber INT NULL`);
+            }
+            if (!await columnExists(conn, "media", "hasCustomCover")) {
+                await conn.query(`ALTER TABLE media ADD COLUMN hasCustomCover TINYINT(1) NOT NULL DEFAULT 0`);
+            }
+        }
+    },
+    {
+        // user-supplied lyrics, kept out of `media` so a row with no custom lyrics costs nothing and the
+        // (potentially long) text never rides along on every library listing query. ON DELETE CASCADE so
+        // deleting the last owner's entry - which deletes the media row - takes the lyrics with it.
+        id: "2026-08-29-media-lyrics",
+        up: async (conn) => {
+            if (await tableExists(conn, "media_lyrics")) return;
+            await conn.query(`
+                CREATE TABLE media_lyrics (
+                    mediaId VARCHAR(36) PRIMARY KEY,
+                    format VARCHAR(8) NOT NULL DEFAULT 'plain',
+                    content MEDIUMTEXT NOT NULL,
+                    updatedAt BIGINT NOT NULL,
+                    CONSTRAINT fk_media_lyrics_media FOREIGN KEY (mediaId) REFERENCES media(id) ON DELETE CASCADE
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+            `);
+        }
     }
 ];
 

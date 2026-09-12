@@ -1,7 +1,7 @@
 <template>
   <div class="libalbum" v-if="detail">
     <div class="head">
-      <img class="cover" :src="detail.album.coverArt ?? noCover" @error="($event.target as HTMLImageElement).src = noCover" draggable="false" />
+      <img class="cover" :src="coverSrc(detail.album)" @error="($event.target as HTMLImageElement).src = noCover" draggable="false" />
       <div class="meta">
         <h1>{{ detail.album.title }}</h1>
         <p class="artist">{{ detail.album.artistName }}</p>
@@ -14,7 +14,7 @@
 
     <ol class="tracks" v-if="tracks.length > 0">
       <li v-for="track in tracks" :key="track.id" :class="{ playing: currentTrack?.id === track.id }" @click="playFrom(track)" @contextmenu.prevent="onContextMenu($event, track)">
-        <img :src="track.coverArt ?? noCover" @error="($event.target as HTMLImageElement).src = noCover" loading="lazy" draggable="false" />
+        <img :src="coverSrc(track)" @error="($event.target as HTMLImageElement).src = noCover" loading="lazy" draggable="false" />
         <span class="col">
           <span class="title">{{ track.title }}</span>
           <span class="artist">{{ track.artistName }}</span>

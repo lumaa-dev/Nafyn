@@ -3,7 +3,7 @@
     <p v-if="availableTracks.length === 0" class="picker-empty">{{ $t('playlist.addTracks.empty') }}</p>
     <ul v-else class="plist">
       <li v-for="track in availableTracks" :key="track.id" @click="addTrack(track.id)">
-        <img :src="track.coverArt ?? noCover" @error="($event.target as HTMLImageElement).src = noCover" loading="lazy" draggable="false" />
+        <img :src="coverSrc(track)" @error="($event.target as HTMLImageElement).src = noCover" loading="lazy" draggable="false" />
         <span class="col">
           <span class="title">{{ track.title }}</span>
           <span class="artist">{{ track.artistName }}</span>

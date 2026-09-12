@@ -7,6 +7,7 @@ import {
 import { APP_NAME, APP_VERSION, APP_GITHUB } from "./app";
 import type { MediaInfo } from "../entity/media/MediaInfo";
 import type { ArtistInfo } from "../entity/media/ArtistInfo";
+import { pickCanonicalRelease, pickReleaseForGroup } from "./release";
 
 let client: MusicBrainzApi | null = null;
 
@@ -36,9 +37,11 @@ async function getTrackMediaInfo(
 	const recording = await client.lookup("recording", musicbrainzId, [
 		"artist-credits",
 		"releases",
+		"media",
 		"url-rels"
 	]);
-	const release = recording.releases?.[0];
+	// shared release picker (see utils/release.ts) so every surface agrees on which release a recording belongs to
+	const release = pickCanonicalRelease(recording.releases);
 	const credit = recording["artist-credit"]?.[0]?.artist;
 
 	const artist: ArtistInfo | string = credit
@@ -84,7 +87,7 @@ async function getAlbumMediaInfo(
 		{ "release-group": musicbrainzId },
 		["labels"],
 	);
-	const release: IRelease | undefined = browsed.releases[0];
+	const release: IRelease | undefined = pickReleaseForGroup(releaseGroup, browsed.releases);
 
 	const primaryType = releaseGroup["primary-type"]?.toLowerCase();
 	const type =

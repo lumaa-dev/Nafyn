@@ -2,7 +2,8 @@
   "common": {
     "search": "Search...",
     "unknownAlbum": "Unknown Album",
-    "loadingMore": "Loading more..."
+    "loadingMore": "Loading more...",
+    "cancel": "Cancel"
   },
   "sidebar": {
     "library": "Library",
@@ -385,5 +386,43 @@
         "failed": "Rendering failed. Try again."
       }
     }
+  },
+  "edit": {
+    "title": "Edit metadata",
+    "save": "Save",
+    "saving": "Saving...",
+    "saved": "Metadata updated",
+    "error": "Could not save the metadata.",
+    "coverError": "Could not update the cover.",
+    "changeCover": "Change cover",
+    "removeCover": "Remove uploaded cover",
+    "trackTitle": "Title",
+    "artist": "Artist",
+    "album": "Album",
+    "albumType": "Album type",
+    "typeAlbum": "Album",
+    "typeEp": "EP",
+    "none": "None",
+    "trackNumber": "Track number",
+    "releaseDate": "Release date",
+    "label": "Label",
+    "duration": "Duration",
+    "lyrics": "Lyrics",
+    "lyricsFormat": "Lyrics format",
+    "lyricsPlain": "Plain text",
+    "lyricsLrc": "Timed (LRC)",
+    "lyricsPlaceholder": "Paste or type the lyrics. LRC format keeps them in sync with playback."
+  },
+  "import": {
+    "title": "Import music",
+    "hint": "Add an audio file you already have and fill in its details yourself. Blank fields are taken from the file's own tags.",
+    "pickFile": "Choose an audio file (MP3, FLAC, OGG, WAV)",
+    "pickCover": "Choose a cover image",
+    "fromFile": "From the file",
+    "durationHint": "e.g. 3:45",
+    "submit": "Import",
+    "importing": "Importing...",
+    "done": "Added to your library",
+    "error": "Could not import that file."
   }
 }

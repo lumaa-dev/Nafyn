@@ -4,6 +4,7 @@ import { existsSync } from "node:fs";
 import { rm, rmdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { getLibrariesDb, withTransaction, sqlInt } from "./db";
+import { deleteMediaCover } from "../utils/mediaCover";
 
 export interface MediaRow {
     id: string,
@@ -21,8 +22,15 @@ export interface MediaRow {
     fingerprint: string | null,
     amId: string | null,
     fileSize: number | null,
+    // 'soulseek' for rows created by the download pipeline, 'manual' for a user-uploaded file
+    source: MediaSource,
+    trackNumber: number | null,
+    // 1 when a user uploaded a cover image for this row; it wins over `coverArt` everywhere
+    hasCustomCover: number,
     addedAt: number
 }
+
+export type MediaSource = "soulseek" | "manual";
 
 export interface AlbumRow {
     id: string,
@@ -31,6 +39,9 @@ export interface AlbumRow {
     artistName: string,
     artistMbid: string,
     coverArt: string | null,
+    // media ID of one track in the album carrying a user-uploaded cover, if any; clients prefer it over
+    // `coverArt` (see GET /api/v1/library/{id}/cover)
+    coverMediaId: string | null,
     releaseDate: number | null,
     duration: number,
     trackCount: number,
@@ -70,7 +81,7 @@ export async function findAnyLibraryEntryForMedia(mediaId: string): Promise<Libr
     return row ?? null;
 }
 
-export async function insertMedia(media: Omit<MediaRow, "id" | "addedAt"> & { id?: string }): Promise<MediaRow> {
+export async function insertMedia(media: Omit<MediaRow, "id" | "addedAt" | "source" | "trackNumber" | "hasCustomCover"> & Partial<Pick<MediaRow, "id" | "source" | "trackNumber" | "hasCustomCover">>): Promise<MediaRow> {
     const row: MediaRow = {
         id: media.id ?? randomUUID(),
         musicbrainzId: media.musicbrainzId,
@@ -87,12 +98,15 @@ export async function insertMedia(media: Omit<MediaRow, "id" | "addedAt"> & { id
         fingerprint: media.fingerprint,
         amId: media.amId,
         fileSize: media.fileSize,
+        source: media.source ?? "soulseek",
+        trackNumber: media.trackNumber ?? null,
+        hasCustomCover: media.hasCustomCover ?? 0,
         addedAt: Date.now()
     };
 
     await getLibrariesDb().prepare(`
-        INSERT INTO media (id, musicbrainzId, title, artistName, artistMbid, album, albumId, albumType, coverArt, releaseDate, duration, label, fingerprint, amId, fileSize, addedAt)
-        VALUES (:id, :musicbrainzId, :title, :artistName, :artistMbid, :album, :albumId, :albumType, :coverArt, :releaseDate, :duration, :label, :fingerprint, :amId, :fileSize, :addedAt)
+        INSERT INTO media (id, musicbrainzId, title, artistName, artistMbid, album, albumId, albumType, coverArt, releaseDate, duration, label, fingerprint, amId, fileSize, source, trackNumber, hasCustomCover, addedAt)
+        VALUES (:id, :musicbrainzId, :title, :artistName, :artistMbid, :album, :albumId, :albumType, :coverArt, :releaseDate, :duration, :label, :fingerprint, :amId, :fileSize, :source, :trackNumber, :hasCustomCover, :addedAt)
     `).run(row);
 
     return row;
@@ -161,6 +175,7 @@ export async function getAlbumsOfUser(userId: string, limit?: number, offset?: n
             MIN(media.artistName) AS artistName,
             MIN(media.artistMbid) AS artistMbid,
             MIN(media.coverArt) AS coverArt,
+            MIN(CASE WHEN media.hasCustomCover = 1 THEN media.id END) AS coverMediaId,
             MIN(media.releaseDate) AS releaseDate,
             SUM(media.duration) AS duration,
             COUNT(*) AS trackCount,
@@ -201,6 +216,7 @@ export async function getAlbumOfUser(userId: string, albumId: string): Promise<A
             MIN(media.artistName) AS artistName,
             MIN(media.artistMbid) AS artistMbid,
             MIN(media.coverArt) AS coverArt,
+            MIN(CASE WHEN media.hasCustomCover = 1 THEN media.id END) AS coverMediaId,
             MIN(media.releaseDate) AS releaseDate,
             SUM(media.duration) AS duration,
             COUNT(*) AS trackCount,
@@ -287,6 +303,7 @@ export async function getArtistAlbumsOfUser(userId: string, artistId: string): P
             MIN(media.artistName) AS artistName,
             MIN(media.artistMbid) AS artistMbid,
             MIN(media.coverArt) AS coverArt,
+            MIN(CASE WHEN media.hasCustomCover = 1 THEN media.id END) AS coverMediaId,
             MIN(media.releaseDate) AS releaseDate,
             SUM(media.duration) AS duration,
             COUNT(*) AS trackCount,
@@ -324,6 +341,7 @@ export async function getAlbumListOfUser(userId: string, sort: AlbumListSort, li
             MIN(media.artistName) AS artistName,
             MIN(media.artistMbid) AS artistMbid,
             MIN(media.coverArt) AS coverArt,
+            MIN(CASE WHEN media.hasCustomCover = 1 THEN media.id END) AS coverMediaId,
             MIN(media.releaseDate) AS releaseDate,
             SUM(media.duration) AS duration,
             COUNT(*) AS trackCount,
@@ -374,6 +392,7 @@ export async function searchLibraryOfUser(userId: string, query: string, artistC
             MIN(media.artistName) AS artistName,
             MIN(media.artistMbid) AS artistMbid,
             MIN(media.coverArt) AS coverArt,
+            MIN(CASE WHEN media.hasCustomCover = 1 THEN media.id END) AS coverMediaId,
             MIN(media.releaseDate) AS releaseDate,
             SUM(media.duration) AS duration,
             COUNT(*) AS trackCount,
@@ -421,6 +440,46 @@ export async function getStorageByUser(): Promise<{ userId: string, bytes: numbe
     `).all() as { userId: string, bytes: string | number }[];
     // see getTotalMediaSize: mysql2 returns SUM() as a string, cast before callers accumulate these
     return rows.map((row) => ({ userId: row.userId, bytes: Number(row.bytes) }));
+}
+
+// fields a user is allowed to rewrite on a media row through PATCH /api/v1/library/{id}. Everything else on
+// the row (id, musicbrainzId, fingerprint, fileSize, source, addedAt) describes what Nafyn actually holds on
+// disk rather than what the track *is*, so none of it is editable.
+export interface MediaMetadataPatch {
+    title?: string,
+    artistName?: string,
+    artistMbid?: string | null,
+    album?: string | null,
+    albumId?: string,
+    albumType?: "album" | "ep" | null,
+    coverArt?: string | null,
+    releaseDate?: number | null,
+    duration?: number,
+    label?: string | null,
+    trackNumber?: number | null,
+    amId?: string | null
+}
+
+const EDITABLE_MEDIA_COLUMNS = [
+    "title", "artistName", "artistMbid", "album", "albumId", "albumType",
+    "coverArt", "releaseDate", "duration", "label", "trackNumber", "amId"
+] as const;
+
+// applies a partial metadata edit. Column names come from the hard-coded list above, never from the
+// caller's own keys, so an unexpected body key can't reach the SQL as an identifier.
+export async function updateMediaMetadata(mediaId: string, patch: MediaMetadataPatch): Promise<MediaRow | undefined> {
+    const columns = EDITABLE_MEDIA_COLUMNS.filter((column) => patch[column] !== undefined);
+    if (columns.length === 0) return await getMediaId(mediaId);
+
+    const assignments = columns.map((column) => `${column} = ?`).join(", ");
+    const values = columns.map((column) => patch[column] ?? null);
+
+    await getLibrariesDb().prepare(`UPDATE media SET ${assignments} WHERE id = ?`).run(...values, mediaId);
+    return await getMediaId(mediaId);
+}
+
+export async function setMediaCustomCover(mediaId: string, hasCustomCover: boolean): Promise<void> {
+    await getLibrariesDb().prepare(`UPDATE media SET hasCustomCover = ? WHERE id = ?`).run(hasCustomCover ? 1 : 0, mediaId);
 }
 
 export async function updateMediaFileSize(mediaId: string, fileSize: number): Promise<void> {
@@ -521,8 +580,11 @@ export async function deleteLibraryEntryForUser(userId: string, mediaId: string)
         await rmdir(dirname(entry.filePath)).catch(() => {});
         await withTransaction(async (conn) => {
             await conn.execute(`DELETE FROM playlist_entries WHERE mediaId = ?`, [mediaId]);
+            // media_lyrics is FK ON DELETE CASCADE, so user-written lyrics go with the row
             await conn.execute(`DELETE FROM media WHERE id = ?`, [mediaId]);
         });
+        // the uploaded cover lives outside the database; without this it outlives the row that referenced it
+        await deleteMediaCover(mediaId);
         return { removed: true, fileDeleted: true };
     }
 

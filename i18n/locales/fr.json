@@ -2,7 +2,8 @@
   "common": {
     "search": "Rechercher...",
     "unknownAlbum": "Album inconnu",
-    "loadingMore": "Chargement..."
+    "loadingMore": "Chargement...",
+    "cancel": "Annuler"
   },
   "sidebar": {
     "library": "Librairie",
@@ -385,5 +386,43 @@
         "failed": "Le rendu a échoué. Réessayez."
       }
     }
+  },
+  "edit": {
+    "title": "Modifier les métadonnées",
+    "save": "Enregistrer",
+    "saving": "Enregistrement...",
+    "saved": "Métadonnées mises à jour",
+    "error": "Impossible d'enregistrer les métadonnées.",
+    "coverError": "Impossible de mettre à jour la pochette.",
+    "changeCover": "Changer la pochette",
+    "removeCover": "Supprimer la pochette importée",
+    "trackTitle": "Titre",
+    "artist": "Artiste",
+    "album": "Album",
+    "albumType": "Type d'album",
+    "typeAlbum": "Album",
+    "typeEp": "EP",
+    "none": "Aucun",
+    "trackNumber": "Numéro de piste",
+    "releaseDate": "Date de sortie",
+    "label": "Label",
+    "duration": "Durée",
+    "lyrics": "Paroles",
+    "lyricsFormat": "Format des paroles",
+    "lyricsPlain": "Texte simple",
+    "lyricsLrc": "Synchronisées (LRC)",
+    "lyricsPlaceholder": "Collez ou saisissez les paroles. Le format LRC les synchronise avec la lecture."
+  },
+  "import": {
+    "title": "Importer de la musique",
+    "hint": "Ajoutez un fichier audio que vous possédez déjà et renseignez ses informations vous-même. Les champs laissés vides sont repris des tags du fichier.",
+    "pickFile": "Choisir un fichier audio (MP3, FLAC, OGG, WAV)",
+    "pickCover": "Choisir une pochette",
+    "fromFile": "Depuis le fichier",
+    "durationHint": "ex. 3:45",
+    "submit": "Importer",
+    "importing": "Importation...",
+    "done": "Ajouté à votre bibliothèque",
+    "error": "Impossible d'importer ce fichier."
   }
 }

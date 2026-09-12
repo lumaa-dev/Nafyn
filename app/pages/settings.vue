@@ -230,7 +230,7 @@ import type { NafynUser } from '~~/server/entity/NafynUser';
 import { hasPermission, Permission } from '~~/server/entity/Permission';
 import type { RegisterTokenRow } from '~~/server/core/registerTokens';
 import type { ApiTokenSummary, ApiTokenRow } from '~~/server/core/apiTokens';
-import { syncHistorySetting, useHistoryEnabled } from '~/composables/usePlayTracking';
+import { syncHistorySetting, useHistoryEnabled, setHistoryEnabledState } from '~/composables/usePlayTracking';
 
 const token = useCookie("nafynToken").value ?? "";
 
@@ -653,10 +653,13 @@ async function toggleHistory() {
       headers: { Authorization: token },
       body: { historyEnabled: wanted, tzOffsetMinutes: -new Date().getTimezoneOffset() }
     });
+    // update the capture flag immediately, so the very next track played counts - without this, turning
+    // history on here wouldn't take effect until something else happened to re-sync it
+    setHistoryEnabledState(wanted);
     sendToast($t('settings.privacy.title'), wanted ? $t('settings.privacy.history.on') : $t('settings.privacy.history.off'));
   } catch (e) {
     // put the switch back where it was rather than leaving it showing a state the server never accepted
-    historyEnabled.value = !wanted;
+    setHistoryEnabledState(!wanted);
     sendToast($t('settings.privacy.title'), (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error'), false);
   }
 }

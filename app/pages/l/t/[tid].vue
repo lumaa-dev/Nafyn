@@ -1,7 +1,7 @@
 <template>
   <div class="track" v-if="track">
     <div class="head">
-      <img class="cover" :src="track.coverArt ?? noCover" @error="($event.target as HTMLImageElement).src = noCover" draggable="false" />
+      <img class="cover" :src="coverSrc(track)" @error="($event.target as HTMLImageElement).src = noCover" draggable="false" />
       <div class="meta">
         <span class="header">
           <h1>{{ track.title }}</h1>
@@ -13,6 +13,7 @@
         <div class="actions">
           <button type="button" filled @click="playTrack">{{ $t('playlist.play') }}</button>
           <button type="button" filled="hollow" @click="openPicker">{{ $t('playlist.addToPlaylist') }}</button>
+          <button type="button" filled="hollow" @click="showEdit = true">{{ $t('edit.title') }}</button>
         </div>
       </div>
     </div>
@@ -25,6 +26,7 @@
     </p>
 
     <PlaylistPickerModal v-model="showPicker" :media-ids="track ? [track.id] : []" />
+    <MediaEditModal v-model="showEdit" :media="track ?? null" @saved="onEdited" />
   </div>
 </template>
 
@@ -32,6 +34,7 @@
 import type { MediaRow } from '~~/server/core/library';
 import noCover from '~/assets/no-cover.png';
 import PlaylistPickerModal from '~/components/PlaylistPickerModal.vue';
+import MediaEditModal from '~/components/MediaEditModal.vue';
 
 const { locale } = useI18n();
 const tid = useRoute().params.tid as string;
@@ -51,6 +54,11 @@ function playTrack() {
 }
 
 const showPicker = ref(false);
+const showEdit = ref(false);
+
+function onEdited(updated: MediaRow) {
+  track.value = updated;
+}
 
 function openPicker() {
   if (!track.value) return;

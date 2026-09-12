@@ -53,6 +53,8 @@ export type LyricParagraphs = LyricParagraph[];
 
 export enum Provider {
 	AppleMusic = "appleMusic",
+	/** Lyrics a Nafyn user wrote or pasted in themselves; they override every fetched provider. */
+	Manual = "manual",
 	Cider = "cider",
 	Lrclib = "lrclib",
 	Cache = "cache",
@@ -62,6 +64,8 @@ export function providerLocalized(provider: Provider): string {
 	switch (provider) {
 		case Provider.AppleMusic:
 			return "Apple Music";
+		case Provider.Manual:
+			return "Nafyn";
 		case Provider.Cider:
 			return "Cider Lyrics Studio";
 		case Provider.Lrclib:

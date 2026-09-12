@@ -1,7 +1,7 @@
 <template>
   <div class="recent" :class="variant" v-if="recentlyPlayed.length > 0">
     <NuxtLink v-for="item in recentlyPlayed" :key="`${item.type}-${item.refId}`" :to="item.href" class="recent-card">
-      <img :src="coverSrc(item)" @error="($event.target as HTMLImageElement).src = noCover" loading="lazy" draggable="false" />
+      <img :src="entryCover(item)" @error="($event.target as HTMLImageElement).src = noCover" loading="lazy" draggable="false" />
       <p class="title">{{ item.title }}</p>
       <p class="subtitle" v-if="item.subtitle">{{ item.subtitle }}</p>
     </NuxtLink>
@@ -23,7 +23,7 @@ const { data: recentlyPlayed } = await useAsyncData<RecentlyPlayedEntry[]>("rece
     : Promise.resolve([]);
 }, { default: () => [] });
 
-function coverSrc(item: RecentlyPlayedEntry): string {
+function entryCover(item: RecentlyPlayedEntry): string {
   if (item.type === "playlist") {
     return item.playlistImage ? `/api/v1/playlist/${item.refId}/image?token=${encodeURIComponent(token ?? "")}&v=${item.playlistImage}` : noCover;
   }

@@ -130,15 +130,26 @@ async function tzFor(userId: string): Promise<number> {
     return (await getInsightSettings(userId)).tzOffsetMinutes;
 }
 
+/** "YYYY-MM-DDTHH:MM" floored to a 5-minute boundary, so a job keyed on it runs at most once per bucket */
+function fiveMinuteKey(nowMs: number): string {
+    const d = new Date(nowMs);
+    d.setUTCMinutes(Math.floor(d.getUTCMinutes() / 5) * 5, 0, 0);
+    return d.toISOString().slice(0, 16);
+}
+
 // --- the jobs ----------------------------------------------------------------------------------------
 
 /**
- * Rolls up everyone with recent activity. Runs hourly and always covers *two* local days: the one in
- * progress and the one before it, so a late offline flush that backdates into yesterday still lands in the
- * right bucket instead of being missed forever.
+ * Rolls up everyone with recent activity. Runs every five minutes and always covers *two* local days: the
+ * one in progress and the one before it, so a late offline flush that backdates into yesterday still lands
+ * in the right bucket instead of being missed forever.
  */
 export async function jobRollupDaily(nowMs: number): Promise<void> {
-    const periodKey = new Date(nowMs).toISOString().slice(0, 13); // hourly granularity
+    // Five-minute granularity, not hourly. The spec asks for rolling counters in near-real time, and an
+    // hourly key meant a track you just played stayed invisible for up to an hour - indistinguishable, from
+    // the outside, from the feature being broken. The work is bounded either way: only users with events in
+    // the last couple of days are touched, and a re-rolled day overwrites rather than accumulating.
+    const periodKey = fiveMinuteKey(nowMs);
 
     await runJob("rollup-daily", periodKey, async (beat) => {
         // a two-day window in UTC comfortably covers both local days for any time zone
@@ -277,8 +288,8 @@ export async function tickInsightsJobs(nowMs: number = Date.now()): Promise<void
     const month = now.getUTCMonth() + 1;
     const date = now.getUTCDate();
 
-    // hourly, on the hour
-    if (minute < 5) await jobRollupDaily(nowMs);
+    // every tick; the 5-minute period key is what actually decides how often it does any work
+    await jobRollupDaily(nowMs);
 
     if (hour === 2 && minute < 5) await jobRollupMonthly(nowMs);
     if (hour === 2 && minute >= 30 && minute < 35) await jobRollupYearly(nowMs);

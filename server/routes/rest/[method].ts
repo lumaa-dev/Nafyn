@@ -46,6 +46,7 @@ import { isHistoryEnabled } from "~~/server/core/insightsSettings";
 import { playlistImageFilePath, deletePlaylistImage } from "~~/server/utils/playlistImage";
 import { isUuid, escapeLike } from "~~/server/utils/ids";
 import { isAllowedCoverArtUrl } from "~~/server/utils/coverArt";
+import { mediaCoverFilePath } from "~~/server/utils/mediaCover";
 import { getLastfmArtistInfo } from "~~/server/utils/lastfm";
 import { authenticateSubsonic } from "~~/server/utils/subsonicAuth";
 import { sendSubsonicResponse, errorNode, SubsonicErrors, SubsonicApiError, el, asList, type SubsonicNode, type SubsonicFormat } from "~~/server/utils/subsonicResponse";
@@ -486,6 +487,12 @@ async function handleCoverArt(event: H3Event, query: Record<string, unknown>, us
 
     if (prefix === "mf") {
         const song = await getSongOfUser(user.id, rawId);
+        // a cover the owner uploaded lives on disk, never in `coverArt` (see utils/mediaCover.ts), and takes
+        // precedence over the Cover Art Archive URL the row may still carry
+        if (song?.hasCustomCover && isUuid(rawId)) {
+            const path = mediaCoverFilePath(rawId);
+            if (existsSync(path)) localFile = path;
+        }
         sourceUrl = song?.coverArt ?? null;
     } else if (prefix === "al") {
         const album = await getAlbumOfUser(user.id, rawId);

@@ -1,5 +1,6 @@
-import type { IArtist, IArtistCredit, IRecording, IReleaseGroup } from "musicbrainz-api";
+import type { IArtist, IArtistCredit, IRecording, IReleaseGroup, MusicBrainzApi } from "musicbrainz-api";
 import { getMusicBrainzClient } from "../../utils/musicbrainz";
+import { isOfficialReleaseGroup } from "../../utils/release";
 import { getLastfmArtistInfo } from "../../utils/lastfm";
 import { requireAuthToken } from "../../utils/requireAuth";
 import { consumeRateLimit } from "../../utils/rateLimit";
@@ -140,6 +141,25 @@ defineRouteMeta({
     },
 });
 
+// MusicBrainz indexes both the artist's actual releases and every bootleg, promo, unofficial and
+// pseudo-release alongside them, which is how a search lands the user on an entry whose tracks are
+// unobtainable or plain wrong. `status:official` restricts the search to entries that have at least one
+// official release. The user's own query is a Lucene expression we don't control, so a query that can't be
+// parsed once wrapped falls back to the unrestricted search rather than failing the whole request.
+async function searchOfficial<T extends "release-group" | "recording">(
+    client: MusicBrainzApi,
+    entity: T,
+    q: string,
+    limit: number,
+    offset: number
+) {
+    try {
+        return await client.search(entity, { query: `(${q}) AND status:official`, limit, offset });
+    } catch {
+        return await client.search(entity, { query: q, limit, offset });
+    }
+}
+
 function toArtistInfo(artist: IArtist): ArtistInfo {
     return {
         name: artist.name,
@@ -230,10 +250,10 @@ export default defineEventHandler(async (event) => {
 
     const [albums, tracks, artists] = await Promise.all([
         filter === "all" || filter === "album"
-            ? client.search("release-group", { query: q, limit, offset })
+            ? searchOfficial(client, "release-group", q, limit, offset)
             : null,
         filter === "all" || filter === "track"
-            ? client.search("recording", { query: q, limit, offset })
+            ? searchOfficial(client, "recording", q, limit, offset)
             : null,
         filter === "all" || filter === "artist"
             ? client.search("artist", { query: q, limit, offset })
@@ -243,7 +263,7 @@ export default defineEventHandler(async (event) => {
     const artistInfos = artists ? await Promise.all(artists.artists.map(toArtistInfo).map(withLastfmImage)) : [];
 
     return {
-        albums: albums ? albums["release-groups"].map(releaseGroupToMediaInfo) : [],
+        albums: albums ? albums["release-groups"].filter(isOfficialReleaseGroup).map(releaseGroupToMediaInfo) : [],
         tracks: tracks ? tracks.recordings.map(recordingToMediaInfo) : [],
         artists: artistInfos
     };

@@ -1,7 +1,7 @@
 <template>
   <div class="now-playing" v-if="currentTrack">
     <div class="track" @click="navigateTo('/now-playing')">
-      <img :src="currentTrack.coverArt ?? noCover" @error="($event.target as HTMLImageElement).src = noCover" draggable="false" loading="lazy" />
+      <img :src="coverSrc(currentTrack)" @error="($event.target as HTMLImageElement).src = noCover" draggable="false" loading="lazy" />
       <span class="col">
         <span class="title">{{ currentTrack.title }}</span>
         <span class="artist">{{ currentTrack.artistName }}</span>
@@ -46,7 +46,7 @@
       <li v-if="state.queue.length === 0" class="empty">{{ $t('player.queueEmpty') }}</li>
       <li v-for="(track, index) in state.queue" :key="track.id" :class="{ active: index === state.currentIndex }" @click="playFromQueue(index)">
         <span class="row">
-          <img :src="track.coverArt ?? noCover" @error="($event.target as HTMLImageElement).src = noCover" draggable="false" loading="lazy" />
+          <img :src="coverSrc(track)" @error="($event.target as HTMLImageElement).src = noCover" draggable="false" loading="lazy" />
           <span class="col">
             <span class="title">{{ track.title }}</span>
             <span class="artist">{{ track.artistName }}</span>

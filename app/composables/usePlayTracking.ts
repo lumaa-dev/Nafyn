@@ -30,10 +30,47 @@ const MAX_PER_FLUSH = 50;
 const FLUSH_INTERVAL_MS = 30_000;
 
 // --- opt-in state ------------------------------------------------------------------------------------
+//
+// Tri-state, and module-level rather than `useState`, for two reasons that between them caused every play
+// to be silently dropped before:
+//
+//   1. "unknown" is a distinct state from "disabled". This flag starts out not-yet-loaded, and the only
+//      thing that loads it is a request. Treating not-yet-loaded as "off" meant that on any page other than
+//      Settings or Insights - i.e. every page you actually play music from - listens were discarded at the
+//      guard below while the database happily said the user had opted in. Events are now queued unless the
+//      server has actually *said* the user is opted out; the server is the authority, it re-checks every
+//      request anyway, and it answers a disabled batch with `historyEnabled: false`, which is what drains
+//      the queue and settles this flag.
+//
+//   2. The hot path runs inside raw <audio> element event handlers, which are outside any Nuxt component
+//      context. `useState` reaches for the Nuxt app instance there, so a plain module variable is both
+//      cheaper and not liable to throw in the middle of playback.
+type HistoryState = "unknown" | "enabled" | "disabled";
 
-// Mirrors the server's per-user setting. The server re-checks on every request regardless - this only
-// avoids sending events that would be thrown away, it is not the security boundary.
+let historyState: HistoryState = "unknown";
+
+/** reactive mirror for the UI. Never read on the capture path - see above. */
 export const useHistoryEnabled = () => useState<boolean>("insights-history-enabled", () => false);
+
+/** single writer for both the module flag and its reactive mirror */
+export function setHistoryEnabledState(enabled: boolean): void {
+    // module flag first: it is the one the capture path reads, and it must be updated even if the reactive
+    // mirror below can't be. This runs from flush handlers that may sit outside any Nuxt component context,
+    // where useState has no instance to attach to - a UI mirror that fails to update is cosmetic, capture
+    // silently staying off is the bug this whole file exists to not have again.
+    historyState = enabled ? "enabled" : "disabled";
+    if (!import.meta.client) return;
+
+    try {
+        useHistoryEnabled().value = enabled;
+    } catch {
+        // no Nuxt context here; whichever screen reads the toggle re-syncs on mount anyway
+    }
+}
+
+export function getHistoryState(): HistoryState {
+    return historyState;
+}
 
 // Set by the highlight-reel player while it plays its 6-second excerpts. Without it, a twenty-slide reel
 // would register as twenty sub-30-second plays and pollute the very data it is celebrating.
@@ -80,7 +117,9 @@ function authToken(): string | null {
 /** queues one finished listen and opportunistically flushes. Safe to call from an audio event handler. */
 export function enqueuePlayEvent(event: QueuedPlayEvent): void {
     if (!import.meta.client || suppressed) return;
-    if (!useHistoryEnabled().value) return;
+    // only a confirmed opt-out stops capture. "unknown" still queues: the listen has already happened, and
+    // throwing it away because a settings request hasn't come back yet loses real data for good.
+    if (historyState === "disabled") return;
     if (event.duration_ms <= 0) return;
 
     const queue = readQueue();
@@ -120,12 +159,10 @@ export async function flushPlayEvents(): Promise<void> {
         const sent = new Set(batch.map((e) => e.event_id));
         writeQueue(readQueue().filter((e) => !sent.has(e.event_id)));
 
-        // the user turned history off somewhere else; stop producing events until the next page load tells
-        // us otherwise
-        if (!result.historyEnabled) {
-            useHistoryEnabled().value = false;
-            writeQueue([]);
-        }
+        // the server is the authority on this, so its answer settles the flag in both directions: it
+        // confirms an opt-in we only assumed, and it stops capture if the user turned history off elsewhere
+        setHistoryEnabledState(result.historyEnabled);
+        if (!result.historyEnabled) writeQueue([]);
     } catch {
         // left in the queue for the next attempt. A 4xx would strictly speaking be worth discarding, but
         // retrying a handful of rejected events is cheaper than reasoning about which failures are permanent.
@@ -191,7 +228,7 @@ export async function syncHistorySetting(): Promise<boolean> {
         const settings = await $fetch<{ historyEnabled: boolean, tzOffsetMinutes: number }>("/api/v1/insights/settings", {
             headers: { Authorization: token }
         });
-        useHistoryEnabled().value = settings.historyEnabled;
+        setHistoryEnabledState(settings.historyEnabled);
 
         // getTimezoneOffset() is minutes to add to *local* to get UTC, i.e. the opposite sign from what the
         // server stores

@@ -1,7 +1,7 @@
 <template>
   <div class="npp" v-if="currentTrack">
     <div class="left">
-      <img class="cover" :src="(currentTrack.coverArt ?? noCover).replace('front-250', 'front-1000')" @error="($event.target as HTMLImageElement).src = noCover" draggable="false" loading="lazy" />
+      <img class="cover" :src="coverSrc(currentTrack).replace('front-250', 'front-1000')" @error="($event.target as HTMLImageElement).src = noCover" draggable="false" loading="lazy" />
 
       <div class="meta">
         <h1 class="title">{{ currentTrack.title }}</h1>

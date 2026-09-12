@@ -30,6 +30,7 @@ import { statSync } from "node:fs";
 import type { IRelease, IReleaseGroup, MusicBrainzApi } from "musicbrainz-api";
 import type { SlskSearchResult } from "../utils/soulseek";
 import { getMusicBrainzClient, getAppleMusicTrackID } from "../utils/musicbrainz";
+import { pickCanonicalRelease, pickReleaseForGroup } from "../utils/release";
 import { searchSoulseek, downloadFromSoulseek, foldDiacritics } from "../utils/soulseek";
 import { verifyRecordingMatch } from "../utils/fingerprint";
 import { tagAudioFile } from "../utils/audioTag";
@@ -84,8 +85,10 @@ function parseReleaseDate(date: string | undefined): Date | null {
 // step 2: resolve the request's MusicBrainz ID into one (track) or many (album) concrete recordings to fetch
 async function resolveTargets(client: MusicBrainzApi, musicbrainzId: string, type: "album" | "track"): Promise<TrackTarget[]> {
     if (type === "track") {
-        const recording = await client.lookup("recording", musicbrainzId, ["artist-credits", "releases", "release-groups", "url-rels"]);
-        const release = recording.releases?.[0];
+        const recording = await client.lookup("recording", musicbrainzId, ["artist-credits", "releases", "release-groups", "media", "url-rels"]);
+        // same picker as GET /api/v1/track/{tid} (see utils/release.ts): the album/label/cover written into
+        // the file's tags must be the one the user was looking at when they requested the track
+        const release = pickCanonicalRelease(recording.releases);
         const credit = recording["artist-credit"]?.[0]?.artist;
 
         // albumId must be the release-*group* MBID (not the release's own ID) so the library's
@@ -109,7 +112,9 @@ async function resolveTargets(client: MusicBrainzApi, musicbrainzId: string, typ
 
     const releaseGroup: IReleaseGroup = await client.lookup("release-group", musicbrainzId, ["artist-credits"]);
     const browsed = await client.browse("release", { "release-group": musicbrainzId }, ["recordings", "artist-credits", "labels", "media"]);
-    const release: IRelease | undefined = browsed.releases[0];
+    // same picker as GET /api/v1/album/{aid}, so the tracks downloaded here are exactly the tracks the
+    // album page listed - the official standard edition, not a deluxe whose extra tracks nobody shares
+    const release: IRelease | undefined = pickReleaseForGroup(releaseGroup, browsed.releases);
     if (!release) return [];
 
     const primaryType = releaseGroup["primary-type"]?.toLowerCase();

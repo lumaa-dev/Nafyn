@@ -4,6 +4,7 @@ import type { MediaInfo } from "~~/server/entity/media/MediaInfo";
 import type { ArtistInfo } from "~~/server/entity/media/ArtistInfo";
 import { IRecording } from "musicbrainz-api";
 import { assertMbid } from "~~/server/utils/ids";
+import { pickCanonicalRelease } from "~~/server/utils/release";
 
 defineRouteMeta({
     openAPI: {
@@ -81,9 +82,9 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 404, statusMessage: "No track with ID " + tid });
     });
 
-    // prefer the "Digital Media" release: it best matches what we actually distribute,
-    // while CD/Vinyl releases (often the first one MusicBrainz returns) can differ in title/label/cover art
-    const release = recording.releases?.find((r) => r.media?.some((m) => m.format === "Digital Media")) ?? recording.releases?.[0];
+    // same release selection as the album page and the download pipeline (see utils/release.ts), so a
+    // track's album/cover/label here match what gets written onto the file when it is downloaded
+    const release = pickCanonicalRelease(recording.releases);
     const albumMbid = release?.["release-group"]?.id ?? null;
     const credit = recording["artist-credit"]?.[0]?.artist;
 
