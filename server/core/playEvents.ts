@@ -29,6 +29,7 @@ interface TrackMeta {
     id: string,
     albumId: string | null,
     artistMbid: string | null,
+    artistName: string | null,
     duration: number
 }
 
@@ -49,7 +50,7 @@ async function enrichEvents(userId: string, events: PlayEventInput[]): Promise<{
     const placeholders = trackIds.map(() => "?").join(", ");
 
     const rows = await getLibrariesDb().prepare(`
-        SELECT m.id, m.albumId, m.artistMbid, m.duration
+        SELECT m.id, m.albumId, m.artistMbid, m.artistName, m.duration
         FROM media m
         JOIN library_entries le ON le.mediaId = m.id AND le.userId = ?
         WHERE m.id IN (${placeholders})
@@ -114,7 +115,12 @@ export async function insertPlayEvents(userId: string, events: PlayEventInput[])
             userId,
             event.trackId,
             meta.albumId || UNKNOWN_ALBUM,
-            meta.artistMbid || null,
+            // Fall back to the artist *name* as the identity when there's no MBID, rather than storing NULL.
+            // Manually imported tracks carry artistMbid = '' (never a real MBID), and a NULL here drops them
+            // out of the artist rollup entirely - you get plays and minutes, but "0 artists" and an empty top
+            // artists list. This mirrors what the rest of the app already treats as an artist's identity:
+            // getArtistsOfUser keys on COALESCE(artistMbid, artistName).
+            meta.artistMbid || meta.artistName || null,
             event.playlistId && allowedPlaylists.has(event.playlistId) ? event.playlistId : null,
             toMysqlDateTime(event.startedAtMs),
             event.durationMs,
@@ -132,7 +138,50 @@ export async function insertPlayEvents(userId: string, events: PlayEventInput[])
         return res as { affectedRows?: number };
     });
 
-    return { accepted: result.affectedRows ?? 0, unknownTracks };
+    const accepted = result.affectedRows ?? 0;
+
+    // Roll the affected days up immediately, before returning.
+    //
+    // The UI reads aggregates and never raw events, so without this a track you just finished stays
+    // invisible until the scheduler's next pass - which looks exactly like the feature being broken. Doing
+    // it here rather than on a timer also gives the client a useful guarantee: once its flush resolves, the
+    // summary endpoints already reflect what it just sent, so it can refetch and actually see the change.
+    if (accepted > 0) await rollupIngestedDays(userId, enriched.map((e) => e.event.startedAtMs));
+
+    return { accepted, unknownTracks };
+}
+
+/**
+ * Recomputes the day/month/year buckets covering a set of just-ingested events.
+ *
+ * Almost always a single day - a flush covers the last few minutes - but an offline queue draining after a
+ * couple of days offline can span several, and each one has to be rebuilt or its numbers stay wrong.
+ */
+async function rollupIngestedDays(userId: string, startedAtMsList: number[]): Promise<void> {
+    try {
+        // Imported here rather than at the top of the file because insightsAggregate imports *this* module
+        // for getEventsForWindow. A static import both ways is a cycle; resolving it at call time isn't.
+        const [{ rollupUserAt }, { getInsightSettings }, { localDateKey }] = await Promise.all([
+            import("./insightsAggregate"),
+            import("./insightsSettings"),
+            import("~~/server/utils/insightsPeriod")
+        ]);
+
+        const tzOffsetMinutes = (await getInsightSettings(userId)).tzOffsetMinutes;
+
+        // one rollup per distinct *local* day, not per event
+        const days = new Map<string, number>();
+        for (const ms of startedAtMsList) days.set(localDateKey(ms, tzOffsetMinutes), ms);
+
+        for (const ms of days.values()) {
+            await rollupUserAt(userId, ms, tzOffsetMinutes);
+        }
+    } catch (error) {
+        // The events are safely stored either way, and the scheduler will roll them up on its next pass.
+        // Failing the ingestion request over a rollup problem would make the client retry a batch that
+        // already landed, so this is logged and swallowed.
+        console.error("[insights] inline rollup after ingest failed:", error);
+    }
 }
 
 // --- reads used by the rollup jobs and the export ---------------------------------------------------

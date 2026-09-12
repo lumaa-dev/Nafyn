@@ -182,7 +182,7 @@
 </template>
 
 <script lang="ts" setup>
-import { syncHistorySetting, useHistoryEnabled } from '~/composables/usePlayTracking';
+import { syncHistorySetting, useHistoryEnabled, onInsightsUpdated } from '~/composables/usePlayTracking';
 import type { RankedEntity } from '~/components/insights/TopEntityList.vue';
 import type { BarItem } from '~/components/charts/BarChart.vue';
 import { downloadShareCard } from '~/composables/useShareCard';
@@ -283,9 +283,61 @@ watch(activeTab, async (tab) => {
   if (tab === "yearly" && !yearly.value) await loadYearly();
 });
 
+// --- live updates ---
+//
+// Without this the page is a snapshot of whenever it was opened: you finish a track, the server records and
+// aggregates it, and the screen in front of you still says zero. Three triggers, because they cover
+// different things going stale:
+//
+//   1. a flush landed in this tab   - the common case, and the only one that is genuinely instant
+//   2. the tab became visible again - you listened elsewhere, or in a background tab
+//   3. a slow poll                  - another device, or a Subsonic client, played something
+//
+// Only the tab you are actually looking at is refetched; reloading all three on every track would be three
+// times the queries for two panels nobody is reading.
+const POLL_MS = 30_000;
+
+let refreshing = false;
+
+async function refreshActive() {
+  if (!historyEnabled.value || refreshing) return;
+  refreshing = true;
+
+  try {
+    if (activeTab.value === "weekly") await loadWeekly();
+    else if (activeTab.value === "monthly") await loadMonthly();
+    // keep whichever year is on screen, rather than snapping back to the current one
+    else await loadYearly(selectedYear.value);
+  } catch {
+    // a failed refresh leaves the previous numbers on screen, which is better than blanking them
+  } finally {
+    refreshing = false;
+  }
+}
+
+function onVisibilityChange() {
+  if (document.visibilityState === "visible") void refreshActive();
+}
+
+let unsubscribe: (() => void) | null = null;
+let pollTimer: ReturnType<typeof setInterval> | null = null;
+
 onMounted(async () => {
   const enabled = await syncHistorySetting();
   if (enabled) await loadWeekly();
+
+  unsubscribe = onInsightsUpdated(() => { void refreshActive(); });
+  document.addEventListener("visibilitychange", onVisibilityChange);
+  pollTimer = setInterval(() => {
+    // no point polling a tab nobody is looking at
+    if (document.visibilityState === "visible") void refreshActive();
+  }, POLL_MS);
+});
+
+onUnmounted(() => {
+  unsubscribe?.();
+  document.removeEventListener("visibilitychange", onVisibilityChange);
+  if (pollTimer) clearInterval(pollTimer);
 });
 </script>
 

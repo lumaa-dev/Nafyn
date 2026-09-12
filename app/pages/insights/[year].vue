@@ -99,6 +99,7 @@
 import { downloadShareCard } from '~/composables/useShareCard';
 import type { RankedEntity } from '~/components/insights/TopEntityList.vue';
 import type { EntityType, HighlightReel, YearComparison } from '~/composables/useInsights';
+import { onInsightsUpdated } from '~/composables/usePlayTracking';
 
 // The year-end package: the frozen snapshot if there is one, the live aggregates if not, plus the two
 // shareable artefacts - the in-app reel and the optional downloadable MP4.
@@ -202,6 +203,51 @@ async function shareYear() {
   }
 }
 
+// --- live updates ---
+//
+// Same reasoning as the insights hub: the current year keeps moving while you listen, and a page that only
+// reads its numbers once shows stale ones for as long as it stays open. A past year is frozen and will
+// simply refetch to the same values, which costs one request and keeps the code free of special cases.
+const STATS_POLL_MS = 30_000;
+
+let statsRefreshing = false;
+
+async function refreshStats() {
+  if (statsRefreshing) return;
+  statsRefreshing = true;
+
+  try {
+    yearly.value = await insights.yearly(year);
+
+    // Refetch exactly the pages already on screen and replace them, rather than resetting to page 1 -
+    // otherwise a refresh yanks the list back to the top while someone is reading further down it.
+    await Promise.all(entityTypes.map(async (type) => {
+      const loadedPages = pages[type];
+      if (loadedPages < 1) return;
+
+      const results = await Promise.all(
+        Array.from({ length: loadedPages }, (_, i) =>
+          insights.top({ type, period: "year", year, page: i + 1, limit: PAGE_SIZE })
+        )
+      );
+
+      fullLists[type] = results.flatMap((r) => r.items);
+      hasMore[type] = results[results.length - 1]?.hasMore ?? false;
+    }));
+  } catch {
+    // leave the numbers that are already on screen
+  } finally {
+    statsRefreshing = false;
+  }
+}
+
+function onStatsVisibility() {
+  if (document.visibilityState === "visible") void refreshStats();
+}
+
+let statsUnsubscribe: (() => void) | null = null;
+let statsPollTimer: ReturnType<typeof setInterval> | null = null;
+
 onMounted(async () => {
   yearly.value = await insights.yearly(year);
 
@@ -212,10 +258,19 @@ onMounted(async () => {
   comparison.value = await insights.compare().catch(() => []);
 
   await Promise.all(entityTypes.map((type) => loadMore(type)));
+
+  statsUnsubscribe = onInsightsUpdated(() => { void refreshStats(); });
+  document.addEventListener("visibilitychange", onStatsVisibility);
+  statsPollTimer = setInterval(() => {
+    if (document.visibilityState === "visible") void refreshStats();
+  }, STATS_POLL_MS);
 });
 
 onUnmounted(() => {
   if (pollTimer) clearInterval(pollTimer);
+  statsUnsubscribe?.();
+  document.removeEventListener("visibilitychange", onStatsVisibility);
+  if (statsPollTimer) clearInterval(statsPollTimer);
 });
 </script>
 

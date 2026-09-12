@@ -84,6 +84,31 @@ export function isTrackingSuppressed(): boolean {
     return suppressed;
 }
 
+// --- "your numbers just changed" notifications -------------------------------------------------------
+//
+// The server rolls a flushed batch into the aggregates before it answers (see insertPlayEvents), so by the
+// time a flush resolves the summary endpoints already reflect it. That makes this the exact right moment to
+// tell any open insights screen to refetch.
+//
+// A plain listener set rather than `useState`, because this fires from flushes that run in timers and audio
+// event handlers, outside any Nuxt component context. Subscribers are components, which do have one.
+type InsightsListener = () => void;
+
+const insightsListeners = new Set<InsightsListener>();
+
+/** subscribe to "aggregates changed"; returns an unsubscribe function */
+export function onInsightsUpdated(listener: InsightsListener): () => void {
+    insightsListeners.add(listener);
+    return () => insightsListeners.delete(listener);
+}
+
+function notifyInsightsUpdated(): void {
+    for (const listener of insightsListeners) {
+        // one badly-behaved subscriber must not stop the others being told
+        try { listener(); } catch { /* ignore */ }
+    }
+}
+
 // --- the queue ---------------------------------------------------------------------------------------
 
 function readQueue(): QueuedPlayEvent[] {
@@ -163,6 +188,9 @@ export async function flushPlayEvents(): Promise<void> {
         // confirms an opt-in we only assumed, and it stops capture if the user turned history off elsewhere
         setHistoryEnabledState(result.historyEnabled);
         if (!result.historyEnabled) writeQueue([]);
+
+        // only when something was actually stored - a batch of duplicates changes no numbers
+        if (result.accepted > 0) notifyInsightsUpdated();
     } catch {
         // left in the queue for the next attempt. A 4xx would strictly speaking be worth discarding, but
         // retrying a handful of rejected events is cheaper than reasoning about which failures are permanent.

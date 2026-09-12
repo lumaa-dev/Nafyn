@@ -30,9 +30,14 @@ export const INSIGHTS_DEFAULTS = {
 
     replayMixSize: 100,
 
-    // "enough data" gate - ranking surfaces stay hidden until a user clears one of these
-    gateMinUniqueTracks: 20,
-    gateMinMinutes: 60,
+    // "enough data" gate - ranking surfaces stay hidden until a user clears one of these (either, not both).
+    //
+    // Low on purpose. These started at 20 tracks / 60 minutes, which on a personal instance meant a real
+    // afternoon of listening still showed "Not enough listening yet" - the gate exists to stop a top-10
+    // built from two plays reading as authoritative, not to make people earn their own statistics. Raise
+    // them per install via the app_settings keys below if a fuller picture is wanted before anything shows.
+    gateMinUniqueTracks: 5,
+    gateMinMinutes: 15,
 
     // 0 means never prune. Deliberately the shipped default: the aggregates can only ever be rebuilt from
     // raw events, so pruning bakes any future bug in the weighting permanently into old buckets, and the raw
