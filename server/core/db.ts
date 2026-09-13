@@ -30,6 +30,23 @@ function getPool(): mysql.Pool {
             waitForConnections: true,
             connectionLimit: 10
         });
+
+        // ...and pin the SERVER session to UTC too. These are two different things, and conflating them is
+        // a genuine trap: mysql2's `timezone` option only governs how the *driver* converts JS Date objects
+        // to and from strings. It does not touch MySQL's session `time_zone`, which is what server-side
+        // functions like FROM_UNIXTIME() and TIMESTAMP storage conversion actually use.
+        //
+        // With the session left on SYSTEM, a host running anything other than UTC makes the insights window
+        // query silently match nothing: play_events rows are written as UTC strings, while
+        // `started_at >= FROM_UNIXTIME(:fromMs / 1000)` resolves the bound in the server's local zone. The
+        // rows are all present and correct, the rollup just never sees them, and every statistic reads zero.
+        //
+        // Enqueued from the 'connection' event, which fires as soon as a physical connection is created.
+        // mysql2 runs one command at a time per connection in enqueue order, so this is guaranteed to
+        // execute before any query the pool later hands that connection - there is no race here.
+        pool.on("connection", (connection) => {
+            connection.query("SET time_zone = '+00:00'");
+        });
     }
     return pool;
 }

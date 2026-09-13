@@ -19,7 +19,7 @@ import { renderQueuedReels } from "./insightsReel";
 import { getInsightSettings } from "./insightsSettings";
 import {
     localDateKey, localIsoWeek, monthBounds, yearBounds, previousMonth,
-    DAY_MS
+    startOfLocalDay, DAY_MS
 } from "~~/server/utils/insightsPeriod";
 
 /** identifies this process in insight_job_runs. Purely for observability - the claim itself is atomic. */
@@ -29,6 +29,7 @@ const INSTANCE_ID = `${process.pid}-${randomUUID().slice(0, 8)}`;
 const STALE_CLAIM_MINUTES = 15;
 
 export type JobName =
+    | "rollup-backfill"
     | "rollup-daily"
     | "rollup-monthly"
     | "rollup-yearly"
@@ -138,6 +139,78 @@ function fiveMinuteKey(nowMs: number): string {
 }
 
 // --- the jobs ----------------------------------------------------------------------------------------
+
+/**
+ * One-time rebuild of every aggregate from the raw event store.
+ *
+ * Needed because aggregates can drift out of existence in ways the incremental jobs will never notice: they
+ * only ever look at the last couple of days, so any period that failed to roll up at the time stays empty
+ * forever, even though the events behind it are sitting there intact. That is exactly what a non-UTC MySQL
+ * session used to cause - every rollup window matched nothing, so a full history of play_events produced a
+ * completely empty set of statistics.
+ *
+ * Keyed on a version string in insight_job_runs, so it runs exactly once per installation no matter how many
+ * times the process restarts. Bump the version to force a fresh rebuild after a change to the scoring or
+ * bucketing rules; rollups are idempotent, so re-running only ever recomputes the same answer.
+ */
+const BACKFILL_VERSION = "v2-utc-session";
+
+export async function jobBackfillAggregates(): Promise<void> {
+    await runJob("rollup-backfill", BACKFILL_VERSION, async (beat) => {
+        const users = await getLibrariesDb()
+            .prepare(`SELECT DISTINCT user_id FROM play_events`)
+            .all<{ user_id: string }>();
+
+        if (users.length === 0) return;
+        console.info(`[insights] backfilling aggregates for ${users.length} user(s)`);
+
+        for (const { user_id: userId } of users) {
+            const tz = await tzFor(userId);
+
+            const span = await getLibrariesDb().prepare(`
+                SELECT MIN(started_at) AS first_at, MAX(started_at) AS last_at
+                FROM play_events WHERE user_id = ?
+            `).get<{ first_at: Date | null, last_at: Date | null }>(userId);
+
+            if (!span?.first_at || !span.last_at) continue;
+
+            // walk local day by local day. Stepping in whole days from the first event's local midnight
+            // keeps this aligned with the bucket_date keys the rollup writes.
+            const firstMs = span.first_at.getTime();
+            const lastMs = span.last_at.getTime();
+
+            const months = new Set<string>();
+            const years = new Set<number>();
+
+            for (let ms = startOfLocalDay(firstMs, tz); ms <= lastMs; ms += DAY_MS) {
+                const dateKey = localDateKey(ms, tz);
+                await rollupDay(userId, dateKey, tz);
+
+                const parts = dateKey.split("-");
+                const year = Number(parts[0]);
+                const month = Number(parts[1]);
+                months.add(`${year}-${month}`);
+                years.add(year);
+
+                await beat();
+            }
+
+            // months and years are rolled once each at the end rather than on every day, since each one
+            // re-aggregates the whole bucket from the daily table anyway
+            for (const key of months) {
+                const [year, month] = key.split("-").map(Number);
+                await rollupMonth(userId, year!, month!, tz);
+            }
+            for (const year of years) {
+                await rollupYear(userId, year, tz);
+                await rebuildReplayMix(userId, year);
+            }
+            await rebuildAllTime(userId);
+        }
+
+        console.info("[insights] aggregate backfill complete");
+    });
+}
 
 /**
  * Rolls up everyone with recent activity. Runs every five minutes and always covers *two* local days: the
@@ -287,6 +360,9 @@ export async function tickInsightsJobs(nowMs: number = Date.now()): Promise<void
     const weekday = now.getUTCDay(); // 1 = Monday
     const month = now.getUTCMonth() + 1;
     const date = now.getUTCDate();
+
+    // once per installation, then a cheap no-op forever after (the claim is refused once it is 'done')
+    await jobBackfillAggregates();
 
     // every tick; the 5-minute period key is what actually decides how often it does any work
     await jobRollupDaily(nowMs);

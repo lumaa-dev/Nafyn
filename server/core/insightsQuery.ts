@@ -11,7 +11,26 @@
 import { getLibrariesDb, sqlInt } from "./db";
 import { getInsightsConfig } from "./insightsConfig";
 import { scoreEntities, type ScorableRow } from "./insightsScore";
-import { toMysqlDate, type EntityType, DAY_MS } from "~~/server/utils/insightsPeriod";
+import { toMysqlDate, localDateKey, type EntityType, DAY_MS } from "~~/server/utils/insightsPeriod";
+import { getInsightSettings } from "./insightsSettings";
+
+/**
+ * Converts a half-open [fromMs, toMs) instant range into the `bucket_date` keys that actually bound it.
+ *
+ * This has to go through the user's own time zone, and getting it wrong is subtle. `bucket_date` holds a
+ * LOCAL calendar date (see localDateKey, which the rollup writes with), whereas the bounds handed in here
+ * are UTC instants sitting on local midnight. Formatting those instants as UTC dates - which this file used
+ * to do - lands on the previous day for any positive offset: at UTC+2, local Monday 00:00 is Sunday 22:00
+ * UTC, so every window started a day early and the weekly chart appeared to begin on Sunday.
+ */
+async function bucketRange(userId: string, fromMs: number, toMs: number): Promise<{ from: string, to: string, tz: number }> {
+    const { tzOffsetMinutes } = await getInsightSettings(userId);
+    return {
+        from: localDateKey(fromMs, tzOffsetMinutes),
+        to: localDateKey(toMs, tzOffsetMinutes),
+        tz: tzOffsetMinutes
+    };
+}
 
 export interface RankedEntity {
     entityType: EntityType,
@@ -179,7 +198,7 @@ export async function getTopEntitiesForRange(
         WHERE user_id = :userId AND entity_type = :entityType
           AND bucket_date >= :from AND bucket_date < :to
         GROUP BY entity_type, entity_id
-    `).all<StatsRow>({ userId, entityType, from: toMysqlDate(fromMs), to: toMysqlDate(toMs) });
+    `).all<StatsRow>({ userId, entityType, ...await bucketRange(userId, fromMs, toMs) });
 
     if (rows.length === 0) return [];
 
@@ -199,7 +218,7 @@ export async function getTopEntitiesForRange(
 }
 
 export async function getRangeTotals(userId: string, fromMs: number, toMs: number): Promise<PeriodTotals> {
-    const params = { userId, from: toMysqlDate(fromMs), to: toMysqlDate(toMs) };
+    const params = { userId, ...await bucketRange(userId, fromMs, toMs) };
 
     const totals = await getLibrariesDb().prepare(`
         SELECT COALESCE(SUM(total_duration_ms), 0) AS duration, COALESCE(SUM(play_count), 0) AS plays
@@ -244,7 +263,7 @@ export async function getDailySeries(userId: string, fromMs: number, toMs: numbe
         GROUP BY bucket_date
         ORDER BY bucket_date ASC
     `).all<{ bucket_date: Date | string, duration: string | number, plays: string | number }>({
-        userId, from: toMysqlDate(fromMs), to: toMysqlDate(toMs)
+        userId, ...await bucketRange(userId, fromMs, toMs)
     });
 
     const byDate = new Map(rows.map((r) => [
@@ -254,9 +273,13 @@ export async function getDailySeries(userId: string, fromMs: number, toMs: numbe
 
     // days with no listening are filled in as zeroes rather than omitted, so a line chart draws a real gap
     // instead of joining across it and implying continuous playback
+    const { tz } = await bucketRange(userId, fromMs, toMs);
+
     const points: DayPoint[] = [];
     for (let ms = fromMs; ms < toMs; ms += DAY_MS) {
-        const date = toMysqlDate(ms);
+        // label each slot by its LOCAL date so it matches the bucket_date keys fetched above; a UTC date
+        // here is what made a Monday-start week render Sunday as its first column
+        const date = localDateKey(ms, tz);
         const found = byDate.get(date);
         points.push({ date, minutes: found?.minutes ?? 0, plays: found?.plays ?? 0 });
     }
@@ -276,7 +299,7 @@ export async function getHourHistogram(userId: string, fromMs: number, toMs: num
         WHERE user_id = :userId AND bucket_date >= :from AND bucket_date < :to
         GROUP BY hour
     `).all<{ hour: number, plays: string | number, duration: string | number }>({
-        userId, from: toMysqlDate(fromMs), to: toMysqlDate(toMs)
+        userId, ...await bucketRange(userId, fromMs, toMs)
     });
 
     const byHour = new Map(rows.map((r) => [Number(r.hour), r]));
@@ -299,7 +322,7 @@ export async function getLongestStreak(userId: string, fromMs: number, toMs: num
         FROM user_entity_stats_daily
         WHERE user_id = :userId AND bucket_date >= :from AND bucket_date < :to
         ORDER BY bucket_date ASC
-    `).all<{ bucket_date: Date | string }>({ userId, from: toMysqlDate(fromMs), to: toMysqlDate(toMs) });
+    `).all<{ bucket_date: Date | string }>({ userId, ...await bucketRange(userId, fromMs, toMs) });
 
     let longest = 0;
     let current = 0;
@@ -333,7 +356,7 @@ export async function hasEnoughData(userId: string, fromMs: number, toMs: number
         FROM user_entity_stats_daily
         WHERE user_id = :userId AND entity_type = 'track' AND bucket_date >= :from AND bucket_date < :to
     `).get<{ tracks: string | number, duration: string | number }>({
-        userId, from: toMysqlDate(fromMs), to: toMysqlDate(toMs)
+        userId, ...await bucketRange(userId, fromMs, toMs)
     });
 
     const uniqueTracks = num(row?.tracks);
