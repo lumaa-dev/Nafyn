@@ -15,6 +15,7 @@
 //      cut a statement in half at the first semicolon inside a string literal or comment.
 import type { PoolConnection } from "mysql2/promise";
 import { getConnection } from "./db";
+import { resolveTableOptions } from "./insightsSchema";
 
 export interface Migration {
     id: string,
@@ -110,7 +111,57 @@ const MIGRATIONS: Migration[] = [
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
             `);
         }
+    },
+    {
+        // Align the insights tables' collation with `media`.
+        //
+        // They were originally created with a hardcoded utf8mb4_general_ci. On an install whose database
+        // predates Nafyn (so `CREATE DATABASE ... COLLATE utf8mb4_general_ci` was skipped by IF NOT EXISTS)
+        // `media` can be utf8mb4_unicode_ci instead, and then the rollup's `m.id = pe.track_id` join fails
+        // every single time with ER_CANT_AGGREGATE_2COLLATIONS - no statistics are ever produced, while the
+        // raw events pile up looking perfectly healthy.
+        //
+        // CONVERT TO CHARACTER SET rewrites the table, which is why this skips any table already matching.
+        // On a fresh install every table is created correctly and this is a no-op.
+        id: "2026-09-13-insights-collation-align",
+        up: async (conn) => {
+            const target = await resolveTableOptions(conn);
+            const match = /DEFAULT CHARSET=([A-Za-z0-9_]+) COLLATE=([A-Za-z0-9_]+)/.exec(target);
+            if (!match) return;
+
+            const [, charset, collation] = match as unknown as [string, string, string];
+
+            for (const table of INSIGHTS_TABLES) {
+                if (!await tableExists(conn, table)) continue;
+
+                const [rows] = await conn.execute(
+                    `SELECT TABLE_COLLATION AS c FROM information_schema.TABLES
+                     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?`,
+                    [table]
+                );
+                const current = (rows as { c: string | null }[])[0]?.c;
+                if (!current || current === collation) continue;
+
+                // table name is from the hard-coded list above; charset/collation are validated by the
+                // regex. Neither can be a placeholder in this position.
+                await conn.query(`ALTER TABLE \`${table}\` CONVERT TO CHARACTER SET ${charset} COLLATE ${collation}`);
+                console.info(`[insights] converted ${table} from ${current} to ${collation}`);
+            }
+        }
     }
+];
+
+/** every table owned by the insights feature, for schema-wide maintenance like the collation alignment above */
+const INSIGHTS_TABLES = [
+    "play_events",
+    "user_insight_settings",
+    "user_entity_stats_daily",
+    "user_hour_stats_daily",
+    "user_entity_stats_monthly",
+    "user_entity_stats_yearly",
+    "user_replay_playlists",
+    "user_year_snapshots",
+    "insight_job_runs"
 ];
 
 async function appliedIds(conn: PoolConnection): Promise<Set<string>> {

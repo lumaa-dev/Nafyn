@@ -9,10 +9,11 @@
 // rather than VARCHAR(36) and BIGINT epoch-ms), because the feature spec fixes them. Two consequences worth
 // knowing before touching any of this:
 //
-//   * Every table declares CHARSET/COLLATE explicitly. `play_events.track_id` joins `media.id VARCHAR(36)`,
-//     and a collation mismatch between them either errors outright ("Illegal mix of collations") or, worse,
-//     silently makes the index on media.id unusable and turns every insights query into a full table scan.
-//     CHAR(36) vs VARCHAR(36) is fine; a collation difference is not.
+//   * Every table takes its CHARSET/COLLATE from `media` at creation time (see resolveTableOptions), never
+//     from a hardcoded value. `play_events.track_id` joins `media.id VARCHAR(36)`, and a collation mismatch
+//     between them errors outright with ER_CANT_AGGREGATE_2COLLATIONS ("Illegal mix of collations") or, in
+//     the cases MySQL will coerce, silently makes the index on media.id unusable and turns every insights
+//     query into a full table scan. CHAR(36) vs VARCHAR(36) is fine; a collation difference is not.
 //
 //   * Comparing a TIMESTAMP column against the epoch-ms BIGINTs used elsewhere must convert the *constant*,
 //     never the column: `WHERE started_at >= FROM_UNIXTIME(:fromMs / 1000)` uses the index,
@@ -22,9 +23,11 @@
 // explicit_defaults_for_timestamp=OFF behaviour silently attaches DEFAULT CURRENT_TIMESTAMP *and* ON UPDATE
 // CURRENT_TIMESTAMP to the first TIMESTAMP column in a table - which would quietly rewrite `started_at`
 // every time a row was touched.
+import type { PoolConnection } from "mysql2/promise";
 import { getConnection } from "./db";
 
-const STATEMENTS: string[] = [
+function statements(tableOptions: string): string[] {
+    return [
     // ---- the append-only event store ----------------------------------------------------------------
     //
     // Immutable: rows are only ever inserted (INSERT IGNORE, keyed on a client-minted event_id so retries
@@ -58,7 +61,7 @@ const STATEMENTS: string[] = [
         KEY idx_pe_user_artist_time (user_id, artist_id, started_at),
         KEY idx_pe_user_playlist_time (user_id, playlist_id, started_at),
         KEY idx_pe_created (created_at)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`,
+    ) ${tableOptions}`,
 
     // ---- per-user opt-in ----------------------------------------------------------------------------
     //
@@ -76,7 +79,7 @@ const STATEMENTS: string[] = [
         disabled_at       TIMESTAMP(3) NULL DEFAULT NULL,
         tz_offset_minutes SMALLINT NOT NULL DEFAULT 0,
         PRIMARY KEY (user_id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`,
+    ) ${tableOptions}`,
 
     // ---- derived aggregates -------------------------------------------------------------------------
     //
@@ -105,7 +108,7 @@ const STATEMENTS: string[] = [
         PRIMARY KEY (user_id, bucket_date, entity_type, entity_id),
         KEY idx_uesd_user_type_date (user_id, entity_type, bucket_date),
         KEY idx_uesd_user_entity (user_id, entity_type, entity_id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`,
+    ) ${tableOptions}`,
 
     // rank_in_bucket is 1-based and precomputed by the rollup jobs, so "top 10 artists in March" is an
     // index range scan rather than a sort over the user's whole month.
@@ -129,7 +132,7 @@ const STATEMENTS: string[] = [
         PRIMARY KEY (user_id, bucket_year, bucket_month, entity_type, entity_id),
         KEY idx_uesm_rank (user_id, bucket_year, bucket_month, entity_type, rank_in_bucket),
         KEY idx_uesm_user_entity (user_id, entity_type, entity_id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`,
+    ) ${tableOptions}`,
 
     `CREATE TABLE IF NOT EXISTS user_entity_stats_yearly (
         user_id             CHAR(36) NOT NULL,
@@ -150,7 +153,7 @@ const STATEMENTS: string[] = [
         PRIMARY KEY (user_id, bucket_year, entity_type, entity_id),
         KEY idx_uesy_rank (user_id, bucket_year, entity_type, rank_in_bucket),
         KEY idx_uesy_user_entity (user_id, entity_type, entity_id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`,
+    ) ${tableOptions}`,
 
     // Hour-of-day histogram, bucketed per local day.
     //
@@ -166,7 +169,7 @@ const STATEMENTS: string[] = [
         total_duration_ms BIGINT UNSIGNED NOT NULL DEFAULT 0,
         PRIMARY KEY (user_id, bucket_date, hour),
         KEY idx_uhsd_user_date (user_id, bucket_date)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`,
+    ) ${tableOptions}`,
 
     // ---- the Replay Mix -----------------------------------------------------------------------------
     //
@@ -192,7 +195,7 @@ const STATEMENTS: string[] = [
         refreshed_at      TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
         PRIMARY KEY (user_id, bucket_year, position),
         KEY idx_urp_user_year (user_id, bucket_year)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`,
+    ) ${tableOptions}`,
 
     // ---- year-end snapshot --------------------------------------------------------------------------
     //
@@ -217,7 +220,7 @@ const STATEMENTS: string[] = [
         created_at          TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
         PRIMARY KEY (user_id, bucket_year),
         KEY idx_uys_reel_status (reel_status)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`,
+    ) ${tableOptions}`,
 
     // ---- scheduler bookkeeping ----------------------------------------------------------------------
     //
@@ -239,13 +242,54 @@ const STATEMENTS: string[] = [
         error        TEXT NULL DEFAULT NULL,
         PRIMARY KEY (job_name, period_key),
         KEY idx_ijr_status (status, heartbeat_at)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci`
-];
+    ) ${tableOptions}`
+    ];
+}
+
+/**
+ * Character set and collation for the insights tables, taken from the tables they join against rather than
+ * hardcoded.
+ *
+ * This used to be a fixed `utf8mb4_general_ci`, which is wrong on any install whose database was created
+ * before Nafyn with a different default - `media` ends up on, say, utf8mb4_unicode_ci while the new tables
+ * are general_ci, and the very first `m.id = pe.track_id` join dies with ER_CANT_AGGREGATE_2COLLATIONS
+ * ("Illegal mix of collations"). Matching `media` is what actually matters, since that is the table every
+ * insights join reaches for; the database default is only a fallback for a fresh install where `media` does
+ * not exist yet.
+ */
+export async function resolveTableOptions(conn: PoolConnection): Promise<string> {
+    const [rows] = await conn.query(`
+        SELECT CHARACTER_SET_NAME AS charset, COLLATION_NAME AS collation
+        FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'media' AND COLUMN_NAME = 'id'
+        UNION ALL
+        SELECT
+            (SELECT CHARACTER_SET_NAME FROM information_schema.COLLATIONS WHERE COLLATION_NAME = s.DEFAULT_COLLATION_NAME),
+            s.DEFAULT_COLLATION_NAME
+        FROM information_schema.SCHEMATA s WHERE s.SCHEMA_NAME = DATABASE()
+    `);
+
+    const found = (rows as { charset: string | null, collation: string | null }[])
+        .find((r) => r.charset && r.collation);
+
+    const charset = found?.charset ?? "utf8mb4";
+    const collation = found?.collation ?? "utf8mb4_general_ci";
+
+    // SECURITY: these land in an identifier position, where a placeholder is not allowed. They come from
+    // information_schema rather than any request, but they are still validated before being interpolated -
+    // an unvalidated name spliced into DDL is how this becomes an injection point later.
+    if (!/^[A-Za-z0-9_]+$/.test(charset) || !/^[A-Za-z0-9_]+$/.test(collation)) {
+        return "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+    }
+
+    return `ENGINE=InnoDB DEFAULT CHARSET=${charset} COLLATE=${collation}`;
+}
 
 export async function createInsightsTables(): Promise<void> {
     const conn = await getConnection();
     try {
-        for (const statement of STATEMENTS) {
+        const tableOptions = await resolveTableOptions(conn);
+        for (const statement of statements(tableOptions)) {
             await conn.query(statement);
         }
     } finally {
