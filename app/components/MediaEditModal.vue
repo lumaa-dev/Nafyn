@@ -274,4 +274,10 @@ async function save() {
   gap: 10px;
   justify-content: flex-end;
 }
+
+.media-edit .actions button {
+  flex-shrink: 1;
+  min-width: 0;
+  padding: 0.6em 1.6em;
+}
 </style>

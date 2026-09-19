@@ -102,10 +102,12 @@
     "title": "Paramètres",
     "categories": {
       "profile": "Profil",
+      "appearance": "Apparence",
       "accounts": "Comptes",
       "storage": "Stockage",
       "subsonic": "Subsonic",
-      "privacy": "Confidentialité"
+      "privacy": "Confidentialité",
+      "developer": "Développeur"
     },
     "profile": {
       "title": "Profil",
@@ -206,6 +208,22 @@
         "note": "Efface définitivement chaque écoute, chaque statistique, chaque Replay Mix et chaque bilan annuel. Action irréversible.",
         "confirm": "Supprimer définitivement tout votre historique d'écoute ? Action irréversible.",
         "done": "Votre historique d'écoute a été supprimé."
+      }
+    },
+    "appearance": {
+      "title": "Apparence",
+      "fileSize": "Afficher la taille des fichiers dans les listes de titres",
+      "fileSizeLocked": "Réservé aux comptes disposant de la permission Gérer la musique.",
+      "duration": "Afficher la durée des titres dans les listes de titres"
+    },
+    "developer": {
+      "title": "Développeur",
+      "sampleData": {
+        "title": "Données d'exemple",
+        "label": "Remplir ma bibliothèque avec des données d'exemple",
+        "note": "Charge un catalogue fixe de vrais titres/albums/artistes dans votre bibliothèque, avec des playlists d'exemple et un an d'historique d'écoute fictif (mais cohérent) pour alimenter les statistiques. Désactiver supprime tout ce qui a été ajouté, y compris l'historique d'écoute généré. Disponible uniquement en développement.",
+        "on": "Données d'exemple chargées.",
+        "off": "Données d'exemple supprimées."
       }
     }
   },

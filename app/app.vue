@@ -114,6 +114,7 @@ button[filled], a[filled], p[filled] {
 	text-decoration: none;
 	font-size: inherit;
 	padding: 0.6em 3.0em;
+	white-space: nowrap;
 	transition: background 0.25s ease-out, opacity 0.15s ease-out, color 0.15s ease-out;
 }
 

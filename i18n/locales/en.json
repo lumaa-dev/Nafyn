@@ -102,10 +102,12 @@
     "title": "Settings",
     "categories": {
       "profile": "Profile",
+      "appearance": "Appearance",
       "accounts": "Accounts",
       "storage": "Storage",
       "subsonic": "Subsonic",
-      "privacy": "Privacy"
+      "privacy": "Privacy",
+      "developer": "Developer"
     },
     "profile": {
       "title": "Profile",
@@ -206,6 +208,22 @@
         "note": "Permanently erases every play, every statistic, every Replay Mix and every year-end summary. This cannot be undone.",
         "confirm": "Permanently delete your entire listening history? This cannot be undone.",
         "done": "Your listening history has been deleted."
+      }
+    },
+    "appearance": {
+      "title": "Appearance",
+      "fileSize": "Show file size in track lists",
+      "fileSizeLocked": "Only available to accounts with the Manage music permission.",
+      "duration": "Show track duration in track lists"
+    },
+    "developer": {
+      "title": "Developer",
+      "sampleData": {
+        "title": "Sample data",
+        "label": "Fill my library with sample data",
+        "note": "Loads a fixed catalog of real songs/albums/artists into your library, along with a batch of sample playlists and a year of fake (but consistent) listening history to populate Insights. Turning this off removes everything it added, including the listening history it generated. Only available in development.",
+        "on": "Sample data loaded.",
+        "off": "Sample data removed."
       }
     }
   },

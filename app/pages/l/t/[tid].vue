@@ -19,7 +19,8 @@
     </div>
 
     <p class="details">
-      <span v-if="track.duration > 0">{{ formatDuration(track.duration) }}</span>
+      <span v-if="appearance.showDuration && track.duration > 0">{{ formatDuration(track.duration) }}</span>
+      <span v-if="appearance.showFileSize && track.fileSize != null"> &middot; {{ formatBytes(track.fileSize) }}</span>
       <span v-if="track.releaseDate"> &middot; {{ formatDate(track.releaseDate * 1000) }}</span>
       <span v-if="track.label"> &middot; ℗ {{ track.label }}</span>
       <span> &middot; <a :href="`https://musicbrainz.org/recording/${track.musicbrainzId}`">{{ $t('track.viewInMusicbrainz') }}</a></span>
@@ -35,10 +36,12 @@ import type { MediaRow } from '~~/server/core/library';
 import noCover from '~/assets/no-cover.png';
 import PlaylistPickerModal from '~/components/PlaylistPickerModal.vue';
 import MediaEditModal from '~/components/MediaEditModal.vue';
+import { useAppearanceSettings } from '~/composables/useAppearanceSettings';
 
 const { locale } = useI18n();
 const tid = useRoute().params.tid as string;
 const token = useCookie("nafynToken").value;
+const appearance = useAppearanceSettings();
 
 const { data: track } = await useAsyncData<MediaRow>(`library-track-${tid}`, () => {
   return token
@@ -69,11 +72,6 @@ function formatDate(date: string | number | Date): string {
   return new Date(date).toLocaleDateString(locale.value, { year: "numeric", month: "long", day: "numeric" });
 }
 
-function formatDuration(seconds: number): string {
-  const minutes = Math.floor(seconds / 60);
-  const rest = Math.floor(seconds % 60);
-  return `${minutes}:${rest.toString().padStart(2, "0")}`;
-}
 </script>
 
 <style scoped>
@@ -154,6 +152,10 @@ function formatDuration(seconds: number): string {
 
   .track .head .cover {
     margin: 0 auto;
+  }
+
+  .track .actions {
+    flex-wrap: wrap;
   }
 }
 </style>

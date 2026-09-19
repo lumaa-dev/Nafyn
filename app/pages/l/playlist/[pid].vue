@@ -78,7 +78,8 @@
           <span class="artist">{{ entry.media.artistName }}</span>
         </span>
         <span class="addedBy" v-if="detail.members.length > 0">{{ entry.addedBy?.displayName ?? entry.addedBy?.username }}</span>
-        <span class="duration">{{ formatDuration(entry.media.duration) }}</span>
+        <span class="filesize" v-if="appearance.showFileSize">{{ entry.media.fileSize != null ? formatBytes(entry.media.fileSize) : '—' }}</span>
+        <span class="duration" v-if="appearance.showDuration">{{ formatDuration(entry.media.duration) }}</span>
 
         <button type="button" class="ellipsis" @click.stop="onRowEllipsis($event, entry)" :aria-label="$t('playlist.removeTrack')" v-if="viewer.userId">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
@@ -143,6 +144,7 @@ import noCover from '~/assets/no-cover.png';
 import ContextMenu, { type ContextMenuItem } from '~/components/ContextMenu.vue';
 import AddTracksModal from '~/components/AddTracksModal.vue';
 import Modal from '~/components/Modal.vue';
+import { useAppearanceSettings } from '~/composables/useAppearanceSettings';
 
 interface CompactUser {
   id: string;
@@ -174,6 +176,7 @@ interface PlaylistDetail {
 const route = useRoute();
 const pid = route.params.pid as string;
 const token = useCookie("nafynToken").value ?? "";
+const appearance = useAppearanceSettings();
 
 interface PlaylistEntry {
   entryId: string;
@@ -283,12 +286,6 @@ function shuffleAll() {
   if (ordered.length === 0) return;
   const shuffled = [...ordered].sort(() => Math.random() - 0.5);
   play(shuffled[0]!, shuffled, { type: "playlist", refId: pid });
-}
-
-function formatDuration(seconds: number): string {
-  const minutes = Math.floor(seconds / 60);
-  const rest = Math.floor(seconds % 60);
-  return `${minutes}:${rest.toString().padStart(2, "0")}`;
 }
 
 // add tracks
@@ -692,6 +689,12 @@ function sendError(e: unknown) {
   color: #666666;
 }
 
+.playlistpage .tracks .filesize {
+  color: #666666;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.7em;
+}
+
 .playlistpage .tracks .duration {
   color: #666666;
   font-variant-numeric: tabular-nums;
@@ -769,7 +772,8 @@ function sendError(e: unknown) {
     width: calc(50% - 3.5px);
   }
 
-  .playlistpage .tracks .addedBy {
+  .playlistpage .tracks .addedBy,
+  .playlistpage .tracks .filesize {
     display: none;
   }
 }

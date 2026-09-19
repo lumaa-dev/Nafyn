@@ -90,6 +90,10 @@ async function resolveTargets(client: MusicBrainzApi, musicbrainzId: string, typ
         // the file's tags must be the one the user was looking at when they requested the track
         const release = pickCanonicalRelease(recording.releases);
         const credit = recording["artist-credit"]?.[0]?.artist;
+        // this recording's position within the picked release's tracklist, when the release carries one
+        const trackNumber = release?.media
+            ?.flatMap((medium) => medium.tracks ?? [])
+            .find((track) => track.recording?.id === recording.id)?.position ?? null;
 
         // albumId must be the release-*group* MBID (not the release's own ID) so the library's
         // "album" grouping links back to a valid /api/v1/album/{aid} target
@@ -101,7 +105,7 @@ async function resolveTargets(client: MusicBrainzApi, musicbrainzId: string, typ
             album: release?.title ?? null,
             albumId: release?.["release-group"]?.id ?? "unknown-album",
             albumType: null,
-            trackNumber: null,
+            trackNumber,
             releaseDate: parseReleaseDate(recording["first-release-date"]),
             duration: recording.length ? Math.round(recording.length / 1000) : 0,
             label: null,
@@ -309,6 +313,12 @@ async function downloadTrack(
             // since those commonly share the same runtime - that case is already filtered out of the candidate
             // list before we ever get here (see isExcludedVersion), so trusting duration at this point is safe.
             const check = await verifyRecordingMatch(tempPath, target.recordingId);
+
+            // MusicBrainz has no duration for every recording; when it didn't give us one, the fpcalc-probed
+            // length of the actual downloaded audio is the only real source of truth left. Done before the
+            // delta check below so a missing MusicBrainz duration never masquerades as a mismatch.
+            if (target.duration <= 0 && check.duration > 0) target.duration = check.duration;
+
             const durationDelta = Math.abs(check.duration - target.duration);
 
             if (!check.verified) {
@@ -358,7 +368,8 @@ async function downloadTrack(
                 label: target.label,
                 fingerprint: check.fingerprint,
                 amId: target.amId,
-                fileSize: null
+                fileSize: null,
+                trackNumber: target.trackNumber
             });
             if (!reusableMedia) insertedMediaId = media.id;
 

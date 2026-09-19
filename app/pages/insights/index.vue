@@ -87,19 +87,15 @@
           </div>
 
           <InsightsEnoughDataGate :gate="monthly.gate">
-            <section class="subsection">
-              <h2>{{ $t('insights.top.artist') }}</h2>
-              <ChartsBarChart :items="barItems(monthly.top.artist, 'minutes')" />
-            </section>
-
-            <section class="subsection">
-              <h2>{{ $t('insights.top.track') }}</h2>
-              <ChartsBarChart :items="barItems(monthly.top.track, 'plays')" />
-            </section>
-
-            <section class="subsection">
-              <h2>{{ $t('insights.top.album') }}</h2>
-              <ChartsBarChart :items="barItems(monthly.top.album, 'minutes')" />
+            <section v-for="type in entityTypes" :key="type" class="subsection">
+              <h2>{{ $t(`insights.top.${type}`) }}</h2>
+              <InsightsTopEntityList
+                v-if="monthly.top[type].length"
+                :entities="monthly.top[type].slice(0, 5)"
+                :metric="type === 'track' ? 'plays' : 'minutes'"
+                show-cover
+              />
+              <p v-else class="empty">{{ $t('insights.empty') }}</p>
             </section>
 
             <section class="subsection">
@@ -183,8 +179,6 @@
 
 <script lang="ts" setup>
 import { syncHistorySetting, useHistoryEnabled, onInsightsUpdated } from '~/composables/usePlayTracking';
-import type { RankedEntity } from '~/components/insights/TopEntityList.vue';
-import type { BarItem } from '~/components/charts/BarChart.vue';
 import { downloadShareCard } from '~/composables/useShareCard';
 
 // The insights hub. Mirrors settings.vue's shape - a sticky category nav plus one lazily-loaded panel -
@@ -222,18 +216,6 @@ const weekSeries = computed(() => weekly.value ? [
 function delta(current: number, previous: number): number | null {
   if (!previous) return null;
   return Math.round(((current - previous) / previous) * 100);
-}
-
-function barItems(entities: RankedEntity[], metric: "plays" | "minutes"): BarItem[] {
-  return entities.slice(0, 8).map((e) => ({
-    key: e.entityId,
-    label: e.title ?? $t('insights.unknownEntity'),
-    sublabel: e.subtitle,
-    value: metric === "minutes" ? e.minutes : e.playCount,
-    display: metric === "minutes"
-      ? $t('insights.metric.minutes', { count: e.minutes })
-      : $t('insights.metric.plays', { count: e.playCount })
-  }));
 }
 
 async function loadWeekly() { weekly.value = await insights.weekly(); }

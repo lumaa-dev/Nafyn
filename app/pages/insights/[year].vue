@@ -1,7 +1,7 @@
 <template>
   <div class="year-package">
     <template v-if="yearly">
-      <header class="head">
+      <div class="head">
         <p class="kicker">{{ $t('insights.yearly.kicker') }}</p>
         <h1>{{ yearly.year }}</h1>
         <p v-if="yearly.snapshot" class="frozen">
@@ -17,7 +17,7 @@
             {{ $t('insights.share.card') }}
           </button>
         </div>
-      </header>
+      </div>
 
       <InsightsEnoughDataGate :gate="yearly.gate">
         <section class="subsection">

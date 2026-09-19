@@ -48,6 +48,7 @@ defineExpose({ close });
   width: 320px;
   max-height: 70vh;
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   gap: 14px;

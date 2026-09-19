@@ -45,6 +45,25 @@
         </section>
       </div>
 
+      <div v-else-if="activeCategory === 'appearance'" class="panel">
+        <h1>{{ $t('settings.appearance.title') }}</h1>
+
+        <section class="subsection">
+          <label class="switch-row">
+            <input type="checkbox" :checked="appearance.showFileSize" :disabled="!canManageMusic" @change="toggleFileSize">
+            {{ $t('settings.appearance.fileSize') }}
+          </label>
+          <p v-if="!canManageMusic" class="subsonic-note">{{ $t('settings.appearance.fileSizeLocked') }}</p>
+        </section>
+
+        <section class="subsection">
+          <label class="switch-row">
+            <input type="checkbox" :checked="appearance.showDuration" @change="toggleDuration">
+            {{ $t('settings.appearance.duration') }}
+          </label>
+        </section>
+      </div>
+
       <div v-else-if="activeCategory === 'accounts'" class="panel">
         <h1>{{ $t('settings.accounts.title') }}</h1>
 
@@ -221,6 +240,18 @@
           <button type="button" filled="hollow" class="danger" :disabled="deletingHistory" @click="deleteHistory">{{ $t('settings.privacy.delete.button') }}</button>
         </section>
       </div>
+      <div v-else-if="activeCategory === 'developer'" class="panel">
+        <h1>{{ $t('settings.developer.title') }}</h1>
+
+        <section class="subsection">
+          <h2>{{ $t('settings.developer.sampleData.title') }}</h2>
+          <label class="switch-row">
+            <input type="checkbox" v-model="sampleDataEnabled" :disabled="togglingSampleData" @change="toggleSampleData">
+            {{ $t('settings.developer.sampleData.label') }}
+          </label>
+          <p class="subsonic-note">{{ $t('settings.developer.sampleData.note') }}</p>
+        </section>
+      </div>
     </section>
   </div>
 </template>
@@ -231,11 +262,12 @@ import { hasPermission, Permission } from '~~/server/entity/Permission';
 import type { RegisterTokenRow } from '~~/server/core/registerTokens';
 import type { ApiTokenSummary, ApiTokenRow } from '~~/server/core/apiTokens';
 import { syncHistorySetting, useHistoryEnabled, setHistoryEnabledState } from '~/composables/usePlayTracking';
+import { useAppearanceSettings, syncAppearanceSettings, setAppearanceSetting } from '~/composables/useAppearanceSettings';
 
 const token = useCookie("nafynToken").value ?? "";
 
 interface Category {
-  id: "profile" | "accounts" | "storage" | "subsonic" | "privacy",
+  id: "profile" | "accounts" | "storage" | "subsonic" | "privacy" | "appearance" | "developer",
   label: string
 }
 
@@ -258,10 +290,14 @@ const isAdmin = computed(() => hasPermission(perms.value, Permission.ADMIN));
 
 const categories = computed(() => {
   const cats: Category[] = [{ id: 'profile', label: $t('settings.categories.profile') }];
+  cats.push({ id: 'appearance', label: $t('settings.categories.appearance') });
   cats.push({ id: 'privacy', label: $t('settings.categories.privacy') });
   if (canManageAccounts.value) cats.push({ id: 'accounts', label: $t('settings.categories.accounts') });
   if (canManageMusic.value) cats.push({ id: 'storage', label: $t('settings.categories.storage') });
   cats.push({ id: 'subsonic', label: $t('settings.categories.subsonic') });
+  // the sample-data toggle only exists in dev builds - import.meta.dev is compiled away entirely in a
+  // production build, so this branch (and the panel it guards) doesn't even ship
+  if (import.meta.dev) cats.push({ id: 'developer', label: $t('settings.categories.developer') });
   return cats;
 });
 
@@ -435,17 +471,6 @@ function logout() {
 
 function formatDate(date: string | number | Date): string {
   return new Date(date).toLocaleString();
-}
-
-function formatBytes(bytes: number): string {
-  const units = ["B", "KB", "MB", "GB", "TB"];
-  let value = bytes;
-  let unitIndex = 0;
-  while (value >= 1024 && unitIndex < units.length - 1) {
-    value /= 1024;
-    unitIndex++;
-  }
-  return `${value.toFixed(1)} ${units[unitIndex]}`;
 }
 
 // -- accounts panel --
@@ -632,6 +657,32 @@ function onPieHover(e: MouseEvent) {
   hoveredUserIndex.value = index === -1 ? null : index;
 }
 
+// -- appearance panel --
+
+const appearance = useAppearanceSettings();
+
+async function loadAppearancePanel() {
+  await syncAppearanceSettings();
+}
+
+async function toggleFileSize(e: Event) {
+  const checked = (e.target as HTMLInputElement).checked;
+  try {
+    await setAppearanceSetting({ showFileSize: checked });
+  } catch {
+    sendToast($t('settings.appearance.title'), $t('settings.profile.error'), false);
+  }
+}
+
+async function toggleDuration(e: Event) {
+  const checked = (e.target as HTMLInputElement).checked;
+  try {
+    await setAppearanceSetting({ showDuration: checked });
+  } catch {
+    sendToast($t('settings.appearance.title'), $t('settings.profile.error'), false);
+  }
+}
+
 // -- privacy panel (listening history) --
 
 const insights = useInsights();
@@ -702,11 +753,48 @@ async function deleteHistory() {
   }
 }
 
+// -- developer panel (sample data) --
+
+const sampleDataEnabled = ref(false);
+const togglingSampleData = ref(false);
+
+async function loadDeveloperPanel() {
+  try {
+    const state = await $fetch<{ enabled: boolean }>("/api/v1/user/sample-data", {
+      headers: { Authorization: token }
+    });
+    sampleDataEnabled.value = state.enabled;
+  } catch {
+    // dev-only endpoint; nothing useful to show if it's unreachable
+  }
+}
+
+async function toggleSampleData() {
+  const wanted = sampleDataEnabled.value;
+  togglingSampleData.value = true;
+  try {
+    const result = await $fetch<{ enabled: boolean }>("/api/v1/user/sample-data", {
+      method: "POST",
+      headers: { Authorization: token },
+      body: { enabled: wanted }
+    });
+    sampleDataEnabled.value = result.enabled;
+    sendToast($t('settings.developer.title'), wanted ? $t('settings.developer.sampleData.on') : $t('settings.developer.sampleData.off'));
+  } catch (e) {
+    sampleDataEnabled.value = !wanted;
+    sendToast($t('settings.developer.title'), (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error'), false);
+  } finally {
+    togglingSampleData.value = false;
+  }
+}
+
 watch(activeCategory, async (cat) => {
   if (cat === 'accounts' && users.value.length === 0) await loadAccountsPanel();
   if (cat === 'storage' && !storage.value) await loadStoragePanel();
   if (cat === 'subsonic' && apiTokens.value.length === 0) await loadApiTokens();
   if (cat === 'privacy') await loadPrivacyPanel();
+  if (cat === 'appearance') await loadAppearancePanel();
+  if (cat === 'developer') await loadDeveloperPanel();
 });
 </script>
 

@@ -9,8 +9,8 @@
           <span class="artist">{{ track.artistName }}</span>
         </span>
         <NuxtLink v-if="track.album" :to="`/l/a/${track.albumId}`" class="album" @click.stop>{{ track.album }}</NuxtLink>
-        <span class="filesize" v-if="canSeeFileSize">{{ track.fileSize != null ? formatBytes(track.fileSize) : '—' }}</span>
-        <span class="duration">{{ formatDuration(track.duration) }}</span>
+        <span class="filesize" v-if="appearance.showFileSize">{{ track.fileSize != null ? formatBytes(track.fileSize) : '—' }}</span>
+        <span class="duration" v-if="appearance.showDuration">{{ formatDuration(track.duration) }}</span>
         <button type="button" class="ellipsis" @click.stop="onEllipsis($event, track)" :aria-label="$t('playlist.addToPlaylist')">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
         </button>
@@ -28,33 +28,14 @@
 
 <script lang="ts" setup>
 import type { MediaRow } from '~~/server/core/library';
-import type { NafynUser } from '~~/server/entity/NafynUser';
-import { hasPermission, Permission } from '~~/server/entity/Permission';
 import noCover from '~/assets/no-cover.png';
 import ContextMenu, { type ContextMenuItem } from '~/components/ContextMenu.vue';
 import PlaylistPickerModal from '~/components/PlaylistPickerModal.vue';
 import MediaEditModal from '~/components/MediaEditModal.vue';
+import { useAppearanceSettings } from '~/composables/useAppearanceSettings';
 
 const token = useCookie("nafynToken").value;
-
-const { data: me } = await useAsyncData<NafynUser | null>("me-tracks", () => {
-  return token ? $fetch("/api/v1/user/me", { headers: { Authorization: token } }) : Promise.resolve(null);
-});
-const canSeeFileSize = computed(() => {
-  const perms = typeof me.value?.permissions === "number" ? me.value.permissions : 0;
-  return hasPermission(perms, Permission.MANAGE_MUSIC) || hasPermission(perms, Permission.ADMIN);
-});
-
-function formatBytes(bytes: number): string {
-  const units = ["B", "KB", "MB", "GB", "TB"];
-  let value = bytes;
-  let unitIndex = 0;
-  while (value >= 1024 && unitIndex < units.length - 1) {
-    value /= 1024;
-    unitIndex++;
-  }
-  return `${value.toFixed(1)} ${units[unitIndex]}`;
-}
+const appearance = useAppearanceSettings();
 
 const { items: tracks, initialLoading, loadingMore, sentinel, loadMore, reset } = useInfiniteList<MediaRow>((page, limit) => {
   return token
@@ -65,12 +46,6 @@ await loadMore();
 
 const { currentTrack, play } = usePlayer();
 const { errorToast, sendToast } = useToast();
-
-function formatDuration(seconds: number): string {
-  const minutes = Math.floor(seconds / 60);
-  const rest = Math.floor(seconds % 60);
-  return `${minutes}:${rest.toString().padStart(2, "0")}`;
-}
 
 const showPicker = ref(false);
 const pickerMediaIds = ref<string[]>([]);

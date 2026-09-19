@@ -10,7 +10,8 @@
         </span>
         <span class="owners">{{ track.owners.map(o => o.username).join(', ') }}</span>
         <NuxtLink v-if="track.album" :to="`/a/${track.albumId}`" class="album" @click.stop>{{ track.album }}</NuxtLink>
-        <span class="duration">{{ formatDuration(track.duration) }}</span>
+        <span class="filesize" v-if="appearance.showFileSize">{{ track.fileSize != null ? formatBytes(track.fileSize) : '—' }}</span>
+        <span class="duration" v-if="appearance.showDuration">{{ formatDuration(track.duration) }}</span>
         <button type="button" class="ellipsis" @click.stop="onEllipsis($event, track)" :aria-label="$t('playlist.addToPlaylist')">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
         </button>
@@ -29,6 +30,7 @@
 import noCover from '~/assets/no-cover.png';
 import ContextMenu, { type ContextMenuItem } from '~/components/ContextMenu.vue';
 import PlaylistPickerModal from '~/components/PlaylistPickerModal.vue';
+import { useAppearanceSettings } from '~/composables/useAppearanceSettings';
 
 interface AllMediaRow {
   id: string;
@@ -38,10 +40,12 @@ interface AllMediaRow {
   albumId: string;
   coverArt: string | null;
   duration: number;
+  fileSize: number | null;
   owners: { userId: string; username: string }[];
 }
 
 const token = useCookie("nafynToken").value;
+const appearance = useAppearanceSettings();
 
 const { items: tracks, initialLoading, loadingMore, sentinel, loadMore, reset } = useInfiniteList<AllMediaRow>((page, limit) => {
   return token
@@ -51,12 +55,6 @@ const { items: tracks, initialLoading, loadingMore, sentinel, loadMore, reset } 
 await loadMore();
 
 const { errorToast, sendToast } = useToast();
-
-function formatDuration(seconds: number): string {
-  const minutes = Math.floor(seconds / 60);
-  const rest = Math.floor(seconds % 60);
-  return `${minutes}:${rest.toString().padStart(2, "0")}`;
-}
 
 const showPicker = ref(false);
 const pickerMediaIds = ref<string[]>([]);
@@ -192,6 +190,13 @@ async function deleteTrack(track: AllMediaRow, ownerId: string) {
   color: #666666;
 }
 
+.libtracks .tracks .filesize {
+  color: #666666;
+  font-variant-numeric: tabular-nums;
+  font-family: "Discy";
+  font-size: 0.7em;
+}
+
 .libtracks .tracks .duration {
   color: #666666;
   font-variant-numeric: tabular-nums;
@@ -216,7 +221,7 @@ async function deleteTrack(track: AllMediaRow, ownerId: string) {
     width: 90vw;
   }
 
-  .libtracks .tracks .album, .libtracks .tracks .owners {
+  .libtracks .tracks .album, .libtracks .tracks .owners, .libtracks .tracks .filesize {
     display: none;
   }
 

@@ -211,6 +211,16 @@ export async function initDatabases(): Promise<void> {
             lastUsedAt BIGINT,
             INDEX idx_api_tokens_userId (userId)
         );
+
+        -- per-user display preferences, kept off \`users\` for the same reason as user_insight_settings:
+        -- updateUser() is a fixed-column read-modify-write, so a new column there needs both its SELECT-merge
+        -- and its SET clause touched or the value silently reverts on the next profile edit. Absent row means
+        -- both preferences default on.
+        CREATE TABLE IF NOT EXISTS user_appearance_settings (
+            userId VARCHAR(36) PRIMARY KEY,
+            showFileSize TINYINT(1) NOT NULL DEFAULT 1,
+            showDuration TINYINT(1) NOT NULL DEFAULT 1
+        );
     `);
 
     const requests = getRequestsDb();

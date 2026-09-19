@@ -328,10 +328,20 @@ export async function jobYearSnapshot(nowMs: number): Promise<void> {
     });
 }
 
-/** drains queued highlight-reel renders. Period-keyed by the hour so a stuck render can't wedge it forever. */
-export async function jobReelRender(nowMs: number): Promise<void> {
-    const periodKey = new Date(nowMs).toISOString().slice(0, 13);
-    await runJob("reel-render", periodKey, async () => { await renderQueuedReels(); });
+/**
+ * Drains queued highlight-reel renders.
+ *
+ * Deliberately NOT run through runJob()'s once-per-period claim: that protocol is for periodic aggregation
+ * work, where re-running an already-'done' period is wasteful-but-harmless. A render request is the opposite
+ * - it's user-initiated and there's nothing periodic about it, so gating it behind a period key (this used to
+ * be hour-keyed) means the very first tick of an hour that finds nothing queued marks that hour 'done', and
+ * every render someone queues for the rest of that hour then sits at "queued" doing nothing until the next
+ * hour boundary. renderQueuedReels() is a single indexed SELECT when the queue is empty and already guards
+ * against overlapping renders itself (the module-level `rendering` flag, plus the DB row flipping to
+ * 'rendering' the moment one starts), so it is safe - and is the point - to just call it every tick.
+ */
+export async function jobReelRender(): Promise<void> {
+    await renderQueuedReels();
 }
 
 export async function jobRetentionPrune(nowMs: number): Promise<void> {
@@ -374,7 +384,7 @@ export async function tickInsightsJobs(nowMs: number = Date.now()): Promise<void
     if (hour === 4 && minute >= 30 && minute < 35) await jobRetentionPrune(nowMs);
 
     // every tick: renders are user-initiated and shouldn't wait for a scheduled slot
-    await jobReelRender(nowMs);
+    await jobReelRender();
 }
 
 /** on-demand refresh for one user - used after a manual "recompute my insights" request */

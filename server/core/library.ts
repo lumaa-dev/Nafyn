@@ -233,15 +233,15 @@ export async function getAlbumOfUser(userId: string, albumId: string): Promise<A
 // media (shared pool), and the Subsonic layer needs it for content-type/size/streaming
 export type SubsonicSong = MediaRow & { filePath: string };
 
-// every owned track from one album, for the Subsonic layer's getAlbum - track order falls back to title
-// since trackNumber is only ever embedded in the audio file's own tags, never persisted on the media row
+// every owned track from one album, for the Subsonic layer's getAlbum and the library album view - ordered
+// by trackNumber when known, falling back to title for rows without one (manual imports, older downloads)
 export async function getAlbumSongsOfUser(userId: string, albumId: string): Promise<SubsonicSong[]> {
     return await getLibrariesDb().prepare(`
         SELECT media.*, library_entries.filePath AS filePath
         FROM library_entries
         JOIN media ON media.id = library_entries.mediaId
         WHERE library_entries.userId = ? AND media.albumId = ?
-        ORDER BY media.title ASC, media.id ASC
+        ORDER BY media.trackNumber IS NULL, media.trackNumber ASC, media.title ASC, media.id ASC
     `).all(userId, albumId) as SubsonicSong[];
 }
 
