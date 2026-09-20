@@ -4,7 +4,7 @@ import { isSampleDataEnabled } from "~~/server/core/sampleData";
 
 defineRouteMeta({
     openAPI: {
-        description: "Dev-mode only. Whether the requesting user currently has sample data loaded.",
+        description: "Dev-mode only.",
         tags: ["user"],
         operationId: "getSampleDataState",
         responses: {

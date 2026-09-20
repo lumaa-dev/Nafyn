@@ -3,7 +3,7 @@ import { enableSampleData, disableSampleData, isSampleDataEnabled } from "~~/ser
 
 defineRouteMeta({
     openAPI: {
-        description: "Dev-mode only. Fills (or clears) the requesting user's library, playlists and listening insights with a fixed catalog of real sample tracks.",
+        description: "Dev-mode only.",
         tags: ["user"],
         operationId: "setSampleDataState",
         requestBody: {
