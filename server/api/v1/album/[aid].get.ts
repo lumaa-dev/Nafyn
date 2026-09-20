@@ -7,6 +7,7 @@ import type { ArtistInfo } from "~~/server/entity/media/ArtistInfo";
 import { findLibraryEntry, findMediaByMusicbrainzId } from "~~/server/core/library";
 import { hasActiveRequest } from "~~/server/core/requests";
 import { assertMbid } from "~~/server/utils/ids";
+import { getImageColors } from "~~/server/utils/imageColors";
 
 defineRouteMeta({
     openAPI: {
@@ -88,7 +89,7 @@ defineRouteMeta({
                     },
                     AlbumDetail: {
                         type: "object",
-                        required: ["id", "releaseId", "title", "artist", "type", "coverArt", "releaseDate", "description", "label", "tracks"],
+                        required: ["id", "releaseId", "title", "artist", "type", "coverArt", "imageColors", "textColor", "releaseDate", "description", "label", "tracks"],
                         properties: {
                             id: { type: "string", description: "MusicBrainz release-group ID" },
                             releaseId: { type: "string", description: "MusicBrainz release ID for the selected release" },
@@ -102,6 +103,8 @@ defineRouteMeta({
                             },
                             type: { type: "string", enum: ["album", "ep"], nullable: true },
                             coverArt: { type: "string", nullable: true },
+                            imageColors: { type: "array", items: { type: "string" }, description: "Dominant colors extracted from `coverArt`, most-dominant first" },
+                            textColor: { type: "string", description: "Black or white, whichever contrasts best (WCAG) against `imageColors[0]`" },
                             releaseDate: { type: "string", format: "date-time", nullable: true },
                             description: { type: "string", nullable: true },
                             label: { type: "string", nullable: true },
@@ -173,13 +176,18 @@ export default defineEventHandler(async (event): Promise<AlbumDetail> => {
         }
     }
 
+    const coverArt = `https://coverartarchive.org/release-group/${releaseGroup.id}/front-500`;
+    const { imageColors, textColor } = await getImageColors({ coverArtUrl: coverArt });
+
     return {
         id: releaseGroup.id,
         releaseId: release.id,
         title: releaseGroup.title,
         artist,
         type,
-        coverArt: `https://coverartarchive.org/release-group/${releaseGroup.id}/front-500`,
+        coverArt,
+        imageColors,
+        textColor,
         releaseDate,
         description: releaseGroup.disambiguation || null,
         label,

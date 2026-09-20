@@ -1,4 +1,5 @@
 import { getAlbumOfUser, getAlbumSongsOfUser } from "~~/server/core/library";
+import { getImageColors } from "~~/server/utils/imageColors";
 
 defineRouteMeta({
     openAPI: {
@@ -23,7 +24,20 @@ defineRouteMeta({
                             type: "object",
                             required: ["album", "tracks"],
                             properties: {
-                                album: { $ref: "#/components/schemas/AlbumRow" },
+                                album: {
+                                    type: "object",
+                                    allOf: [
+                                        { $ref: "#/components/schemas/AlbumRow" },
+                                        {
+                                            type: "object",
+                                            required: ["imageColors", "textColor"],
+                                            properties: {
+                                                imageColors: { type: "array", items: { type: "string" }, description: "Dominant colors extracted from the album's cover art, most-dominant first" },
+                                                textColor: { type: "string", description: "Black or white, whichever contrasts best (WCAG) against `imageColors[0]`" }
+                                            }
+                                        }
+                                    ]
+                                },
                                 tracks: { type: "array", items: { $ref: "#/components/schemas/MediaRow" } }
                             }
                         }
@@ -59,6 +73,12 @@ export default defineEventHandler(async (event) => {
     if (!album) throw createError({ statusCode: 404, statusMessage: "No owned album with ID " + albumId });
 
     const tracks = await getAlbumSongsOfUser(userId, albumId);
+
+    const { imageColors, textColor } = await getImageColors({
+        coverArtUrl: album.coverArt,
+        customCoverMediaId: album.coverMediaId
+    });
+
     // filePath is an internal disk path, not for the client
-    return { album, tracks: tracks.map(({ filePath: _filePath, ...track }) => track) };
+    return { album: { ...album, imageColors, textColor }, tracks: tracks.map(({ filePath: _filePath, ...track }) => track) };
 });

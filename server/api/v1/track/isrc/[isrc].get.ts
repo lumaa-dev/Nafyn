@@ -1,6 +1,7 @@
 import { getMusicBrainzClient, parseReleaseDate } from "~~/server/utils/musicbrainz";
 import type { MediaInfo } from "~~/server/entity/media/MediaInfo";
 import type { ArtistInfo } from "~~/server/entity/media/ArtistInfo";
+import { getImageColors } from "~~/server/utils/imageColors";
 
 const MAX_ATTEMPTS = 30;
 const WINDOW_MS = 60 * 1000;
@@ -101,13 +102,18 @@ export default defineEventHandler(async (event) => {
         ? { name: credit.name, musicbrainzId: credit.id, description: null, image: null }
         : "Unknown Artist";
 
+    const coverArt = release?.id ? `https://coverartarchive.org/release/${release.id}/front-250` : null;
+    const { imageColors, textColor } = await getImageColors({ coverArtUrl: coverArt });
+
     const media: MediaInfo = {
         id: recording.id,
         title: recording.title,
         artist,
         album: release ? { id: albumMbid, type: null, title: release.title } : null,
         type: "track",
-        coverArt: release?.id ? `https://coverartarchive.org/release/${release.id}/front-250` : null,
+        coverArt,
+        imageColors,
+        textColor,
         releaseDate: parseReleaseDate(recording["first-release-date"]),
         inLibrary: null,
         duration: recording.length ? Math.round(recording.length / 1000) : 0,

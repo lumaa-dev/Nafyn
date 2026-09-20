@@ -121,12 +121,51 @@ export interface PlayerState {
 
 let audioEl: HTMLAudioElement | null = null;
 
+// Web Audio analyser tapped off the shared <audio> element, used by NowPlaying's background gradient to
+// pulse with the actual bass energy of whatever is playing rather than a guessed BPM. Lazily created once
+// per audioEl - createMediaElementSource can only ever be called once for a given element.
+let audioCtx: AudioContext | null = null;
+let analyserNode: AnalyserNode | null = null;
+let analyserData: Uint8Array<ArrayBuffer> | null = null;
+
+function ensureAnalyser(el: HTMLAudioElement) {
+    if (analyserNode || !import.meta.client) return;
+    try {
+        const source = new AudioContext();
+        const node = source.createMediaElementSource(el);
+        const analyser = source.createAnalyser();
+        analyser.fftSize = 256;
+        analyser.smoothingTimeConstant = 0.8;
+        // the source must stay connected through to the destination, or the element goes silent - the
+        // analyser only taps the signal, it doesn't replace the normal output path
+        node.connect(analyser);
+        analyser.connect(source.destination);
+        audioCtx = source;
+        analyserNode = analyser;
+        analyserData = new Uint8Array(new ArrayBuffer(analyser.frequencyBinCount));
+    } catch {
+        analyserNode = null;
+    }
+}
+
+// 0..1 average energy of the low-frequency bins ("bass") for the current playback instant - a cheap,
+// dependency-free stand-in for real beat detection that still moves in time with the actual audio
+export function getBassLevel(): number {
+    if (!analyserNode || !analyserData) return 0;
+    analyserNode.getByteFrequencyData(analyserData);
+    const bassBins = 8;
+    let sum = 0;
+    for (let i = 0; i < bassBins; i++) sum += analyserData[i] ?? 0;
+    return sum / bassBins / 255;
+}
+
 function getAudioEl(state: PlayerState): HTMLAudioElement {
     if (audioEl) return audioEl;
 
     audioEl = new Audio();
     audioEl.preload = "metadata";
     audioEl.volume = state.volume;
+    ensureAnalyser(audioEl);
 
     audioEl.addEventListener("timeupdate", () => {
         state.currentTime = audioEl!.currentTime;
@@ -138,6 +177,7 @@ function getAudioEl(state: PlayerState): HTMLAudioElement {
         state.isPlaying = true;
         if (segment && segment.lastResumeMs === null) segment.lastResumeMs = Date.now();
         if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "playing";
+        if (audioCtx?.state === "suspended") audioCtx.resume().catch(() => {});
     });
     audioEl.addEventListener("pause", () => {
         state.isPlaying = false;

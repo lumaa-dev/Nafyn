@@ -122,6 +122,8 @@ defineRouteMeta({
                             },
                             type: { type: "string", enum: ["album", "ep", "track"], nullable: true },
                             coverArt: { type: "string", nullable: true },
+                            imageColors: { type: "array", items: { type: "string" }, description: "Dominant colors extracted from `coverArt`, most-dominant first; only present on single-item lookups (getTrack/getTrackByIsrc)" },
+                            textColor: { type: "string", description: "Black or white, whichever contrasts best (WCAG) against `imageColors[0]`; only present alongside `imageColors`" },
                             releaseDate: { type: "string", format: "date-time", nullable: true },
                             inLibrary: { type: "boolean", nullable: true },
                             duration: { type: "number", description: "Seconds" },

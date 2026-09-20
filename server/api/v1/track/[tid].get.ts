@@ -5,6 +5,7 @@ import type { ArtistInfo } from "~~/server/entity/media/ArtistInfo";
 import { IRecording } from "musicbrainz-api";
 import { assertMbid } from "~~/server/utils/ids";
 import { pickCanonicalRelease } from "~~/server/utils/release";
+import { getImageColors } from "~~/server/utils/imageColors";
 
 defineRouteMeta({
     openAPI: {
@@ -92,13 +93,18 @@ export default defineEventHandler(async (event) => {
 
     const amId: string | undefined = getAppleMusicTrackID(recording, release);
 
+    const coverArt = release?.id ? `https://coverartarchive.org/release/${release.id}/front-250` : null;
+    const { imageColors, textColor } = await getImageColors({ coverArtUrl: coverArt });
+
     const media: MediaInfo = {
         id: recording.id,
         title: recording.title,
         artist,
         album: release ? { id: albumMbid, type: null, title: release.title } : null,
         type: "track",
-        coverArt: release?.id ? `https://coverartarchive.org/release/${release.id}/front-250` : null,
+        coverArt,
+        imageColors,
+        textColor,
         releaseDate: parseReleaseDate(recording["first-release-date"]),
         inLibrary: null,
         duration: recording.length ? Math.round(recording.length / 1000) : 0,

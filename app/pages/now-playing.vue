@@ -1,5 +1,10 @@
 <template>
-  <div class="npp" v-if="currentTrack">
+  <div v-if="currentTrack" class="npp" :style="{ '--np-text': textColor, '--np-scrim': scrimColor }">
+    <div class="np-bg" aria-hidden="true">
+      <span v-for="(color, i) in bgColors" :key="i" :ref="setBlobRef(i)" class="blob" :style="{ background: color }" />
+      <span class="scrim" />
+    </div>
+
     <div class="left">
       <img class="cover" :src="coverSrc(currentTrack).replace('front-250', 'front-1000')" @error="($event.target as HTMLImageElement).src = noCover" draggable="false" loading="lazy" />
 
@@ -35,7 +40,7 @@
     </div>
   </div>
 
-  <div class="npp empty" v-else>
+  <div v-else class="npp empty">
     <p>{{ $t('player.nothingPlaying') }}</p>
   </div>
 </template>
@@ -45,6 +50,7 @@ import noCover from '../assets/no-cover.png';
 import { nowPlayingPanels } from '~/composables/useNowPlayingPanels';
 
 const { state, currentTrack, hasNext, hasPrev, togglePlay, next, prev, seek } = usePlayer();
+const { bgColors, textColor, scrimColor, setBlobRef } = useCoverMeshGradient();
 
 const activePanelId = ref(nowPlayingPanels[0]?.id);
 const activePanel = computed(() => nowPlayingPanels.find(p => p.id === activePanelId.value));
@@ -59,6 +65,7 @@ function formatDuration(seconds: number): string {
 
 <style scoped>
 .npp {
+  position: relative;
   display: flex;
   flex-direction: row;
   gap: 60px;
@@ -66,12 +73,47 @@ function formatDuration(seconds: number): string {
   margin: calc(15vh - 10px) auto;
   height: calc(70vh - 10px);
   padding-bottom: 0;
+  color: var(--np-text, #ffffff);
+  transition: color 0.6s ease;
 }
 
 .npp.empty {
   align-items: center;
   justify-content: center;
   color: #666666;
+}
+
+/* dominant-color mesh gradient, driven by JS (usePlayer's audio analyser) - purely decorative, sits
+   behind every control so it never gets in the way of the interface itself. Fixed to the viewport
+   (not `.npp`'s own box) so it fills the whole page top to bottom, not just the player card. */
+.npp .np-bg {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.npp .np-bg .blob {
+  position: absolute;
+  width: min(32vw, 420px);
+  height: min(32vw, 420px);
+  border-radius: 50%;
+  filter: blur(90px) saturate(160%);
+  opacity: 0.8;
+  will-change: left, top, transform, opacity;
+  transition: background 0.8s ease;
+}
+
+/* fixed-contrast tint over the blobs, below the text - keeps the page legible no matter how light/dark
+   the cover's dominant colors are */
+.npp .np-bg .scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--np-scrim, rgba(0, 0, 0, 0.6));
+  transition: background 0.6s ease;
 }
 
 .npp .left {
@@ -106,7 +148,7 @@ function formatDuration(seconds: number): string {
 
 .npp .artist {
   font-family: "Instrument-Italic";
-  color: #ffffffae;
+  color: color-mix(in srgb, var(--np-text, #ffffff) 85%, transparent);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -125,7 +167,7 @@ function formatDuration(seconds: number): string {
 }
 
 .npp .time {
-  color: #666666;
+  color: color-mix(in srgb, var(--np-text, #ffffff) 80%, transparent);
   font-variant-numeric: tabular-nums;
   font-family: "Discy";
   font-size: 0.7em;

@@ -1,4 +1,5 @@
 import { getSongOfUser } from "~~/server/core/library";
+import { getImageColors } from "~~/server/utils/imageColors";
 
 defineRouteMeta({
     openAPI: {
@@ -19,7 +20,20 @@ defineRouteMeta({
                 description: "",
                 content: {
                     "application/json": {
-                        schema: { $ref: "#/components/schemas/MediaRow" }
+                        schema: {
+                            type: "object",
+                            allOf: [
+                                { $ref: "#/components/schemas/MediaRow" },
+                                {
+                                    type: "object",
+                                    required: ["imageColors", "textColor"],
+                                    properties: {
+                                        imageColors: { type: "array", items: { type: "string" }, description: "Dominant colors extracted from the track's cover art, most-dominant first" },
+                                        textColor: { type: "string", description: "Black or white, whichever contrasts best (WCAG) against `imageColors[0]`" }
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             },
@@ -51,7 +65,12 @@ export default defineEventHandler(async (event) => {
     const song = await getSongOfUser(userId, mediaId);
     if (!song) throw createError({ statusCode: 404, statusMessage: "No owned track with ID " + mediaId });
 
+    const { imageColors, textColor } = await getImageColors({
+        coverArtUrl: song.coverArt,
+        customCoverMediaId: song.hasCustomCover ? song.id : null
+    });
+
     // filePath is an internal disk path, not for the client
     const { filePath: _filePath, ...track } = song;
-    return track;
+    return { ...track, imageColors, textColor };
 });

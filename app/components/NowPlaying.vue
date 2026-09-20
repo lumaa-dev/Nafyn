@@ -1,5 +1,10 @@
 <template>
-  <div class="now-playing" v-if="currentTrack">
+  <div v-if="currentTrack" class="now-playing" :style="{ '--np-text': textColor, '--np-scrim': scrimColor }">
+    <div class="np-bg" aria-hidden="true">
+      <span v-for="(color, i) in bgColors" :key="i" :ref="setBlobRef(i)" class="blob" :style="{ background: color }" />
+      <span class="scrim" />
+    </div>
+
     <div class="track" @click="navigateTo('/now-playing')">
       <img :src="coverSrc(currentTrack)" @error="($event.target as HTMLImageElement).src = noCover" draggable="false" loading="lazy" />
       <span class="col">
@@ -69,6 +74,8 @@ function toggleQueue() {
   showQueue.value = !showQueue.value;
 }
 
+const { bgColors, textColor, scrimColor, setBlobRef } = useCoverMeshGradient();
+
 const repeatTitle = computed(() => {
   switch (state.value.repeat) {
     case "queue":
@@ -115,6 +122,44 @@ function formatDuration(seconds: number): string {
   border-top: 1px solid #ffffff20;
   z-index: 200;
   font-size: 0.7em;
+  color: var(--np-text, #ffffff);
+  transition: color 0.6s ease;
+}
+
+/* dominant-color mesh gradient, driven by JS (usePlayer's audio analyser) - purely decorative, sits
+   behind every control so it never gets in the way of the interface itself */
+.now-playing .np-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.now-playing .np-bg .blob {
+  position: absolute;
+  width: min(38vw, 340px);
+  height: min(38vw, 340px);
+  border-radius: 50%;
+  filter: blur(70px) saturate(160%);
+  opacity: 0.8;
+  will-change: left, top, transform, opacity;
+  transition: background 0.8s ease;
+}
+
+/* fixed-contrast tint over the blobs, below the text - keeps the bar legible no matter how light/dark
+   the cover's dominant colors are */
+.now-playing .np-bg .scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--np-scrim, rgba(0, 0, 0, 0.6));
+  transition: background 0.6s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .now-playing .np-bg .blob {
+    transition: left 0.8s ease, top 0.8s ease, background 0.8s ease;
+  }
 }
 
 .now-playing .round {
@@ -182,7 +227,7 @@ button[filled="hollow"].round:not(:disabled):hover img {
 
 .now-playing .artist {
   font-size: 0.85em;
-  color: #666666;
+  color: color-mix(in srgb, var(--np-text, #ffffff) 80%, transparent);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -217,7 +262,7 @@ button[filled="hollow"].round:not(:disabled):hover img {
 }
 
 .now-playing .time {
-  color: #666666;
+  color: color-mix(in srgb, var(--np-text, #ffffff) 80%, transparent);
   font-variant-numeric: tabular-nums;
   font-family: "Discy";
   width: 2.5em;
@@ -264,6 +309,9 @@ button[filled="hollow"].round:not(:disabled):hover img {
 }
 
 .now-playing .queue {
+  /* the dropdown has its own solid near-black backdrop, independent of the gradient behind the bar
+     itself, so it keeps a fixed white text scheme rather than inheriting the cover's textColor */
+  --np-text: #ffffff;
   position: absolute;
   bottom: 110%;
   right: 30px;
@@ -317,7 +365,7 @@ button[filled="hollow"].round:not(:disabled):hover img {
 }
 
 .now-playing .queue .empty {
-  color: #666666;
+  color: color-mix(in srgb, var(--np-text, #ffffff) 60%, transparent);
   cursor: default;
   justify-content: center;
 }
