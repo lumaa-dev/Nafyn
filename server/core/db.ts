@@ -221,6 +221,14 @@ export async function initDatabases(): Promise<void> {
             showFileSize TINYINT(1) NOT NULL DEFAULT 1,
             showDuration TINYINT(1) NOT NULL DEFAULT 1
         );
+
+        -- per-user playback preferences (Settings -> Playback), off \`users\` for the same reason as above.
+        -- Absent row means crossfade on, 3000 ms.
+        CREATE TABLE IF NOT EXISTS user_playback_settings (
+            userId VARCHAR(36) PRIMARY KEY,
+            crossfadeEnabled TINYINT(1) NOT NULL DEFAULT 1,
+            crossfadeMs INT NOT NULL DEFAULT 3000
+        );
     `);
 
     const requests = getRequestsDb();

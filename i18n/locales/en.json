@@ -103,6 +103,7 @@
     "categories": {
       "profile": "Profile",
       "appearance": "Appearance",
+      "playback": "Playback",
       "accounts": "Accounts",
       "storage": "Storage",
       "subsonic": "Subsonic",
@@ -215,6 +216,15 @@
       "fileSize": "Show file size in track lists",
       "fileSizeLocked": "Only available to accounts with the Manage music permission.",
       "duration": "Show track duration in track lists"
+    },
+    "playback": {
+      "title": "Playback",
+      "crossfade": {
+        "title": "Crossfade",
+        "label": "Crossfade between songs",
+        "seconds": "{n} s",
+        "note": "Songs blend into each other at the end. Consecutive tracks of the same album (track 1 into track 2, etc.) always play without a fade, as the artist sequenced them."
+      }
     },
     "developer": {
       "title": "Developer",
