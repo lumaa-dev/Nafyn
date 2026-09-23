@@ -35,7 +35,31 @@ export default defineNuxtConfig({
     domainsWhitelist: process.env.DOMAINS_WHITELIST || '',
 
     acoustidApiKey: process.env.ACOUSTID_API_KEY || '',
-    lastfmApiKey: process.env.LASTFM_API_KEY || ''
+    lastfmApiKey: process.env.LASTFM_API_KEY || '',
+
+    // Settings -> Import: developer credentials per streaming service. A service whose credentials are
+    // missing still shows up, just greyed out (see server/utils/transfer/providers/)
+    transfer: {
+      publicUrl: process.env.NAFYN_PUBLIC_URL || '',
+      spotifyClientId: process.env.SPOTIFY_CLIENT_ID || '',
+      spotifyClientSecret: process.env.SPOTIFY_CLIENT_SECRET || '',
+      appleMusicTeamId: process.env.APPLE_MUSIC_TEAM_ID || '',
+      appleMusicKeyId: process.env.APPLE_MUSIC_KEY_ID || '',
+      appleMusicPrivateKey: process.env.APPLE_MUSIC_PRIVATE_KEY || '',
+      deezerAppId: process.env.DEEZER_APP_ID || '',
+      deezerAppSecret: process.env.DEEZER_APP_SECRET || '',
+      soundcloudClientId: process.env.SOUNDCLOUD_CLIENT_ID || '',
+      soundcloudClientSecret: process.env.SOUNDCLOUD_CLIENT_SECRET || '',
+      googleClientId: process.env.GOOGLE_CLIENT_ID || '',
+      googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+      tidalClientId: process.env.TIDAL_CLIENT_ID || '',
+      tidalClientSecret: process.env.TIDAL_CLIENT_SECRET || '',
+      amazonClientId: process.env.AMAZON_MUSIC_CLIENT_ID || '',
+      amazonClientSecret: process.env.AMAZON_MUSIC_CLIENT_SECRET || '',
+      amazonApiKey: process.env.AMAZON_MUSIC_API_KEY || '',
+      napsterApiKey: process.env.NAPSTER_API_KEY || '',
+      napsterApiSecret: process.env.NAPSTER_API_SECRET || ''
+    }
   },
 
   vite: {

@@ -103,11 +103,13 @@
     "categories": {
       "profile": "Profil",
       "appearance": "Apparence",
+      "playback": "Lecture",
       "accounts": "Comptes",
       "storage": "Stockage",
       "subsonic": "Subsonic",
       "privacy": "Confidentialité",
-      "developer": "Développeur"
+      "developer": "Développeur",
+      "import": "Importer"
     },
     "profile": {
       "title": "Profil",
@@ -215,6 +217,15 @@
       "fileSize": "Afficher la taille des fichiers dans les listes de titres",
       "fileSizeLocked": "Réservé aux comptes disposant de la permission Gérer la musique.",
       "duration": "Afficher la durée des titres dans les listes de titres"
+    },
+    "playback": {
+      "title": "Lecture",
+      "crossfade": {
+        "title": "Fondu enchaîné",
+        "label": "Fondu enchaîné entre les titres",
+        "seconds": "{n} s",
+        "note": "Les titres se fondent les uns dans les autres à la fin. Les pistes consécutives d'un même album (piste 1 vers piste 2, etc.) s'enchaînent toujours sans fondu, comme l'artiste les a agencées."
+      }
     },
     "developer": {
       "title": "Développeur",
@@ -442,5 +453,132 @@
     "importing": "Importation...",
     "done": "Ajouté à votre bibliothèque",
     "error": "Impossible d'importer ce fichier."
+  },
+  "transfer": {
+    "title": "Importer",
+    "intro": "Transférez votre musique depuis un autre service. Tout ce qui est trouvé est associé à MusicBrainz, puis téléchargé directement dans votre bibliothèque - la musique importée n'attend pas l'approbation des demandes.",
+    "noPermission": "Votre compte ne peut pas demander de musique, il ne peut donc pas en importer non plus.",
+    "unavailable": "Non configuré sur ce serveur",
+    "beta": "API en bêta fermée",
+    "import": "Importer",
+    "connecting": "Connexion...",
+    "running": "Une importation est déjà en cours.",
+    "runningLink": "La suivre",
+    "providers": {
+      "spotify": "Spotify",
+      "apple": "Apple Music",
+      "deezer": "Deezer",
+      "youtube": "YouTube Music",
+      "soundcloud": "SoundCloud",
+      "tidal": "TIDAL",
+      "amazon": "Amazon Music",
+      "napster": "Napster",
+      "file": "Depuis un fichier"
+    },
+    "fileHint": "Export CSV, JSON ou texte",
+    "fileNote": "Vous utilisez Qobuz, ou un service non configuré ici ? Exportez votre bibliothèque dans un fichier (Exportify, TuneMyMusic, Soundiiz, ou l'export de données du service) et importez-le.",
+    "history": {
+      "title": "Importations précédentes",
+      "empty": "Aucune importation pour l'instant.",
+      "remove": "Retirer",
+      "summary": "{done} importés · {failed} en échec"
+    },
+    "deezer": {
+      "title": "Importer depuis Deezer",
+      "hint": "Collez le lien de votre profil Deezer. Seul ce que votre profil affiche publiquement peut être lu : les playlists privées n'apparaîtront pas.",
+      "placeholder": "https://www.deezer.com/profile/...",
+      "continue": "Continuer",
+      "signIn": "Se connecter plutôt"
+    },
+    "file": {
+      "title": "Importer depuis un fichier",
+      "hint": "Un CSV avec des colonnes titre et artiste (les colonnes ISRC, album, durée et playlist aident aussi), un export de données Spotify ou Apple Music en JSON, ou un fichier texte avec un « Artiste - Titre » par ligne. 5 Mo maximum.",
+      "pick": "Choisir un fichier",
+      "change": "Changer de fichier",
+      "playlist": "Mettre ces titres dans une nouvelle playlist",
+      "playlistPlaceholder": "Nom de la playlist",
+      "submit": "Importer"
+    },
+    "apple": {
+      "error": "La connexion à Apple Music n'a pas abouti."
+    },
+    "callback": {
+      "title": "Connexion de votre compte",
+      "denied": "L'accès n'a pas été accordé.",
+      "error": "La connexion a échoué.",
+      "back": "Retour aux réglages"
+    },
+    "select": {
+      "title": "Choisissez quoi importer",
+      "account": "Connecté en tant que {name}",
+      "liked": "Titres aimés et sauvegardés",
+      "albums": "Albums sauvegardés",
+      "artists": "Artistes suivis",
+      "artistsNote": "Les artistes sont associés et liés, pas téléchargés en entier.",
+      "playlists": "Playlists",
+      "noPlaylists": "Aucune playlist trouvée.",
+      "all": "Tout sélectionner",
+      "none": "Tout désélectionner",
+      "count": "{n} éléments",
+      "tracks": "{n} titres",
+      "bypass": "Tout ce que vous importez est téléchargé immédiatement, sans attendre l'approbation des demandes. Les titres sans ISRC sont recherchés par titre et artiste, et ne seront peut-être pas tous trouvés.",
+      "start": "Lancer l'importation",
+      "starting": "Lancement...",
+      "expired": "Cette connexion a expiré. Reconnectez-vous depuis les réglages."
+    },
+    "job": {
+      "title": "Importation depuis {service}",
+      "started": "Lancée le {date}",
+      "status": {
+        "fetching": "Lecture de votre bibliothèque",
+        "matching": "Association avec MusicBrainz",
+        "downloading": "Téléchargement",
+        "completed": "Terminée",
+        "failed": "Échec",
+        "cancelled": "Annulée"
+      },
+      "progress": "{done} sur {total} traités",
+      "stats": {
+        "imported": "Importés",
+        "owned": "Déjà dans la bibliothèque",
+        "failed": "En échec",
+        "remaining": "Restants"
+      },
+      "failuresTitle": "Non importés",
+      "failuresSummary": "Aucun élément en échec | 1 élément n'a pas pu être importé | {n} éléments n'ont pas pu être importés",
+      "reasons": {
+        "missing_isrc": "Pas d'ISRC, et aucune correspondance fiable par titre et artiste",
+        "missing_upc": "Pas de code-barres, et aucune correspondance fiable par titre et artiste",
+        "missing_data": "Titre ou artiste manquant",
+        "not_found": "Introuvable sur MusicBrainz",
+        "unsupported": "Épisode de podcast, vidéo ou fichier local",
+        "no_permission": "Votre compte ne peut pas demander ceci",
+        "download_failed": "Aucune copie correspondante trouvée sur Soulseek"
+      },
+      "filter": {
+        "failed": "En échec",
+        "all": "Tout",
+        "completed": "Importés",
+        "remaining": "Restants"
+      },
+      "kind": {
+        "track": "Titre",
+        "album": "Album",
+        "artist": "Artiste"
+      },
+      "owned": "Déjà dans la bibliothèque",
+      "pending": "En attente",
+      "requested": "Téléchargement",
+      "matched": "Associé",
+      "skipped": "Ignoré",
+      "empty": "Rien ici.",
+      "cancel": "Arrêter",
+      "cancelConfirm": "Arrêter cette importation ? Le téléchargement en cours se terminera, rien d'autre ne démarrera.",
+      "retry": "Relancer les échecs",
+      "truncated": "Seuls les 10 000 premiers éléments ont été importés.",
+      "slow": "L'association avance d'environ un élément par seconde (la limite de MusicBrainz), et les téléchargements se font un par un. Les grosses bibliothèques prennent du temps - vous pouvez quitter cette page.",
+      "done": "Importation terminée : {ok} importés, {failed} en échec",
+      "notFound": "Cette importation n'existe pas."
+    }
   }
 }

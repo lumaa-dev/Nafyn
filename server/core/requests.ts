@@ -51,9 +51,11 @@ async function rowToRequest(row: RequestRow): Promise<NafynRequest> {
 }
 
 // creates a request, starts at "waiting" status; fetches MediaInfo once here and stores the
-// display fields (title/artistName/coverArt) so later reads never have to call MusicBrainz again
-export async function createRequest(musicbrainzId: UUID, type: "album" | "track", requestedBy: UUID, defaultStatus: RequestStatus = "waiting"): Promise<NafynRequest> {
-    const info: MediaInfo | null = await getMediaInfo(musicbrainzId, type).catch(() => null);
+// display fields (title/artistName/coverArt) so later reads never have to call MusicBrainz again.
+// `knownInfo` skips that lookup when the caller already has the display fields (library imports, which
+// would otherwise spend an extra rate-limited MusicBrainz call per track)
+export async function createRequest(musicbrainzId: UUID, type: "album" | "track", requestedBy: UUID, defaultStatus: RequestStatus = "waiting", knownInfo?: MediaInfo | null): Promise<NafynRequest> {
+    const info: MediaInfo | null = knownInfo !== undefined ? knownInfo : await getMediaInfo(musicbrainzId, type).catch(() => null);
     const artistName = info ? (typeof info.artist === "string" ? info.artist : info.artist.name) : null;
 
     const request: NafynRequest = {

@@ -1,6 +1,7 @@
 // central MySQL connection + schema setup for all Nafyn databases
 import mysql from "mysql2/promise";
 import { createInsightsTables } from "./insightsSchema";
+import { createTransferTables } from "./transferSchema";
 import { runMigrations } from "./migrations";
 
 let pool: mysql.Pool | null = null;
@@ -221,6 +222,14 @@ export async function initDatabases(): Promise<void> {
             showFileSize TINYINT(1) NOT NULL DEFAULT 1,
             showDuration TINYINT(1) NOT NULL DEFAULT 1
         );
+
+        -- per-user playback preferences (Settings -> Playback), off \`users\` for the same reason as above.
+        -- Absent row means crossfade on, 3000 ms.
+        CREATE TABLE IF NOT EXISTS user_playback_settings (
+            userId VARCHAR(36) PRIMARY KEY,
+            crossfadeEnabled TINYINT(1) NOT NULL DEFAULT 1,
+            crossfadeMs INT NOT NULL DEFAULT 3000
+        );
     `);
 
     const requests = getRequestsDb();
@@ -323,5 +332,6 @@ export async function initDatabases(): Promise<void> {
     // `exec()`'s split-on-";" can't give them), and migrations run last so they can assume every
     // CREATE TABLE above has already happened
     await createInsightsTables();
+    await createTransferTables();
     await runMigrations();
 }

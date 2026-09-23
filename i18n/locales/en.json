@@ -103,11 +103,13 @@
     "categories": {
       "profile": "Profile",
       "appearance": "Appearance",
+      "playback": "Playback",
       "accounts": "Accounts",
       "storage": "Storage",
       "subsonic": "Subsonic",
       "privacy": "Privacy",
-      "developer": "Developer"
+      "developer": "Developer",
+      "import": "Import"
     },
     "profile": {
       "title": "Profile",
@@ -215,6 +217,15 @@
       "fileSize": "Show file size in track lists",
       "fileSizeLocked": "Only available to accounts with the Manage music permission.",
       "duration": "Show track duration in track lists"
+    },
+    "playback": {
+      "title": "Playback",
+      "crossfade": {
+        "title": "Crossfade",
+        "label": "Crossfade between songs",
+        "seconds": "{n} s",
+        "note": "Songs blend into each other at the end. Consecutive tracks of the same album (track 1 into track 2, etc.) always play without a fade, as the artist sequenced them."
+      }
     },
     "developer": {
       "title": "Developer",
@@ -442,5 +453,132 @@
     "importing": "Importing...",
     "done": "Added to your library",
     "error": "Could not import that file."
+  },
+  "transfer": {
+    "title": "Import",
+    "intro": "Bring your music over from another service. Everything found is matched against MusicBrainz, then downloaded straight into your library - imported music doesn't wait for request approval.",
+    "noPermission": "Your account can't request music, so it can't import any either.",
+    "unavailable": "Not set up on this server",
+    "beta": "Closed beta API",
+    "import": "Import",
+    "connecting": "Connecting...",
+    "running": "An import is already running.",
+    "runningLink": "Follow it",
+    "providers": {
+      "spotify": "Spotify",
+      "apple": "Apple Music",
+      "deezer": "Deezer",
+      "youtube": "YouTube Music",
+      "soundcloud": "SoundCloud",
+      "tidal": "TIDAL",
+      "amazon": "Amazon Music",
+      "napster": "Napster",
+      "file": "From a file"
+    },
+    "fileHint": "CSV, JSON or text export",
+    "fileNote": "Using Qobuz, or a service that isn't set up here? Export your library as a file (Exportify, TuneMyMusic, Soundiiz, or the service's own data export) and import that.",
+    "history": {
+      "title": "Previous imports",
+      "empty": "No imports yet.",
+      "remove": "Remove",
+      "summary": "{done} imported · {failed} failed"
+    },
+    "deezer": {
+      "title": "Import from Deezer",
+      "hint": "Paste the link to your Deezer profile. Only what your profile shows publicly can be read, so private playlists won't appear.",
+      "placeholder": "https://www.deezer.com/profile/...",
+      "continue": "Continue",
+      "signIn": "Sign in instead"
+    },
+    "file": {
+      "title": "Import from a file",
+      "hint": "CSV with title and artist columns (ISRC, album, duration and playlist columns help too), Spotify or Apple Music data export JSON, or a text file with one \"Artist - Title\" per line. 5 MB at most.",
+      "pick": "Choose a file",
+      "change": "Change file",
+      "playlist": "Put these tracks in a new playlist",
+      "playlistPlaceholder": "Playlist name",
+      "submit": "Import"
+    },
+    "apple": {
+      "error": "Apple Music sign-in didn't complete."
+    },
+    "callback": {
+      "title": "Connecting your account",
+      "denied": "Access wasn't granted.",
+      "error": "The connection failed.",
+      "back": "Back to settings"
+    },
+    "select": {
+      "title": "Choose what to import",
+      "account": "Connected as {name}",
+      "liked": "Liked & saved songs",
+      "albums": "Saved albums",
+      "artists": "Followed artists",
+      "artistsNote": "Artists are matched and linked, not downloaded in full.",
+      "playlists": "Playlists",
+      "noPlaylists": "No playlists found.",
+      "all": "Select all",
+      "none": "Select none",
+      "count": "{n} items",
+      "tracks": "{n} tracks",
+      "bypass": "Everything you import downloads right away, without waiting for request approval. Songs without an ISRC are matched by title and artist, and may not all be found.",
+      "start": "Start import",
+      "starting": "Starting...",
+      "expired": "This connection has expired. Connect again from Settings."
+    },
+    "job": {
+      "title": "Import from {service}",
+      "started": "Started {date}",
+      "status": {
+        "fetching": "Reading your library",
+        "matching": "Matching with MusicBrainz",
+        "downloading": "Downloading",
+        "completed": "Finished",
+        "failed": "Failed",
+        "cancelled": "Cancelled"
+      },
+      "progress": "{done} of {total} processed",
+      "stats": {
+        "imported": "Imported",
+        "owned": "Already in library",
+        "failed": "Failed",
+        "remaining": "Remaining"
+      },
+      "failuresTitle": "Couldn't be imported",
+      "failuresSummary": "No items failed | 1 item couldn't be imported | {n} items couldn't be imported",
+      "reasons": {
+        "missing_isrc": "No ISRC, and no confident match by title and artist",
+        "missing_upc": "No barcode, and no confident match by title and artist",
+        "missing_data": "Missing title or artist",
+        "not_found": "Not found on MusicBrainz",
+        "unsupported": "Podcast episode, video or local file",
+        "no_permission": "Your account can't request this",
+        "download_failed": "No matching copy found on Soulseek"
+      },
+      "filter": {
+        "failed": "Failed",
+        "all": "All",
+        "completed": "Imported",
+        "remaining": "Remaining"
+      },
+      "kind": {
+        "track": "Track",
+        "album": "Album",
+        "artist": "Artist"
+      },
+      "owned": "Already in library",
+      "pending": "Waiting",
+      "requested": "Downloading",
+      "matched": "Matched",
+      "skipped": "Skipped",
+      "empty": "Nothing here.",
+      "cancel": "Stop import",
+      "cancelConfirm": "Stop this import? Whatever is downloading right now will finish, nothing after it will start.",
+      "retry": "Retry failed downloads",
+      "truncated": "Only the first 10,000 items were imported.",
+      "slow": "Matching runs at about one item per second (MusicBrainz's rate limit), and downloads one at a time. Big libraries take a while - you can leave this page.",
+      "done": "Import finished: {ok} imported, {failed} failed",
+      "notFound": "This import doesn't exist."
+    }
   }
 }

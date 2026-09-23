@@ -11,6 +11,13 @@ export default defineEventHandler((event) => {
 
     const isApi = path.startsWith("/api") || path.startsWith("/rest");
 
+    // Settings -> Import -> Apple Music signs in through Apple's MusicKit on the Web, which has to be loaded
+    // from Apple's CDN, talks to Apple's own hosts, and authorizes in a popup that reports back to its
+    // opener. Only opened up when Apple Music import is actually configured - and on every page, since the
+    // settings page is usually reached by client-side navigation and keeps the first page load's policy.
+    const t = useRuntimeConfig().transfer;
+    const musicKit = !isApi && !!(t.appleMusicTeamId && t.appleMusicKeyId && t.appleMusicPrivateKey);
+
     // stops a browser MIME-sniffing a JSON/text response into HTML or script - the trick that turns a
     // reflected string in an API response into stored XSS on this origin
     setResponseHeader(event, "X-Content-Type-Options", "nosniff");
@@ -18,7 +25,7 @@ export default defineEventHandler((event) => {
     setResponseHeader(event, "X-Frame-Options", "DENY");
     // never leak the full URL (which for streams/avatars carries a `?token=` JWT) to a third-party origin
     setResponseHeader(event, "Referrer-Policy", "no-referrer");
-    setResponseHeader(event, "Cross-Origin-Opener-Policy", "same-origin");
+    setResponseHeader(event, "Cross-Origin-Opener-Policy", musicKit ? "same-origin-allow-popups" : "same-origin");
     setResponseHeader(event, "Cross-Origin-Resource-Policy", "same-origin");
     setResponseHeader(event, "Permissions-Policy", "camera=(), microphone=(), geolocation=(), interest-cohort=()");
 
@@ -48,12 +55,12 @@ export default defineEventHandler((event) => {
     // and a locked `base-uri`/`form-action` so an injected <base> or <form> can't redirect anything.
     setResponseHeader(event, "Content-Security-Policy", [
         "default-src 'self'",
-        "script-src 'self' 'unsafe-inline'",
+        `script-src 'self' 'unsafe-inline'${musicKit ? " https://js-cdn.music.apple.com" : ""}`,
         "style-src 'self' 'unsafe-inline'",
         "img-src 'self' data: blob: https:",
         "media-src 'self' blob:",
         "font-src 'self' data:",
-        "connect-src 'self' ws: wss:",
+        `connect-src 'self' ws: wss:${musicKit ? " https://*.apple.com" : ""}`,
         "object-src 'none'",
         "base-uri 'self'",
         "form-action 'self'",
