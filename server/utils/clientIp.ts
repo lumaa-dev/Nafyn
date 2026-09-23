@@ -11,7 +11,7 @@ import type { H3Event } from "h3";
 // TRUST_PROXY: number of reverse proxies in front of Nafyn ("1" for a single nginx/Caddy/Traefik in front,
 // "2" behind Cloudflare + nginx, ...). Unset/"0"/"false" means Nafyn is directly exposed and the header is
 // ignored entirely. "true" is accepted as an alias for 1.
-function trustedProxyHops(): number {
+export function trustedProxyHops(): number {
     const raw = (process.env.TRUST_PROXY ?? "0").trim().toLowerCase();
     if (raw === "true") return 1;
     if (raw === "" || raw === "false") return 0;
