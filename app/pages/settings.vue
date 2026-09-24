@@ -64,6 +64,23 @@
         </section>
       </div>
 
+      <div v-else-if="activeCategory === 'playback'" class="panel">
+        <h1>{{ $t('settings.playback.title') }}</h1>
+
+        <section class="subsection">
+          <h2>{{ $t('settings.playback.crossfade.title') }}</h2>
+          <label class="switch-row">
+            <input type="checkbox" :checked="playback.crossfadeEnabled" @change="toggleCrossfade">
+            {{ $t('settings.playback.crossfade.label') }}
+          </label>
+          <div class="range-row" :class="{ disabled: !playback.crossfadeEnabled }">
+            <input v-model.number="crossfadeSeconds" type="range" min="0.5" max="12" step="0.5" :disabled="!playback.crossfadeEnabled" @change="saveCrossfadeLength">
+            <span class="range-value">{{ $t('settings.playback.crossfade.seconds', { n: crossfadeSeconds }) }}</span>
+          </div>
+          <p class="subsonic-note">{{ $t('settings.playback.crossfade.note') }}</p>
+        </section>
+      </div>
+
       <div v-else-if="activeCategory === 'accounts'" class="panel">
         <h1>{{ $t('settings.accounts.title') }}</h1>
 
@@ -263,11 +280,12 @@ import type { RegisterTokenRow } from '~~/server/core/registerTokens';
 import type { ApiTokenSummary, ApiTokenRow } from '~~/server/core/apiTokens';
 import { syncHistorySetting, useHistoryEnabled, setHistoryEnabledState } from '~/composables/usePlayTracking';
 import { useAppearanceSettings, syncAppearanceSettings, setAppearanceSetting } from '~/composables/useAppearanceSettings';
+import { usePlaybackSettings, syncPlaybackSettings, setPlaybackSetting } from '~/composables/usePlaybackSettings';
 
 const token = useCookie("nafynToken").value ?? "";
 
 interface Category {
-  id: "profile" | "accounts" | "storage" | "subsonic" | "privacy" | "appearance" | "developer",
+  id: "profile" | "accounts" | "storage" | "subsonic" | "privacy" | "appearance" | "playback" | "developer",
   label: string
 }
 
@@ -291,6 +309,7 @@ const isAdmin = computed(() => hasPermission(perms.value, Permission.ADMIN));
 const categories = computed(() => {
   const cats: Category[] = [{ id: 'profile', label: $t('settings.categories.profile') }];
   cats.push({ id: 'appearance', label: $t('settings.categories.appearance') });
+  cats.push({ id: 'playback', label: $t('settings.categories.playback') });
   cats.push({ id: 'privacy', label: $t('settings.categories.privacy') });
   if (canManageAccounts.value) cats.push({ id: 'accounts', label: $t('settings.categories.accounts') });
   if (canManageMusic.value) cats.push({ id: 'storage', label: $t('settings.categories.storage') });
@@ -683,6 +702,30 @@ async function toggleDuration(e: Event) {
   }
 }
 
+// -- playback panel (crossfade) --
+
+const playback = usePlaybackSettings();
+// local while dragging, saved once on release rather than a PATCH per slider step
+const crossfadeSeconds = ref(playback.value.crossfadeMs / 1000);
+watch(() => playback.value.crossfadeMs, (ms) => { crossfadeSeconds.value = ms / 1000; });
+
+async function toggleCrossfade(e: Event) {
+  const checked = (e.target as HTMLInputElement).checked;
+  try {
+    await setPlaybackSetting({ crossfadeEnabled: checked });
+  } catch {
+    sendToast($t('settings.playback.title'), $t('settings.profile.error'), false);
+  }
+}
+
+async function saveCrossfadeLength() {
+  try {
+    await setPlaybackSetting({ crossfadeMs: Math.round(crossfadeSeconds.value * 1000) });
+  } catch {
+    sendToast($t('settings.playback.title'), $t('settings.profile.error'), false);
+  }
+}
+
 // -- privacy panel (listening history) --
 
 const insights = useInsights();
@@ -794,6 +837,7 @@ watch(activeCategory, async (cat) => {
   if (cat === 'subsonic' && apiTokens.value.length === 0) await loadApiTokens();
   if (cat === 'privacy') await loadPrivacyPanel();
   if (cat === 'appearance') await loadAppearancePanel();
+  if (cat === 'playback') await syncPlaybackSettings();
   if (cat === 'developer') await loadDeveloperPanel();
 });
 </script>
@@ -931,6 +975,30 @@ watch(activeCategory, async (cat) => {
   align-items: center;
   gap: 10px;
   font-size: 0.85em;
+}
+
+.range-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: opacity 0.15s ease;
+}
+
+.range-row.disabled {
+  opacity: 0.4;
+}
+
+.range-row input[type="range"] {
+  flex: 1;
+  min-width: 0;
+}
+
+.range-row .range-value {
+  font-family: "Discy";
+  font-variant-numeric: tabular-nums;
+  font-size: 0.75em;
+  width: 3.5em;
+  text-align: right;
 }
 
 .token-generator {

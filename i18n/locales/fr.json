@@ -103,6 +103,7 @@
     "categories": {
       "profile": "Profil",
       "appearance": "Apparence",
+      "playback": "Lecture",
       "accounts": "Comptes",
       "storage": "Stockage",
       "subsonic": "Subsonic",
@@ -215,6 +216,15 @@
       "fileSize": "Afficher la taille des fichiers dans les listes de titres",
       "fileSizeLocked": "Réservé aux comptes disposant de la permission Gérer la musique.",
       "duration": "Afficher la durée des titres dans les listes de titres"
+    },
+    "playback": {
+      "title": "Lecture",
+      "crossfade": {
+        "title": "Fondu enchaîné",
+        "label": "Fondu enchaîné entre les titres",
+        "seconds": "{n} s",
+        "note": "Les titres se fondent les uns dans les autres à la fin. Les pistes consécutives d'un même album (piste 1 vers piste 2, etc.) s'enchaînent toujours sans fondu, comme l'artiste les a agencées."
+      }
     },
     "developer": {
       "title": "Développeur",
