@@ -49,6 +49,17 @@ interface Segment {
 
 let segment: Segment | null = null;
 
+// crypto.randomUUID() only exists in a secure context (https, or localhost) - on a plain-http LAN address it's
+// simply undefined, and calling it throws synchronously inside endSegment(), which is invoked from loadCurrent()
+// and the "ended" listener alike, killing playback advance/switching before it gets to touch the audio element
+function randomEventId(): string {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") return crypto.randomUUID();
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+        const r = Math.random() * 16 | 0;
+        return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+}
+
 // where the current queue came from, so tracks reached by queue advance or repeat are attributed to the same
 // album/playlist the user actually pressed play on
 let currentContext: PlayContext | null = null;
@@ -99,7 +110,7 @@ function endSegment(reason: SegmentEnd) {
         || (trackDurationSec > 0 && finished.maxPositionSec >= trackDurationSec * NEAR_COMPLETE_RATIO);
 
     enqueuePlayEvent({
-        event_id: crypto.randomUUID(),
+        event_id: randomEventId(),
         track_id: finished.track.id,
         playlist_id: finished.playlistId,
         started_at: finished.startedAtMs,
@@ -233,6 +244,14 @@ function isActive(deck: Deck): boolean {
     return decks !== null && decks[activeDeckIndex] === deck;
 }
 
+// the element's sound only reaches speakers through this context (see buildGraph) - browsers are free to
+// auto-suspend it after a stretch of silence (e.g. while the user is just browsing between tracks), and only
+// resuming reactively from the element's own "play" event is too late to unmute *that* play() call. Called
+// proactively, in the same synchronous gesture that requests playback, so the very first sound isn't silent.
+function resumeAudioContext() {
+    if (audioCtx?.state === "suspended") audioCtx.resume().catch(() => {});
+}
+
 function getAudioEl(state: PlayerState): HTMLAudioElement {
     return activeDeck(state).el;
 }
@@ -257,7 +276,7 @@ function bindDeckEvents(deck: Deck, state: PlayerState) {
         state.isPlaying = true;
         if (segment && segment.lastResumeMs === null) segment.lastResumeMs = Date.now();
         if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "playing";
-        if (audioCtx?.state === "suspended") audioCtx.resume().catch(() => {});
+        resumeAudioContext();
     });
     el.addEventListener("pause", () => {
         if (!isActive(deck)) return;
@@ -280,6 +299,7 @@ function bindDeckEvents(deck: Deck, state: PlayerState) {
 
         if (state.repeat === "track") {
             el.currentTime = 0;
+            resumeAudioContext();
             el.play().catch(() => { state.isPlaying = false; });
             // repeat-track replays without going through loadCurrent(), so nothing else would open a new
             // segment - this line is what makes looping a track count every single time round, with no caps
@@ -512,7 +532,10 @@ function loadCurrent(state: PlayerState, autoplay: boolean) {
     const token = ++loadToken;
     // rejects e.g. with AbortError when a later load interrupts this same play() call - if that happened,
     // the newer call already owns state.isPlaying and this stale rejection must not touch it
-    if (autoplay) deck.el.play().catch(() => { if (token === loadToken) state.isPlaying = false; });
+    if (autoplay) {
+        resumeAudioContext();
+        deck.el.play().catch(() => { if (token === loadToken) state.isPlaying = false; });
+    }
 }
 
 function skipToIndex(state: PlayerState, index: number) {
@@ -632,8 +655,10 @@ export const usePlayer = () => {
     function togglePlay() {
         if (!import.meta.client || !currentTrack.value) return;
         const el = getAudioEl(state.value);
-        if (el.paused) el.play().catch(() => {});
-        else {
+        if (el.paused) {
+            resumeAudioContext();
+            el.play().catch(() => {});
+        } else {
             finishCrossfade();
             el.pause();
         }
