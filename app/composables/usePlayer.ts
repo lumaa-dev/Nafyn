@@ -358,7 +358,14 @@ function setGain(deck: Deck, value: number) {
         param.cancelScheduledValues(0);
         param.setValueAtTime(value, audioCtx.currentTime);
     } catch {
-        param.value = value;
+        // some browsers (Chrome) also reject the .value setter itself while a setValueCurveAtTime ramp is
+        // still in flight ("Can't add events during a curve event") - nothing to fall back to but wait for
+        // the curve to finish on its own
+        try {
+            param.value = value;
+        } catch {
+            // ignore
+        }
     }
 }
 
