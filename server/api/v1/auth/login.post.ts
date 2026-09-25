@@ -124,8 +124,9 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 401, statusMessage: "Invalid username or password" });
     }
 
+    // only the per-account bucket is cleared. Clearing the per-IP one too let anyone holding a single valid
+    // account refill their spraying budget at will: 19 guesses against other usernames, one real login, repeat.
     resetRateLimit(rateLimitKey);
-    resetRateLimit(ipRateLimitKey);
 
     const token = signAuthToken(user.id);
 

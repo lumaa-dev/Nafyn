@@ -1,8 +1,8 @@
 // per-user music library: shared `media` metadata rows + shared audio file on disk, `library_entries` only grants per-user access
 import { randomUUID, UUID } from "node:crypto";
-import { existsSync } from "node:fs";
+import { closeSync, mkdirSync, openSync } from "node:fs";
 import { rm, rmdir } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { getLibrariesDb, withTransaction, sqlInt } from "./db";
 import { deleteMediaCover } from "../utils/mediaCover";
 
@@ -68,6 +68,14 @@ export async function findMediaByMusicbrainzId(musicbrainzId: string): Promise<M
 export async function findLibraryEntry(userId: string, mediaId: string): Promise<LibraryEntry | null> {
     const row = await getLibrariesDb().prepare(`SELECT * FROM library_entries WHERE userId = ? AND mediaId = ?`).get(userId, mediaId) as LibraryEntry | undefined;
     return row ?? null;
+}
+
+// true when some user other than `userId` also has this media row in their library
+export async function isMediaSharedWithOthers(userId: string, mediaId: string): Promise<boolean> {
+    const row = await getLibrariesDb()
+        .prepare(`SELECT 1 FROM library_entries WHERE mediaId = ? AND userId <> ? LIMIT 1`)
+        .get(mediaId, userId);
+    return !!row;
 }
 
 export async function getLibraryOfUser(userId: string): Promise<LibraryEntry | null> {
@@ -530,24 +538,46 @@ export async function shareMediaWithUser(userId: string, media: MediaRow, shared
 // filesystem-illegal / awkward characters stripped from an album or track name before it becomes a path segment
 function sanitizePathSegment(name: string): string {
     // eslint-disable-next-line no-control-regex -- deliberately strips control characters too, not just visible punctuation
-    const cleaned = name.replace(/[/\\:*?"<>|\x00-\x1f]/g, "").replace(/\s+/g, " ").trim();
+    const cleaned = name.replace(/[/\\:*?"<>|\x00-\x1f]/g, "").replace(/\s+/g, " ").trim()
+        // SECURITY: stripping separators isn't enough on its own - an album literally named ".." (which a
+        // manual import lets any user type) survives the filter above as a whole path segment, and
+        // join("music", "..") lands the file in the app's working directory, outside the library. Leading dots
+        // go too, so nothing becomes "." / ".." or a hidden dotfile.
+        .replace(/^\.+/, "").trim();
     return cleaned.slice(0, 200) || "Unknown";
 }
 
 // music/{album}/{track title}.ext - so the library reads as a normal folder-of-albums when browsed directly
 // (e.g. shared back out via slskd). Falls back to the artist name for albumless singles, and disambiguates
 // same-named tracks within an album with a " (2)", " (3)", ... suffix instead of overwriting one another.
+//
+// The returned path is *reserved*: an empty placeholder is created with O_EXCL, which the caller then
+// overwrites with the real file (ffmpeg/copyFile both replace it) or removes on failure. A plain
+// existsSync() probe left a window where two concurrent imports/downloads of the same album + title were
+// handed the same free name, the second write clobbered the first, and two `media` rows ended up pointing
+// at one file - so deleting either track deleted the other user's audio too.
 export function libraryFilePath(album: string | null, artistName: string, title: string, extension: string): string {
     const albumDir = sanitizePathSegment(album ?? artistName);
     const baseName = sanitizePathSegment(title);
-    const dir = join(process.cwd(), "music", albumDir);
+    const musicRoot = resolve(process.cwd(), "music");
+    const dir = resolve(musicRoot, albumDir);
 
-    let candidate = `${baseName}${extension}`;
-    for (let n = 2; existsSync(join(dir, candidate)); n++) {
-        candidate = `${baseName} (${n})${extension}`;
+    // belt-and-braces behind sanitizePathSegment: the folder must be a direct child of music/
+    if (dirname(dir) !== musicRoot) {
+        throw createError({ statusCode: 400, statusMessage: "Invalid album or artist name" });
     }
 
-    return join(dir, candidate);
+    mkdirSync(dir, { recursive: true });
+
+    for (let n = 1; ; n++) {
+        const candidate = join(dir, n === 1 ? `${baseName}${extension}` : `${baseName} (${n})${extension}`);
+        try {
+            closeSync(openSync(candidate, "wx"));
+            return candidate;
+        } catch (error) {
+            if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
+        }
+    }
 }
 
 // revokes every library entry a user has, used when an account is deleted so no orphaned entries linger

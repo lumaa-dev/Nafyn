@@ -8,6 +8,7 @@ import { findLibraryEntry, findMediaByMusicbrainzId } from "~~/server/core/libra
 import { hasActiveRequest } from "~~/server/core/requests";
 import { assertMbid } from "~~/server/utils/ids";
 import { getImageColors } from "~~/server/utils/imageColors";
+import { enforceUpstreamLookupLimit } from "~~/server/utils/rateLimit";
 
 defineRouteMeta({
     openAPI: {
@@ -122,6 +123,7 @@ defineRouteMeta({
 
 export default defineEventHandler(async (event): Promise<AlbumDetail> => {
     const { sub: userId } = requireAuthToken(event);
+    enforceUpstreamLookupLimit(event, userId);
 
     // SECURITY: see the note in track/[tid].get.ts - this reaches an upstream MusicBrainz REST path
     const aid = assertMbid(getRouterParam(event, "aid"), "album ID");

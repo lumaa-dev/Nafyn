@@ -148,7 +148,9 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 416, statusMessage: "Invalid Range header" });
     }
 
-    const start = match[1] ? parseInt(match[1], 10) : fileSize - parseInt(match[2], 10);
+    // a suffix range longer than the file ("bytes=-999999999") means the whole file, not a negative offset
+    // (which createReadStream rejects with an unhandled 500)
+    const start = match[1] ? parseInt(match[1], 10) : Math.max(0, fileSize - parseInt(match[2]!, 10));
     const end = match[1] && match[2] ? parseInt(match[2], 10) : fileSize - 1;
 
     if (start >= fileSize || end >= fileSize || start > end) {

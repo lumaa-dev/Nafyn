@@ -110,7 +110,11 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 401, statusMessage: "Unsufficient permissions" });
     }
 
-    const body = await readBody(event);
+    const body = await readBody(event).catch(() => null);
+    // `"key" in body` throws a TypeError (an unhandled 500) on a missing or non-object body
+    if (!body || typeof body !== "object") {
+        throw createError({ statusCode: 400, statusMessage: "Expected a JSON body" });
+    }
     const changes: Partial<Pick<NafynUser, "displayName" | "username" | "lastFm" | "discogs" | "permissions">> = {};
 
     if ("displayName" in body) {

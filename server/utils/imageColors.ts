@@ -2,7 +2,7 @@
 // a WCAG-compliant text color against the artwork's main color
 import { readFile, stat } from "node:fs/promises";
 import sharp from "sharp";
-import { isAllowedCoverArtUrl } from "./coverArt";
+import { fetchCoverArt } from "./coverArt";
 import { mediaCoverFilePath } from "./mediaCover";
 
 export interface ImageColorsResult {
@@ -21,6 +21,10 @@ const DEFAULT_RESULT: ImageColorsResult = { imageColors: [], textColor: "#ffffff
 const DOMINANT_COLOR_COUNT = 5;
 const QUANT_STEP = 32;
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+
+const MAX_REMOTE_COVER_BYTES = 10 * 1024 * 1024;
+// every distinct cover URL anyone browses adds an entry, so the map is capped (oldest-inserted evicted first)
+const MAX_CACHE_ENTRIES = 5_000;
 
 const cache = new Map<string, { value: ImageColorsResult, expiresAtMs: number }>();
 
@@ -96,11 +100,13 @@ async function extractDominantColors(buffer: Buffer, count: number): Promise<str
 }
 
 async function loadRemoteCover(url: string): Promise<Buffer | null> {
-    if (!isAllowedCoverArtUrl(url)) return null;
+    const res = await fetchCoverArt(url);
+    if (!res) return null;
+    // decoded in memory right after, so an oversized body is refused rather than buffered
+    if (Number(res.headers.get("content-length") ?? 0) > MAX_REMOTE_COVER_BYTES) return null;
     try {
-        const res = await fetch(url, { redirect: "follow" });
-        if (!res.ok) return null;
-        return Buffer.from(await res.arrayBuffer());
+        const buffer = Buffer.from(await res.arrayBuffer());
+        return buffer.length <= MAX_REMOTE_COVER_BYTES ? buffer : null;
     } catch {
         return null;
     }
@@ -144,6 +150,12 @@ export async function getImageColors(source: CoverSource): Promise<ImageColorsRe
         value = DEFAULT_RESULT;
     }
 
-    if (cacheKey) cache.set(cacheKey, { value, expiresAtMs: Date.now() + CACHE_TTL_MS });
+    if (cacheKey) {
+        if (cache.size >= MAX_CACHE_ENTRIES) {
+            const oldest = cache.keys().next().value;
+            if (oldest !== undefined) cache.delete(oldest);
+        }
+        cache.set(cacheKey, { value, expiresAtMs: Date.now() + CACHE_TTL_MS });
+    }
     return value;
 }

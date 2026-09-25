@@ -4,6 +4,13 @@ import { requireAuthToken } from "~~/server/utils/requireAuth";
 import { importManualTrack, type ManualTrackInput } from "~~/server/core/manualImport";
 import { IMPORT_EXTENSIONS } from "~~/server/utils/audioImport";
 import { MAX_LYRICS_LENGTH, type LyricsFormat } from "~~/server/core/mediaLyrics";
+import { getPermissionsById } from "~~/server/core/users";
+import { hasPermission, Permission } from "~~/server/entity/Permission";
+import { consumeRateLimit } from "~~/server/utils/rateLimit";
+
+// every import writes up to 200 MB to disk and runs ffmpeg over it - bound how fast one account can do that
+const MAX_IMPORTS = 60;
+const IMPORT_WINDOW_MS = 60 * 60 * 1000;
 
 defineRouteMeta({
     openAPI: {
@@ -107,6 +114,20 @@ function toInput(raw: RawMetadata): ManualTrackInput {
 
 export default defineEventHandler(async (event) => {
     const { sub: userId } = requireAuthToken(event);
+
+    // SECURITY: importing adds a track to a library exactly like a request does, so it answers to the same
+    // permission bit - an account an admin has stripped of REQUEST_TRACKS (or one that was deleted while its
+    // token is still unexpired, which resolves to no permissions at all) must not be able to fill the disk
+    // through this route instead
+    if (!hasPermission(await getPermissionsById(userId) ?? 0, Permission.REQUEST_TRACKS)) {
+        throw createError({ statusCode: 403, statusMessage: "Unsufficient permissions" });
+    }
+
+    const rateLimit = consumeRateLimit(`import:${userId}`, MAX_IMPORTS, IMPORT_WINDOW_MS);
+    if (!rateLimit.allowed) {
+        setResponseHeader(event, "Retry-After", rateLimit.retryAfterSeconds);
+        throw createError({ statusCode: 429, statusMessage: "Too many imports, try again later" });
+    }
 
     const form = await readMultipartFormData(event);
     if (!form) {

@@ -7,14 +7,9 @@
 import { randomUUID } from "node:crypto";
 import { join, resolve, sep } from "node:path";
 import { mkdir, rm, writeFile } from "node:fs/promises";
-import ffmpeg from "fluent-ffmpeg";
-import ffmpegPath from "ffmpeg-static";
 import { imageSize } from "image-size";
 import { assertUuid } from "./ids";
-
-if (ffmpegPath) {
-    ffmpeg.setFfmpegPath(ffmpegPath);
-}
+import { assertSafeImageDimensions, squareCropImage } from "./imageUpload";
 
 const COVER_DIR = join(process.cwd(), ".data", "covers");
 const TMP_DIR = join(process.cwd(), ".data", "tmp");
@@ -52,6 +47,8 @@ export async function saveMediaCover(mediaId: string, buffer: Buffer): Promise<v
         throw createError({ statusCode: 400, statusMessage: "Cover must be a PNG, JPEG or WebP image" });
     }
 
+    assertSafeImageDimensions(dimensions.width, dimensions.height);
+
     await mkdir(TMP_DIR, { recursive: true });
     await mkdir(COVER_DIR, { recursive: true });
 
@@ -59,23 +56,10 @@ export async function saveMediaCover(mediaId: string, buffer: Buffer): Promise<v
     await writeFile(tempPath, buffer);
 
     try {
-        await resizeCover(tempPath, mediaCoverFilePath(mediaId));
+        await squareCropImage(tempPath, mediaCoverFilePath(mediaId), COVER_SIZE, dimensions.type);
     } finally {
         await rm(tempPath, { force: true });
     }
-}
-
-function resizeCover(inputPath: string, outputPath: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-        ffmpeg(inputPath)
-            .outputOptions(
-                "-vf", `scale=${COVER_SIZE}:${COVER_SIZE}:force_original_aspect_ratio=increase,crop=${COVER_SIZE}:${COVER_SIZE}`,
-                "-frames:v", "1"
-            )
-            .on("error", reject)
-            .on("end", () => resolve())
-            .save(outputPath);
-    });
 }
 
 export async function deleteMediaCover(mediaId: string): Promise<void> {

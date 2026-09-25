@@ -4,9 +4,7 @@
 // track it is the only source there is (Cider/LRCLIB have never heard of it). The content is saved exactly
 // as submitted - Nafyn neither authors nor rewrites it.
 import { requireAuthToken } from "~~/server/utils/requireAuth";
-import { findLibraryEntry, getMediaId } from "~~/server/core/library";
-import { getPermissionsById } from "~~/server/core/users";
-import { hasPermission, Permission } from "~~/server/entity/Permission";
+import { requireEditableMedia } from "~~/server/utils/mediaAccess";
 import { MAX_LYRICS_LENGTH, setMediaLyrics, type LyricsFormat } from "~~/server/core/mediaLyrics";
 
 defineRouteMeta({
@@ -44,21 +42,8 @@ defineRouteMeta({
 export default defineEventHandler(async (event) => {
     const { sub: userId } = requireAuthToken(event);
 
-    const mediaId = getRouterParam(event, "id");
-    if (!mediaId) {
-        throw createError({ statusCode: 400, statusMessage: "Missing media ID" });
-    }
-
-    const media = await getMediaId(mediaId);
-    if (!media) {
-        throw createError({ statusCode: 404, statusMessage: "Track not found in your library" });
-    }
-
-    if (!await findLibraryEntry(userId, mediaId)) {
-        if (!hasPermission(await getPermissionsById(userId) ?? 0, Permission.MANAGE_MUSIC)) {
-            throw createError({ statusCode: 404, statusMessage: "Track not found in your library" });
-        }
-    }
+    const media = await requireEditableMedia(userId, getRouterParam(event, "id"));
+    const mediaId = media.id;
 
     const body = await readBody(event).catch(() => null);
     const content = typeof body?.content === "string" ? body.content : null;

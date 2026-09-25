@@ -245,8 +245,9 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 400, statusMessage: "Missing search query `q`" });
     }
 
-    const limit = Math.min(Number(query?.limit) || DEFAULT_LIMIT, MAX_LIMIT);
-    const offset = Math.max(Number(query?.offset) || 0, 0);
+    // clamped on both ends: a negative or fractional limit went straight to MusicBrainz and came back a 500
+    const limit = Math.min(Math.max(Math.trunc(Number(query?.limit)) || DEFAULT_LIMIT, 1), MAX_LIMIT);
+    const offset = Math.min(Math.max(Math.trunc(Number(query?.offset)) || 0, 0), 10_000);
 
     const client = getMusicBrainzClient();
 

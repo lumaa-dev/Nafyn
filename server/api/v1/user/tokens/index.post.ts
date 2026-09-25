@@ -1,6 +1,9 @@
-import { createApiToken } from "~~/server/core/apiTokens";
+import { createApiToken, listApiTokensForUser } from "~~/server/core/apiTokens";
 
 const MAX_NAME_LENGTH = 100;
+// Subsonic token auth (t=/s=) re-hashes every one of a user's tokens on each request, so an unbounded list is
+// both a storage and a per-request CPU cost
+const MAX_TOKENS_PER_USER = 25;
 
 defineRouteMeta({
     openAPI: {
@@ -57,6 +60,10 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event).catch(() => null);
     const rawName = typeof body?.name === "string" ? body.name.trim() : "";
     const name = rawName ? rawName.slice(0, MAX_NAME_LENGTH) : null;
+
+    if ((await listApiTokensForUser(userId)).length >= MAX_TOKENS_PER_USER) {
+        throw createError({ statusCode: 400, statusMessage: `At most ${MAX_TOKENS_PER_USER} tokens - revoke one first` });
+    }
 
     return await createApiToken(userId, name);
 });

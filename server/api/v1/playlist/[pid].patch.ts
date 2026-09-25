@@ -1,6 +1,7 @@
 import { getPlaylistById, hasAccess, updatePlaylist } from "~~/server/core/playlists";
 
 const SORT_MODES = ["manual", "title", "artist", "addedBy", "duration"];
+const MAX_DESCRIPTION_LENGTH = 1000;
 
 defineRouteMeta({
     openAPI: {
@@ -115,6 +116,10 @@ export default defineEventHandler(async (event) => {
             throw createError({ statusCode: 400, statusMessage: "Title must be between 1 and 100 characters" });
         }
         patch.title = title;
+    }
+
+    if (typeof body?.description === "string" && body.description.trim().length > MAX_DESCRIPTION_LENGTH) {
+        throw createError({ statusCode: 400, statusMessage: `Description must be ${MAX_DESCRIPTION_LENGTH} characters or fewer` });
     }
 
     if (typeof body?.description === "string" || body?.description === null) {

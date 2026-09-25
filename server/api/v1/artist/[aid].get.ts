@@ -5,6 +5,7 @@ import { userOwnsAlbum } from "~~/server/core/library";
 import type { ArtistDetail } from "~~/server/entity/media/ArtistDetail";
 import type { MediaInfo } from "~~/server/entity/media/MediaInfo";
 import { assertMbid } from "~~/server/utils/ids";
+import { enforceUpstreamLookupLimit } from "~~/server/utils/rateLimit";
 
 defineRouteMeta({
     openAPI: {
@@ -80,6 +81,7 @@ defineRouteMeta({
 
 export default defineEventHandler(async (event) => {
     const { sub: userId } = requireAuthToken(event);
+    enforceUpstreamLookupLimit(event, userId);
 
     // SECURITY: see the note in track/[tid].get.ts - this reaches an upstream MusicBrainz REST path
     const aid = assertMbid(getRouterParam(event, "aid"), "artist ID");

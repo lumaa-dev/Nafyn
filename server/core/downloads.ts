@@ -290,6 +290,8 @@ async function downloadTrack(
         // set only when *this* candidate attempt inserts a brand-new media row, so a failure past this point
         // can roll it back instead of leaving an orphan for the next candidate attempt to duplicate again
         let insertedMediaId: string | null = null;
+        // the reserved library path (see libraryFilePath), cleared again once a library entry owns the file
+        let destPath: string | null = null;
 
         try {
             await downloadFromSoulseek(candidate, tempPath, (dl) => {
@@ -375,7 +377,7 @@ async function downloadTrack(
 
             console.log(`[downloads] Musicbrainz'd "${target.title}"`);
 
-            const destPath = libraryFilePath(target.album, target.artistName, target.title, extension);
+            destPath = libraryFilePath(target.album, target.artistName, target.title, extension);
             await mkdir(dirname(destPath), { recursive: true });
             await tagAudioFile(tempPath, destPath, {
                 title: target.title,
@@ -389,12 +391,15 @@ async function downloadTrack(
 
             await updateMediaFileSize(media.id, statSync(destPath).size);
             await addLibraryEntry(requestedBy, media.id, destPath);
+            destPath = null;
 
             progress({ stage: "completed" });
             return true;
         } catch (error) {
             console.error(`[downloads] Error occured for candidates ${error}`);
             await rm(tempPath, { force: true });
+            // nothing owns the reserved/partially written library file yet, so it would otherwise linger
+            if (destPath) await rm(destPath, { force: true }).catch(() => {});
             if (insertedMediaId) {
                 // this attempt's own insertMedia never reached addLibraryEntry - remove it so the next
                 // candidate attempt doesn't insert yet another row for the same recording (the orphaned,

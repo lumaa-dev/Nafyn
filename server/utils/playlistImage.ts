@@ -2,14 +2,9 @@
 import { randomUUID } from "node:crypto";
 import { join, resolve, sep } from "node:path";
 import { mkdir, rm, writeFile } from "node:fs/promises";
-import ffmpeg from "fluent-ffmpeg";
-import ffmpegPath from "ffmpeg-static";
 import { imageSize } from "image-size";
 import { assertUuid } from "./ids";
-
-if (ffmpegPath) {
-    ffmpeg.setFfmpegPath(ffmpegPath);
-}
+import { assertSafeImageDimensions, squareCropImage } from "./imageUpload";
 
 const PLAYLIST_IMAGE_DIR = join(process.cwd(), ".data", "playlists");
 const TMP_DIR = join(process.cwd(), ".data", "tmp");
@@ -46,6 +41,8 @@ export async function savePlaylistImage(playlistId: string, buffer: Buffer): Pro
         throw createError({ statusCode: 400, statusMessage: "Playlist image must be a PNG, JPEG or WebP image" });
     }
 
+    assertSafeImageDimensions(dimensions.width, dimensions.height);
+
     if (dimensions.width < PLAYLIST_IMAGE_SIZE || dimensions.height < PLAYLIST_IMAGE_SIZE) {
         throw createError({ statusCode: 400, statusMessage: `Playlist image must be at least ${PLAYLIST_IMAGE_SIZE}x${PLAYLIST_IMAGE_SIZE}px` });
     }
@@ -57,23 +54,10 @@ export async function savePlaylistImage(playlistId: string, buffer: Buffer): Pro
     await writeFile(tempPath, buffer);
 
     try {
-        await resizePlaylistImage(tempPath, playlistImageFilePath(playlistId));
+        await squareCropImage(tempPath, playlistImageFilePath(playlistId), PLAYLIST_IMAGE_SIZE, dimensions.type);
     } finally {
         await rm(tempPath, { force: true });
     }
-}
-
-function resizePlaylistImage(inputPath: string, outputPath: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-        ffmpeg(inputPath)
-            .outputOptions(
-                "-vf", `scale=${PLAYLIST_IMAGE_SIZE}:${PLAYLIST_IMAGE_SIZE}:force_original_aspect_ratio=increase,crop=${PLAYLIST_IMAGE_SIZE}:${PLAYLIST_IMAGE_SIZE}`,
-                "-frames:v", "1"
-            )
-            .on("error", reject)
-            .on("end", () => resolve())
-            .save(outputPath);
-    });
 }
 
 export async function deletePlaylistImage(playlistId: string): Promise<void> {

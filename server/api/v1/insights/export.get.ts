@@ -4,10 +4,14 @@ import { getInsightSettings } from "~~/server/core/insightsSettings";
 import { listYearSnapshots } from "~~/server/core/insightsSnapshot";
 import { listReplayYears, getReplayMix } from "~~/server/core/replayMix";
 import { getLibrariesDb } from "~~/server/core/db";
+import { consumeRateLimit } from "~~/server/utils/rateLimit";
 
 // events are read in pages so a heavy listener's export doesn't materialize hundreds of thousands of rows at
 // once; the response itself is still a single JSON document, which is what makes it portable
 const PAGE_SIZE = 5_000;
+// an export can materialize up to MAX_EVENTS rows in memory at once - fine on demand, not on repeat
+const MAX_EXPORTS = 5;
+const EXPORT_WINDOW_MS = 60 * 60 * 1000;
 const MAX_EVENTS = 500_000;
 
 defineRouteMeta({
@@ -32,6 +36,12 @@ async function allRows(table: string, userId: string): Promise<unknown[]> {
 
 export default defineEventHandler(async (event) => {
     const { sub: userId } = requireAuthToken(event);
+
+    const rateLimit = consumeRateLimit(`insights:export:${userId}`, MAX_EXPORTS, EXPORT_WINDOW_MS);
+    if (!rateLimit.allowed) {
+        setResponseHeader(event, "Retry-After", rateLimit.retryAfterSeconds);
+        throw createError({ statusCode: 429, statusMessage: "Too many exports, try again later" });
+    }
 
     const totalEvents = await countEventsForUser(userId);
 

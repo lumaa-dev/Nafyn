@@ -109,9 +109,12 @@ export async function importManualTrack(
     });
 
     const tempPath = join(TMP_DIR, `${randomUUID()}${extension}`);
-    const destPath = libraryFilePath(album, artistName, title, extension);
+    let destPath: string | null = null;
 
     try {
+        // reserves the file name (see libraryFilePath), so it's inside the try: the media row above must be
+        // rolled back if even that fails
+        destPath = libraryFilePath(album, artistName, title, extension);
         await mkdir(TMP_DIR, { recursive: true });
         await mkdir(dirname(destPath), { recursive: true });
         await writeFile(tempPath, file.data);
@@ -127,11 +130,18 @@ export async function importManualTrack(
             label: optional(input.label)
         });
 
-        const cover = coverImage ?? probed.picture;
-        if (cover) {
-            await saveMediaCover(media.id, cover);
+        if (coverImage) {
+            await saveMediaCover(media.id, coverImage);
             await setMediaCustomCover(media.id, true);
             media.hasCustomCover = 1;
+        } else if (probed.picture) {
+            // the art embedded in the file is a bonus, not something the user chose: a GIF/BMP or an
+            // oversized picture in there must not fail an otherwise good import
+            const saved = await saveMediaCover(media.id, probed.picture).then(() => true, () => false);
+            if (saved) {
+                await setMediaCustomCover(media.id, true);
+                media.hasCustomCover = 1;
+            }
         }
 
         if (input.lyrics && input.lyrics.content.trim().length > 0) {
@@ -145,7 +155,7 @@ export async function importManualTrack(
     } catch (error) {
         // nothing owns this row yet, so removing it is safe - otherwise a failed import leaves an
         // unreachable media row behind (the same orphan case core/downloads.ts guards against)
-        await rm(destPath, { force: true }).catch(() => {});
+        if (destPath) await rm(destPath, { force: true }).catch(() => {});
         await deleteOrphanMediaRow(media.id).catch(() => {});
         throw error;
     } finally {

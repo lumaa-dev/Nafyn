@@ -183,7 +183,6 @@ export default defineEventHandler(async (event) => {
 
 	for (const { provider, fetch } of LYRICS_PROVIDERS) {
 		const paragraphs = await fetch(media);
-		console.log(`[GET /library/${id}/lyrics] Testing ${provider}...`);
 
 		if (paragraphs && paragraphs.length > 0) {
 			return { provider, paragraphs };

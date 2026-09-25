@@ -53,7 +53,9 @@ export default defineNuxtConfig({
       openAPI: true
     },
     openAPI: {
-      production: "runtime",
+      // SECURITY: the generated spec + Scalar UI enumerate every route, parameter and auth requirement to
+      // anonymous visitors, which is a free map of the attack surface. Opt in explicitly per deployment.
+      production: process.env.NAFYN_PUBLIC_OPENAPI === "true" ? "runtime" : false,
       meta: {
         title: "Nafyn API",
         description: "Nafyn API to easily control Soulseek from any HTTP client, including the Nafyn web interface.",

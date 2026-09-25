@@ -2,9 +2,8 @@ import { getMusicBrainzClient, parseReleaseDate } from "~~/server/utils/musicbra
 import type { MediaInfo } from "~~/server/entity/media/MediaInfo";
 import type { ArtistInfo } from "~~/server/entity/media/ArtistInfo";
 import { getImageColors } from "~~/server/utils/imageColors";
+import { enforceUpstreamLookupLimit } from "~~/server/utils/rateLimit";
 
-const MAX_ATTEMPTS = 30;
-const WINDOW_MS = 60 * 1000;
 
 const ISRC_PATTERN = /^[A-Z]{2}[A-Z0-9]{3}\d{2}\d{5}$/i;
 
@@ -72,7 +71,8 @@ defineRouteMeta({
 });
 
 export default defineEventHandler(async (event) => {
-    requireAuthToken(event);
+    const { sub: userId } = requireAuthToken(event);
+    enforceUpstreamLookupLimit(event, userId);
 
     const isrc = getRouterParam(event, "isrc");
     if (!isrc || !ISRC_PATTERN.test(isrc)) {

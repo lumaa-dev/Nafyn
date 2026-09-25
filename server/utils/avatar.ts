@@ -2,14 +2,9 @@
 import { randomUUID } from "node:crypto";
 import { join, resolve, sep } from "node:path";
 import { mkdir, rm, writeFile } from "node:fs/promises";
-import ffmpeg from "fluent-ffmpeg";
-import ffmpegPath from "ffmpeg-static";
 import { imageSize } from "image-size";
 import { assertUuid } from "./ids";
-
-if (ffmpegPath) {
-    ffmpeg.setFfmpegPath(ffmpegPath);
-}
+import { assertSafeImageDimensions, squareCropImage } from "./imageUpload";
 
 const AVATAR_DIR = join(process.cwd(), ".data", "avatars");
 const TMP_DIR = join(process.cwd(), ".data", "tmp");
@@ -48,6 +43,8 @@ export async function saveAvatar(userId: string, buffer: Buffer): Promise<void> 
         throw createError({ statusCode: 400, statusMessage: "Avatar must be a PNG, JPEG or WebP image" });
     }
 
+    assertSafeImageDimensions(dimensions.width, dimensions.height);
+
     if (dimensions.width < AVATAR_SIZE || dimensions.height < AVATAR_SIZE) {
         throw createError({ statusCode: 400, statusMessage: `Avatar must be at least ${AVATAR_SIZE}x${AVATAR_SIZE}px` });
     }
@@ -59,23 +56,10 @@ export async function saveAvatar(userId: string, buffer: Buffer): Promise<void> 
     await writeFile(tempPath, buffer);
 
     try {
-        await resizeAvatar(tempPath, avatarFilePath(userId));
+        await squareCropImage(tempPath, avatarFilePath(userId), AVATAR_SIZE, dimensions.type);
     } finally {
         await rm(tempPath, { force: true });
     }
-}
-
-function resizeAvatar(inputPath: string, outputPath: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-        ffmpeg(inputPath)
-            .outputOptions(
-                "-vf", `scale=${AVATAR_SIZE}:${AVATAR_SIZE}:force_original_aspect_ratio=increase,crop=${AVATAR_SIZE}:${AVATAR_SIZE}`,
-                "-frames:v", "1"
-            )
-            .on("error", reject)
-            .on("end", () => resolve())
-            .save(outputPath);
-    });
 }
 
 export async function deleteAvatar(userId: string): Promise<void> {

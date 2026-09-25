@@ -1,11 +1,10 @@
 // PATCH /api/v1/library/{id} - rewrite a track's metadata by hand (works on Soulseek downloads and manual
 // imports alike). The `media` row is shared between every user who owns the track, so an edit is visible to
-// all of them - which is why MANAGE_MUSIC can edit any row while an ordinary user can only edit their own.
+// all of them - which is why MANAGE_MUSIC can edit any row while an ordinary user can only edit a track no
+// one else has (see utils/mediaAccess.ts).
 import { requireAuthToken } from "~~/server/utils/requireAuth";
-import { findLibraryEntry, getMediaId } from "~~/server/core/library";
+import { requireEditableMedia } from "~~/server/utils/mediaAccess";
 import { applyMediaEdit, type MediaEdit } from "~~/server/core/mediaEdit";
-import { getPermissionsById } from "~~/server/core/users";
-import { hasPermission, Permission } from "~~/server/entity/Permission";
 import { isAllowedCoverArtUrl } from "~~/server/utils/coverArt";
 
 defineRouteMeta({
@@ -81,24 +80,8 @@ function number(value: unknown, field: string): number {
 export default defineEventHandler(async (event) => {
     const { sub: userId } = requireAuthToken(event);
 
-    const mediaId = getRouterParam(event, "id");
-    if (!mediaId) {
-        throw createError({ statusCode: 400, statusMessage: "Missing media ID" });
-    }
-
-    const media = await getMediaId(mediaId);
-    if (!media) {
-        throw createError({ statusCode: 404, statusMessage: "Track not found in your library" });
-    }
-
-    const owns = await findLibraryEntry(userId, mediaId) != null;
-    if (!owns) {
-        // SECURITY: a media row the caller neither owns nor manages is reported as absent, same as every
-        // other /library route, so this can't be used to probe which media IDs exist
-        if (!hasPermission(await getPermissionsById(userId) ?? 0, Permission.MANAGE_MUSIC)) {
-            throw createError({ statusCode: 404, statusMessage: "Track not found in your library" });
-        }
-    }
+    const media = await requireEditableMedia(userId, getRouterParam(event, "id"));
+    const mediaId = media.id;
 
     const body = await readBody(event).catch(() => null);
     if (!body || typeof body !== "object") {

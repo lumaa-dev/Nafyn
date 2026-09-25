@@ -73,7 +73,11 @@ function normalizeOptionalText(value: unknown, maxLength: number): string | null
 
 export default defineEventHandler(async (event) => {
     const { sub } = requireAuthToken(event);
-    const body = await readBody(event);
+    const body = await readBody(event).catch(() => null);
+    // `"key" in body` throws a TypeError (an unhandled 500) on a missing or non-object body
+    if (!body || typeof body !== "object") {
+        throw createError({ statusCode: 400, statusMessage: "Expected a JSON body" });
+    }
 
     const changes: Partial<Pick<NafynUser, "displayName" | "lastFm" | "discogs">> = {};
 

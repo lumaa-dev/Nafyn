@@ -1,5 +1,7 @@
 import { createPlaylist } from "~~/server/core/playlists";
 
+const MAX_DESCRIPTION_LENGTH = 1000;
+
 defineRouteMeta({
     openAPI: {
         description: "Create a new playlist owned by the requesting user",
@@ -59,6 +61,9 @@ export default defineEventHandler(async (event) => {
 
     if (title.length < 1 || title.length > 100) {
         throw createError({ statusCode: 400, statusMessage: "Title must be between 1 and 100 characters" });
+    }
+    if (description.length > MAX_DESCRIPTION_LENGTH) {
+        throw createError({ statusCode: 400, statusMessage: `Description must be ${MAX_DESCRIPTION_LENGTH} characters or fewer` });
     }
 
     return await createPlaylist(userId, title, description || null, privacy);

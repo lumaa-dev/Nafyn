@@ -5,13 +5,16 @@ import { getClientIP } from "../../../utils/clientIp";
 import { signAuthToken } from "../../../utils/jwt";
 import { Permission } from "../../../entity/Permission";
 import { isRegistrationOpen } from "../../../core/appSettings";
-import { validateRegisterToken, consumeRegisterToken } from "../../../core/registerTokens";
+import { validateRegisterToken, claimRegisterToken, releaseRegisterToken } from "../../../core/registerTokens";
 import { assertValidUsername } from "../../../utils/validation";
 
 const MAX_ATTEMPTS = 3;
 const WINDOW_MS = 60 * 60 * 1000;
 
 const MIN_PASSWORD_LENGTH = 8;
+// bcrypt only ever reads the first 72 bytes of its input and silently ignores the rest, so a longer password
+// would be accepted but only partly checked. Refuse it rather than pretend.
+const MAX_PASSWORD_BYTES = 72;
 
 defineRouteMeta({
     openAPI: {
@@ -150,6 +153,9 @@ export default defineEventHandler(async (event) => {
     if (password.length < MIN_PASSWORD_LENGTH) {
         throw createError({ statusCode: 400, statusMessage: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` });
     }
+    if (Buffer.byteLength(password, "utf8") > MAX_PASSWORD_BYTES) {
+        throw createError({ statusCode: 400, statusMessage: `Password must be at most ${MAX_PASSWORD_BYTES} bytes` });
+    }
 
     if (await isUsernameTaken(username)) {
         throw createError({ statusCode: 409, statusMessage: "Username is already taken" });
@@ -160,16 +166,30 @@ export default defineEventHandler(async (event) => {
     // claim ADMIN. countUsers() is cheap, and the re-check after the insert below closes the window.
     let defaultPerms: Permission | Permission[] = (await countUsers()) === 0 ? Permission.ADMIN : [Permission.REQUEST_TRACKS, Permission.REQUEST_ALBUMS];
 
-    const passwordHash = bcrypt.hashSync(password, 12);
+    // async: hashSync at cost 12 blocks the whole event loop (every other user's request) for a few hundred ms
+    const passwordHash = await bcrypt.hash(password, 12);
 
-    const user = await createUser({
-        username,
-        displayName: null,
-        avatar: null,
-        permissions: defaultPerms,
-        lastFm: null,
-        discogs: null
-    }, passwordHash);
+    // claimed before the account exists, so a racing request on the same invite can't also get through
+    if (tokenRow && !await claimRegisterToken(tokenRow.id)) {
+        throw createError({ statusCode: 404, statusMessage: "Not found" });
+    }
+
+    let user;
+    try {
+        user = await createUser({
+            username,
+            displayName: null,
+            avatar: null,
+            permissions: defaultPerms,
+            lastFm: null,
+            discogs: null
+        }, passwordHash);
+    } catch {
+        if (tokenRow) await releaseRegisterToken(tokenRow.id).catch(() => {});
+        // the only realistic failure is the UNIQUE(username) constraint: another registration took the name
+        // between isUsernameTaken() above and this insert
+        throw createError({ statusCode: 409, statusMessage: "Username is already taken" });
+    }
 
     // race guard for the bootstrap-admin grant above: if another registration won the insert first, this
     // account is not actually the first one and must not keep ADMIN
@@ -177,10 +197,6 @@ export default defineEventHandler(async (event) => {
         const downgraded = Permission.REQUEST_TRACKS | Permission.REQUEST_ALBUMS;
         await updateUser(user.id, { permissions: downgraded });
         user.permissions = downgraded;
-    }
-
-    if (tokenRow) {
-        await consumeRegisterToken(tokenRow.id);
     }
 
     const token = signAuthToken(user.id);

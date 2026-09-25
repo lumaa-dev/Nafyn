@@ -6,6 +6,7 @@ import { IRecording } from "musicbrainz-api";
 import { assertMbid } from "~~/server/utils/ids";
 import { pickCanonicalRelease } from "~~/server/utils/release";
 import { getImageColors } from "~~/server/utils/imageColors";
+import { enforceUpstreamLookupLimit } from "~~/server/utils/rateLimit";
 
 defineRouteMeta({
     openAPI: {
@@ -71,7 +72,8 @@ defineRouteMeta({
 });
 
 export default defineEventHandler(async (event) => {
-    requireAuthToken(event);
+    const { sub: userId } = requireAuthToken(event);
+    enforceUpstreamLookupLimit(event, userId);
 
     // SECURITY: interpolated into the upstream MusicBrainz REST path, so it must be a bare UUID and not
     // extra path segments or a query string of the caller's choosing

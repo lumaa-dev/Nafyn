@@ -40,8 +40,20 @@ export async function validateRegisterToken(token: string): Promise<RegisterToke
     return row ?? null;
 }
 
-export async function consumeRegisterToken(id: string): Promise<void> {
-    await getUsersDb().prepare(`UPDATE register_tokens SET usedAt = ? WHERE id = ?`).run(Date.now(), id);
+// SECURITY: claims the token atomically - the `usedAt IS NULL` guard lives in the UPDATE itself, so of any
+// number of registrations racing on one token exactly one sees `changes === 1`. Checking with
+// validateRegisterToken() and marking it used afterwards let several parallel requests all pass the check
+// before any of them wrote `usedAt`, turning a one-time invite into as many accounts as could be fired at once.
+export async function claimRegisterToken(id: string): Promise<boolean> {
+    const result = await getUsersDb()
+        .prepare(`UPDATE register_tokens SET usedAt = ? WHERE id = ? AND usedAt IS NULL AND expiresAt > ?`)
+        .run(Date.now(), id, Date.now());
+    return result.changes === 1;
+}
+
+// hands a claimed token back, used when the registration it was claimed for fails afterwards
+export async function releaseRegisterToken(id: string): Promise<void> {
+    await getUsersDb().prepare(`UPDATE register_tokens SET usedAt = NULL WHERE id = ?`).run(id);
 }
 
 export async function listActiveRegisterTokens(): Promise<RegisterTokenRow[]> {

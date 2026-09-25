@@ -3,9 +3,8 @@
 // The image is stored on disk (see utils/mediaCover.ts) rather than in `media.coverArt`: that column is
 // fetched server-side by the Subsonic cover proxy, so it stays restricted to Cover Art Archive URLs.
 import { requireAuthToken } from "~~/server/utils/requireAuth";
-import { findLibraryEntry, getMediaId, setMediaCustomCover } from "~~/server/core/library";
-import { getPermissionsById } from "~~/server/core/users";
-import { hasPermission, Permission } from "~~/server/entity/Permission";
+import { requireEditableMedia } from "~~/server/utils/mediaAccess";
+import { setMediaCustomCover } from "~~/server/core/library";
 import { saveMediaCover } from "~~/server/utils/mediaCover";
 
 defineRouteMeta({
@@ -41,21 +40,8 @@ defineRouteMeta({
 export default defineEventHandler(async (event) => {
     const { sub: userId } = requireAuthToken(event);
 
-    const mediaId = getRouterParam(event, "id");
-    if (!mediaId) {
-        throw createError({ statusCode: 400, statusMessage: "Missing media ID" });
-    }
-
-    const media = await getMediaId(mediaId);
-    if (!media) {
-        throw createError({ statusCode: 404, statusMessage: "Track not found in your library" });
-    }
-
-    if (!await findLibraryEntry(userId, mediaId)) {
-        if (!hasPermission(await getPermissionsById(userId) ?? 0, Permission.MANAGE_MUSIC)) {
-            throw createError({ statusCode: 404, statusMessage: "Track not found in your library" });
-        }
-    }
+    const media = await requireEditableMedia(userId, getRouterParam(event, "id"));
+    const mediaId = media.id;
 
     const form = await readMultipartFormData(event);
     const file = form?.find((part) => part.name === "cover");

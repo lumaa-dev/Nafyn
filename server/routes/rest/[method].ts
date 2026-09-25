@@ -45,7 +45,7 @@ import { insertPlayEvents } from "~~/server/core/playEvents";
 import { isHistoryEnabled } from "~~/server/core/insightsSettings";
 import { playlistImageFilePath, deletePlaylistImage } from "~~/server/utils/playlistImage";
 import { isUuid, escapeLike } from "~~/server/utils/ids";
-import { isAllowedCoverArtUrl } from "~~/server/utils/coverArt";
+import { isAllowedCoverArtUrl, fetchCoverArt } from "~~/server/utils/coverArt";
 import { mediaCoverFilePath } from "~~/server/utils/mediaCover";
 import { getLastfmArtistInfo } from "~~/server/utils/lastfm";
 import { authenticateSubsonic } from "~~/server/utils/subsonicAuth";
@@ -315,8 +315,14 @@ const handlers: Record<string, Handler> = {
 
             playlist = await getPlaylistById(existingId);
             if (!playlist) throw new SubsonicApiError(SubsonicErrors.notFound);
-            if (playlist.ownerId !== user.id && !(await hasAccess(playlist, user.id))) {
-                throw new SubsonicApiError(SubsonicErrors.notAuthorized);
+            // SECURITY: replacing the song list removes *every* entry, including ones other people added.
+            // The REST API only lets a member remove what they added themselves
+            // (playlist/[pid]/tracks/[eid].delete.ts), so a wholesale replace is owner-only - letting any
+            // member through here was a way to wipe an owner's playlist with one call.
+            if (playlist.ownerId !== user.id) {
+                throw new SubsonicApiError(playlist.privacy === "private" && !(await hasAccess(playlist, user.id))
+                    ? SubsonicErrors.notFound
+                    : SubsonicErrors.notAuthorized);
             }
 
             for (const entry of await getEntries(playlist.id)) await removeEntry(entry.entryId);
@@ -355,7 +361,7 @@ const handlers: Record<string, Handler> = {
 
             await updatePlaylistRow(id, {
                 ...(name !== undefined ? { title: name.slice(0, 100) } : {}),
-                ...(comment !== undefined ? { description: comment || null } : {}),
+                ...(comment !== undefined ? { description: comment.slice(0, 1000) || null } : {}),
                 ...(isPublic !== undefined ? { privacy: (isPublic === "true" ? "public" : "private") as "public" | "private" } : {})
             });
         }
@@ -402,6 +408,13 @@ const handlers: Record<string, Handler> = {
         // latter is a listen
         if (submission !== undefined && submission !== "true") return [];
 
+        // SECURITY: recently-played entries are rendered with the media row's title/artist/cover, looked up by
+        // id alone (core/recentlyPlayed.ts). Recording an arbitrary id here let any account read the metadata
+        // of tracks in other users' libraries back out of its own shelf - the same probe
+        // POST /library/recently-played already refuses. Only the caller's own tracks are recorded.
+        const song = await getSongOfUser(user.id, id);
+        if (!song) throw new SubsonicApiError(SubsonicErrors.notFound);
+
         await recordRecentlyPlayed(user.id, "track", id);
 
         // Feed the same event store the web player writes to, so listening through a Subsonic client counts
@@ -409,21 +422,18 @@ const handlers: Record<string, Handler> = {
         // other device. Subsonic gives no played duration, so the track's own length stands in and the play
         // is marked complete; a client only scrobbles what it finished.
         if (await isHistoryEnabled(user.id)) {
-            const song = await getSongOfUser(user.id, id);
-            if (song) {
-                const startedAtMs = Date.now() - song.duration * 1000;
-                await insertPlayEvents(user.id, [{
-                    eventId: randomUUID(),
-                    trackId: id,
-                    playlistId: null,
-                    startedAtMs,
-                    durationMs: song.duration * 1000,
-                    completed: true,
-                    source: "library"
-                }]).catch(() => {
-                    // scrobbling must keep working even if insight ingestion doesn't
-                });
-            }
+            const startedAtMs = Date.now() - song.duration * 1000;
+            await insertPlayEvents(user.id, [{
+                eventId: randomUUID(),
+                trackId: id,
+                playlistId: null,
+                startedAtMs,
+                durationMs: song.duration * 1000,
+                completed: true,
+                source: "library"
+            }]).catch(() => {
+                // scrobbling must keep working even if insight ingestion doesn't
+            });
         }
 
         return [];
@@ -463,7 +473,8 @@ async function handleStream(event: H3Event, query: Record<string, unknown>, user
         throw createError({ statusCode: 416, statusMessage: "Invalid Range header" });
     }
 
-    const start = match[1] ? parseInt(match[1], 10) : fileSize - parseInt(match[2]!, 10);
+    // a suffix range longer than the file ("bytes=-999999999") means the whole file, not a negative offset
+    const start = match[1] ? parseInt(match[1], 10) : Math.max(0, fileSize - parseInt(match[2]!, 10));
     const end = match[1] && match[2] ? parseInt(match[2], 10) : fileSize - 1;
 
     if (start >= fileSize || end >= fileSize || start > end) {
@@ -524,8 +535,8 @@ async function handleCoverArt(event: H3Event, query: Record<string, unknown>, us
 
     if (!sourceUrl || !isAllowedCoverArtUrl(sourceUrl)) throw new SubsonicApiError(SubsonicErrors.notFound);
 
-    const upstream = await fetch(sourceUrl, { redirect: "follow" }).catch(() => null);
-    if (!upstream || !upstream.ok || !upstream.body) throw new SubsonicApiError(SubsonicErrors.notFound);
+    const upstream = await fetchCoverArt(sourceUrl);
+    if (!upstream?.body) throw new SubsonicApiError(SubsonicErrors.notFound);
 
     setResponseHeader(event, "Content-Type", upstream.headers.get("Content-Type") ?? "image/jpeg");
     setResponseHeader(event, "Cache-Control", "public, max-age=86400");
@@ -544,7 +555,16 @@ export default defineEventHandler(async (event) => {
         const contentType = getHeader(event, "Content-Type") ?? "";
         if (contentType.includes("form")) {
             try {
-                Object.assign(query, await readBody(event));
+                const form: unknown = await readBody(event);
+                if (form && typeof form === "object") {
+                    // only plain string / string[] params, and never keys that would reach the prototype
+                    for (const [key, value] of Object.entries(form)) {
+                        if (key === "__proto__" || key === "constructor" || key === "prototype") continue;
+                        if (typeof value === "string" || (Array.isArray(value) && value.every((v) => typeof v === "string"))) {
+                            query[key] = value;
+                        }
+                    }
+                }
             } catch {
                 // no body, or not form-encoded - query params alone are fine
             }

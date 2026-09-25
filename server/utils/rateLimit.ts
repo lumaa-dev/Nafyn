@@ -60,6 +60,17 @@ export function consumeRateLimit(key: string, max: number, windowMs: number): Ra
     return { allowed: true, retryAfterSeconds: 0 };
 }
 
+// reports whether `key` is already out of attempts, without spending one. For checks that are cheap enough to
+// run first and only count when they fail (see Subsonic token auth).
+export function peekRateLimit(key: string, max: number): RateLimitResult {
+    const now = Date.now();
+    const bucket = buckets.get(key);
+    if (!bucket || bucket.expiresAt <= now || bucket.count < max) {
+        return { allowed: true, retryAfterSeconds: 0 };
+    }
+    return { allowed: false, retryAfterSeconds: Math.ceil((bucket.expiresAt - now) / 1000) };
+}
+
 // clears a key's attempts, used after a successful login so honest typos don't linger
 export function resetRateLimit(key: string): void {
     buckets.delete(key);
@@ -110,4 +121,18 @@ export async function isWhitelisted(ip: string | null): Promise<boolean> {
 
     const ips = await resolveWhitelist(domains);
     return ips.has(normalizeIp(ip));
+}
+
+// every lookup behind these routes queues on the one shared MusicBrainz client (which throttles itself to
+// MusicBrainz's 1 req/s policy), so a single account spamming lookups would stall search, album pages and the
+// download pipeline for every other user. One bucket per account across all of them.
+const UPSTREAM_LOOKUPS_MAX = 60;
+const UPSTREAM_LOOKUPS_WINDOW_MS = 60 * 1000;
+
+export function enforceUpstreamLookupLimit(event: import("h3").H3Event, userId: string): void {
+    const result = consumeRateLimit(`upstream-lookup:${userId}`, UPSTREAM_LOOKUPS_MAX, UPSTREAM_LOOKUPS_WINDOW_MS);
+    if (!result.allowed) {
+        setResponseHeader(event, "Retry-After", result.retryAfterSeconds);
+        throw createError({ statusCode: 429, statusMessage: "Too many lookups, slow down" });
+    }
 }

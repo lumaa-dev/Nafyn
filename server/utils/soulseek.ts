@@ -11,7 +11,7 @@
 
 import { randomUUID } from "node:crypto";
 import { copyFile, mkdir, rm } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { dirname, resolve, sep } from "node:path";
 
 export interface SlskSearchResult {
     user: string,
@@ -24,6 +24,11 @@ export interface SlskSearchResult {
 
 // how long a transfer is allowed to sit at 0 bytes (queued/remotely-queued) before we give up on that peer
 const STALL_TIMEOUT_MS = 60_000;
+// once bytes have started flowing, a transfer that then makes no progress for this long is abandoned too -
+// STALL_TIMEOUT_MS alone only covers the queued-at-0-bytes case, so a peer that sent one byte and went quiet
+// (or a transfer slskd stopped reporting on) used to keep this request polling forever
+const NO_PROGRESS_TIMEOUT_MS = 10 * 60 * 1000;
+const MAX_CONSECUTIVE_POLL_FAILURES = 60;
 
 export interface DownloadProgress {
     bytesDownloaded: number,
@@ -275,13 +280,24 @@ export async function downloadFromSoulseek(
     // forever, or just never coming back) - track how long we've been stuck at 0 and give up on this specific
     // peer once it's been too long, so the caller can retry with a different seller of the same file
     let stalledSinceMs: number | null = Date.now();
+    let lastProgressMs = Date.now();
+    let progressBytes = 0;
+    let pollFailures = 0;
 
     // poll until the transfer reaches a terminal (Completed-flagged) state
     for (;;) {
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        const pollRes = await slskdFetch(`/api/v0/transfers/downloads/${encodeURIComponent(file.user)}/${transfer.id}`);
-        if (!pollRes.ok) continue;
+        const pollRes = await slskdFetch(`/api/v0/transfers/downloads/${encodeURIComponent(file.user)}/${transfer.id}`).catch(() => null);
+        if (!pollRes?.ok) {
+            // a transfer slskd no longer knows about (404) or an slskd that's gone away must not keep this
+            // loop - and the request waiting on it - alive forever
+            if (++pollFailures >= MAX_CONSECUTIVE_POLL_FAILURES) {
+                throw new Error(`Lost track of the Soulseek transfer from ${file.user} (slskd stopped answering)`);
+            }
+            continue;
+        }
+        pollFailures = 0;
 
         const current = await pollRes.json() as SlskdTransfer;
         finalState = current.state;
@@ -291,6 +307,10 @@ export async function downloadFromSoulseek(
         }
 
         const now = Date.now();
+        if (current.bytesTransferred > progressBytes) {
+            progressBytes = current.bytesTransferred;
+            lastProgressMs = now;
+        }
         const elapsed = (now - lastTick) / 1000;
         if (elapsed >= 1 && onProgress) {
             const speedBytesPerSec = (current.bytesTransferred - lastBytes) / elapsed;
@@ -311,6 +331,11 @@ export async function downloadFromSoulseek(
             await slskdFetch(`/api/v0/transfers/downloads/${encodeURIComponent(file.user)}/${transfer.id}?remove=true`, { method: "DELETE" }).catch(() => {});
             throw new Error(`Soulseek transfer from ${file.user} stalled at 0 bytes for over ${STALL_TIMEOUT_MS / 1000}s`);
         }
+
+        if (stalledSinceMs === null && now - lastProgressMs >= NO_PROGRESS_TIMEOUT_MS) {
+            await slskdFetch(`/api/v0/transfers/downloads/${encodeURIComponent(file.user)}/${transfer.id}?remove=true`, { method: "DELETE" }).catch(() => {});
+            throw new Error(`Soulseek transfer from ${file.user} made no progress for over ${NO_PROGRESS_TIMEOUT_MS / 1000}s`);
+        }
     }
 
     if (!finalState.includes("Succeeded")) {
@@ -328,7 +353,15 @@ export async function downloadFromSoulseek(
         throw new Error("Soulseek transfer succeeded but the file couldn't be located on the shared downloads mount");
     }
 
-    const sourcePath = join(downloadsPath, ...relativeSegments);
+    // SECURITY: this path is copied from *and then deleted*, and it's built from a listing slskd returned for
+    // a file whose name a remote Soulseek peer chose. Refuse anything that doesn't resolve to somewhere inside
+    // the downloads directory (a `..` segment, an absolute fullName) rather than trust every link in that
+    // chain to have sanitized it - otherwise the rm() below is an arbitrary-file delete.
+    const downloadsRoot = resolve(downloadsPath);
+    const sourcePath = resolve(downloadsRoot, ...relativeSegments);
+    if (relativeSegments.some((segment) => segment === "..") || !sourcePath.startsWith(downloadsRoot + sep)) {
+        throw new Error("Soulseek reported a downloaded file outside the downloads directory, refusing to touch it");
+    }
 
     await mkdir(dirname(destPath), { recursive: true });
     // copy + unlink instead of rename: destPath and the slskd downloads mount may live on different
