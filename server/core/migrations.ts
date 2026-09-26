@@ -101,6 +101,11 @@ const MIGRATIONS: Migration[] = [
         id: "2026-08-29-media-lyrics",
         up: async (conn) => {
             if (await tableExists(conn, "media_lyrics")) return;
+            // mediaId's charset/collation must match media.id exactly or the FK creation fails with
+            // ER_FK_INCOMPATIBLE_COLUMNS (a fresh install defaults to utf8mb4_general_ci, same as `media`,
+            // but a database that predates Nafyn can leave `media` on a different collation - see
+            // resolveTableOptions in insightsSchema.ts for the same issue on the insights tables).
+            const tableOptions = await resolveTableOptions(conn);
             await conn.query(`
                 CREATE TABLE media_lyrics (
                     mediaId VARCHAR(36) PRIMARY KEY,
@@ -108,7 +113,7 @@ const MIGRATIONS: Migration[] = [
                     content MEDIUMTEXT NOT NULL,
                     updatedAt BIGINT NOT NULL,
                     CONSTRAINT fk_media_lyrics_media FOREIGN KEY (mediaId) REFERENCES media(id) ON DELETE CASCADE
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+                ) ${tableOptions}
             `);
         }
     },
