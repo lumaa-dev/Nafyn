@@ -156,6 +156,7 @@
         <section class="subsection" v-if="storage">
           <h2>{{ $t('settings.storage.usage.title') }}</h2>
           <div class="bar">
+            <div class="occupied" :style="{ width: `${occupiedPercent}%` }" />
             <div class="fill" :style="{ width: `${usedPercent}%` }" />
           </div>
           <p class="storage-stats">{{ $t('settings.storage.usage.stats', { used: formatBytes(storage.usedByNafynBytes), free: formatBytes(storage.freeBytes), total: formatBytes(storage.totalBytes) }) }}</p>
@@ -629,6 +630,11 @@ async function loadStoragePanel() {
 const usedPercent = computed(() => {
   if (!storage.value || storage.value.totalBytes === 0) return 0;
   return Math.min(100, (storage.value.usedByNafynBytes / storage.value.totalBytes) * 100);
+});
+
+const occupiedPercent = computed(() => {
+  if (!storage.value || storage.value.totalBytes === 0) return 0;
+  return Math.min(100, ((storage.value.totalBytes - storage.value.freeBytes) / storage.value.totalBytes) * 100);
 });
 
 const PALETTE = ["#e18c46", "#44cf44", "#4499cf", "#cf4444", "#cf44b8", "#cfc444", "#8c44cf", "#44cfa8"];
@@ -1123,13 +1129,21 @@ watch(activeCategory, async (cat) => {
   border-radius: 5px;
   background: #ffffff1a;
   overflow: hidden;
+  display: flex;
+  flex-direction: row;
 }
 
-.bar .fill {
+.bar > * {
   height: 100%;
-  border-radius: 5px;
-  background: #e18c46;
   transition: width 0.3s ease;
+}
+
+.bar > .fill {
+  background: #e18c46;
+}
+
+.bar > .occupied {
+  background: #7c7c7c;
 }
 
 .storage-stats {
