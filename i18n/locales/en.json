@@ -77,7 +77,10 @@
   "search": {
     "albums": "Albums",
     "artists": "Artists",
-    "tracks": "Tracks"
+    "tracks": "Tracks",
+    "metadata": "From other services",
+    "hint": "Search by title, \"Artist - Title\", ISRC or a Deezer/Apple Music/Spotify/Discogs/Genius link",
+    "notFound": "No matching song found."
   },
   "requests": {
     "title": "Requests",

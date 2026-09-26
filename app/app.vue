@@ -37,6 +37,8 @@ body {
 	color: #ffffffae;
 	font-family: "Instrument-Serif";
 	font-size: 1.5em;
+	max-width: 100%;
+	overflow: hidden scroll;
 }
 
 a {
@@ -102,6 +104,7 @@ button {
 	background: #00000000;
 	border: none;
 	outline: none;
+	font-size: inherit;
 }
 
 button[filled], a[filled], p[filled] {

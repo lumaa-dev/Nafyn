@@ -8,7 +8,7 @@
       <button class="search-toggle" :class="{ active: mobileSearchActive }" @click="mobileSearchActive = !mobileSearchActive">
         <img src="../assets/icons/search.svg" draggable="false" />
       </button>
-      <input v-model="searchText" type="text" name="search" id="search" :class="{ 'mobile-active': mobileSearchActive }" :placeholder="$t('common.search')" :disabled="sidebarActive" @keydown.enter="navigateTo(`/search?q=${encodeURIComponent(searchText)}`)">
+      <input v-model="searchText" type="text" name="search" id="search" :class="{ 'mobile-active': mobileSearchActive }" :placeholder="$t('common.search')" :title="$t('search.hint')" :disabled="sidebarActive" @keydown.enter="search()">
     </span>
   </header>
 </template>
@@ -25,6 +25,13 @@ const props = defineProps({
   toggleSidebar: { type: Function, default: () => { } },
   sidebarActive: { type: Boolean, default: false }
 })
+
+// title/artist, ISRCs, platform IDs (`deezer:track:123`) and pasted links all go through the same search page,
+// which tells them apart (server/utils/metadata/query.ts)
+function search() {
+  const q = searchText.value.trim();
+  if (q) navigateTo(`/search?q=${encodeURIComponent(q)}`);
+}
 
 function onClickOutside(event: MouseEvent) {
   if (mobileSearchActive.value && headerRef.value && !headerRef.value.contains(event.target as Node)) {

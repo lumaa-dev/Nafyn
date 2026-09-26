@@ -12,6 +12,7 @@ Multi-user: separate libraries, separate permissions per user. Users request son
 - [How it works](#how-it-works)
 - [How to setup](#how-to-setup)
 - [Settings](#settings)
+- [Song metadata providers](#song-metadata-providers)
 - [Subsonic API](#subsonic-api)
 - [Tech stack](#tech-stack)
 - [Development](#development)
@@ -79,9 +80,34 @@ Configured via environment variables (see `.env.example`):
 | `SOULSEEK_DOWNLOADS_PATH` | Local, readable path to slskd's downloads directory. |
 | `ACOUSTID_API_KEY` | Verifies downloaded audio matches requested MusicBrainz recording. |
 | `LASTFM_API_KEY` | Artist bios/images on the artist page, search results, and Subsonic's `getArtistInfo2`. Optional — those surfaces just show less without it. |
+| `DISCOGS_TOKEN` | Discogs personal access token (free, [discogs.com/settings/developers](https://www.discogs.com/settings/developers)). Optional — Discogs is skipped when empty. See [Song metadata providers](#song-metadata-providers). |
+| `THEAUDIODB_API_KEY` | TheAudioDB API key — `123` is the free public test key. Optional — skipped when empty. |
+| `GENIUS_ACCESS_TOKEN` | Genius client access token (free, [genius.com/api-clients](https://genius.com/api-clients)). Optional — skipped when empty. |
 | `DOMAINS_WHITELIST` | Comma-separated hostnames exempt from the login/register rate limits. Leave empty unless you specifically need it — every entry is an IP that can brute-force passwords freely. |
 | `TRUST_PROXY` | Number of reverse proxies in front of Nafyn (nginx/Caddy/Traefik/Cloudflare). `0` (default) when Nafyn is directly exposed. Gates whether `X-Forwarded-For` is trusted at all — wrong in either direction breaks or defeats rate limiting, see [`server/utils/clientIp.ts`](server/utils/clientIp.ts). |
 | `NAFYN_PUBLIC_OPENAPI` | Set `true` to publish the auto-generated OpenAPI spec + Scalar docs UI in production. Off by default — the spec enumerates every endpoint, parameter and auth requirement to anonymous visitors. |
+
+## Song metadata providers
+
+Besides MusicBrainz (which stays the source of truth for requests), the search bar also queries free music metadata services for richer song data — artwork, 30-second previews, genres, ISRCs, BPM/audio features, credits, descriptions:
+
+| Provider | Key | Text search | ISRC | Platform ID / link | Notable data |
+|---|---|---|---|---|---|
+| Deezer | none | ✓ | ✓ | `deezer:track:<id>`, `deezer:album:<id>`, deezer.com links | ISRC, previews, BPM, gain, genres |
+| iTunes | none | ✓ | | `itunes:<id>`, music.apple.com / itunes.apple.com links | artwork up to 1000px, previews, genre |
+| ReccoBeats | none | | | `spotify:track:<id>`, `reccobeats:<id>`, open.spotify.com links | ISRC, audio features (tempo, energy, valence...) |
+| TheAudioDB | `THEAUDIODB_API_KEY` | `Artist - Title` only | | `theaudiodb:track:<id>` | MusicBrainz IDs, mood, theme, description |
+| Discogs | `DISCOGS_TOKEN` | ✓ | | `discogs:release:<id>`, `discogs:master:<id>`, discogs.com links | genres/styles, labels, tracklist, credits (release-level) |
+| Genius | `GENIUS_ACCESS_TOKEN` | ✓ | | `genius:song:<id>`, genius.com/songs/<id> links | producers/writers, description, media links (never lyrics) |
+
+What can go in the search bar:
+
+- **Free text** — MusicBrainz results as before, plus a "From other services" row. Write it as `Artist - Title` to let providers that need separate fields (TheAudioDB) join in.
+- **An ISRC** (`GBAYE0601498`, dashes allowed) — or **a platform ID / pasted link** from the table above. These skip the MusicBrainz text search: the record is fetched from its provider, matched against MusicBrainz (by ISRC, else a strict title + artist search), and enriched with the other providers' best match. The first card then opens the MusicBrainz track in Nafyn, ready to request.
+
+Leave a key empty and that provider is skipped silently — the keyless ones (Deezer, iTunes, ReccoBeats) are always on. Each provider is called with a Nafyn `User-Agent`, results are cached in memory for 10 minutes, and a provider that answers with a rate limit (`429`, iTunes' `403`, Deezer's quota error, or a `Retry-After` / `X-RateLimit-Remaining: 0` / `X-Discogs-Ratelimit-Remaining: 0` header) is backed off until its window resets. Also available directly over the API: `GET /api/v1/metadata/search?q=` and `GET /api/v1/metadata/providers`.
+
+To add a provider, write one file under [`server/utils/metadata/providers/`](server/utils/metadata/providers/) implementing `MetadataProvider` ([`types.ts`](server/utils/metadata/types.ts)) and add it to `PROVIDERS` in [`server/utils/metadata/index.ts`](server/utils/metadata/index.ts).
 
 ## Subsonic API
 
@@ -98,6 +124,7 @@ Both password-based login (`p=`) and token-based login (`t=`/`s=`) work, but not
 - `bullmq` — download job queue
 - `musicbrainz-api` — track/album metadata search
 - Last.fm API — artist bios/images (optional, `LASTFM_API_KEY`)
+- Deezer, iTunes, ReccoBeats, TheAudioDB, Discogs, Genius — song metadata (plain HTTP, keyed ones optional)
 - `slskd` (external, self-hosted) — Soulseek network access
 - `fpcalc` + AcoustID — audio fingerprint verification
 - `music-metadata` — tag reading/writing

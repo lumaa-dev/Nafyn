@@ -35,7 +35,12 @@ export default defineNuxtConfig({
     domainsWhitelist: process.env.DOMAINS_WHITELIST || '',
 
     acoustidApiKey: process.env.ACOUSTID_API_KEY || '',
-    lastfmApiKey: process.env.LASTFM_API_KEY || ''
+    lastfmApiKey: process.env.LASTFM_API_KEY || '',
+
+    // song metadata providers (server/utils/metadata) - each is skipped when its key is empty
+    discogsToken: process.env.DISCOGS_TOKEN || '',
+    theaudiodbApiKey: process.env.THEAUDIODB_API_KEY || '',
+    geniusAccessToken: process.env.GENIUS_ACCESS_TOKEN || ''
   },
 
   vite: {
