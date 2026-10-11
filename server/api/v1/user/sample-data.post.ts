@@ -21,7 +21,7 @@ defineRouteMeta({
 export default defineEventHandler(async (event) => {
     if (!import.meta.dev) throw createError({ statusCode: 404, statusMessage: "Not found" });
 
-    const { sub: userId } = requireAuthToken(event);
+    const { sub: userId } = await requireAuthToken(event);
     const body = await readBody(event);
 
     if (typeof body?.enabled !== "boolean") {

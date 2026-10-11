@@ -44,7 +44,7 @@ const { items: tracks, initialLoading, loadingMore, sentinel, loadMore, reset } 
 });
 await loadMore();
 
-const { currentTrack, play } = usePlayer();
+const { currentTrack, play } = useUnity();
 const { errorToast, sendToast } = useToast();
 
 const showPicker = ref(false);

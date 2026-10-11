@@ -68,7 +68,7 @@ defineRouteMeta({
 });
 
 export default defineEventHandler(async (event) => {
-    const { sub: userId } = requireAuthToken(event);
+    const { sub: userId } = await requireAuthToken(event);
 
     const rateLimit = consumeRateLimit(`metadata:${userId}`, MAX_LOOKUPS, LOOKUP_WINDOW_MS);
     if (!rateLimit.allowed) {

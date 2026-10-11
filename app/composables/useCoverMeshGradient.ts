@@ -19,7 +19,11 @@ const BLOB_MOTION = [
 ];
 
 export function useCoverMeshGradient() {
-  const { state, currentTrack } = usePlayer();
+  // useUnity(), not usePlayer(): on a slave device the real local engine never loads anything, so this must
+  // follow the mirrored track (same one NowPlaying.vue/now-playing.vue actually display) or the colors would
+  // never match what's on screen. getBassLevel() below stays tied to the real local analyser regardless -
+  // it has no bass to report on a slave either way, so the gradient simply stops pulsing there, by design.
+  const { state, currentTrack } = useUnity();
 
   const trackColors = ref<TrackColors>({ imageColors: [], textColor: DEFAULT_TEXT });
 

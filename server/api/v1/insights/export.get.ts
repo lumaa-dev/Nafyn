@@ -35,7 +35,7 @@ async function allRows(table: string, userId: string): Promise<unknown[]> {
 }
 
 export default defineEventHandler(async (event) => {
-    const { sub: userId } = requireAuthToken(event);
+    const { sub: userId } = await requireAuthToken(event);
 
     const rateLimit = consumeRateLimit(`insights:export:${userId}`, MAX_EXPORTS, EXPORT_WINDOW_MS);
     if (!rateLimit.allowed) {

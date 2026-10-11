@@ -60,7 +60,7 @@ const { data: album } = await useAsyncData<AlbumDetail>(`album-${aid}`, () => {
 
 const albumMediaIds = computed(() => album.value?.tracks.map((t) => t.mediaId).filter((id): id is string => id !== null) ?? []);
 
-const { currentTrack, play } = usePlayer();
+const { currentTrack, play } = useUnity();
 
 // tracks aren't fetched as full MediaRow rows on the album page (only display fields), so build one client-side
 // from data already on hand - just enough to stream/queue/show the track, matching what the actual media row holds

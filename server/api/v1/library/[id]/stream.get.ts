@@ -108,7 +108,7 @@ export default defineEventHandler(async (event) => {
 
     let userId: string;
     try {
-        userId = verifyAuthToken(token).sub;
+        userId = (await verifyAuthToken(token)).sub;
     } catch {
         throw createError({ statusCode: 401, statusMessage: "Invalid or expired token" });
     }

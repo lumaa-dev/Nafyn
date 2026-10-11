@@ -229,6 +229,28 @@ export async function initDatabases(): Promise<void> {
             crossfadeEnabled TINYINT(1) NOT NULL DEFAULT 1,
             crossfadeMs INT NOT NULL DEFAULT 3000
         );
+
+        -- one row per login, id doubles as the signed JWT's \`jti\` claim so a token can be revoked by deleting
+        -- (soft, via revokedAt) its matching row. No FK to users, same informal-reference convention as
+        -- api_tokens/register_tokens above.
+        CREATE TABLE IF NOT EXISTS sessions (
+            id VARCHAR(36) PRIMARY KEY,
+            userId VARCHAR(36) NOT NULL,
+            userAgent TEXT,
+            ip VARCHAR(64),
+            createdAt BIGINT NOT NULL,
+            lastSeenAt BIGINT NOT NULL,
+            revokedAt BIGINT NULL,
+            expiresAt BIGINT NOT NULL,
+            INDEX idx_sessions_userId (userId)
+        );
+
+        -- per-user Nafyn Unity opt-out (Settings -> Sessions), off \`users\` for the same reason as the other
+        -- per-user settings tables above. Absent row means Unity enabled.
+        CREATE TABLE IF NOT EXISTS user_unity_settings (
+            userId VARCHAR(36) PRIMARY KEY,
+            enabled TINYINT(1) NOT NULL DEFAULT 1
+        );
     `);
 
     const requests = getRequestsDb();

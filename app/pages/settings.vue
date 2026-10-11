@@ -81,6 +81,40 @@
         </section>
       </div>
 
+      <div v-else-if="activeCategory === 'sessions'" class="panel">
+        <h1>{{ $t('settings.sessions.title') }}</h1>
+
+        <section class="subsection">
+          <h2>{{ $t('settings.sessions.unityTitle') }}</h2>
+          <label class="switch-row">
+            <input type="checkbox" :checked="unitySettings.enabled" @change="toggleUnity">
+            {{ $t('settings.sessions.unityToggleLabel') }}
+          </label>
+          <p class="subsonic-note">{{ $t('settings.sessions.unityToggleHint') }}</p>
+
+          <label class="switch-row">
+            <input type="checkbox" :checked="unitySessionOverride" @change="toggleUnitySessionOverride">
+            {{ $t('settings.sessions.sessionOverrideLabel') }}
+          </label>
+        </section>
+
+        <section class="subsection">
+          <h2>{{ $t('settings.sessions.listTitle') }}</h2>
+          <p class="subsonic-intro">{{ $t('settings.sessions.intro') }}</p>
+
+          <ul v-if="sessions.length > 0" class="api-token-list">
+            <li v-for="s in sessions" :key="s.id">
+              <span class="col">
+                <span class="title">{{ s.deviceLabel }}{{ s.isCurrent ? ` ${$t('settings.sessions.thisDevice')}` : '' }}</span>
+                <span class="artist">{{ $t('settings.sessions.signedIn', { date: formatDate(s.createdAt) }) }} &middot; {{ $t('settings.sessions.lastActive', { date: formatDate(s.lastSeenAt) }) }}</span>
+              </span>
+              <button v-if="!s.isCurrent" class="danger" type="button" filled="hollow" :disabled="revokingSessionId === s.id" @click="revokeSession(s.id)">{{ $t('settings.sessions.revoke') }}</button>
+            </li>
+          </ul>
+          <p v-else class="subsonic-note">{{ $t('settings.sessions.empty') }}</p>
+        </section>
+      </div>
+
       <div v-else-if="activeCategory === 'accounts'" class="panel">
         <h1>{{ $t('settings.accounts.title') }}</h1>
 
@@ -282,11 +316,12 @@ import type { ApiTokenSummary, ApiTokenRow } from '~~/server/core/apiTokens';
 import { syncHistorySetting, useHistoryEnabled, setHistoryEnabledState } from '~/composables/usePlayTracking';
 import { useAppearanceSettings, syncAppearanceSettings, setAppearanceSetting } from '~/composables/useAppearanceSettings';
 import { usePlaybackSettings, syncPlaybackSettings, setPlaybackSetting } from '~/composables/usePlaybackSettings';
+import { useUnitySettings, syncUnitySettings, setUnitySetting, useUnitySessionOverride, setUnityDisabledThisSession } from '~/composables/useUnitySettings';
 
 const token = useCookie("nafynToken").value ?? "";
 
 interface Category {
-  id: "profile" | "accounts" | "storage" | "subsonic" | "privacy" | "appearance" | "playback" | "developer",
+  id: "profile" | "accounts" | "storage" | "subsonic" | "privacy" | "appearance" | "playback" | "sessions" | "developer",
   label: string
 }
 
@@ -311,6 +346,7 @@ const categories = computed(() => {
   const cats: Category[] = [{ id: 'profile', label: $t('settings.categories.profile') }];
   cats.push({ id: 'appearance', label: $t('settings.categories.appearance') });
   cats.push({ id: 'playback', label: $t('settings.categories.playback') });
+  cats.push({ id: 'sessions', label: $t('settings.categories.sessions') });
   cats.push({ id: 'privacy', label: $t('settings.categories.privacy') });
   if (canManageAccounts.value) cats.push({ id: 'accounts', label: $t('settings.categories.accounts') });
   if (canManageMusic.value) cats.push({ id: 'storage', label: $t('settings.categories.storage') });
@@ -484,7 +520,11 @@ function sendToast(title: string | null, message: string, success: boolean = tru
   })
 }
 
-function logout() {
+async function logout() {
+  // best-effort: revoke this device's own session server-side so it disappears from everyone's Sessions
+  // list immediately, rather than lingering until its JWT naturally expires. A flaky network must never
+  // block the user from actually leaving the page.
+  await $fetch("/api/v1/auth/logout", { method: "POST", headers: { Authorization: token } }).catch(() => {});
   useCookie("nafynToken").value = null;
   navigateTo("/login");
 }
@@ -802,6 +842,51 @@ async function deleteHistory() {
   }
 }
 
+// -- sessions panel (Nafyn Unity + active sessions) --
+
+interface SessionSummary {
+  id: string,
+  deviceLabel: string,
+  createdAt: number,
+  lastSeenAt: number,
+  isCurrent: boolean
+}
+
+const unitySettings = useUnitySettings();
+const unitySessionOverride = useUnitySessionOverride();
+const sessions = ref<SessionSummary[]>([]);
+const revokingSessionId = ref<string | null>(null);
+
+async function loadSessionsPanel() {
+  await syncUnitySettings();
+  sessions.value = await $fetch<SessionSummary[]>("/api/v1/user/sessions", { headers: { Authorization: token } });
+}
+
+async function toggleUnity(e: Event) {
+  const checked = (e.target as HTMLInputElement).checked;
+  try {
+    await setUnitySetting({ enabled: checked });
+  } catch {
+    sendToast($t('settings.sessions.title'), $t('settings.profile.error'), false);
+  }
+}
+
+function toggleUnitySessionOverride(e: Event) {
+  setUnityDisabledThisSession((e.target as HTMLInputElement).checked);
+}
+
+async function revokeSession(id: string) {
+  revokingSessionId.value = id;
+  try {
+    await $fetch(`/api/v1/user/sessions/${id}`, { method: "DELETE", headers: { Authorization: token } });
+    sessions.value = sessions.value.filter((s) => s.id !== id);
+  } catch (e) {
+    sendToast($t('settings.sessions.title'), (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error'), false);
+  } finally {
+    revokingSessionId.value = null;
+  }
+}
+
 // -- developer panel (sample data) --
 
 const sampleDataEnabled = ref(false);
@@ -844,6 +929,7 @@ watch(activeCategory, async (cat) => {
   if (cat === 'privacy') await loadPrivacyPanel();
   if (cat === 'appearance') await loadAppearancePanel();
   if (cat === 'playback') await syncPlaybackSettings();
+  if (cat === 'sessions' && sessions.value.length === 0) await loadSessionsPanel();
   if (cat === 'developer') await loadDeveloperPanel();
 });
 </script>

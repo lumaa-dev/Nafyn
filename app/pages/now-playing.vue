@@ -27,6 +27,11 @@
         </button>
         <button filled="hollow" class="round" :disabled="!hasNext" @click="next()"><img src="../assets/icons/next.svg" draggable="false" /></button>
       </div>
+
+      <div v-if="isRemoteControlled" class="unity-badge">
+        <p>{{ $t('player.unity.playingOn', { device: masterDeviceLabel }) }}</p>
+        <button type="button" filled="hollow" class="unity-takeover" @click="takeover()">{{ $t('player.unity.playHere') }}</button>
+      </div>
     </div>
 
     <div class="right">
@@ -49,8 +54,10 @@
 import noCover from '../assets/no-cover.png';
 import { nowPlayingPanels } from '~/composables/useNowPlayingPanels';
 
-const { state, currentTrack, hasNext, hasPrev, togglePlay, next, prev, seek } = usePlayer();
+const { state, currentTrack, hasNext, hasPrev, role, masterStatus, masterDeviceLabel, takeover, togglePlay, next, prev, seek } = useUnity();
 const { bgColors, textColor, scrimColor, setBlobRef } = useCoverMeshGradient();
+
+const isRemoteControlled = computed(() => role.value === "slave" && masterStatus.value === "active");
 
 const activePanelId = ref(nowPlayingPanels[0]?.id);
 const activePanel = computed(() => nowPlayingPanels.find(p => p.id === activePanelId.value));
@@ -152,6 +159,29 @@ function formatDuration(seconds: number): string {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.npp .unity-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.npp .unity-badge p {
+  font-size: 0.8em;
+  color: color-mix(in srgb, var(--np-text, #ffffff) 55%, transparent);
+  max-width: 100%;
+  text-align: center;
+  overflow-wrap: break-word;
+}
+
+.npp .unity-takeover {
+  font-size: 0.85em;
+  max-width: 100%;
 }
 
 .npp .seek {

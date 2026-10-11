@@ -153,6 +153,40 @@ const MIGRATIONS: Migration[] = [
                 console.info(`[insights] converted ${table} from ${current} to ${collation}`);
             }
         }
+    },
+    {
+        // Nafyn Unity: one row per login, id doubles as the signed JWT's `jti` claim. No FK (same informal
+        // reference convention as api_tokens/register_tokens).
+        id: "2026-10-11-sessions",
+        up: async (conn) => {
+            if (await tableExists(conn, "sessions")) return;
+            await conn.query(`
+                CREATE TABLE sessions (
+                    id VARCHAR(36) PRIMARY KEY,
+                    userId VARCHAR(36) NOT NULL,
+                    userAgent TEXT,
+                    ip VARCHAR(64),
+                    createdAt BIGINT NOT NULL,
+                    lastSeenAt BIGINT NOT NULL,
+                    revokedAt BIGINT NULL,
+                    expiresAt BIGINT NOT NULL,
+                    INDEX idx_sessions_userId (userId)
+                )
+            `);
+        }
+    },
+    {
+        // Nafyn Unity: per-user opt-out (Settings -> Sessions). Absent row means Unity enabled.
+        id: "2026-10-11-unity-settings",
+        up: async (conn) => {
+            if (await tableExists(conn, "user_unity_settings")) return;
+            await conn.query(`
+                CREATE TABLE user_unity_settings (
+                    userId VARCHAR(36) PRIMARY KEY,
+                    enabled TINYINT(1) NOT NULL DEFAULT 1
+                )
+            `);
+        }
     }
 ];
 

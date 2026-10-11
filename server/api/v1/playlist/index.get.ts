@@ -50,7 +50,7 @@ defineRouteMeta({
 });
 
 export default defineEventHandler(async (event) => {
-    const { sub: userId } = requireAuthToken(event);
+    const { sub: userId } = await requireAuthToken(event);
     const pagination = parsePagination(event);
 
     const [items, total] = await Promise.all([

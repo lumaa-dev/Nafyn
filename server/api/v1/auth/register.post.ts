@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import { randomUUID } from "node:crypto";
 import { createUser, isUsernameTaken, countUsers, updateUser } from "../../../core/users";
 import { consumeRateLimit, isWhitelisted } from "../../../utils/rateLimit";
 import { getClientIP } from "../../../utils/clientIp";
@@ -7,6 +8,9 @@ import { Permission } from "../../../entity/Permission";
 import { isRegistrationOpen } from "../../../core/appSettings";
 import { validateRegisterToken, claimRegisterToken, releaseRegisterToken } from "../../../core/registerTokens";
 import { assertValidUsername } from "../../../utils/validation";
+import { createSession } from "../../../core/sessions";
+
+const SESSION_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000; // mirrors signAuthToken's own "7d" expiresIn
 
 const MAX_ATTEMPTS = 3;
 const WINDOW_MS = 60 * 60 * 1000;
@@ -199,7 +203,9 @@ export default defineEventHandler(async (event) => {
         user.permissions = downgraded;
     }
 
-    const token = signAuthToken(user.id);
+    const jti = randomUUID();
+    await createSession(user.id, jti, getHeader(event, "user-agent") ?? null, ip, Date.now() + SESSION_LIFETIME_MS);
+    const token = signAuthToken(user.id, jti);
 
     return { user, token };
 });

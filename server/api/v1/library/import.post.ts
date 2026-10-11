@@ -113,7 +113,7 @@ function toInput(raw: RawMetadata): ManualTrackInput {
 }
 
 export default defineEventHandler(async (event) => {
-    const { sub: userId } = requireAuthToken(event);
+    const { sub: userId } = await requireAuthToken(event);
 
     // SECURITY: importing adds a track to a library exactly like a request does, so it answers to the same
     // permission bit - an account an admin has stripped of REQUEST_TRACKS (or one that was deleted while its

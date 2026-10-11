@@ -72,7 +72,7 @@ import type { ReplayEntry } from '~/composables/useInsights';
 // "read only" line below says so plainly rather than leaving the absence to be discovered.
 const route = useRoute();
 const insights = useInsights();
-const { currentTrack, play } = usePlayer();
+const { currentTrack, play } = useUnity();
 
 const mix = ref<Awaited<ReturnType<typeof insights.replay>> | null>(null);
 

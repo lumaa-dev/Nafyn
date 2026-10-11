@@ -107,6 +107,7 @@
       "profile": "Profil",
       "appearance": "Apparence",
       "playback": "Lecture",
+      "sessions": "Sessions",
       "accounts": "Comptes",
       "storage": "Stockage",
       "subsonic": "Subsonic",
@@ -191,6 +192,20 @@
         "namePlaceholder": "Label (ex : Arpeggi sur iPhone)",
         "generate": "Générer un jeton"
       }
+    },
+    "sessions": {
+      "title": "Sessions",
+      "unityTitle": "Nafyn Unity",
+      "unityToggleLabel": "Autoriser les autres appareils à contrôler la lecture à distance",
+      "unityToggleHint": "Activé, tout autre appareil connecté à votre compte peut voir et contrôler ce qui est en cours de lecture - comme Spotify Connect. Désactivez-le pour garder chaque appareil totalement indépendant.",
+      "sessionOverrideLabel": "Désactiver Unity sur cet appareil pour cette session",
+      "listTitle": "Sessions actives",
+      "intro": "Chaque appareil actuellement connecté à votre compte. Révoquer une session la déconnecte immédiatement.",
+      "thisDevice": "(cet appareil)",
+      "signedIn": "Connecté le {date}",
+      "lastActive": "Dernière activité le {date}",
+      "revoke": "Révoquer",
+      "empty": "Aucune session active."
     },
     "privacy": {
       "title": "Confidentialité",
@@ -313,7 +328,11 @@
     "queueEmpty": "La file d'attente est vide.",
     "nothingPlaying": "Aucune lecture en cours.",
     "lyricsLoading": "Chargement des paroles...",
-    "lyricsUnavailable": "Aucune parole disponible pour ce titre."
+    "lyricsUnavailable": "Aucune parole disponible pour ce titre.",
+    "unity": {
+      "playingOn": "Lecture sur {device}",
+      "playHere": "Lire ici"
+    }
   },
   "insights": {
     "title": "Statistiques",

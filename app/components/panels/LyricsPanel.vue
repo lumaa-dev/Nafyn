@@ -38,7 +38,7 @@ interface FlatLine extends LyricLine {
 
 type LyricsKind = 'static' | 'paragraph' | 'beat';
 
-const { currentTrack, state } = usePlayer();
+const { currentTrack, state } = useUnity();
 
 const paragraphs = ref<LyricParagraphs | null>(null);
 const loading = ref(false);
@@ -71,7 +71,7 @@ function tick() {
 }
 
 function clickLyric(line: LyricLine) {
-  const { seek } = usePlayer();
+  const { seek } = useUnity();
   seek(line.startTime);
 }
 

@@ -69,7 +69,7 @@ defineRouteMeta({
 });
 
 export default defineEventHandler(async (event) => {
-    const { sub: actorId } = requireAuthToken(event);
+    const { sub: actorId } = await requireAuthToken(event);
 
     const mediaId = getRouterParam(event, "id");
     const targetUserId = getRouterParam(event, "userId");

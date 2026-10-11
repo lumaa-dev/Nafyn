@@ -56,7 +56,7 @@ const { data: detail } = await useAsyncData<LibraryAlbumDetail>(`library-album-$
 
 const tracks = computed<MediaRow[]>(() => detail.value?.tracks ?? []);
 
-const { currentTrack, play } = usePlayer();
+const { currentTrack, play } = useUnity();
 
 function playAll() {
   if (tracks.value.length === 0) return;

@@ -72,7 +72,7 @@ defineRouteMeta({
 });
 
 export default defineEventHandler(async (event) => {
-    const { sub: userId } = requireAuthToken(event);
+    const { sub: userId } = await requireAuthToken(event);
     enforceUpstreamLookupLimit(event, userId);
 
     // SECURITY: interpolated into the upstream MusicBrainz REST path, so it must be a bare UUID and not

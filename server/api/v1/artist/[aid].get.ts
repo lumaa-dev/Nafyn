@@ -80,7 +80,7 @@ defineRouteMeta({
 });
 
 export default defineEventHandler(async (event) => {
-    const { sub: userId } = requireAuthToken(event);
+    const { sub: userId } = await requireAuthToken(event);
     enforceUpstreamLookupLimit(event, userId);
 
     // SECURITY: see the note in track/[tid].get.ts - this reaches an upstream MusicBrainz REST path

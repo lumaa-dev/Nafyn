@@ -21,7 +21,7 @@ export default defineWebSocketHandler({
 
         let userId: string;
         try {
-            userId = verifyAuthToken(token).sub;
+            userId = (await verifyAuthToken(token)).sub;
         } catch {
             peer.close(4001, "Invalid or expired token");
             return;
