@@ -14,6 +14,7 @@ Multi-user: separate libraries, separate permissions per user. Users request son
 - [Settings](#settings)
 - [Song metadata providers](#song-metadata-providers)
 - [Subsonic API](#subsonic-api)
+- [Nafyn Unity](#nafyn-unity)
 - [Tech stack](#tech-stack)
 - [Development](#development)
 
@@ -108,6 +109,25 @@ What can go in the search bar:
 Leave a key empty and that provider is skipped silently — the keyless ones (Deezer, iTunes, ReccoBeats) are always on. Each provider is called with a Nafyn `User-Agent`, results are cached in memory for 10 minutes, and a provider that answers with a rate limit (`429`, iTunes' `403`, Deezer's quota error, or a `Retry-After` / `X-RateLimit-Remaining: 0` / `X-Discogs-Ratelimit-Remaining: 0` header) is backed off until its window resets. Also available directly over the API: `GET /api/v1/metadata/search?q=` and `GET /api/v1/metadata/providers`.
 
 To add a provider, write one file under [`server/utils/metadata/providers/`](server/utils/metadata/providers/) implementing `MetadataProvider` ([`types.ts`](server/utils/metadata/types.ts)) and add it to `PROVIDERS` in [`server/utils/metadata/index.ts`](server/utils/metadata/index.ts).
+
+## Nafyn Unity
+
+Unity lets the devices on your account control each other's playback, like Spotify Connect. One device plays the music (the **master**); any other device logged into the same account (a browser or a third-party app) becomes a **slave** and can change the track, queue, volume, seek position, and see the lyrics in sync.
+
+**For users**
+
+- It is on by default. Turn it off account-wide in **Settings → Sessions**, or only for the current browser session with the "this device" option there.
+- The first device to press play becomes the master. Any device can press **Play here** to take control.
+- If the master drops off, other devices are told straight away and it has 30 seconds to reconnect before playback is released.
+- **Settings → Sessions** also lists every login on your account. Revoke any device there to sign it out immediately.
+
+**For developers**
+
+- Server: [`server/routes/ws/unity.ts`](server/routes/ws/unity.ts) (WebSocket at `/ws/unity?token=`) and [`server/utils/unityRegistry.ts`](server/utils/unityRegistry.ts). The server only relays commands and tracks who is master. It never runs playback itself.
+- Client: [`app/composables/useUnity.ts`](app/composables/useUnity.ts) is a drop-in replacement for `usePlayer()`. On a slave, mutators send commands instead of changing local audio.
+- Sessions: each login is a row in `sessions`, and its id is the JWT `jti` claim. Revocation is checked through a short in-memory cache in [`server/utils/sessionCache.ts`](server/utils/sessionCache.ts).
+- Single instance only. The live registry is in memory, so run with `NAFYN_UNITY_ENABLED=false` if you run more than one replica behind a load balancer.
+- `NAFYN_UNITY_SCHEDULER=false` stops the session-cleanup job on a given replica.
 
 ## Subsonic API
 

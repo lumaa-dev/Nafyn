@@ -52,7 +52,7 @@ defineRouteMeta({
 });
 
 export default defineEventHandler(async (event) => {
-    const { sub: userId } = requireAuthToken(event);
+    const { sub: userId } = await requireAuthToken(event);
 
     const body = await readBody(event);
     const title = typeof body?.title === "string" ? body.title.trim() : "";

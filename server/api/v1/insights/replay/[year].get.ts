@@ -18,7 +18,7 @@ defineRouteMeta({
 });
 
 export default defineEventHandler(async (event) => {
-    const { sub: userId } = requireAuthToken(event);
+    const { sub: userId } = await requireAuthToken(event);
 
     const raw = getRouterParam(event, "year");
     const year = raw === "all-time" ? ALL_TIME_YEAR : parseYear(raw);

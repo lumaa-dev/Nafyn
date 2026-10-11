@@ -65,7 +65,7 @@ defineRouteMeta({
 });
 
 export default defineEventHandler(async (event) => {
-    const { sub: userId } = requireAuthToken(event);
+    const { sub: userId } = await requireAuthToken(event);
     const albumId = getRouterParam(event, "id");
     if (!albumId) throw createError({ statusCode: 400, statusMessage: "Missing album ID" });
 

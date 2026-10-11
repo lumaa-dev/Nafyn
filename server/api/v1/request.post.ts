@@ -90,7 +90,7 @@ const MAX_REQUESTS = 30;
 const REQUEST_WINDOW_MS = 10 * 60 * 1000;
 
 export default defineEventHandler(async (event) => {
-    const { sub: userId } = requireAuthToken(event);
+    const { sub: userId } = await requireAuthToken(event);
 
     const rateLimit = consumeRateLimit(`request:${userId}`, MAX_REQUESTS, REQUEST_WINDOW_MS);
     if (!rateLimit.allowed) {

@@ -24,7 +24,7 @@
 import noCover from '../../assets/no-cover.png';
 
 const { t } = useI18n();
-const { state, playFromQueue, removeFromQueue, cycleRepeat } = usePlayer();
+const { state, playFromQueue, removeFromQueue, cycleRepeat } = useUnity();
 
 const repeatTitle = computed(() => {
   switch (state.value.repeat) {

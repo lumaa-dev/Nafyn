@@ -74,7 +74,7 @@ defineRouteMeta({
 });
 
 export default defineEventHandler(async (event) => {
-    const { sub: userId } = requireAuthToken(event);
+    const { sub: userId } = await requireAuthToken(event);
 
     const pid = getRouterParam(event, "pid");
     const uid = getRouterParam(event, "uid");

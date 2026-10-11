@@ -93,7 +93,7 @@ function normalizeOptionalText(value: unknown, maxLength: number): string | null
 }
 
 export default defineEventHandler(async (event) => {
-    const { sub: actorId } = requireAuthToken(event);
+    const { sub: actorId } = await requireAuthToken(event);
     const actorPerms = await getPermissionsById(actorId) ?? 0;
 
     const targetId = getRouterParam(event, "id");

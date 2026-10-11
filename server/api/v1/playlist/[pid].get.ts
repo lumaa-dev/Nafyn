@@ -101,7 +101,7 @@ export default defineEventHandler(async (event) => {
     const auth = getHeader(event, "Authorization");
     if (auth?.startsWith("Bearer ")) {
         try {
-            userId = verifyAuthToken(auth.slice("Bearer ".length).trim()).sub;
+            userId = (await verifyAuthToken(auth.slice("Bearer ".length).trim())).sub;
         } catch {
             userId = null;
         }

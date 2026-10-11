@@ -23,7 +23,7 @@ defineRouteMeta({
 });
 
 export default defineEventHandler(async (event) => {
-    const { sub: userId } = requireAuthTokenAllowQuery(event);
+    const { sub: userId } = await requireAuthTokenAllowQuery(event);
     const year = parseYear(getRouterParam(event, "year"));
 
     const snapshot = await getYearSnapshot(userId, year);

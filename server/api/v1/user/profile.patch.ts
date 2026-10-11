@@ -72,7 +72,7 @@ function normalizeOptionalText(value: unknown, maxLength: number): string | null
 }
 
 export default defineEventHandler(async (event) => {
-    const { sub } = requireAuthToken(event);
+    const { sub } = await requireAuthToken(event);
     const body = await readBody(event).catch(() => null);
     // `"key" in body` throws a TypeError (an unhandled 500) on a missing or non-object body
     if (!body || typeof body !== "object") {

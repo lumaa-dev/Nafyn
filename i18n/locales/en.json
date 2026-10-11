@@ -107,6 +107,7 @@
       "profile": "Profile",
       "appearance": "Appearance",
       "playback": "Playback",
+      "sessions": "Sessions",
       "accounts": "Accounts",
       "storage": "Storage",
       "subsonic": "Subsonic",
@@ -191,6 +192,20 @@
         "namePlaceholder": "Label (e.g. Arpeggi on iPhone)",
         "generate": "Generate token"
       }
+    },
+    "sessions": {
+      "title": "Sessions",
+      "unityTitle": "Nafyn Unity",
+      "unityToggleLabel": "Allow other devices to remote-control playback",
+      "unityToggleHint": "When on, any other device logged into your account can see and control what's playing - like Spotify Connect. Turn it off to keep every device fully independent.",
+      "sessionOverrideLabel": "Turn off Unity on this device for this session",
+      "listTitle": "Active sessions",
+      "intro": "Every device currently logged into your account. Revoking a session signs it out immediately.",
+      "thisDevice": "(this device)",
+      "signedIn": "Signed in {date}",
+      "lastActive": "Last active {date}",
+      "revoke": "Revoke",
+      "empty": "No active sessions."
     },
     "privacy": {
       "title": "Privacy",
@@ -313,7 +328,11 @@
     "queueEmpty": "Queue is empty.",
     "nothingPlaying": "Nothing playing right now.",
     "lyricsLoading": "Loading lyrics...",
-    "lyricsUnavailable": "No lyrics available for this track."
+    "lyricsUnavailable": "No lyrics available for this track.",
+    "unity": {
+      "playingOn": "Playing on {device}",
+      "playHere": "Play here"
+    }
   },
   "insights": {
     "title": "Insights",

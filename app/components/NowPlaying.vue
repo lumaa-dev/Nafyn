@@ -10,8 +10,11 @@
       <span class="col">
         <span class="title">{{ currentTrack.title }}</span>
         <span class="artist">{{ currentTrack.artistName }}</span>
+        <span v-if="isRemoteControlled" class="unity-badge">{{ $t('player.unity.playingOn', { device: masterDeviceLabel }) }}</span>
       </span>
     </div>
+
+    <!-- <button v-if="isRemoteControlled" type="button" filled="hollow" class="unity-takeover" @click.stop="takeover()">{{ $t('player.unity.playHere') }}</button> -->
 
     <div class="controls">
       <div class="buttons">
@@ -67,7 +70,12 @@
 import noCover from '../assets/no-cover.png';
 
 const { t } = useI18n();
-const { state, currentTrack, hasNext, hasPrev, togglePlay, next, prev, seek, setVolume, toggleMute, removeFromQueue, playFromQueue, cycleRepeat } = usePlayer();
+const { state, currentTrack, hasNext, hasPrev, role, masterStatus, masterDeviceLabel, takeover, togglePlay, next, prev, seek, setVolume, toggleMute, removeFromQueue, playFromQueue, cycleRepeat } = useUnity();
+
+// true while this device is remote-controlling another device's playback (Nafyn Unity) rather than playing
+// locally - transport controls above still work (they're relayed to the master), this just surfaces whose
+// audio it actually is and offers a way to pull playback onto this device instead
+const isRemoteControlled = computed(() => role.value === "slave" && masterStatus.value === "active");
 
 const showQueue = ref(false);
 function toggleQueue() {
@@ -231,6 +239,19 @@ button[filled="hollow"].round:not(:disabled):hover img {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.now-playing .unity-badge {
+  font-size: 0.7em;
+  color: color-mix(in srgb, var(--np-text, #ffffff) 55%, transparent);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.now-playing .unity-takeover {
+  flex-shrink: 0;
+  font-size: 0.75em;
 }
 
 .now-playing .controls {

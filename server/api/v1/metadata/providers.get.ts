@@ -33,7 +33,7 @@ defineRouteMeta({
     }
 });
 
-export default defineEventHandler((event) => {
-    requireAuthToken(event);
+export default defineEventHandler(async (event) => {
+    await requireAuthToken(event);
     return listMetadataProviders();
 });

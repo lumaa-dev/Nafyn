@@ -78,7 +78,7 @@ function number(value: unknown, field: string): number {
 }
 
 export default defineEventHandler(async (event) => {
-    const { sub: userId } = requireAuthToken(event);
+    const { sub: userId } = await requireAuthToken(event);
 
     const media = await requireEditableMedia(userId, getRouterParam(event, "id"));
     const mediaId = media.id;

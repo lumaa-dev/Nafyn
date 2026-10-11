@@ -49,7 +49,7 @@ const { data: track } = await useAsyncData<MediaRow>(`library-track-${tid}`, () 
     : Promise.reject(new Error("Not authenticated"));
 });
 
-const { play } = usePlayer();
+const { play } = useUnity();
 
 function playTrack() {
   if (!track.value) return;

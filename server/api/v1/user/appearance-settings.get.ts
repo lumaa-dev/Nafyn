@@ -31,7 +31,7 @@ defineRouteMeta({
 });
 
 export default defineEventHandler(async (event) => {
-    const { sub: userId } = requireAuthToken(event);
+    const { sub: userId } = await requireAuthToken(event);
     const permissions = await getPermissionsById(userId) ?? 0;
     return await getAppearanceSettings(userId, permissions);
 });

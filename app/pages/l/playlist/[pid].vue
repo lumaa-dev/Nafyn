@@ -267,7 +267,7 @@ const coverUrl = computed(() => {
   return img ? `/api/v1/playlist/${pid}/image?token=${encodeURIComponent(token)}&v=${img}` : noCover;
 });
 
-const { currentTrack, play } = usePlayer();
+const { currentTrack, play } = useUnity();
 
 function playAll() {
   const ordered = displayEntries.value.map((e) => e.media);

@@ -80,7 +80,7 @@ export default defineEventHandler(async (event) => {
 
         let userId: string | null = null;
         try {
-            if (token) userId = verifyAuthToken(token).sub;
+            if (token) userId = (await verifyAuthToken(token)).sub;
         } catch {
             userId = null;
         }

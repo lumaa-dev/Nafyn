@@ -72,7 +72,7 @@ export default defineEventHandler(async (event) => {
     token = token.startsWith("Bearer ") ? token.slice("Bearer ".length).trim() : token;
 
     try {
-        verifyAuthToken(token);
+        await verifyAuthToken(token);
     } catch {
         throw createError({ statusCode: 401, statusMessage: "Invalid or expired token" });
     }

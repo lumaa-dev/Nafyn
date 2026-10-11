@@ -85,7 +85,7 @@ defineRouteMeta({
 });
 
 export default defineEventHandler(async (event) => {
-    const { sub: userId } = requireAuthTokenAllowQuery(event);
+    const { sub: userId } = await requireAuthTokenAllowQuery(event);
 
     // keyed on the (bounded, authenticated) user id rather than anything the caller controls, so the
     // in-memory bucket map can't be grown without bound by a flood of made-up keys

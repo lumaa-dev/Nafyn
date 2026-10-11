@@ -229,7 +229,7 @@ function recordingToMediaInfo(recording: IRecording): MediaInfo {
 }
 
 export default defineEventHandler(async (event) => {
-    const { sub: userId } = requireAuthToken(event);
+    const { sub: userId } = await requireAuthToken(event);
 
     const rateLimit = consumeRateLimit(`search:${userId}`, MAX_SEARCHES, SEARCH_WINDOW_MS);
     if (!rateLimit.allowed) {

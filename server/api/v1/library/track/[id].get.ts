@@ -58,7 +58,7 @@ defineRouteMeta({
 });
 
 export default defineEventHandler(async (event) => {
-    const { sub: userId } = requireAuthToken(event);
+    const { sub: userId } = await requireAuthToken(event);
     const mediaId = getRouterParam(event, "id");
     if (!mediaId) throw createError({ statusCode: 400, statusMessage: "Missing track ID" });
 

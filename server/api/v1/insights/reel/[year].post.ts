@@ -36,7 +36,7 @@ defineRouteMeta({
 });
 
 export default defineEventHandler(async (event) => {
-    const { sub: userId } = requireAuthToken(event);
+    const { sub: userId } = await requireAuthToken(event);
     const year = parseYear(getRouterParam(event, "year"));
 
     const limit = consumeRateLimit(`insights:reel:${userId}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS);

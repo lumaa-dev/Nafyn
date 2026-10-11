@@ -1,8 +1,12 @@
 import bcrypt from "bcrypt";
+import { randomUUID } from "node:crypto";
 import { getUserByUsername, getPasswordHash } from "../../../core/users";
 import { consumeRateLimit, isWhitelisted, resetRateLimit } from "../../../utils/rateLimit";
 import { getClientIP } from "../../../utils/clientIp";
 import { signAuthToken } from "../../../utils/jwt";
+import { createSession } from "../../../core/sessions";
+
+const SESSION_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000; // mirrors signAuthToken's own "7d" expiresIn
 
 const MAX_ATTEMPTS = 5;
 const MAX_ATTEMPTS_PER_IP = 20;
@@ -128,7 +132,9 @@ export default defineEventHandler(async (event) => {
     // account refill their spraying budget at will: 19 guesses against other usernames, one real login, repeat.
     resetRateLimit(rateLimitKey);
 
-    const token = signAuthToken(user.id);
+    const jti = randomUUID();
+    await createSession(user.id, jti, getHeader(event, "user-agent") ?? null, ip, Date.now() + SESSION_LIFETIME_MS);
+    const token = signAuthToken(user.id, jti);
 
     return { user, token };
 });

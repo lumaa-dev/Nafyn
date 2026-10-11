@@ -26,7 +26,7 @@ defineRouteMeta({
 });
 
 export default defineEventHandler(async (event) => {
-    const { sub: userId } = requireAuthToken(event);
+    const { sub: userId } = await requireAuthToken(event);
 
     // reel files must be listed before the snapshot rows that name them are deleted
     const snapshots = await listYearSnapshots(userId);
