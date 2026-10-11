@@ -13,8 +13,8 @@ Multi-user: separate libraries, separate permissions per user. Users request son
 - [How to setup](#how-to-setup)
 - [Settings](#settings)
 - [Song metadata providers](#song-metadata-providers)
-- [Subsonic API](#subsonic-api)
 - [Nafyn Unity](#nafyn-unity)
+- [Subsonic API](#subsonic-api)
 - [Tech stack](#tech-stack)
 - [Development](#development)
 
