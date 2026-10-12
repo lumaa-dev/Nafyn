@@ -15,12 +15,13 @@
 <script lang="ts" setup>
 import RequestRow from '~/components/RequestRow.vue';
 import type { NafynRequest } from '~~/server/entity/NafynRequest';
+import { useAuthToken } from '~/composables/useAuthToken';
 
-const token = useCookie("nafynToken").value;
+const { token } = useAuthToken();
 
 const { items: requests, initialLoading, loadingMore, sentinel, loadMore } = useInfiniteList<NafynRequest>((page, limit) => {
-  return token
-    ? $fetch("/api/v1/requests", { headers: { Authorization: token }, query: { page, limit } })
+  return token.value
+    ? $fetch("/api/v1/requests", { headers: { Authorization: token.value }, query: { page, limit } })
     : Promise.resolve({ items: [], page, limit, total: 0, hasMore: false });
 });
 await loadMore();

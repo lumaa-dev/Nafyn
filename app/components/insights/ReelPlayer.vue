@@ -29,6 +29,7 @@
 import noCover from '~/assets/no-cover.png';
 import { setTrackingSuppressed } from '~/composables/usePlayTracking';
 import type { ReelSlide } from '~/composables/useInsights';
+import { useAuthToken } from '~/composables/useAuthToken';
 
 // The in-app highlight reel: a tap-through story of the year's headline numbers, with a short excerpt of
 // each top track playing underneath its slide.
@@ -62,7 +63,7 @@ function playExcerpt(current: ReelSlide) {
   stopAudio();
   if (!current.trackId || !import.meta.client) return;
 
-  const token = useCookie("nafynToken").value ?? "";
+  const token = useAuthToken().token.value ?? "";
   audio ??= new Audio();
   audio.src = `/api/v1/library/${current.trackId}/stream?token=${encodeURIComponent(token)}`;
   audio.currentTime = 0;

@@ -26,6 +26,7 @@
 
 <script lang="ts" setup>
 import { isStatic, isBeatByBeat, type Provider, type LyricParagraphs, type LyricLine, type LyricSegment } from '~~/server/utils/lyrics/parser';
+import { useAuthToken } from '~/composables/useAuthToken';
 
 interface LyricsResponse {
   provider: Provider;
@@ -159,7 +160,7 @@ async function loadLyrics(id: string | null) {
   if (!id) return;
 
   const seq = ++requestSeq;
-  const token = useCookie('nafynToken').value;
+  const token = useAuthToken().token.value;
   if (!token) return;
 
   loading.value = true;

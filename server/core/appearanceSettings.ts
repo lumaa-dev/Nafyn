@@ -66,3 +66,8 @@ export async function setAppearanceSettings(
 
     return { showFileSize, showDuration };
 }
+
+// erasure helper (GDPR art. 17)
+export async function deleteAppearanceSettings(userId: string): Promise<void> {
+    await getUsersDb().prepare(`DELETE FROM user_appearance_settings WHERE userId = ?`).run(userId);
+}

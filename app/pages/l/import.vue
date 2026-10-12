@@ -49,8 +49,9 @@
 
 <script lang="ts" setup>
 import type { MediaRow } from '~~/server/core/library';
+import { useAuthToken } from '~/composables/useAuthToken';
 
-const token = useCookie("nafynToken").value;
+const { token } = useAuthToken();
 const { sendToast } = useToast();
 
 const audioFile = ref<File | null>(null);
@@ -95,7 +96,7 @@ function clockToSeconds(value: string): number | null {
 }
 
 async function submit() {
-  if (!audioFile.value || !token) return;
+  if (!audioFile.value || !token.value) return;
 
   importing.value = true;
   try {
@@ -118,7 +119,7 @@ async function submit() {
 
     const media = await $fetch<MediaRow>("/api/v1/library/import", {
       method: "POST",
-      headers: { Authorization: token },
+      headers: { Authorization: token.value },
       body
     });
 

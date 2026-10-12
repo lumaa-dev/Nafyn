@@ -19,11 +19,12 @@
 import type { MediaRow } from '~~/server/core/library';
 import noCover from '~/assets/no-cover.png';
 import Modal from '~/components/Modal.vue';
+import { useAuthToken } from '~/composables/useAuthToken';
 
 const props = defineProps<{ modelValue: boolean; playlistId: string; existingMediaIds: string[] }>();
 const emit = defineEmits<{ (e: "update:modelValue", value: boolean): void; (e: "added"): void }>();
 
-const token = useCookie("nafynToken").value ?? "";
+const token = useAuthToken().token.value ?? "";
 const libraryTracks = ref<MediaRow[]>([]);
 const addedIds = ref<Set<string>>(new Set());
 

@@ -241,18 +241,21 @@ import Header from "./components/Header.vue";
 import Sidebar from "./components/Sidebar.vue";
 import ToastPill from "./components/ToastPill.vue";
 import NowPlaying from "./components/NowPlaying.vue";
+import { useAuthToken, isTokenExpired } from "./composables/useAuthToken";
 
 const route = useRoute();
 const showSidebar = ref(false);
 
-const tokenCookie = useCookie("nafynToken");
+const { token: tokenCookie } = useAuthToken();
 
 const { state: tState } = useToast();
 
 const hasToken = ref(await checkTokenValidity(tokenCookie.value ?? ""));
 
 function redirectIfLoggedOut() {
-	const isNotLogging = route.path !== "/login" && route.path !== "/register";
+	// /privacy sits with login/register: GDPR art. 13 means the notice has to be readable *before* anyone
+	// hands over data, so bouncing a logged-out visitor off it would defeat its whole purpose
+	const isNotLogging = route.path !== "/login" && route.path !== "/register" && route.path !== "/privacy";
 	const isViewingPlaylist = route.path.includes("/l/playlist");
 	if (isNotLogging && !isViewingPlaylist && !hasToken.value) {
 		useRouter().push(`/login`);
@@ -266,6 +269,17 @@ watch(tokenCookie, async (val) => {
 	hasToken.value = await checkTokenValidity(val ?? "");
 	redirectIfLoggedOut();
 });
+
+// matches the server's sessionCache TTL (server/utils/sessionCache.ts) - catches a session revoked from
+// another device within that same window, since a revocation alone never touches this device's cookie
+const REVALIDATE_INTERVAL_MS = 30_000;
+if (import.meta.client) {
+	const revalidateInterval = setInterval(async () => {
+		hasToken.value = await checkTokenValidity(tokenCookie.value ?? "");
+		redirectIfLoggedOut();
+	}, REVALIDATE_INTERVAL_MS);
+	onUnmounted(() => clearInterval(revalidateInterval));
+}
 
 const isMobileWidth = () => window.matchMedia("(max-width: 800px)").matches;
 
@@ -319,7 +333,7 @@ function lockScroll(lock: boolean = true) {
 }
 
 async function checkTokenValidity(token: string): Promise<boolean> {
-	if (!token) return false;
+	if (!token || isTokenExpired(token)) return false;
 
 	try {
 		await $fetch("/api/v1/user/me", {

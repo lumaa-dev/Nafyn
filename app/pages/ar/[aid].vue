@@ -28,13 +28,14 @@
 import type { ArtistDetail } from '~~/server/entity/media/ArtistDetail';
 import noCover from '~/assets/no-cover.png';
 import MediaBox from '~/components/MediaBox.vue';
+import { useAuthToken } from '~/composables/useAuthToken';
 
 const aid = useRoute().params.aid as string;
-const token = useCookie("nafynToken").value;
+const { token } = useAuthToken();
 
 const { data: artist } = await useAsyncData<ArtistDetail>(`artist-${aid}`, () => {
-  return token
-    ? $fetch(`/api/v1/artist/${aid}`, { headers: { Authorization: token } })
+  return token.value
+    ? $fetch(`/api/v1/artist/${aid}`, { headers: { Authorization: token.value } })
     : Promise.reject(new Error("Not authenticated"));
 });
 </script>

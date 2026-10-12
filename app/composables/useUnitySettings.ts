@@ -9,7 +9,7 @@ const DEFAULT_SETTINGS: UnitySettings = { enabled: true };
 export const useUnitySettings = () => useState<UnitySettings>("unity-settings", () => ({ ...DEFAULT_SETTINGS }));
 
 function authToken(): string | null {
-    return useCookie("nafynToken").value ?? null;
+    return useAuthToken().token.value;
 }
 
 export async function syncUnitySettings(): Promise<void> {

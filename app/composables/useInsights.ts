@@ -110,7 +110,7 @@ export interface HighlightReel {
 
 export function useInsights() {
     // the cookie already carries the "Bearer " prefix (set that way at login), so it is passed verbatim
-    const token = useCookie("nafynToken").value ?? "";
+    const token = useAuthToken().token.value ?? "";
     const auth = { Authorization: token };
 
     return {

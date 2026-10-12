@@ -35,7 +35,7 @@ export function useCoverMeshGradient() {
     }
 
     try {
-      const token = useCookie("nafynToken").value ?? "";
+      const token = useAuthToken().token.value ?? "";
       const data = await $fetch<TrackColors>(`/api/v1/library/track/${mediaId}`, { headers: { Authorization: token } });
       const result: TrackColors = { imageColors: data.imageColors, textColor: data.textColor };
       colorCache.set(mediaId, result);

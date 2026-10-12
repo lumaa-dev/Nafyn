@@ -145,6 +145,7 @@ import ContextMenu, { type ContextMenuItem } from '~/components/ContextMenu.vue'
 import AddTracksModal from '~/components/AddTracksModal.vue';
 import Modal from '~/components/Modal.vue';
 import { useAppearanceSettings } from '~/composables/useAppearanceSettings';
+import { useAuthToken } from '~/composables/useAuthToken';
 
 interface CompactUser {
   id: string;
@@ -175,7 +176,8 @@ interface PlaylistDetail {
 
 const route = useRoute();
 const pid = route.params.pid as string;
-const token = useCookie("nafynToken").value ?? "";
+const { token: tokenRef } = useAuthToken();
+const token = tokenRef.value ?? "";
 const appearance = useAppearanceSettings();
 
 interface PlaylistEntry {

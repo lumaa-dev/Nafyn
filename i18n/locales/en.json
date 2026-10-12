@@ -24,6 +24,8 @@
       "orPrefix": "or",
       "registerLink": "create a new account",
       "submit": "Log in",
+      "passkeySubmit": "Log in with a passkey",
+      "passkeyNeedsSecureContext": "Passkeys need a secure connection - access Nafyn over HTTPS (or localhost) to use them.",
       "error": "Couldn't log in"
     },
     "register": {
@@ -32,7 +34,10 @@
       "orPrefix": "or",
       "loginLink": "log in your account",
       "submit": "Create account"
-    }
+    },
+    "privacyPrefix": "By creating an account you accept that this instance stores the data described in its",
+    "privacyLink": "privacy notice",
+    "privacyLoginPrefix": "What this instance stores about you:"
   },
   "library": {
     "tracks": {
@@ -208,7 +213,22 @@
       "empty": "No active sessions."
     },
     "privacy": {
-      "title": "Privacy",
+      "title": "Privacy & Security",
+      "passkeys": {
+        "title": "Passkeys",
+        "intro": "Sign in with your device's fingerprint, face unlock, or security key - no password to type or remember.",
+        "add": "Add a passkey",
+        "added": "Passkey added",
+        "unnamed": "Unnamed passkey",
+        "labelPlaceholder": "Label (e.g. iPhone)",
+        "created": "Added {date}",
+        "lastUsed": "Last used {date}",
+        "neverUsed": "Never used",
+        "delete": "Remove",
+        "empty": "No passkeys yet.",
+        "unsupported": "Your browser doesn't support passkeys.",
+        "needsSecureContext": "Passkeys need a secure connection: access Nafyn over HTTPS (or localhost) to use them."
+      },
       "history": {
         "title": "Listening history",
         "label": "Use listening history",
@@ -227,6 +247,25 @@
         "note": "Permanently erases every play, every statistic, every Replay Mix and every year-end summary. This cannot be undone.",
         "confirm": "Permanently delete your entire listening history? This cannot be undone.",
         "done": "Your listening history has been deleted."
+      },
+      "notice": {
+        "title": "What this instance stores",
+        "body": "A plain-language account of every piece of data Nafyn keeps about you, why, and for how long.",
+        "link": "Read the privacy notice"
+      },
+      "accountExport": {
+        "title": "Download all your data",
+        "button": "Download everything",
+        "note": "One JSON file with everything held about your account: profile, settings, logins (including the IP addresses they came from), library, playlists, requests, recently played and all listening data. Secrets are excluded."
+      },
+      "deleteAccount": {
+        "title": "Delete your account",
+        "button": "Delete my account",
+        "note": "Permanently erases your account and everything attached to it: logins, passkeys, API tokens, settings, library access, your playlists, recently played and all listening history. Audio files stay on the server if another user also has them. This cannot be undone.",
+        "passwordPlaceholder": "Confirm with your password",
+        "confirm": "Permanently delete your account and all of your data? This cannot be undone.",
+        "done": "Your account has been deleted.",
+        "lastAdmin": "You are the only administrator on this instance. Grant ADMIN to another account first."
       }
     },
     "appearance": {
@@ -474,5 +513,18 @@
     "importing": "Importing...",
     "done": "Added to your library",
     "error": "Could not import that file."
+  },
+  "privacy": {
+    "fallbackTitle": "Privacy notice",
+    "updated": "Last updated {date}",
+    "missing": "The privacy notice could not be loaded. Ask the operator of this instance for it.",
+    "controller": {
+      "title": "Who is responsible",
+      "named": "This instance is run by {name}.",
+      "unnamed": "This instance is run by its operator.",
+      "contact": "Contact: {contact}",
+      "missing": "The operator of this instance has not published who they are or how to reach them. Ask whoever gave you your account - under the GDPR they are the data controller and have to answer requests about your data."
+    },
+    "back": "Back to Nafyn"
   }
 }

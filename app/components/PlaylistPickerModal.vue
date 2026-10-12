@@ -15,6 +15,7 @@
 <script lang="ts" setup>
 import noCover from '~/assets/no-cover.png';
 import Modal from '~/components/Modal.vue';
+import { useAuthToken } from '~/composables/useAuthToken';
 
 interface PlaylistRow {
   id: string;
@@ -25,7 +26,7 @@ interface PlaylistRow {
 const props = defineProps<{ modelValue: boolean; mediaIds: string[]; admin?: boolean }>();
 const emit = defineEmits<{ (e: "update:modelValue", value: boolean): void }>();
 
-const token = useCookie("nafynToken").value ?? "";
+const token = useAuthToken().token.value ?? "";
 const playlists = ref<PlaylistRow[]>([]);
 
 watch(() => props.modelValue, async (isOpen) => {

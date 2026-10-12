@@ -13,7 +13,7 @@ const DEFAULT_SETTINGS: AppearanceSettings = { showFileSize: true, showDuration:
 export const useAppearanceSettings = () => useState<AppearanceSettings>("appearance-settings", () => ({ ...DEFAULT_SETTINGS }));
 
 function authToken(): string | null {
-    return useCookie("nafynToken").value ?? null;
+    return useAuthToken().token.value;
 }
 
 export async function syncAppearanceSettings(): Promise<void> {

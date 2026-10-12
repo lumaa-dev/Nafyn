@@ -61,3 +61,11 @@ export async function listActiveRegisterTokens(): Promise<RegisterTokenRow[]> {
         SELECT * FROM register_tokens WHERE usedAt IS NULL AND expiresAt > ? ORDER BY createdAt DESC
     `).all(Date.now()) as RegisterTokenRow[];
 }
+
+// erasure helper (GDPR art. 17): invites carry `createdBy`, so they identify the account that issued them.
+// Unused invites are dropped (nothing can claim them once their issuer is gone); already-used ones have
+// served their purpose and go too - the account they created is what matters, not the invite row.
+export async function deleteRegisterTokensCreatedBy(userId: string): Promise<number> {
+    const result = await getUsersDb().prepare(`DELETE FROM register_tokens WHERE createdBy = ?`).run(userId);
+    return result.changes;
+}

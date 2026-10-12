@@ -40,7 +40,16 @@ export default defineNuxtConfig({
     // song metadata providers (server/utils/metadata) - each is skipped when its key is empty
     discogsToken: process.env.DISCOGS_TOKEN || '',
     theaudiodbApiKey: process.env.THEAUDIODB_API_KEY || '',
-    geniusAccessToken: process.env.GENIUS_ACCESS_TOKEN || ''
+    geniusAccessToken: process.env.GENIUS_ACCESS_TOKEN || '',
+
+    public: {
+      // GDPR art. 13: the person running the instance is the data controller, and a privacy notice has to
+      // name them and say how to reach them. Nafyn ships the rest of the notice (/privacy) because what it
+      // processes is a property of the software, but these two fields only the operator can fill in.
+      // Blank is allowed - the page then says plainly that the operator hasn't published contact details.
+      privacyController: process.env.NAFYN_PRIVACY_CONTROLLER || '',
+      privacyContact: process.env.NAFYN_PRIVACY_CONTACT || ''
+    }
   },
 
   vite: {

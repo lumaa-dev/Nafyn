@@ -46,6 +46,7 @@
 <script lang="ts" setup>
 import type { MediaRow } from '~~/server/core/library';
 import Modal from '~/components/Modal.vue';
+import { useAuthToken } from '~/composables/useAuthToken';
 
 const props = defineProps<{ modelValue: boolean, media: MediaRow | null }>();
 const emit = defineEmits<{
@@ -58,7 +59,7 @@ const open = computed({
   set: (value: boolean) => emit("update:modelValue", value)
 });
 
-const token = useCookie("nafynToken").value;
+const token = useAuthToken().token.value;
 const { sendToast } = useToast();
 
 const form = reactive({

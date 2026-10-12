@@ -16,12 +16,13 @@
 import MediaBox from '~/components/MediaBox.vue';
 import type { AlbumRow } from '~~/server/core/library';
 import type { MediaInfo } from '~~/server/entity/media/MediaInfo';
+import { useAuthToken } from '~/composables/useAuthToken';
 
-const token = useCookie("nafynToken").value;
+const { token } = useAuthToken();
 
 const { items: albums, initialLoading, loadingMore, sentinel, loadMore } = useInfiniteList<AlbumRow>((page, limit) => {
-  return token
-    ? $fetch("/api/v1/library/albums", { headers: { Authorization: token }, query: { page, limit } })
+  return token.value
+    ? $fetch("/api/v1/library/albums", { headers: { Authorization: token.value }, query: { page, limit } })
     : Promise.resolve({ items: [], page, limit, total: 0, hasMore: false });
 });
 await loadMore();

@@ -22,6 +22,7 @@
 <script lang="ts" setup>
 import { type Toast, useToast } from '~/composables/useToast';
 import { Provider, type LyricParagraphs } from '~~/server/utils/lyrics/parser';
+import { useAuthToken } from '~/composables/useAuthToken';
 
 interface LyricsResponse {
     provider: Provider,
@@ -49,12 +50,12 @@ function rajouteMoiUnPetitToastViteFaitStp(tint: "green" | "red" | null, title: 
 }
 
 async function unPeuDeLyricsPlease(mediaId: string) {
-    const token = useCookie("nafynToken").value;
+    const { token } = useAuthToken();
 
     try {
         const { error } = await useAsyncData<LyricsResponse>(`lyrics-${mediaId}`, () => {
-            return token
-                ? $fetch(`/api/v1/library/${mediaId}/lyrics`, { headers: { Authorization: token }, timeout: 120_000 })
+            return token.value
+                ? $fetch(`/api/v1/library/${mediaId}/lyrics`, { headers: { Authorization: token.value }, timeout: 120_000 })
                 : Promise.resolve({ provider: Provider.AppleMusic, paragraphs: [] });
         });
         let isError: boolean = typeof error.value !== "undefined";

@@ -7,6 +7,8 @@
     <input v-model="username" type="text" name="username" id="username" :placeholder="$t('auth.login.usernamePlaceholder')">
     <input v-model="password" type="password" name="password" id="password" :placeholder="$t('auth.login.passwordPlaceholder')">
     <p class="register">{{ $t('auth.register.orPrefix') }} <NuxtLink to="/login">{{ $t('auth.register.loginLink') }}</NuxtLink>.</p>
+    <!-- GDPR art. 13: the notice has to be reachable before an account exists, not after -->
+    <p class="register">{{ $t('auth.privacyPrefix') }} <NuxtLink to="/privacy">{{ $t('auth.privacyLink') }}</NuxtLink>.</p>
     <button filled :disabled="username.length < 3 || password.length < 3" @click="register">{{ $t('auth.register.submit') }}</button>
   </div>
 </template>

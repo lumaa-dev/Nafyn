@@ -26,16 +26,17 @@
 <script lang="ts" setup>
 import type { MediaInfo } from '~~/server/entity/media/MediaInfo';
 import noCover from '~/assets/no-cover.png';
+import { useAuthToken } from '~/composables/useAuthToken';
 
 type TrackDetail = MediaInfo & { albumMbid: string | null };
 
 const { locale } = useI18n();
 const tid = useRoute().params.tid as string;
-const token = useCookie("nafynToken").value;
+const { token } = useAuthToken();
 
 const { data: track } = await useAsyncData<TrackDetail>(`track-${tid}`, () => {
-  return token
-    ? $fetch(`/api/v1/track/${tid}`, { headers: { Authorization: token } })
+  return token.value
+    ? $fetch(`/api/v1/track/${tid}`, { headers: { Authorization: token.value } })
     : Promise.reject(new Error("Not authenticated"));
 });
 
@@ -50,12 +51,12 @@ function formatDuration(seconds: number): string {
 }
 
 async function requestMedia(musicbrainzId: string, type: "album" | "track", toastTitle: string | null) {
-  if (!token) return;
+  if (!token.value) return;
 
   try {
     await $fetch("/api/v1/request", {
       method: "POST",
-      headers: { Authorization: token },
+      headers: { Authorization: token.value },
       body: { id: musicbrainzId, type }
     });
 

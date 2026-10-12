@@ -47,14 +47,15 @@ import type { MediaRow } from '~~/server/core/library';
 import noCover from '~/assets/no-cover.png';
 import ContextMenu, { type ContextMenuItem } from '~/components/ContextMenu.vue';
 import PlaylistPickerModal from '~/components/PlaylistPickerModal.vue';
+import { useAuthToken } from '~/composables/useAuthToken';
 
 const { locale } = useI18n();
 const aid = useRoute().params.aid as string;
-const token = useCookie("nafynToken").value;
+const { token } = useAuthToken();
 
 const { data: album } = await useAsyncData<AlbumDetail>(`album-${aid}`, () => {
-  return token
-    ? $fetch(`/api/v1/album/${aid}`, { headers: { Authorization: token } })
+  return token.value
+    ? $fetch(`/api/v1/album/${aid}`, { headers: { Authorization: token.value } })
     : Promise.reject(new Error("Not authenticated"));
 });
 
@@ -135,11 +136,11 @@ function formatDuration(seconds: number): string {
 }
 
 async function requestMedia(musicbrainzId: string, type: "album" | "track", toastTitle: string | null) {
-  if (!token) return;
+  if (!token.value) return;
   try {
     await $fetch("/api/v1/request", {
       method: "POST",
-      headers: { Authorization: token },
+      headers: { Authorization: token.value },
       body: { id: musicbrainzId, type }
     })
 

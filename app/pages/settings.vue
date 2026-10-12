@@ -270,6 +270,35 @@
         <h1>{{ $t('settings.privacy.title') }}</h1>
 
         <section class="subsection">
+          <h2>{{ $t('settings.privacy.notice.title') }}</h2>
+          <p class="subsonic-note">{{ $t('settings.privacy.notice.body') }}</p>
+          <NuxtLink to="/privacy" class="everyone-link">{{ $t('settings.privacy.notice.link') }}</NuxtLink>
+        </section>
+
+        <section class="subsection">
+          <h2>{{ $t('settings.privacy.passkeys.title') }}</h2>
+          <p class="subsonic-intro">{{ $t('settings.privacy.passkeys.intro') }}</p>
+
+          <ul v-if="passkeys.length > 0" class="api-token-list">
+            <li v-for="p in passkeys" :key="p.id">
+              <span class="col">
+                <span class="title">{{ p.label || $t('settings.privacy.passkeys.unnamed') }}</span>
+                <span class="artist">{{ $t('settings.privacy.passkeys.created', { date: formatDate(p.createdAt) }) }} &middot; {{ p.lastUsedAt ? $t('settings.privacy.passkeys.lastUsed', { date: formatDate(p.lastUsedAt) }) : $t('settings.privacy.passkeys.neverUsed') }}</span>
+              </span>
+              <button class="danger" type="button" filled="hollow" :disabled="deletingPasskeyId === p.id" @click="removePasskey(p.id)">{{ $t('settings.privacy.passkeys.delete') }}</button>
+            </li>
+          </ul>
+          <p v-else class="subsonic-note">{{ $t('settings.privacy.passkeys.empty') }}</p>
+
+          <p v-if="passkeyNeedsSecureContext" class="subsonic-note">{{ $t('settings.privacy.passkeys.needsSecureContext') }}</p>
+          <p v-else-if="!passkeySupported" class="subsonic-note">{{ $t('settings.privacy.passkeys.unsupported') }}</p>
+          <div v-else class="token-generator">
+            <input v-model="newPasskeyLabel" type="text" maxlength="100" :placeholder="$t('settings.privacy.passkeys.labelPlaceholder')">
+            <button type="button" filled="hollow" :disabled="addingPasskey" @click="addPasskey">{{ $t('settings.privacy.passkeys.add') }}</button>
+          </div>
+        </section>
+
+        <section class="subsection">
           <h2>{{ $t('settings.privacy.history.title') }}</h2>
           <label class="switch-row">
             <input type="checkbox" v-model="historyEnabled" @change="toggleHistory">
@@ -278,6 +307,14 @@
           <p class="subsonic-note">{{ historyEnabled ? $t('settings.privacy.history.on') : $t('settings.privacy.history.off') }}</p>
           <p class="subsonic-note">{{ $t('settings.privacy.history.note') }}</p>
           <NuxtLink to="/insights" class="everyone-link">{{ $t('insights.title') }}</NuxtLink>
+        </section>
+
+        <!-- GDPR art. 15 + 20: the account-wide export. The listening-only one below it is the narrower
+             tool for people who just want their play history -->
+        <section class="subsection">
+          <h2>{{ $t('settings.privacy.accountExport.title') }}</h2>
+          <p class="subsonic-note">{{ $t('settings.privacy.accountExport.note') }}</p>
+          <button type="button" filled="hollow" :disabled="exportingAccount" @click="exportAccount">{{ $t('settings.privacy.accountExport.button') }}</button>
         </section>
 
         <section class="subsection">
@@ -290,6 +327,16 @@
           <h2>{{ $t('settings.privacy.delete.title') }}</h2>
           <p class="subsonic-note">{{ $t('settings.privacy.delete.note') }}</p>
           <button type="button" filled="hollow" class="danger" :disabled="deletingHistory" @click="deleteHistory">{{ $t('settings.privacy.delete.button') }}</button>
+        </section>
+
+        <!-- GDPR art. 17: erasure without having to ask an administrator to do it for you -->
+        <section class="subsection">
+          <h2>{{ $t('settings.privacy.deleteAccount.title') }}</h2>
+          <p class="subsonic-note">{{ $t('settings.privacy.deleteAccount.note') }}</p>
+          <div class="token-generator">
+            <input v-model="deleteAccountPassword" type="password" autocomplete="current-password" :placeholder="$t('settings.privacy.deleteAccount.passwordPlaceholder')">
+            <button type="button" filled="hollow" class="danger" :disabled="deletingAccount || deleteAccountPassword.length < 1" @click="deleteOwnAccount">{{ $t('settings.privacy.deleteAccount.button') }}</button>
+          </div>
         </section>
       </div>
       <div v-else-if="activeCategory === 'developer'" class="panel">
@@ -317,8 +364,12 @@ import { syncHistorySetting, useHistoryEnabled, setHistoryEnabledState } from '~
 import { useAppearanceSettings, syncAppearanceSettings, setAppearanceSetting } from '~/composables/useAppearanceSettings';
 import { usePlaybackSettings, syncPlaybackSettings, setPlaybackSetting } from '~/composables/usePlaybackSettings';
 import { useUnitySettings, syncUnitySettings, setUnitySetting, useUnitySessionOverride, setUnityDisabledThisSession } from '~/composables/useUnitySettings';
+import { useAuthToken } from '~/composables/useAuthToken';
+import { browserSupportsWebAuthn, startRegistration } from '@simplewebauthn/browser';
+import type { PasskeySummary } from '~~/server/core/passkeys';
 
-const token = useCookie("nafynToken").value ?? "";
+const { token: tokenRef, rawCookie: tokenCookie } = useAuthToken();
+const token = tokenRef.value ?? "";
 
 interface Category {
   id: "profile" | "accounts" | "storage" | "subsonic" | "privacy" | "appearance" | "playback" | "sessions" | "developer",
@@ -525,7 +576,7 @@ async function logout() {
   // list immediately, rather than lingering until its JWT naturally expires. A flaky network must never
   // block the user from actually leaving the page.
   await $fetch("/api/v1/auth/logout", { method: "POST", headers: { Authorization: token } }).catch(() => {});
-  useCookie("nafynToken").value = null;
+  tokenCookie.value = null;
   navigateTo("/login");
 }
 
@@ -778,9 +829,13 @@ const insights = useInsights();
 const historyEnabled = useHistoryEnabled();
 const exporting = ref(false);
 const deletingHistory = ref(false);
+const exportingAccount = ref(false);
+const deletingAccount = ref(false);
+const deleteAccountPassword = ref("");
 
 async function loadPrivacyPanel() {
   await syncHistorySetting();
+  if (passkeys.value.length === 0) passkeys.value = await $fetch<PasskeySummary[]>("/api/v1/user/passkeys", { headers: { Authorization: token } });
 }
 
 async function toggleHistory() {
@@ -824,6 +879,53 @@ async function exportHistory() {
     sendToast($t('settings.privacy.title'), (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error'), false);
   } finally {
     exporting.value = false;
+  }
+}
+
+// GDPR art. 15 + 20. Same blob-download mechanics as exportHistory above, for the same reason: the
+// endpoint needs an Authorization header, which a plain <a href> cannot send
+async function exportAccount() {
+  exportingAccount.value = true;
+  try {
+    const blob = await $fetch<Blob>("/api/v1/user/export", {
+      headers: { Authorization: token },
+      responseType: "blob"
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `nafyn-account-data.json`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch (e) {
+    sendToast($t('settings.privacy.title'), (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error'), false);
+  } finally {
+    exportingAccount.value = false;
+  }
+}
+
+// GDPR art. 17. The password is re-checked server-side: a stolen token alone must not be able to delete an
+// account, which is also why it is asked for here rather than being taken from the existing session
+async function deleteOwnAccount() {
+  if (!confirm($t('settings.privacy.deleteAccount.confirm'))) return;
+
+  deletingAccount.value = true;
+  try {
+    await $fetch("/api/v1/user/me", {
+      method: "DELETE",
+      headers: { Authorization: token },
+      body: { password: deleteAccountPassword.value }
+    });
+
+    // the account is gone, so there is no session left to revoke - just drop the cookie and leave
+    deleteAccountPassword.value = "";
+    tokenCookie.value = null;
+    navigateTo("/login");
+  } catch (e) {
+    sendToast($t('settings.privacy.title'), (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error'), false);
+  } finally {
+    deletingAccount.value = false;
   }
 }
 
@@ -884,6 +986,52 @@ async function revokeSession(id: string) {
     sendToast($t('settings.sessions.title'), (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error'), false);
   } finally {
     revokingSessionId.value = null;
+  }
+}
+
+// -- privacy panel (passkeys) --
+
+const passkeys = ref<PasskeySummary[]>([]);
+const newPasskeyLabel = ref("");
+const addingPasskey = ref(false);
+const deletingPasskeyId = ref<string | null>(null);
+const passkeySupported = import.meta.client ? browserSupportsWebAuthn() : false;
+// browserSupportsWebAuthn() alone can't tell "this browser has no WebAuthn" apart from "this browser removed
+// the whole API because we're not in a secure context" - the latter is what plain http:// on a LAN IP looks
+// like in every browser, and silently blaming "your browser" there is actively misleading
+const passkeyNeedsSecureContext = import.meta.client && !passkeySupported && !window.isSecureContext;
+
+async function addPasskey() {
+  addingPasskey.value = true;
+  try {
+    const options = await $fetch("/api/v1/user/passkeys/register-options", { method: "POST", headers: { Authorization: token } });
+    const response = await startRegistration({ optionsJSON: options });
+    const created = await $fetch<PasskeySummary>("/api/v1/user/passkeys/register", {
+      method: "POST",
+      headers: { Authorization: token },
+      body: { response, label: newPasskeyLabel.value.trim() || null }
+    });
+    passkeys.value = [created, ...passkeys.value];
+    newPasskeyLabel.value = "";
+    sendToast($t('settings.privacy.title'), $t('settings.privacy.passkeys.added'));
+  } catch (e) {
+    // the browser throws its own Error (e.g. user cancelled) rather than a $fetch error in that case
+    const message = (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error');
+    sendToast($t('settings.privacy.title'), message, false);
+  } finally {
+    addingPasskey.value = false;
+  }
+}
+
+async function removePasskey(id: string) {
+  deletingPasskeyId.value = id;
+  try {
+    await $fetch(`/api/v1/user/passkeys/${id}`, { method: "DELETE", headers: { Authorization: token } });
+    passkeys.value = passkeys.value.filter((p) => p.id !== id);
+  } catch (e) {
+    sendToast($t('settings.privacy.title'), (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error'), false);
+  } finally {
+    deletingPasskeyId.value = null;
   }
 }
 

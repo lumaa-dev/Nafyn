@@ -127,3 +127,21 @@ export async function getRecentlyPlayed(userId: string): Promise<RecentlyPlayedE
 
     return entries;
 }
+
+// erasure helper (GDPR art. 17). Also used by the privacy panel's "delete my listening history", since the
+// recently-played shelf is listening data too - it just predates the insights feature and lives elsewhere.
+export async function deleteRecentlyPlayedForUser(userId: string): Promise<number> {
+    const result = await getLibrariesDb().prepare(`DELETE FROM recently_played WHERE userId = ?`).run(userId);
+    return result.changes;
+}
+
+// retention sweep (GDPR art. 5(1)(e)): the shelf only ever shows MAX_ENTRIES per user, but rows beyond that
+// were never deleted - a row saying "this account played this album" outlived any purpose it had. Anything
+// older than `retentionDays` goes.
+export async function pruneRecentlyPlayedOlderThan(retentionDays: number): Promise<number> {
+    if (!Number.isFinite(retentionDays) || retentionDays <= 0) return 0;
+
+    const cutoff = Date.now() - retentionDays * 86_400_000;
+    const result = await getLibrariesDb().prepare(`DELETE FROM recently_played WHERE playedAt < ?`).run(cutoff);
+    return result.changes;
+}

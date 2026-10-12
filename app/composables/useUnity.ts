@@ -11,6 +11,7 @@
 import type { MediaRow } from "~~/server/core/library";
 import { usePlayer, type PlayerState, type PlayContext } from "./usePlayer";
 import { useUnitySettings, useUnitySessionOverride } from "./useUnitySettings";
+import { useAuthToken } from "./useAuthToken";
 
 export type UnityRole = "master" | "slave";
 export type UnityMasterStatus = "active" | "grace" | "empty";
@@ -174,7 +175,7 @@ export const useUnity = () => {
     function connect() {
         if (!import.meta.client || ws || !shouldBeConnected.value) return;
 
-        const token = useCookie("nafynToken").value ?? "";
+        const token = useAuthToken().token.value ?? "";
         const wsProtocol = location.protocol === "https:" ? "wss:" : "ws:";
         const socket = new WebSocket(`${wsProtocol}//${location.host}/ws/unity?token=${encodeURIComponent(token)}`);
 

@@ -10,7 +10,7 @@ const DEFAULT_SETTINGS: PlaybackSettings = { crossfadeEnabled: true, crossfadeMs
 export const usePlaybackSettings = () => useState<PlaybackSettings>("playback-settings", () => ({ ...DEFAULT_SETTINGS }));
 
 function authToken(): string | null {
-    return useCookie("nafynToken").value ?? null;
+    return useAuthToken().token.value;
 }
 
 export async function syncPlaybackSettings(): Promise<void> {

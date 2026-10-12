@@ -174,3 +174,20 @@ export function closeUnityConnectionsForSession(userId: string, sessionId: strin
         if (slave.sessionId === sessionId) slave.peer.close(4003, "Session revoked");
     }
 }
+
+// called when an account is erased (server/core/accountErasure.ts): closes every Unity socket the account
+// has open and drops its live session, so no device keeps controlling playback - or holding the account's
+// last playback state in memory - for an account that no longer exists
+export function dropUnitySession(userId: string): void {
+    const session = sessions.get(userId);
+    if (!session) return;
+
+    session.master?.peer.close(4004, "Account deleted");
+    for (const slave of session.slaves.values()) slave.peer.close(4004, "Account deleted");
+
+    if (session.graceTimer) clearTimeout(session.graceTimer);
+    session.slaves.clear();
+    session.master = null;
+    session.lastState = null;
+    sessions.delete(userId);
+}

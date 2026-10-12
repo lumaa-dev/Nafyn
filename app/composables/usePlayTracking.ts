@@ -135,8 +135,7 @@ function writeQueue(events: QueuedPlayEvent[]): void {
 }
 
 function authToken(): string | null {
-    const token = useCookie("nafynToken").value;
-    return token || null;
+    return useAuthToken().token.value;
 }
 
 /** queues one finished listen and opportunistically flushes. Safe to call from an audio event handler. */

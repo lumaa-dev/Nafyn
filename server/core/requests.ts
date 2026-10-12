@@ -152,3 +152,14 @@ export async function deleteRequest(id: string): Promise<boolean> {
     const result = await getRequestsDb().prepare(`DELETE FROM requests WHERE id = ?`).run(id);
     return result.changes > 0;
 }
+
+// erasure helper (GDPR art. 17). A request row is an operational record of what the instance downloaded,
+// which survives the account that asked for it - but `requestedBy` is a personal identifier, so it is
+// nulled rather than the row being dropped. The column is nullable precisely so this is possible, and
+// every reader already treats a null requester as "unknown".
+export async function anonymizeRequestsOfUser(userId: string): Promise<number> {
+    const result = await getRequestsDb().prepare(`
+        UPDATE requests SET requestedBy = NULL, updatedAt = ? WHERE requestedBy = ?
+    `).run(Date.now(), userId);
+    return result.changes;
+}

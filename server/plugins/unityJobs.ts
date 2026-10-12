@@ -3,7 +3,7 @@
 //
 // Nitro runs plugins in alphabetical filename order, so db.ts (which creates the tables) has always finished
 // before this one starts.
-import { sweepExpiredSessions } from "~~/server/core/sessions";
+import { sweepExpiredSessions, sweepRevokedSessions } from "~~/server/core/sessions";
 
 const TICK_INTERVAL_MS = 60_000;
 
@@ -21,6 +21,9 @@ export default defineNitroPlugin(() => {
 
         try {
             await sweepExpiredSessions();
+            // a revoked row keeps working as a revocation from the moment it is revoked (a missing row reads
+            // as revoked too), so there is no reason to hold its IP and user agent until the original expiry
+            await sweepRevokedSessions();
         } catch (error) {
             console.error("[unity] scheduler tick failed:", error);
         } finally {

@@ -12,10 +12,11 @@
 <script lang="ts" setup>
 import type { RecentlyPlayedEntry } from '~~/server/core/recentlyPlayed';
 import noCover from '~/assets/no-cover.png';
+import { useAuthToken } from '~/composables/useAuthToken';
 
 defineProps<{ variant: "grid" | "scroll" }>();
 
-const token = useCookie("nafynToken").value;
+const token = useAuthToken().token.value;
 
 const { data: recentlyPlayed } = await useAsyncData<RecentlyPlayedEntry[]>("recently-played", () => {
   return token

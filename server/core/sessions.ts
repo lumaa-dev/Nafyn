@@ -64,3 +64,33 @@ export async function isSessionRevokedInDb(jti: string): Promise<boolean> {
 export async function sweepExpiredSessions(): Promise<void> {
     await getUsersDb().prepare(`DELETE FROM sessions WHERE expiresAt < ?`).run(Date.now() - 60_000);
 }
+
+// every session row ever created for the account, revoked ones included - the data-access export (GDPR
+// art. 15) has to disclose the login metadata Nafyn keeps, which includes IP and user agent
+export async function listAllSessionsForUser(userId: string): Promise<SessionRow[]> {
+    return await getUsersDb().prepare(`
+        SELECT * FROM sessions WHERE userId = ? ORDER BY createdAt DESC
+    `).all(userId) as SessionRow[];
+}
+
+// erasure helper (GDPR art. 17) - a hard DELETE, not the soft revoke above: on account deletion there is no
+// longer anything to tell "never existed" apart from, and `ip`/`userAgent` are personal data that must
+// actually go. Returns the deleted jtis so the caller can evict them from the in-memory session cache -
+// without that, a token issued to the deleted account stays accepted for up to the cache TTL.
+export async function deleteAllSessionsForUser(userId: string): Promise<string[]> {
+    const db = getUsersDb();
+    const rows = await db.prepare(`SELECT id FROM sessions WHERE userId = ?`).all(userId) as { id: string }[];
+    await db.prepare(`DELETE FROM sessions WHERE userId = ?`).run(userId);
+    return rows.map((row) => row.id);
+}
+
+// retention sweep (GDPR art. 5(1)(e)): a revoked row's only remaining job is to make verifyAuthToken() fail
+// for its jti, which it does from the moment it is revoked - but it carried an IP and user agent, and
+// sweepExpiredSessions() would keep both until the original 7-day expiry. Drop them once no live request
+// could still be mid-flight on that token.
+export async function sweepRevokedSessions(): Promise<number> {
+    const result = await getUsersDb().prepare(`
+        DELETE FROM sessions WHERE revokedAt IS NOT NULL AND revokedAt < ?
+    `).run(Date.now() - 60_000);
+    return result.changes;
+}

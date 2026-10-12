@@ -1,14 +1,10 @@
-import { getUserById, deleteUser, getPermissionsById } from "~~/server/core/users";
-import { deleteAllLibraryEntriesForUser } from "~~/server/core/library";
+import { getUserById, getPermissionsById } from "~~/server/core/users";
 import { canManageUser } from "~~/server/entity/Permission";
-import { deleteUserHistory } from "~~/server/core/playEvents";
-import { deleteInsightSettings } from "~~/server/core/insightsSettings";
-import { listYearSnapshots } from "~~/server/core/insightsSnapshot";
-import { deleteReelsForUser } from "~~/server/core/insightsReel";
+import { eraseAccount } from "~~/server/core/accountErasure";
 
 defineRouteMeta({
     openAPI: {
-        description: "Delete a user account and revoke all their library entries. Requires ADMIN, or MANAGE_ACCOUNTS against a non-privileged target (see canManageUser)",
+        description: "Permanently erase a user account and every piece of data attached to it: sessions, API tokens, passkeys, invites they issued, settings, library entries, their playlists, recently played and all listening data; download requests they made are kept as operational records with the requester removed. Requires ADMIN, or MANAGE_ACCOUNTS against a non-privileged target (see canManageUser)",
         tags: ["users"],
         operationId: "deleteUser",
         parameters: [
@@ -29,7 +25,8 @@ defineRouteMeta({
                             type: "object",
                             required: ["removed"],
                             properties: {
-                                removed: { type: "boolean" }
+                                removed: { type: "boolean" },
+                                erased: { type: "object", description: "Per-area count of what was removed" }
                             }
                         }
                     }
@@ -81,16 +78,10 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 401, statusMessage: "Unsufficient permissions" });
     }
 
-    await deleteAllLibraryEntriesForUser(targetId);
+    // every table that references a user does so without a foreign key (see the comments in db.ts), so
+    // nothing cascades and the deletion has to name every one of them. That list lives in exactly one place
+    // - eraseAccount() - shared with the self-service route, so the two can't drift on what "deleted" means
+    const erased = await eraseAccount(targetId);
 
-    // listening history is keyed on user_id with no foreign key (deliberately - see insightsSchema.ts), so
-    // deleting the account would otherwise leave a full play history behind with nobody to own it
-    const snapshots = await listYearSnapshots(targetId);
-    await deleteReelsForUser(targetId, snapshots.map((s) => s.year));
-    await deleteUserHistory(targetId);
-    await deleteInsightSettings(targetId);
-
-    const removed = await deleteUser(targetId);
-
-    return { removed };
+    return { removed: erased.removed, erased };
 });

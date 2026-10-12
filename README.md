@@ -13,6 +13,8 @@ Multi-user: separate libraries, separate permissions per user. Users request son
 - [How to setup](#how-to-setup)
 - [Settings](#settings)
 - [Song metadata providers](#song-metadata-providers)
+- [Passkeys](#passkeys)
+- [Privacy & GDPR](#privacy--gdpr)
 - [Nafyn Unity](#nafyn-unity)
 - [Subsonic API](#subsonic-api)
 - [Tech stack](#tech-stack)
@@ -22,11 +24,11 @@ Multi-user: separate libraries, separate permissions per user. Users request son
 
 1. User requests a track/album via MusicBrainz search (title, artist, etc).
 2. Nafyn finds match on Soulseek network through [slskd](https://github.com/slskd/slskd) (self-hosted Soulseek client with HTTP API).
-3. Download queued and tracked (`bullmq` job queue).
+3. Download queued and tracked, with progress streamed to the browser over a WebSocket (`/ws/downloads`).
 4. Finished file verified against requested MusicBrainz recording via audio fingerprint (`fpcalc` + AcoustID API) — makes sure download actually matches, not a mislabeled file.
 5. Track added to that user's library, tagged with metadata (`music-metadata`), transcodable/playable through built-in web player or Nafyn API endpoints.
 
-Auth: JWT-based (`jsonwebtoken`), passwords hashed with `bcrypt`. Each user has own library + permission set ([`server/entity/Permission.ts`](server/entity/Permission.ts)).
+Auth: JWT-based (`jsonwebtoken`), passwords hashed with `bcrypt`, or [passkeys](#passkeys) instead of a password entirely. Each user has own library + permission set ([`server/entity/Permission.ts`](server/entity/Permission.ts)).
 
 Storage: MySQL (`mysql2`).
 
@@ -67,7 +69,7 @@ bun run build
 bun run preview   # local preview of production build
 ```
 
-Docker deployment: planned as primary distribution method, not yet included in this repo.
+Docker: a `Dockerfile` is in the repo and Docker is the intended primary distribution method, but it isn't fully wired up yet.
 
 ## Settings
 
@@ -87,6 +89,14 @@ Configured via environment variables (see `.env.example`):
 | `DOMAINS_WHITELIST` | Comma-separated hostnames exempt from the login/register rate limits. Leave empty unless you specifically need it — every entry is an IP that can brute-force passwords freely. |
 | `TRUST_PROXY` | Number of reverse proxies in front of Nafyn (nginx/Caddy/Traefik/Cloudflare). `0` (default) when Nafyn is directly exposed. Gates whether `X-Forwarded-For` is trusted at all — wrong in either direction breaks or defeats rate limiting, see [`server/utils/clientIp.ts`](server/utils/clientIp.ts). |
 | `NAFYN_PUBLIC_OPENAPI` | Set `true` to publish the auto-generated OpenAPI spec + Scalar docs UI in production. Off by default — the spec enumerates every endpoint, parameter and auth requirement to anonymous visitors. |
+| `NAFYN_PRIVACY_CONTROLLER` | Name of the person/organisation running the instance — the data controller. Shown on `/privacy`. Optional, but see [Privacy & GDPR](#privacy--gdpr): leaving it empty means the notice tells visitors nobody was named. |
+| `NAFYN_PRIVACY_CONTACT` | How to reach that person about data requests (email, URL, anything actionable). Shown on `/privacy`. |
+| `NAFYN_RETENTION_SCHEDULER` | Set `false` to stop this replica running the data-retention sweeps. At least one replica must run them — they are what stops data being kept longer than it is needed. |
+| `NAFYN_UNITY_ENABLED` | Set `false` to turn [Nafyn Unity](#nafyn-unity) off outright. Needed when running more than one replica behind a load balancer — the live registry is in-process. |
+| `NAFYN_UNITY_SCHEDULER` | Set `false` to stop this replica running the session-cleanup job. |
+| `NAFYN_INSIGHTS_SCHEDULER` | Set `false` to stop this replica running the listening-insights rollup/snapshot/reel jobs. |
+
+Some behaviour is tuned per install from the `app_settings` table instead of the environment, so it can change without a redeploy. Relevant to data retention: `insights.rawEventRetentionDays` (default `1095` — three years of raw play events; `0` keeps them forever) and `retention.recentlyPlayedDays` (default `180`). The listening-insights ranking weights live there too — see [`server/core/insightsConfig.ts`](server/core/insightsConfig.ts).
 
 ## Song metadata providers
 
@@ -109,6 +119,50 @@ What can go in the search bar:
 Leave a key empty and that provider is skipped silently — the keyless ones (Deezer, iTunes, ReccoBeats) are always on. Each provider is called with a Nafyn `User-Agent`, results are cached in memory for 10 minutes, and a provider that answers with a rate limit (`429`, iTunes' `403`, Deezer's quota error, or a `Retry-After` / `X-RateLimit-Remaining: 0` / `X-Discogs-Ratelimit-Remaining: 0` header) is backed off until its window resets. Also available directly over the API: `GET /api/v1/metadata/search?q=` and `GET /api/v1/metadata/providers`.
 
 To add a provider, write one file under [`server/utils/metadata/providers/`](server/utils/metadata/providers/) implementing `MetadataProvider` ([`types.ts`](server/utils/metadata/types.ts)) and add it to `PROVIDERS` in [`server/utils/metadata/index.ts`](server/utils/metadata/index.ts).
+
+## Passkeys
+
+Sign in with a fingerprint, face unlock or security key instead of typing a password. Standard WebAuthn, via `@simplewebauthn`.
+
+**For users**
+
+- Add one under **Settings → Privacy & Security → Passkeys**, give it a label (`iPhone`, `work laptop`, ...), and the **Sign in with a passkey** button on the login page starts working.
+- Several per account is fine — one per device is the point. Each row shows when it was added and last used, and can be removed on its own.
+- Your password still works. A passkey is an additional way in, not a replacement, so losing a device doesn't lock you out.
+- Passkeys need a **secure context**: HTTPS, or `localhost`. Over plain `http://` on a LAN IP, browsers hide the whole WebAuthn API and the buttons tell you so rather than failing silently.
+
+**For developers**
+
+- No env var to set: `rpID`/`origin` are derived per request from the hostname ([`server/utils/webauthn.ts`](server/utils/webauthn.ts)), because a self-hosted app can live on any domain. They must stay in lockstep — WebAuthn verification rejects a mismatch.
+- Credentials are rows in `passkeys` ([`server/core/passkeys.ts`](server/core/passkeys.ts)); the stored public key is not a secret, unlike an API token.
+- Challenges live in memory for a few minutes ([`server/utils/passkeyChallenges.ts`](server/utils/passkeyChallenges.ts)) — two maps, since registration is keyed by an already-authenticated user while login is anonymous until the credential comes back. Losing them on a restart is harmless.
+- Routes: `POST /api/v1/auth/passkey/login-options` + `/login` (anonymous), and `/api/v1/user/passkeys/*` (register-options, register, list, delete). A passkey login mints the same session row and JWT as a password login.
+
+## Privacy & GDPR
+
+Nafyn is self-hosted, so **you** are the data controller — Nafyn's job is to make the GDPR obligations implementable, and this section is the part you have to act on.
+
+**Set up**
+
+1. Fill in `NAFYN_PRIVACY_CONTROLLER` and `NAFYN_PRIVACY_CONTACT`. The privacy notice at `/privacy` ships with Nafyn, but only you know who runs the instance and how to be reached — with both empty, the page tells visitors plainly that nobody was named, which is not a good look for a notice.
+2. Read [`content/en/privacy.md`](content/en/privacy.md) and amend it if your deployment processes anything Nafyn itself doesn't: extra analytics, a reverse proxy that logs requests, off-site backups, an account-provisioning process that collects an email address. The notice is markdown, one file per locale (`content/<code>/privacy.md`, English + French shipped, English used as fallback), parsed at build time — **edits need a rebuild**. Don't put your name in it; that comes from the env vars above so it stays correct without one. The page reads it through `GET /api/v1/privacy` rather than querying `@nuxt/content` in the browser, because the app's CSP blocks the WASM SQLite that a client-side Content query needs.
+3. Leave `NAFYN_RETENTION_SCHEDULER` alone unless you run replicas. The retention sweeps are what keeps data from piling up forever.
+
+**What users can do themselves**, all under **Settings → Privacy & Security**:
+
+- **Download everything held about them** (art. 15 + 20) — one JSON file: profile, settings, logins including the IP addresses they came from, library, playlists, requests, recently played, all listening data. Never any secret. `GET /api/v1/user/export`.
+- **Delete their account** (art. 17) — permanent, password re-auth required, no administrator involved. `DELETE /api/v1/user/me`.
+- **Turn listening history on/off** (art. 7(3)) — off by default, opt-in only, and turning it off stops recording immediately.
+- **Delete their listening history** on its own, without deleting the account.
+- Read the notice, and manage passkeys and sessions.
+
+**Retention**: sessions (with their IP + user agent) go when they expire after 7 days, or a minute after being revoked. The recently-played shelf is pruned after 180 days. Raw play events are pruned after 3 years — the statistics built from them are not, so no screen changes at that boundary. All three are tunable, see [Settings](#settings).
+
+**What leaves your server**: MusicBrainz, AcoustID (an audio fingerprint), the configured metadata providers, Cover Art Archive, and your own slskd instance. These carry what is being searched for or downloaded — never a username, account id or listening history.
+
+**One accepted weak point, worth knowing before you deploy**: Subsonic API tokens are stored in readable form, because the Subsonic protocol's token challenge requires a secret the server can re-hash. Account passwords are bcrypt-hashed as normal. This is disclosed in the notice rather than hidden, but it means your database dump contains working app passwords — treat it accordingly.
+
+**For developers**: account deletion is `eraseAccount()` in [`server/core/accountErasure.ts`](server/core/accountErasure.ts) and nothing else may delete an account. No table has a foreign key to `users`, so nothing cascades and that function names every table by hand. **Adding a table with a `userId` column means adding it there** — no constraint will remind you. Export is [`server/core/accountExport.ts`](server/core/accountExport.ts).
 
 ## Nafyn Unity
 
@@ -141,7 +195,6 @@ Both password-based login (`p=`) and token-based login (`t=`/`s=`) work, but not
 
 - [Nuxt 4](https://nuxt.com/) (Vue 3) — frontend + server API routes (Nitro)
 - `mysql2` — database
-- `bullmq` — download job queue
 - `musicbrainz-api` — track/album metadata search
 - Last.fm API — artist bios/images (optional, `LASTFM_API_KEY`)
 - Deezer, iTunes, ReccoBeats, TheAudioDB, Discogs, Genius — song metadata (plain HTTP, keyed ones optional)
@@ -150,6 +203,8 @@ Both password-based login (`p=`) and token-based login (`t=`/`s=`) work, but not
 - `music-metadata` — tag reading/writing
 - `fluent-ffmpeg` / `ffmpeg-static` — audio processing
 - `jsonwebtoken` + `bcrypt` — auth
+- `@simplewebauthn/server` + `/browser` — passkey registration and login
+- `@nuxt/content` — the privacy notice, as markdown under `content/`
 - `@nuxtjs/i18n` — English + French locales
 
 ## Development

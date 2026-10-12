@@ -309,3 +309,35 @@ export async function reorderEntries(playlistId: string, orderedEntryIds: string
         }
     });
 }
+
+// ---- erasure helpers (GDPR art. 17) ---------------------------------------------------------------------
+//
+// Called from eraseAccount() in accountErasure.ts. Playlists split three ways on account deletion:
+// the ones the account owns are deleted outright, its memberships in other people's playlists are dropped,
+// and entries it added to playlists it does not own are anonymized rather than deleted - removing them
+// would silently delete tracks out of a playlist that still belongs to somebody else.
+
+export async function listPlaylistsOwnedBy(ownerId: string): Promise<PlaylistRow[]> {
+    return await getLibrariesDb().prepare(`SELECT * FROM playlists WHERE ownerId = ?`).all(ownerId) as PlaylistRow[];
+}
+
+export async function listMembershipsOfUser(userId: string): Promise<PlaylistMemberRow[]> {
+    return await getLibrariesDb().prepare(`SELECT * FROM playlist_members WHERE userId = ?`).all(userId) as PlaylistMemberRow[];
+}
+
+export async function removeAllMembershipsOfUser(userId: string): Promise<number> {
+    const result = await getLibrariesDb().prepare(`DELETE FROM playlist_members WHERE userId = ?`).run(userId);
+    return result.changes;
+}
+
+// `addedBy` is NOT NULL, so the identifier is replaced with a sentinel instead of nulled. It is deliberately
+// not a UUID: nothing can ever resolve it back to an account, and getUserById() returns null for it, which
+// every reader of `addedBy` already handles (GET /api/v1/playlist/{pid} returns it as null).
+export const DELETED_USER_SENTINEL = "deleted";
+
+export async function anonymizeEntriesAddedBy(userId: string): Promise<number> {
+    const result = await getLibrariesDb().prepare(`
+        UPDATE playlist_entries SET addedBy = ? WHERE addedBy = ?
+    `).run(DELETED_USER_SENTINEL, userId);
+    return result.changes;
+}

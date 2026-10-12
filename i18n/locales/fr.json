@@ -24,6 +24,8 @@
       "orPrefix": "ou",
       "registerLink": "créez un nouveau compte",
       "submit": "Se connecter",
+      "passkeySubmit": "Se connecter avec une clé d'accès",
+      "passkeyNeedsSecureContext": "Les clés d'accès nécessitent une connexion sécurisée - accédez à Nafyn via HTTPS (ou localhost) pour les utiliser.",
       "error": "Connexion impossible"
     },
     "register": {
@@ -32,7 +34,10 @@
       "orPrefix": "ou",
       "loginLink": "connectez-vous à votre compte",
       "submit": "Créer un compte"
-    }
+    },
+    "privacyPrefix": "En créant un compte, vous acceptez que cette instance enregistre les données décrites dans sa",
+    "privacyLink": "politique de confidentialité",
+    "privacyLoginPrefix": "Ce que cette instance enregistre à votre sujet :"
   },
   "library": {
     "tracks": {
@@ -208,7 +213,22 @@
       "empty": "Aucune session active."
     },
     "privacy": {
-      "title": "Confidentialité",
+      "title": "Confidentialité et sécurité",
+      "passkeys": {
+        "title": "Clés d'accès",
+        "intro": "Connectez-vous avec l'empreinte digitale, la reconnaissance faciale ou la clé de sécurité de votre appareil - aucun mot de passe à saisir ou à retenir.",
+        "add": "Ajouter une clé d'accès",
+        "added": "Clé d'accès ajoutée",
+        "unnamed": "Clé d'accès sans nom",
+        "labelPlaceholder": "Nom (ex : iPhone)",
+        "created": "Ajoutée le {date}",
+        "lastUsed": "Dernière utilisation le {date}",
+        "neverUsed": "Jamais utilisée",
+        "delete": "Retirer",
+        "empty": "Aucune clé d'accès pour le moment.",
+        "unsupported": "Votre navigateur ne prend pas en charge les clés d'accès.",
+        "needsSecureContext": "Les clés d'accès nécessitent une connexion sécurisée : accédez à Nafyn via HTTPS (ou localhost) pour les utiliser."
+      },
       "history": {
         "title": "Historique d'écoute",
         "label": "Utiliser l'historique d'écoute",
@@ -227,6 +247,25 @@
         "note": "Efface définitivement chaque écoute, chaque statistique, chaque Replay Mix et chaque bilan annuel. Action irréversible.",
         "confirm": "Supprimer définitivement tout votre historique d'écoute ? Action irréversible.",
         "done": "Votre historique d'écoute a été supprimé."
+      },
+      "notice": {
+        "title": "Ce que cette instance enregistre",
+        "body": "Un récapitulatif en clair de toutes les données que Nafyn conserve à votre sujet, pourquoi, et pendant combien de temps.",
+        "link": "Lire la politique de confidentialité"
+      },
+      "accountExport": {
+        "title": "Télécharger toutes vos données",
+        "button": "Tout télécharger",
+        "note": "Un fichier JSON contenant tout ce qui est détenu sur votre compte : profil, réglages, connexions (y compris les adresses IP dont elles provenaient), bibliothèque, playlists, demandes, écoutes récentes et tout l'historique d'écoute. Les secrets en sont exclus."
+      },
+      "deleteAccount": {
+        "title": "Supprimer votre compte",
+        "button": "Supprimer mon compte",
+        "note": "Efface définitivement votre compte et tout ce qui y est rattaché : connexions, passkeys, jetons d'API, réglages, accès à la bibliothèque, vos playlists, écoutes récentes et tout l'historique d'écoute. Les fichiers audio restent sur le serveur si un autre utilisateur les possède aussi. Cette action est irréversible.",
+        "passwordPlaceholder": "Confirmez avec votre mot de passe",
+        "confirm": "Supprimer définitivement votre compte et toutes vos données ? Cette action est irréversible.",
+        "done": "Votre compte a été supprimé.",
+        "lastAdmin": "Vous êtes le seul administrateur de cette instance. Accordez d'abord ADMIN à un autre compte."
       }
     },
     "appearance": {
@@ -474,5 +513,18 @@
     "importing": "Importation...",
     "done": "Ajouté à votre bibliothèque",
     "error": "Impossible d'importer ce fichier."
+  },
+  "privacy": {
+    "fallbackTitle": "Politique de confidentialité",
+    "updated": "Mise à jour le {date}",
+    "missing": "La politique de confidentialité n'a pas pu être chargée. Demandez-la à l'opérateur de cette instance.",
+    "controller": {
+      "title": "Qui est responsable",
+      "named": "Cette instance est gérée par {name}.",
+      "unnamed": "Cette instance est gérée par son opérateur.",
+      "contact": "Contact : {contact}",
+      "missing": "L'opérateur de cette instance n'a publié ni son identité ni un moyen de le contacter. Adressez-vous à la personne qui vous a créé votre compte : au sens du RGPD elle est responsable du traitement et doit répondre aux demandes concernant vos données."
+    },
+    "back": "Retour à Nafyn"
   }
 }

@@ -187,6 +187,31 @@ const MIGRATIONS: Migration[] = [
                 )
             `);
         }
+    },
+    {
+        // WebAuthn passkeys, an alternative to password login (server/core/passkeys.ts). No FK to users,
+        // same informal-reference convention as api_tokens/sessions above. publicKey/transports hold no
+        // secret (a public key, and a hint list like "usb,internal"), so they're plain text, not hashed.
+        id: "2026-10-11-passkeys",
+        up: async (conn) => {
+            if (await tableExists(conn, "passkeys")) return;
+            await conn.query(`
+                CREATE TABLE passkeys (
+                    id VARCHAR(36) PRIMARY KEY,
+                    userId VARCHAR(36) NOT NULL,
+                    credentialId VARCHAR(255) NOT NULL UNIQUE,
+                    publicKey TEXT NOT NULL,
+                    counter BIGINT NOT NULL DEFAULT 0,
+                    deviceType VARCHAR(16) NOT NULL,
+                    backedUp TINYINT(1) NOT NULL DEFAULT 0,
+                    transports VARCHAR(255),
+                    label VARCHAR(100),
+                    createdAt BIGINT NOT NULL,
+                    lastUsedAt BIGINT NULL,
+                    INDEX idx_passkeys_userId (userId)
+                )
+            `);
+        }
     }
 ];
 

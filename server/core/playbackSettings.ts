@@ -52,3 +52,8 @@ export async function setPlaybackSettings(
 
     return { crossfadeEnabled, crossfadeMs };
 }
+
+// erasure helper (GDPR art. 17)
+export async function deletePlaybackSettings(userId: string): Promise<void> {
+    await getUsersDb().prepare(`DELETE FROM user_playback_settings WHERE userId = ?`).run(userId);
+}

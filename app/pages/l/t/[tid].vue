@@ -37,15 +37,16 @@ import noCover from '~/assets/no-cover.png';
 import PlaylistPickerModal from '~/components/PlaylistPickerModal.vue';
 import MediaEditModal from '~/components/MediaEditModal.vue';
 import { useAppearanceSettings } from '~/composables/useAppearanceSettings';
+import { useAuthToken } from '~/composables/useAuthToken';
 
 const { locale } = useI18n();
 const tid = useRoute().params.tid as string;
-const token = useCookie("nafynToken").value;
+const { token } = useAuthToken();
 const appearance = useAppearanceSettings();
 
 const { data: track } = await useAsyncData<MediaRow>(`library-track-${tid}`, () => {
-  return token
-    ? $fetch(`/api/v1/library/track/${tid}`, { headers: { Authorization: token } })
+  return token.value
+    ? $fetch(`/api/v1/library/track/${tid}`, { headers: { Authorization: token.value } })
     : Promise.reject(new Error("Not authenticated"));
 });
 

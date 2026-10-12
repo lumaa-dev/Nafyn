@@ -33,13 +33,14 @@ import ContextMenu, { type ContextMenuItem } from '~/components/ContextMenu.vue'
 import PlaylistPickerModal from '~/components/PlaylistPickerModal.vue';
 import MediaEditModal from '~/components/MediaEditModal.vue';
 import { useAppearanceSettings } from '~/composables/useAppearanceSettings';
+import { useAuthToken } from '~/composables/useAuthToken';
 
-const token = useCookie("nafynToken").value;
+const { token } = useAuthToken();
 const appearance = useAppearanceSettings();
 
 const { items: tracks, initialLoading, loadingMore, sentinel, loadMore, reset } = useInfiniteList<MediaRow>((page, limit) => {
-  return token
-    ? $fetch("/api/v1/library/tracks", { headers: { Authorization: token }, query: { page, limit } })
+  return token.value
+    ? $fetch("/api/v1/library/tracks", { headers: { Authorization: token.value }, query: { page, limit } })
     : Promise.resolve({ items: [], page, limit, total: 0, hasMore: false });
 });
 await loadMore();
@@ -98,11 +99,11 @@ function onEllipsis(e: MouseEvent, track: MediaRow) {
 }
 
 async function deleteTrack(track: MediaRow) {
-  if (!token) return;
+  if (!token.value) return;
 
   var hasError: string | null = null
   const result = await $fetch(`/api/v1/library/${track.id}`, {
-    headers: { Authorization: token },
+    headers: { Authorization: token.value },
     method: "DELETE",
   }).catch(r => hasError = r)
 

@@ -49,6 +49,7 @@
 
 <script lang="ts" setup>
 import type { NafynRequest, RequestStatus } from '~~/server/entity/NafynRequest';
+import { useAuthToken } from '~/composables/useAuthToken';
 
 interface DownloadProgressEvent {
   requestId: string;
@@ -112,7 +113,7 @@ function connect() {
   // "searching" event (and everything after) arrives live instead of requiring a manual page refresh
   if (import.meta.server || socket || TERMINAL_STAGES.includes(liveStatus.value)) return;
 
-  const token = useCookie("nafynToken").value;
+  const token = useAuthToken().token.value;
   if (!token) return;
 
   const wsProtocol = location.protocol === "https:" ? "wss:" : "ws:";

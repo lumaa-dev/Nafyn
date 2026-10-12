@@ -39,11 +39,21 @@ export const INSIGHTS_DEFAULTS = {
     gateMinUniqueTracks: 5,
     gateMinMinutes: 15,
 
-    // 0 means never prune. Deliberately the shipped default: the aggregates can only ever be rebuilt from
-    // raw events, so pruning bakes any future bug in the weighting permanently into old buckets, and the raw
-    // store is also what the personal data export reads from. Set a positive number once the scoring has
-    // been through a full year unchanged.
-    rawEventRetentionDays: 0
+    // how long an individual raw play event is kept. 0 means never prune, which used to be the shipped
+    // default - that is storage limitation (GDPR art. 5(1)(e)) failing by omission: "when did this person
+    // press play, on what, for how long" is the most granular data Nafyn holds and it was kept forever by
+    // default, long past the point where anything reads it.
+    //
+    // Three years is the bound now. Nothing user-facing changes at that boundary: every screen reads the
+    // aggregate tables, which are rolled up long before a prune can reach the events behind them and are
+    // never themselves pruned - all-time Replay Mixes and old year-end summaries stay intact. What is lost
+    // is the ability to rebuild aggregates older than three years from scratch if the weighting ever
+    // changes, and the raw-event section of a personal data export stops going further back than that.
+    //
+    // Set it to 0 (app_settings key `insights.rawEventRetentionDays`) to keep events forever anyway, but
+    // note that an operator doing so needs a reason that holds up: the user's opt-in covers the insights
+    // feature, not indefinite retention beyond it.
+    rawEventRetentionDays: 1095
 };
 
 export type InsightsConfig = typeof INSIGHTS_DEFAULTS;

@@ -43,6 +43,7 @@
 
 <script lang="ts" setup>
 import noCover from '~/assets/no-cover.png';
+import { useAuthToken } from '~/composables/useAuthToken';
 
 interface PlaylistRow {
   id: string;
@@ -51,7 +52,8 @@ interface PlaylistRow {
   image: string | null;
 }
 
-const token = useCookie("nafynToken").value ?? "";
+const { token: tokenRef } = useAuthToken();
+const token = tokenRef.value ?? "";
 
 const { items: playlists, initialLoading, loadingMore, sentinel, loadMore, reset } = useInfiniteList<PlaylistRow>((page, limit) => {
   return token

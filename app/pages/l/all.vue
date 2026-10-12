@@ -31,6 +31,7 @@ import noCover from '~/assets/no-cover.png';
 import ContextMenu, { type ContextMenuItem } from '~/components/ContextMenu.vue';
 import PlaylistPickerModal from '~/components/PlaylistPickerModal.vue';
 import { useAppearanceSettings } from '~/composables/useAppearanceSettings';
+import { useAuthToken } from '~/composables/useAuthToken';
 
 interface AllMediaRow {
   id: string;
@@ -44,12 +45,12 @@ interface AllMediaRow {
   owners: { userId: string; username: string }[];
 }
 
-const token = useCookie("nafynToken").value;
+const { token } = useAuthToken();
 const appearance = useAppearanceSettings();
 
 const { items: tracks, initialLoading, loadingMore, sentinel, loadMore, reset } = useInfiniteList<AllMediaRow>((page, limit) => {
-  return token
-    ? $fetch("/api/v1/library/all", { headers: { Authorization: token }, query: { page, limit } })
+  return token.value
+    ? $fetch("/api/v1/library/all", { headers: { Authorization: token.value }, query: { page, limit } })
     : Promise.resolve({ items: [], page, limit, total: 0, hasMore: false });
 });
 await loadMore();
@@ -94,11 +95,11 @@ function onEllipsis(e: MouseEvent, track: AllMediaRow) {
 }
 
 async function deleteTrack(track: AllMediaRow, ownerId: string) {
-  if (!token) return;
+  if (!token.value) return;
 
   let hasError: string | null = null
   const result = await $fetch(`/api/v1/library/${track.id}/${ownerId}`, {
-    headers: { Authorization: token },
+    headers: { Authorization: token.value },
     method: "DELETE",
   }).catch(r => hasError = r)
 

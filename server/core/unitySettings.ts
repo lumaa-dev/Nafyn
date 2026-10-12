@@ -28,3 +28,8 @@ export async function setUnitySettings(userId: string, enabled: boolean): Promis
 
     return { enabled };
 }
+
+// erasure helper (GDPR art. 17)
+export async function deleteUnitySettings(userId: string): Promise<void> {
+    await getUsersDb().prepare(`DELETE FROM user_unity_settings WHERE userId = ?`).run(userId);
+}

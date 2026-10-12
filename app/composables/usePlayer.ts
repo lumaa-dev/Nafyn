@@ -4,6 +4,7 @@ import type { RecentlyPlayedType } from "~~/server/core/recentlyPlayed";
 import type { Ref } from "vue";
 import { enqueuePlayEvent, bindPlayTracking, type PlaySource } from "./usePlayTracking";
 import { usePlaybackSettings, type PlaybackSettings } from "./usePlaybackSettings";
+import { useAuthToken } from "./useAuthToken";
 
 export type RepeatMode = "off" | "queue" | "track";
 
@@ -15,7 +16,7 @@ export interface PlayContext {
 // fire-and-forget: recording a recently-played entry should never block/break playback
 function recordRecentlyPlayed(context: PlayContext) {
     if (!import.meta.client) return;
-    const token = useCookie("nafynToken").value;
+    const token = useAuthToken().token.value;
     if (!token) return;
 
     $fetch("/api/v1/library/recently-played", {
@@ -476,7 +477,7 @@ function activateDeck(state: PlayerState, deck: Deck, track: MediaRow) {
 }
 
 function trackStreamUrl(track: MediaRow): string {
-    const token = useCookie("nafynToken").value ?? "";
+    const token = useAuthToken().token.value ?? "";
     return `/api/v1/library/${track.id}/stream?token=${encodeURIComponent(token)}`;
 }
 

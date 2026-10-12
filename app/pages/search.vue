@@ -44,6 +44,7 @@ import { isStructuredMetadataQuery } from '~~/server/utils/metadata/query';
 import type { MetadataLookupResult, SongMetadata } from '~~/server/utils/metadata/types';
 import type { ArtistInfo } from '~~/server/entity/media/ArtistInfo';
 import type { MediaInfo } from '~~/server/entity/media/MediaInfo';
+import { useAuthToken } from '~/composables/useAuthToken';
 
 interface SearchResponse {
   albums: MediaInfo[],
@@ -52,15 +53,15 @@ interface SearchResponse {
 }
 
 const route = useRoute();
-const token = useCookie("nafynToken").value;
+const { token } = useAuthToken();
 
 // re-runs whenever `?q=` changes, so searching again while already on this page updates the results without a full page reload (which would kill audio playback)
 const { data: results } = await useAsyncData<SearchResponse>("search", () => {
   const q = route.query.q;
   // an ISRC, platform ID or link means nothing to MusicBrainz' text search - the metadata lookup below
   // resolves those to a MusicBrainz recording itself
-  return token && typeof q === "string" && q.length > 0 && !isStructuredMetadataQuery(q)
-    ? $fetch("/api/v1/search", { headers: { Authorization: token }, query: { q } })
+  return token.value && typeof q === "string" && q.length > 0 && !isStructuredMetadataQuery(q)
+    ? $fetch("/api/v1/search", { headers: { Authorization: token.value }, query: { q } })
     : Promise.resolve({ albums: [], tracks: [], artists: [] });
 }, { default: () => {}, watch: [() => route.query.q] });
 
@@ -68,8 +69,8 @@ const { data: results } = await useAsyncData<SearchResponse>("search", () => {
 // MusicBrainz results rather than holding the page up
 const { data: metadata } = useLazyAsyncData<MetadataLookupResult | null>("search-metadata", () => {
   const q = route.query.q;
-  return token && typeof q === "string" && q.length > 0
-    ? $fetch<MetadataLookupResult>("/api/v1/metadata/search", { headers: { Authorization: token }, query: { q } }).catch(() => null)
+  return token.value && typeof q === "string" && q.length > 0
+    ? $fetch<MetadataLookupResult>("/api/v1/metadata/search", { headers: { Authorization: token.value }, query: { q } }).catch(() => null)
     : Promise.resolve(null);
 }, { server: false, default: () => null, watch: [() => route.query.q] });
 
@@ -85,11 +86,11 @@ async function openMetadata(meta: SongMetadata) {
     navigateTo(meta.kind === "album" ? `/a/${meta.musicbrainzId}` : `/t/${meta.musicbrainzId}`);
     return;
   }
-  if (resolving.value.has(meta.ref) || !token) return;
+  if (resolving.value.has(meta.ref) || !token.value) return;
 
   resolving.value.add(meta.ref);
   try {
-    const resolved = await $fetch<{ kind: "track" | "album", musicbrainzId: string }>("/api/v1/metadata/resolve", { headers: { Authorization: token }, query: { ref: meta.ref } });
+    const resolved = await $fetch<{ kind: "track" | "album", musicbrainzId: string }>("/api/v1/metadata/resolve", { headers: { Authorization: token.value }, query: { ref: meta.ref } });
     navigateTo(resolved.kind === "album" ? `/a/${resolved.musicbrainzId}` : `/t/${resolved.musicbrainzId}`);
   } catch {
     // no MusicBrainz match - fall back to the provider's own page when it has one

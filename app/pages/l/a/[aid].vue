@@ -38,9 +38,10 @@ import noCover from '~/assets/no-cover.png';
 import ContextMenu, { type ContextMenuItem } from '~/components/ContextMenu.vue';
 import PlaylistPickerModal from '~/components/PlaylistPickerModal.vue';
 import { useAppearanceSettings } from '~/composables/useAppearanceSettings';
+import { useAuthToken } from '~/composables/useAuthToken';
 
 const aid = useRoute().params.aid as string;
-const token = useCookie("nafynToken").value;
+const { token } = useAuthToken();
 const appearance = useAppearanceSettings();
 
 interface LibraryAlbumDetail {
@@ -49,8 +50,8 @@ interface LibraryAlbumDetail {
 }
 
 const { data: detail } = await useAsyncData<LibraryAlbumDetail>(`library-album-${aid}`, () => {
-  return token
-    ? $fetch(`/api/v1/library/album/${aid}`, { headers: { Authorization: token } })
+  return token.value
+    ? $fetch(`/api/v1/library/album/${aid}`, { headers: { Authorization: token.value } })
     : Promise.reject(new Error("Not authenticated"));
 });
 

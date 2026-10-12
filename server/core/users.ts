@@ -129,3 +129,14 @@ export async function countUsers(): Promise<number> {
     const row = await getUsersDb().prepare(`SELECT COUNT(*) AS count FROM users`).get() as { count: number };
     return Number(row.count);
 }
+
+// how many accounts hold the ADMIN bit. Used by self-service account deletion (GDPR art. 17): the right to
+// erasure is unconditional, but an instance left with no administrator can never be administered again, so
+// the last admin is asked to hand ADMIN to somebody else first rather than being silently allowed to brick
+// the install. Anyone who really is the only account can still delete it - see the route for that case.
+export async function countAdmins(): Promise<number> {
+    const row = await getUsersDb().prepare(
+        `SELECT COUNT(*) AS count FROM users WHERE (permissions & ?) <> 0`
+    ).get(Permission.ADMIN) as { count: number };
+    return Number(row.count);
+}

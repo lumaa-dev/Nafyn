@@ -71,3 +71,10 @@ export async function deleteApiToken(userId: string, id: string): Promise<boolea
     const result = await getUsersDb().prepare(`DELETE FROM api_tokens WHERE id = ? AND userId = ?`).run(id, userId);
     return result.changes > 0;
 }
+
+// erasure helper (GDPR art. 17): drops every app password the account ever generated. Called from
+// eraseAccount() in accountErasure.ts, never from a user-facing route on its own.
+export async function deleteAllApiTokensForUser(userId: string): Promise<number> {
+    const result = await getUsersDb().prepare(`DELETE FROM api_tokens WHERE userId = ?`).run(userId);
+    return result.changes;
+}

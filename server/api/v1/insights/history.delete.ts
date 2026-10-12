@@ -1,10 +1,11 @@
 import { deleteUserHistory } from "~~/server/core/playEvents";
 import { listYearSnapshots } from "~~/server/core/insightsSnapshot";
 import { deleteReelsForUser } from "~~/server/core/insightsReel";
+import { deleteRecentlyPlayedForUser } from "~~/server/core/recentlyPlayed";
 
 defineRouteMeta({
     openAPI: {
-        description: "Permanently erase the requesting user's entire listening history: raw play events, every aggregate, their Replay Mixes, their year-end snapshots and any rendered highlight reels. Irreversible, and scoped to the caller only. The Listening History setting itself is left as-is, so a user can wipe their data without also turning collection back off (or on).",
+        description: "Permanently erase the requesting user's entire listening history: raw play events, every aggregate, their Replay Mixes, their year-end snapshots, any rendered highlight reels and the recently-played shelf. Irreversible, and scoped to the caller only. The Listening History setting itself is left as-is, so a user can wipe their data without also turning collection back off (or on).",
         tags: ["insights"],
         operationId: "deleteInsightsHistory",
         responses: {
@@ -33,6 +34,11 @@ export default defineEventHandler(async (event) => {
     await deleteReelsForUser(userId, snapshots.map((s) => s.year));
 
     await deleteUserHistory(userId);
+
+    // the recently-played shelf predates the insights feature and lives in its own table, but it is
+    // listening data all the same - leaving it behind would mean "delete all my listening history" quietly
+    // kept a record of the last things this account played
+    await deleteRecentlyPlayedForUser(userId);
 
     return { deleted: true };
 });
