@@ -24,6 +24,9 @@ import { listYearSnapshots } from "./insightsSnapshot";
 import { listReplayYears, getReplayMix } from "./replayMix";
 import { listPlaylistsOwnedBy, listMembershipsOfUser } from "./playlists";
 import { listRequestsByUser } from "./requests";
+import { listSubscriptionExportForUser } from "./releaseSubscriptions";
+import { listWebhookExportForUser } from "../utils/webhook";
+import { listDeviceExportForUser } from "../utils/apn";
 
 // raw play events are read in pages so a heavy listener's export doesn't materialize every row at once;
 // same caps as the insights-only export, which this supersedes
@@ -99,6 +102,14 @@ export async function buildAccountExport(userId: string): Promise<Record<string,
         playEvents.push(...await getEventsForExport(userId, PAGE_SIZE, offset));
     }
 
+    // notifications: webhook URLs and APNs tokens are credentials (anyone holding one can post to that
+    // channel / push to that device), so like app passwords only their metadata is disclosed
+    const [webhooks, appleDevices, releaseSubscriptions] = await Promise.all([
+        listWebhookExportForUser(userId),
+        listDeviceExportForUser(userId),
+        listSubscriptionExportForUser(userId)
+    ]);
+
     const [snapshots, replayYears, daily, hourly, monthly, yearly] = await Promise.all([
         listYearSnapshots(userId),
         listReplayYears(userId),
@@ -116,7 +127,7 @@ export async function buildAccountExport(userId: string): Promise<Record<string,
         // plain-language account of what each section is and why it is held, so the export doubles as the
         // art. 15 disclosure rather than being a bare dump the reader has to interpret
         about: {
-            notice: "Everything this Nafyn instance holds about your account. Secrets (your password hash, your app-password values, your passkey public keys) are deliberately excluded - their existence and metadata are listed instead.",
+            notice: "Everything this Nafyn instance holds about your account. Secrets (your password hash, your app-password values, your passkey public keys, your webhook URLs and Apple push tokens) are deliberately excluded - their existence and metadata are listed instead.",
             privacyPolicy: "/privacy"
         },
         account: {
@@ -148,6 +159,11 @@ export async function buildAccountExport(userId: string): Promise<Record<string,
             entriesAddedToOthersPlaylists: entriesAddedElsewhere
         },
         requests,
+        notifications: {
+            webhooks,
+            appleDevices,
+            releaseSubscriptions
+        },
         recentlyPlayed,
         listening: {
             counts: {

@@ -99,7 +99,8 @@
       "downloading": "Downloading",
       "processing": "Processing",
       "completed": "Completed",
-      "failed": "Failed"
+      "failed": "Failed",
+      "denied": "Denied"
     },
     "progress": {
       "eta": "{time} left",
@@ -117,7 +118,9 @@
       "storage": "Storage",
       "subsonic": "Subsonic",
       "privacy": "Privacy",
-      "developer": "Developer"
+      "developer": "Developer",
+      "notifications": "Notifications",
+      "webhooks": "Webhooks"
     },
     "profile": {
       "title": "Profile",
@@ -161,7 +164,8 @@
         "MANAGE_ACCOUNTS": "Manage accounts",
         "MANAGE_MUSIC": "Manage music",
         "MANAGE_NOTIFICATIONS": "Manage notifications",
-        "ADMIN": "Admin"
+        "ADMIN": "Admin",
+        "MANAGE_WEBHOOKS": "Manage webhooks"
       }
     },
     "storage": {
@@ -292,6 +296,38 @@
         "on": "Sample data loaded.",
         "off": "Sample data removed."
       }
+    },
+    "notifications": {
+      "title": "Notifications",
+      "webhooks": {
+        "title": "Your webhooks",
+        "intro": "Post your own notifications (your requests, releases you follow, and request activity if you manage requests) to Discord, Slack, ntfy, Gotify or any service that accepts a JSON POST. Webhook URLs must use https and point to a public address."
+      },
+      "devices": {
+        "title": "Apple devices",
+        "intro": "Devices registered by the Nafyn app on iPhone and iPad. Signing out of the app, or revoking its session, removes them too.",
+        "unnamed": "Unnamed device",
+        "kinds": {
+          "alert": "Notifications",
+          "la-start-request": "Request Live Activities",
+          "la-start-release": "Release countdowns",
+          "nowplaying-start": "Now Playing remote control"
+        },
+        "sandbox": "Development build",
+        "lastSeen": "Last seen {date}",
+        "remove": "Remove",
+        "empty": "No Apple device has registered for notifications yet."
+      },
+      "releases": {
+        "title": "Followed releases",
+        "intro": "Upcoming albums and tracks you'll be notified about at midnight, your time, on release day.",
+        "unfollow": "Unfollow",
+        "empty": "You don't follow any upcoming release. Open an unreleased album or track and press \"Notify me\"."
+      }
+    },
+    "webhooks": {
+      "title": "Webhooks",
+      "intro": "Instance-wide webhooks receive every request event (new, accepted, denied, completed, failed), whoever made the request. Messages include the requester's name and what they requested."
     }
   },
   "playlist": {
@@ -526,5 +562,72 @@
       "missing": "The operator of this instance has not published who they are or how to reach them. Ask whoever gave you your account - under the GDPR they are the data controller and have to answer requests about your data."
     },
     "back": "Back to Nafyn"
+  },
+  "webhooks": {
+    "title": "Webhooks",
+    "formats": {
+      "auto": "Detect automatically",
+      "discord": "Discord",
+      "slack": "Slack",
+      "ntfy": "ntfy",
+      "gotify": "Gotify",
+      "json": "JSON"
+    },
+    "events": {
+      "request": {
+        "created": "New request",
+        "accepted": "Request accepted",
+        "denied": "Request denied",
+        "completed": "Download completed",
+        "failed": "Download failed"
+      },
+      "release": {
+        "out": "Followed release is out"
+      }
+    },
+    "eventsLabel": "Send these events",
+    "allEvents": "All events",
+    "noEvents": "No events",
+    "autoDisabled": "Switched off after repeated failures: {error}",
+    "failing": "{count} failed deliveries in a row: {error}",
+    "lastDelivered": "Last delivered {date}",
+    "enabled": "Enabled",
+    "test": "Test",
+    "delete": "Delete",
+    "empty": "No webhook yet.",
+    "namePlaceholder": "Name (e.g. Music channel)",
+    "urlPlaceholder": "https://…",
+    "add": "Add webhook",
+    "added": "Webhook added",
+    "testSent": "Test message sent to {name}",
+    "testFailed": "Test failed: {error}"
+  },
+  "countdown": {
+    "outNow": "Out now",
+    "long": {
+      "months": "{n} month | {n} months",
+      "weeks": "{n} week | {n} weeks",
+      "days": "{n} day | {n} days",
+      "hours": "{n} hour | {n} hours",
+      "minutes": "{n} minute | {n} minutes",
+      "seconds": "{n} second | {n} seconds"
+    },
+    "short": {
+      "months": "{n}mo",
+      "weeks": "{n}w",
+      "days": "{n}d",
+      "hours": "{n}h",
+      "minutes": "{n}m",
+      "seconds": "{n}s"
+    }
+  },
+  "upcoming": {
+    "label": "Out in",
+    "expected": "Expected {date}",
+    "notifyMe": "Notify me",
+    "following": "Following",
+    "subscribed": "You'll be notified when it's out",
+    "unsubscribed": "You won't be notified anymore",
+    "error": "Couldn't update this release notification"
   }
 }

@@ -259,7 +259,7 @@ export async function initDatabases(): Promise<void> {
             id VARCHAR(36) PRIMARY KEY,
             musicbrainzId VARCHAR(36) NOT NULL,
             type VARCHAR(16) NOT NULL CHECK(type IN ('album', 'track')),
-            status VARCHAR(16) NOT NULL DEFAULT 'waiting' CHECK(status IN ('waiting', 'searching', 'downloading', 'processing', 'completed', 'failed')),
+            status VARCHAR(16) NOT NULL DEFAULT 'waiting' CHECK(status IN ('waiting', 'searching', 'downloading', 'processing', 'completed', 'failed', 'denied')),
             requestedBy VARCHAR(36),
             title TEXT,
             artistName TEXT,

@@ -17,6 +17,8 @@ export interface DownloadProgressEvent {
 }
 
 const emitters = new Map<string, EventEmitter>();
+// request-agnostic listeners (push notifications follow every request, not one requestId)
+const globalListeners = new Set<(event: DownloadProgressEvent) => void>();
 
 function getEmitter(requestId: string): EventEmitter {
     let emitter = emitters.get(requestId);
@@ -31,6 +33,19 @@ export function emitDownloadProgress(event: DownloadProgressEvent): void {
     console.log(`[downloadEvents] ${event.stage} > ${event.message ?? "No message..."} (${event.bytesDownloaded ?? 0}/${event.totalBytes ?? 0})`);
     
     getEmitter(event.requestId).emit("progress", event);
+    for (const listener of globalListeners) {
+        try {
+            listener(event);
+        } catch (err) {
+            console.error("[downloadEvents] global listener failed:", err);
+        }
+    }
+}
+
+/** listens to progress of every request; returns an unsubscribe */
+export function onAnyDownloadProgress(listener: (event: DownloadProgressEvent) => void): () => void {
+    globalListeners.add(listener);
+    return () => globalListeners.delete(listener);
 }
 
 export function onDownloadProgress(requestId: string, listener: (event: DownloadProgressEvent) => void): () => void {

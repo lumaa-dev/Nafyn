@@ -339,6 +339,15 @@
           </div>
         </section>
       </div>
+      <div v-else-if="activeCategory === 'notifications'" class="panel">
+        <h1>{{ $t('settings.notifications.title') }}</h1>
+        <NotificationSettings />
+      </div>
+      <div v-else-if="activeCategory === 'webhooks'" class="panel">
+        <h1>{{ $t('settings.webhooks.title') }}</h1>
+        <p class="subsonic-note">{{ $t('settings.webhooks.intro') }}</p>
+        <WebhookManager scope="global" />
+      </div>
       <div v-else-if="activeCategory === 'developer'" class="panel">
         <h1>{{ $t('settings.developer.title') }}</h1>
 
@@ -367,12 +376,14 @@ import { useUnitySettings, syncUnitySettings, setUnitySetting, useUnitySessionOv
 import { useAuthToken } from '~/composables/useAuthToken';
 import { browserSupportsWebAuthn, startRegistration } from '@simplewebauthn/browser';
 import type { PasskeySummary } from '~~/server/core/passkeys';
+import NotificationSettings from '~/components/settings/NotificationSettings.vue';
+import WebhookManager from '~/components/settings/WebhookManager.vue';
 
 const { token: tokenRef, rawCookie: tokenCookie } = useAuthToken();
 const token = tokenRef.value ?? "";
 
 interface Category {
-  id: "profile" | "accounts" | "storage" | "subsonic" | "privacy" | "appearance" | "playback" | "sessions" | "developer",
+  id: "profile" | "accounts" | "storage" | "subsonic" | "privacy" | "appearance" | "playback" | "sessions" | "notifications" | "webhooks" | "developer",
   label: string
 }
 
@@ -392,15 +403,18 @@ const perms = computed(() => typeof user.value?.permissions === "number" ? user.
 const canManageAccounts = computed(() => hasPermission(perms.value, Permission.MANAGE_ACCOUNTS));
 const canManageMusic = computed(() => hasPermission(perms.value, Permission.MANAGE_MUSIC));
 const isAdmin = computed(() => hasPermission(perms.value, Permission.ADMIN));
+const canManageWebhooks = computed(() => hasPermission(perms.value, Permission.MANAGE_WEBHOOKS));
 
 const categories = computed(() => {
   const cats: Category[] = [{ id: 'profile', label: $t('settings.categories.profile') }];
   cats.push({ id: 'appearance', label: $t('settings.categories.appearance') });
   cats.push({ id: 'playback', label: $t('settings.categories.playback') });
   cats.push({ id: 'sessions', label: $t('settings.categories.sessions') });
+  cats.push({ id: 'notifications', label: $t('settings.categories.notifications') });
   cats.push({ id: 'privacy', label: $t('settings.categories.privacy') });
   if (canManageAccounts.value) cats.push({ id: 'accounts', label: $t('settings.categories.accounts') });
   if (canManageMusic.value) cats.push({ id: 'storage', label: $t('settings.categories.storage') });
+  if (canManageWebhooks.value) cats.push({ id: 'webhooks', label: $t('settings.categories.webhooks') });
   cats.push({ id: 'subsonic', label: $t('settings.categories.subsonic') });
   // the sample-data toggle only exists in dev builds - import.meta.dev is compiled away entirely in a
   // production build, so this branch (and the panel it guards) doesn't even ship

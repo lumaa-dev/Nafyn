@@ -140,3 +140,18 @@ export async function countAdmins(): Promise<number> {
     ).get(Permission.ADMIN) as { count: number };
     return Number(row.count);
 }
+
+// ids of every account holding `permission` (ADMIN counts as holding all of them, same as hasPermission()).
+// Used to fan request notifications out to the people who manage requests.
+export async function listUserIdsWithPermission(permission: Permission): Promise<string[]> {
+    const rows = await getUsersDb().prepare(
+        `SELECT id FROM users WHERE (permissions & ?) <> 0 OR (permissions & ?) <> 0`
+    ).all(permission, Permission.ADMIN) as { id: string }[];
+    return rows.map((r) => r.id);
+}
+
+// display name for notifications - never the password hash or anything else on the row
+export async function getUserDisplayName(id: string): Promise<string | null> {
+    const row = await getUsersDb().prepare(`SELECT username, displayName FROM users WHERE id = ?`).get(id) as { username: string, displayName: string | null } | undefined;
+    return row ? (row.displayName || row.username) : null;
+}

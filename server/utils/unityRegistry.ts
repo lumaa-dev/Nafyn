@@ -7,6 +7,7 @@
 // slaves. Only the master's own browser knows how to turn a `command` back into an actual player mutation;
 // the server's job is strictly: who is master, what did they last report, and grace-period timing.
 import type { Peer } from "crossws";
+import { nowPlayingEnd, nowPlayingOnState } from "./apn";
 
 export type UnityStatus = "active" | "grace" | "empty";
 
@@ -116,6 +117,10 @@ export function takeoverMaster(userId: string, peer: Peer, sessionId: string, de
     session.status = "active";
     session.lastState = null;
     peer.send(JSON.stringify({ type: "master-changed", youAreMaster: true, deviceLabel }));
+
+    // the remote Now Playing session on Apple devices described the old master; the new one starts its own
+    // with its first state (and never on the new master's own device)
+    void nowPlayingEnd(userId);
 }
 
 export function applyState(userId: string, peer: Peer, state: unknown): void {
@@ -124,6 +129,11 @@ export function applyState(userId: string, peer: Peer, state: unknown): void {
 
     session.lastState = state;
     broadcastToSlaves(session, { type: "state", state });
+
+    // Apple devices that aren't connected (or are asleep) follow along through APNs Now Playing pushes;
+    // apn.ts filters this ~1/s stream down to the changes worth a push
+    const master = session.master;
+    if (master) void nowPlayingOnState(userId, master.sessionId, master.deviceLabel, state);
 }
 
 export function forwardCommand(userId: string, action: string, payload: unknown): boolean {
@@ -151,6 +161,7 @@ export function handleClose(userId: string, peer: Peer): void {
             session.status = "empty";
             session.graceTimer = null;
             broadcastToSlaves(session, { type: "master-cleared" });
+            void nowPlayingEnd(userId);
             cleanupIfEmpty(userId, session);
         }, GRACE_PERIOD_MS);
         session.graceTimer.unref?.();
@@ -190,4 +201,5 @@ export function dropUnitySession(userId: string): void {
     session.master = null;
     session.lastState = null;
     sessions.delete(userId);
+    void nowPlayingEnd(userId);
 }

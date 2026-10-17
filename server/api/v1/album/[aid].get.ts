@@ -6,6 +6,8 @@ import type { TrackInfo } from "~~/server/entity/media/TrackInfo";
 import type { ArtistInfo } from "~~/server/entity/media/ArtistInfo";
 import { findLibraryEntry, findMediaByMusicbrainzId } from "~~/server/core/library";
 import { hasActiveRequest } from "~~/server/core/requests";
+import { isSubscribed } from "~~/server/core/releaseSubscriptions";
+import { isReleased, normalizeReleaseDate } from "~~/server/utils/releaseDate";
 import { assertMbid } from "~~/server/utils/ids";
 import { getImageColors } from "~~/server/utils/imageColors";
 import { enforceUpstreamLookupLimit } from "~~/server/utils/rateLimit";
@@ -90,7 +92,7 @@ defineRouteMeta({
                     },
                     AlbumDetail: {
                         type: "object",
-                        required: ["id", "releaseId", "title", "artist", "type", "coverArt", "imageColors", "textColor", "releaseDate", "description", "label", "tracks"],
+                        required: ["id", "releaseId", "title", "artist", "type", "coverArt", "imageColors", "textColor", "releaseDate", "releaseDatePrecision", "released", "subscribed", "description", "label", "tracks"],
                         properties: {
                             id: { type: "string", description: "MusicBrainz release-group ID" },
                             releaseId: { type: "string", description: "MusicBrainz release ID for the selected release" },
@@ -107,6 +109,9 @@ defineRouteMeta({
                             imageColors: { type: "array", items: { type: "string" }, description: "Dominant colors extracted from `coverArt`, most-dominant first" },
                             textColor: { type: "string", description: "Black or white, whichever contrasts best (WCAG) against `imageColors[0]`" },
                             releaseDate: { type: "string", format: "date-time", nullable: true },
+                            releaseDatePrecision: { type: "string", enum: ["day", "month", "year"], nullable: true, description: "How much of releaseDate MusicBrainz actually knows; a partial date is padded to its first day" },
+                            released: { type: "boolean", description: "false while the release date hasn't started anywhere yet - unreleased albums can't be requested" },
+                            subscribed: { type: "boolean", description: "Whether the caller follows this upcoming album (POST /api/v1/subscriptions)" },
                             description: { type: "string", nullable: true },
                             label: { type: "string", nullable: true },
                             tracks: {
@@ -148,6 +153,7 @@ export default defineEventHandler(async (event): Promise<AlbumDetail> => {
     const primaryType = releaseGroup["primary-type"]?.toLowerCase();
     const type = primaryType === "album" || primaryType === "ep" ? primaryType : null;
     const releaseDate = parseReleaseDate(releaseGroup["first-release-date"]);
+    const released = isReleased(releaseDate);
     const label = release["label-info"]?.[0]?.label?.name ?? null;
     const credit = releaseGroup["artist-credit"]?.[0]?.artist;
 
@@ -155,7 +161,6 @@ export default defineEventHandler(async (event): Promise<AlbumDetail> => {
 
     // a track's own recording can carry an earlier/later first-release-date than the album
     // (staggered singles/rollouts); fall back to the album's date when the recording has none
-    const now = Date.now();
     const tracks: TrackInfo[] = [];
     for (const medium of release.media ?? []) {
         for (const track of medium.tracks ?? []) {
@@ -170,7 +175,7 @@ export default defineEventHandler(async (event): Promise<AlbumDetail> => {
                 trackNumber: track.position,
                 duration: track.length ? Math.round(track.length / 1000) : 0,
                 releaseDate: trackReleaseDate,
-                released: trackReleaseDate ? trackReleaseDate.getTime() <= now : true,
+                released: isReleased(trackReleaseDate),
                 inLibrary,
                 requested,
                 mediaId: media?.id ?? null
@@ -191,6 +196,9 @@ export default defineEventHandler(async (event): Promise<AlbumDetail> => {
         imageColors,
         textColor,
         releaseDate,
+        releaseDatePrecision: normalizeReleaseDate(releaseGroup["first-release-date"])?.precision ?? null,
+        released,
+        subscribed: released ? false : await isSubscribed(userId, releaseGroup.id),
         description: releaseGroup.disambiguation || null,
         label,
         tracks

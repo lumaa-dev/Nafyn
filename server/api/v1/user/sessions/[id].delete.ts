@@ -1,6 +1,7 @@
 import { revokeSession } from "~~/server/core/sessions";
 import { markSessionRevoked } from "~~/server/utils/sessionCache";
 import { closeUnityConnectionsForSession } from "~~/server/utils/unityRegistry";
+import { deleteApnDataForSession } from "~~/server/utils/apn";
 
 defineRouteMeta({
     openAPI: {
@@ -63,6 +64,8 @@ export default defineEventHandler(async (event) => {
 
     markSessionRevoked(id);
     closeUnityConnectionsForSession(userId, id);
+    // the Apple device behind this login stops receiving pushes with it
+    await deleteApnDataForSession(id);
 
     return { removed: true };
 });

@@ -88,6 +88,21 @@ Display, playback and Nafyn Unity settings, plus your listening-history choice.
 
 *Kept until you delete your account.*
 
+### Notifications
+
+Only what you set up yourself:
+
+- **Webhooks** you add: their name, address and which events they receive. A webhook address works like a
+  password for the channel it posts to, so it is never shown back to you in full or included in your export.
+- **Apple device tokens**, registered by the Nafyn app on iPhone or iPad so it can show notifications, Live
+  Activities and Now Playing controls. Each token is tied to the login that registered it.
+- **Followed releases**: which upcoming albums and tracks you asked to be notified about, and your timezone,
+  so the notification arrives at midnight your time.
+
+*Device tokens are deleted when you sign out of that device or revoke its session, and after 6 months
+without use. Followed releases are deleted 30 days after they come out. Webhooks are kept until you remove
+them or delete your account.*
+
 ## What leaves the server
 
 Nafyn queries outside services to find and identify music. These calls carry what is being searched for or
@@ -104,6 +119,17 @@ downloaded - never your username, your account id, or your listening history.
 
 A text search you type is sent to those providers as the search term. If that matters to you, note that
 search terms are the one thing here you control directly.
+
+**Notifications are the exception** to "never your username", because telling someone about a request is
+their whole point:
+
+- **Webhooks** (Discord, Slack, ntfy, Gotify or another service of the webhook owner's choosing) receive the
+  title, artist and cover of the media concerned, and the display name of whoever requested it. Your own
+  webhooks only receive notifications meant for you. Webhooks set up by the operator for the whole instance
+  receive every download request - including your name when you make one.
+- **Apple Push Notification service** relays push notifications to Apple devices you registered through the
+  Nafyn app; Apple acts as a processor for that delivery. If you manage requests, your devices are told about
+  other people's requests, including their display names.
 
 ## Your rights
 

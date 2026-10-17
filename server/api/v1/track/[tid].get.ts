@@ -7,6 +7,8 @@ import { assertMbid } from "~~/server/utils/ids";
 import { pickCanonicalRelease } from "~~/server/utils/release";
 import { getImageColors } from "~~/server/utils/imageColors";
 import { enforceUpstreamLookupLimit } from "~~/server/utils/rateLimit";
+import { isReleased, normalizeReleaseDate } from "~~/server/utils/releaseDate";
+import { isSubscribed } from "~~/server/core/releaseSubscriptions";
 
 defineRouteMeta({
     openAPI: {
@@ -33,9 +35,12 @@ defineRouteMeta({
                                 { $ref: "#/components/schemas/MediaInfo" },
                                 {
                                     type: "object",
-                                    required: ["albumMbid"],
+                                    required: ["albumMbid", "releaseDatePrecision", "released", "subscribed"],
                                     properties: {
-                                        albumMbid: { type: "string", nullable: true, description: "MusicBrainz release-group ID for the track's release, if any" }
+                                        albumMbid: { type: "string", nullable: true, description: "MusicBrainz release-group ID for the track's release, if any" },
+                                        releaseDatePrecision: { type: "string", enum: ["day", "month", "year"], nullable: true, description: "How much of releaseDate MusicBrainz actually knows; a partial date is padded to its first day" },
+                                        released: { type: "boolean", description: "false while the release date hasn't started anywhere yet - unreleased tracks can't be requested" },
+                                        subscribed: { type: "boolean", description: "Whether the caller follows this upcoming track (POST /api/v1/subscriptions)" }
                                     }
                                 }
                             ]
@@ -116,5 +121,12 @@ export default defineEventHandler(async (event) => {
         }
     };
 
-    return { ...media, albumMbid };
+    // unreleased tracks can't be requested (POST /api/v1/request refuses them); the page offers a countdown
+    // and a release subscription instead
+    const released = isReleased(media.releaseDate);
+    const subscribed = released ? false : await isSubscribed(userId, recording.id);
+
+    const releaseDatePrecision = normalizeReleaseDate(recording["first-release-date"])?.precision ?? null;
+
+    return { ...media, albumMbid, releaseDatePrecision, released, subscribed };
 });

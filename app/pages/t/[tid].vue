@@ -10,7 +10,15 @@
         <NuxtLink class="album-link" v-if="track.album?.id" :to="`/a/${track.album.id}`">
           {{ track.album.title }}
         </NuxtLink>
-        <button filled @click="requestMedia(track.id, 'track', track.title)" v-if="!track.inLibrary">{{ $t('track.request') }}</button>
+        <div class="upcoming" v-if="!track.released">
+          <span class="label">{{ $t('upcoming.label') }}</span>
+          <ReleaseCountdown v-if="track.releaseDate && track.releaseDatePrecision === 'day'" class="value" :date="track.releaseDate" @released="refreshNuxtData(`track-${tid}`)" />
+          <span v-else-if="track.releaseDate" class="value">{{ $t('upcoming.expected', { date: formatPartialDate(track.releaseDate, track.releaseDatePrecision) }) }}</span>
+        </div>
+        <button filled @click="requestMedia(track.id, 'track', track.title)" v-if="track.released && !track.inLibrary">{{ $t('track.request') }}</button>
+        <button v-else-if="!track.released" :filled="track.subscribed ? 'hollow' : ''" :disabled="subscriptionPending" @click="toggleSubscription">
+          {{ track.subscribed ? $t('upcoming.following') : $t('upcoming.notifyMe') }}
+        </button>
       </div>
     </div>
 
@@ -27,8 +35,14 @@
 import type { MediaInfo } from '~~/server/entity/media/MediaInfo';
 import noCover from '~/assets/no-cover.png';
 import { useAuthToken } from '~/composables/useAuthToken';
+import ReleaseCountdown from '~/components/ReleaseCountdown.vue';
 
-type TrackDetail = MediaInfo & { albumMbid: string | null };
+type TrackDetail = MediaInfo & {
+  albumMbid: string | null,
+  releaseDatePrecision: "day" | "month" | "year" | null,
+  released: boolean,
+  subscribed: boolean
+};
 
 const { locale } = useI18n();
 const tid = useRoute().params.tid as string;
@@ -42,6 +56,21 @@ const { data: track } = await useAsyncData<TrackDetail>(`track-${tid}`, () => {
 
 function formatDate(date: string | Date): string {
   return new Date(date).toLocaleDateString(locale.value, { year: "numeric", month: "long", day: "numeric" });
+}
+
+// "2027" / "November 2027" for a date MusicBrainz only partly knows
+function formatPartialDate(date: string | Date, precision: "day" | "month" | "year" | null): string {
+  const d = new Date(date);
+  if (precision === "year") return String(d.getUTCFullYear());
+  if (precision === "month") return d.toLocaleDateString(locale.value, { year: "numeric", month: "long", timeZone: "UTC" });
+  return formatDate(date);
+}
+
+const { toggle, pending: subscriptionPending } = useReleaseSubscription();
+
+async function toggleSubscription() {
+  if (!track.value) return;
+  track.value.subscribed = await toggle(track.value.id, "track", track.value.subscribed, track.value.title);
 }
 
 function formatDuration(seconds: number): string {
@@ -114,6 +143,25 @@ function sendToast(title: string | null, message: string, success: boolean = tru
 .track .meta button {
   margin: 1.2em 0;
   align-self: flex-start;
+}
+
+.track .upcoming {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 15px;
+}
+
+.track .upcoming .label {
+  font-size: 0.75em;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #666666;
+}
+
+.track .upcoming .value {
+  font-family: "Discy";
+  font-size: 1.1em;
 }
 
 .track .type {

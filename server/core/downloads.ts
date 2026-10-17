@@ -47,6 +47,8 @@ import {
     deleteOrphanMediaRow
 } from "./library";
 import { emitDownloadProgress, clearDownloadEmitter } from "../utils/downloadEvents";
+import { isReleased } from "../utils/releaseDate";
+import { notifyRequestFinished } from "./notifications";
 import { NafynRequest } from "../entity/NafynRequest";
 
 const TMP_DIR = join(process.cwd(), ".data", "tmp");
@@ -421,11 +423,17 @@ export async function processDownloadRequestId(requestId: UUID | string): Promis
 
 // entry point: runs the full pipeline for a request and lands it on "completed" or "failed"
 export async function processDownloadRequest(request: NafynRequest): Promise<void> {
-    if (!request || request.status === "completed" || request.status === "failed") return;
+    if (!request || request.status === "completed" || request.status === "failed" || request.status === "denied") return;
+
+    // the one way a request leaves the pipeline: status, live progress and notifications all agree on it
+    const finish = async (outcome: "completed" | "failed", message?: string) => {
+        await updateRequestStatus(request.id, outcome);
+        emitDownloadProgress({ requestId: request.id, stage: outcome, message });
+        notifyRequestFinished(request.id, outcome, outcome === "failed" ? message ?? null : null);
+    };
 
     if (!useRuntimeConfig().acoustidApiKey) {
-        await updateRequestStatus(request.id, "failed");
-        emitDownloadProgress({ requestId: request.id, stage: "failed", message: "AcoustID API key is not configured" });
+        await finish("failed", "AcoustID API key is not configured");
         return;
     }
 
@@ -437,8 +445,14 @@ export async function processDownloadRequest(request: NafynRequest): Promise<voi
         const targets = await resolveTargets(client, request.musicbrainzId, request.type);
 
         if (targets.length === 0) {
-            await updateRequestStatus(request.id, "failed");
-            emitDownloadProgress({ requestId: request.id, stage: "failed", message: "Nothing found on MusicBrainz for this ID" });
+            await finish("failed", "Nothing found on MusicBrainz for this ID");
+            return;
+        }
+
+        // requests are refused for unreleased media up front (POST /api/v1/request), but one queued before
+        // that check existed, or whose release date moved later since, must not go to Soulseek either
+        if (!isReleased(targets[0]!.releaseDate)) {
+            await finish("failed", "Not released yet");
             return;
         }
 
@@ -474,8 +488,7 @@ export async function processDownloadRequest(request: NafynRequest): Promise<voi
         // to nobody, leaving the file unreachable by the person who requested it.
         const requestedById = typeof request.requestedBy === "string" ? request.requestedBy : request.requestedBy?.id;
         if (!requestedById) {
-            await updateRequestStatus(request.id, "failed");
-            emitDownloadProgress({ requestId: request.id, stage: "failed", message: "Request has no valid requester" });
+            await finish("failed", "Request has no valid requester");
             return;
         }
 
@@ -485,11 +498,9 @@ export async function processDownloadRequest(request: NafynRequest): Promise<voi
             if (!ok) anyFailed = true;
         }
 
-        await updateRequestStatus(request.id, anyFailed ? "failed" : "completed");
-        emitDownloadProgress({ requestId: request.id, stage: anyFailed ? "failed" : "completed" });
+        await finish(anyFailed ? "failed" : "completed", anyFailed ? "Some tracks could not be downloaded" : undefined);
     } catch (err) {
-        await updateRequestStatus(request.id, "failed");
-        emitDownloadProgress({ requestId: request.id, stage: "failed", message: err instanceof Error ? err.message : "Unknown error" });
+        await finish("failed", err instanceof Error ? err.message : "Unknown error");
     } finally {
         clearDownloadEmitter(request.id);
     }

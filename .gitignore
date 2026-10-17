@@ -18,6 +18,7 @@ logs
 .fleet
 .idea
 !.github/
+*.p8
 
 # Local env files
 .env

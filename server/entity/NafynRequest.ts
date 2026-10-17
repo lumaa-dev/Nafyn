@@ -2,7 +2,8 @@ import type { UUID } from "node:crypto";
 import { NafynUser } from "./NafynUser";
 import { MediaInfo } from "./media/MediaInfo";
 
-export type RequestStatus = "searching" | "downloading" | "processing" | "completed" | "failed" | "waiting";
+// "denied" is a manager refusing a waiting request; "failed" is the download pipeline giving up
+export type RequestStatus = "searching" | "downloading" | "processing" | "completed" | "failed" | "waiting" | "denied";
 
 export interface NafynRequest {
     id: UUID,

@@ -99,7 +99,8 @@
       "downloading": "Téléchargement",
       "processing": "Traitement",
       "completed": "Terminé",
-      "failed": "Échec"
+      "failed": "Échec",
+      "denied": "Refusée"
     },
     "progress": {
       "eta": "{time} restant",
@@ -117,7 +118,9 @@
       "storage": "Stockage",
       "subsonic": "Subsonic",
       "privacy": "Confidentialité",
-      "developer": "Développeur"
+      "developer": "Développeur",
+      "notifications": "Notifications",
+      "webhooks": "Webhooks"
     },
     "profile": {
       "title": "Profil",
@@ -161,7 +164,8 @@
         "MANAGE_ACCOUNTS": "Gérer les comptes",
         "MANAGE_MUSIC": "Gérer la musique",
         "MANAGE_NOTIFICATIONS": "Gérer les notifications",
-        "ADMIN": "Administrateur"
+        "ADMIN": "Administrateur",
+        "MANAGE_WEBHOOKS": "Gérer les webhooks"
       }
     },
     "storage": {
@@ -292,6 +296,38 @@
         "on": "Données d'exemple chargées.",
         "off": "Données d'exemple supprimées."
       }
+    },
+    "notifications": {
+      "title": "Notifications",
+      "webhooks": {
+        "title": "Vos webhooks",
+        "intro": "Envoyez vos propres notifications (vos demandes, les sorties que vous suivez, et l'activité des demandes si vous les gérez) vers Discord, Slack, ntfy, Gotify ou tout service acceptant un POST JSON. Les URL de webhook doivent utiliser https et pointer vers une adresse publique."
+      },
+      "devices": {
+        "title": "Appareils Apple",
+        "intro": "Appareils enregistrés par l'app Nafyn sur iPhone et iPad. Se déconnecter de l'app, ou révoquer sa session, les supprime aussi.",
+        "unnamed": "Appareil sans nom",
+        "kinds": {
+          "alert": "Notifications",
+          "la-start-request": "Activités en direct des demandes",
+          "la-start-release": "Comptes à rebours de sortie",
+          "nowplaying-start": "Contrôle à distance (À l'écoute)"
+        },
+        "sandbox": "Version de développement",
+        "lastSeen": "Vu le {date}",
+        "remove": "Supprimer",
+        "empty": "Aucun appareil Apple n'est encore enregistré pour les notifications."
+      },
+      "releases": {
+        "title": "Sorties suivies",
+        "intro": "Albums et titres à venir dont vous serez notifié à minuit, heure locale, le jour de leur sortie.",
+        "unfollow": "Ne plus suivre",
+        "empty": "Vous ne suivez aucune sortie à venir. Ouvrez un album ou un titre pas encore sorti et appuyez sur « Me notifier »."
+      }
+    },
+    "webhooks": {
+      "title": "Webhooks",
+      "intro": "Les webhooks de l'instance reçoivent tous les événements de demande (nouvelle, acceptée, refusée, terminée, échouée), quel que soit l'auteur de la demande. Les messages incluent le nom de l'auteur et ce qu'il a demandé."
     }
   },
   "playlist": {
@@ -526,5 +562,72 @@
       "missing": "L'opérateur de cette instance n'a publié ni son identité ni un moyen de le contacter. Adressez-vous à la personne qui vous a créé votre compte : au sens du RGPD elle est responsable du traitement et doit répondre aux demandes concernant vos données."
     },
     "back": "Retour à Nafyn"
+  },
+  "webhooks": {
+    "title": "Webhooks",
+    "formats": {
+      "auto": "Détection automatique",
+      "discord": "Discord",
+      "slack": "Slack",
+      "ntfy": "ntfy",
+      "gotify": "Gotify",
+      "json": "JSON"
+    },
+    "events": {
+      "request": {
+        "created": "Nouvelle demande",
+        "accepted": "Demande acceptée",
+        "denied": "Demande refusée",
+        "completed": "Téléchargement terminé",
+        "failed": "Téléchargement échoué"
+      },
+      "release": {
+        "out": "Une sortie suivie est disponible"
+      }
+    },
+    "eventsLabel": "Envoyer ces événements",
+    "allEvents": "Tous les événements",
+    "noEvents": "Aucun événement",
+    "autoDisabled": "Désactivé après des échecs répétés : {error}",
+    "failing": "{count} envois échoués d'affilée : {error}",
+    "lastDelivered": "Dernier envoi le {date}",
+    "enabled": "Activé",
+    "test": "Tester",
+    "delete": "Supprimer",
+    "empty": "Aucun webhook pour l'instant.",
+    "namePlaceholder": "Nom (ex. Salon musique)",
+    "urlPlaceholder": "https://…",
+    "add": "Ajouter",
+    "added": "Webhook ajouté",
+    "testSent": "Message de test envoyé à {name}",
+    "testFailed": "Échec du test : {error}"
+  },
+  "countdown": {
+    "outNow": "Disponible",
+    "long": {
+      "months": "{n} mois | {n} mois",
+      "weeks": "{n} semaine | {n} semaines",
+      "days": "{n} jour | {n} jours",
+      "hours": "{n} heure | {n} heures",
+      "minutes": "{n} minute | {n} minutes",
+      "seconds": "{n} seconde | {n} secondes"
+    },
+    "short": {
+      "months": "{n} mois",
+      "weeks": "{n} sem",
+      "days": "{n} j",
+      "hours": "{n} h",
+      "minutes": "{n} min",
+      "seconds": "{n} s"
+    }
+  },
+  "upcoming": {
+    "label": "Sortie dans",
+    "expected": "Prévu en {date}",
+    "notifyMe": "Me notifier",
+    "following": "Suivi",
+    "subscribed": "Vous serez notifié à la sortie",
+    "unsubscribed": "Vous ne serez plus notifié",
+    "error": "Impossible de modifier cette notification de sortie"
   }
 }

@@ -130,8 +130,10 @@ export async function updateRequestStatus(id: UUID | string, status: RequestStat
     if (!req) return null;
     if (req.status !== "waiting" && checkValidity) return null;
 
+    // with checkValidity the "still waiting" condition is part of the UPDATE itself, so two managers
+    // accepting/denying the same request at once can't both win (and both fire a notification)
     const result = await getRequestsDb().prepare(`
-        UPDATE requests SET status = ?, updatedAt = ? WHERE id = ?
+        UPDATE requests SET status = ?, updatedAt = ? WHERE id = ?${checkValidity ? ` AND status = 'waiting'` : ""}
     `).run(status, Math.floor(Date.now() / 1000), id);
 
     req.status = status;
@@ -140,10 +142,10 @@ export async function updateRequestStatus(id: UUID | string, status: RequestStat
     return req;
 }
 
-// true if this user already has a non-failed request for this MusicBrainz ID (failed ones can be retried)
+// true if this user already has a live request for this MusicBrainz ID (failed/denied ones can be retried)
 export async function hasActiveRequest(requestedBy: string, musicbrainzId: string): Promise<boolean> {
     const row = await getRequestsDb().prepare(`
-        SELECT 1 FROM requests WHERE requestedBy = ? AND musicbrainzId = ? AND status != 'failed' LIMIT 1
+        SELECT 1 FROM requests WHERE requestedBy = ? AND musicbrainzId = ? AND status NOT IN ('failed', 'denied') LIMIT 1
     `).get(requestedBy, musicbrainzId);
     return row != null;
 }

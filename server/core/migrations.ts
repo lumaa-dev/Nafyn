@@ -212,6 +212,142 @@ const MIGRATIONS: Migration[] = [
                 )
             `);
         }
+    },
+    {
+        // a manager refusing a waiting request used to be recorded as "failed", indistinguishable from a
+        // download the pipeline gave up on - which made "your request was denied" impossible to notify.
+        // MySQL >= 8.0.16 and MariaDB enforce the inline CHECK, which has an engine-generated name
+        // (`requests_chk_2` on MySQL, `status` on MariaDB), so it is looked up rather than guessed. An older
+        // MySQL that parsed but never enforced CHECK has no row here, and there is nothing to widen.
+        id: "2026-10-16-request-denied-status",
+        up: async (conn) => {
+            const [rows] = await conn.execute(`
+                SELECT cc.CONSTRAINT_NAME AS name, cc.CHECK_CLAUSE AS clause
+                FROM information_schema.CHECK_CONSTRAINTS cc
+                JOIN information_schema.TABLE_CONSTRAINTS tc
+                  ON tc.CONSTRAINT_SCHEMA = cc.CONSTRAINT_SCHEMA AND tc.CONSTRAINT_NAME = cc.CONSTRAINT_NAME
+                WHERE cc.CONSTRAINT_SCHEMA = DATABASE() AND tc.TABLE_NAME = ? AND tc.CONSTRAINT_TYPE = 'CHECK'
+            `, ["requests"]);
+
+            for (const { name, clause } of rows as { name: string, clause: string }[]) {
+                if (!clause.includes("searching")) continue; // the `type` CHECK, not the status one
+                if (clause.includes("denied")) return;
+                // the name came out of information_schema, but it still lands in DDL unquoted-by-placeholder,
+                // so it is held to a plain identifier shape before being interpolated
+                if (!/^[A-Za-z0-9_]+$/.test(name)) throw new Error(`Unexpected CHECK constraint name on requests: ${name}`);
+                await conn.query(`ALTER TABLE requests DROP CONSTRAINT \`${name}\``);
+            }
+
+            await conn.query(`
+                ALTER TABLE requests ADD CONSTRAINT chk_requests_status
+                CHECK (status IN ('waiting', 'searching', 'downloading', 'processing', 'completed', 'failed', 'denied'))
+            `);
+        }
+    },
+    {
+        // outbound webhooks (server/utils/webhook.ts). userId NULL is an instance-wide ("global") webhook,
+        // managed under MANAGE_WEBHOOKS; anything else is one user's own. No FK to users, same informal-
+        // reference convention as api_tokens/sessions. `url` is a credential in its own right (a Discord or
+        // Slack webhook URL is all it takes to post into that channel), so it is never exported or echoed
+        // back in full - see maskWebhookUrl().
+        id: "2026-10-16-webhooks",
+        up: async (conn) => {
+            if (await tableExists(conn, "webhooks")) return;
+            await conn.query(`
+                CREATE TABLE webhooks (
+                    id VARCHAR(36) PRIMARY KEY,
+                    userId VARCHAR(36) NULL,
+                    name VARCHAR(100) NOT NULL,
+                    url TEXT NOT NULL,
+                    format VARCHAR(16) NOT NULL,
+                    events TEXT NULL,
+                    enabled TINYINT(1) NOT NULL DEFAULT 1,
+                    failureCount INT NOT NULL DEFAULT 0,
+                    lastError TEXT NULL,
+                    lastDeliveredAt BIGINT NULL,
+                    createdAt BIGINT NOT NULL,
+                    INDEX idx_webhooks_userId (userId)
+                )
+            `);
+        }
+    },
+    {
+        // APNs tokens registered by the Nafyn iOS app (server/utils/apn.ts). One row per (token), bound to the
+        // login (`sessionId` = JWT jti) that registered it, so logging that device out or revoking its session
+        // stops its pushes too. `kind` separates the regular alert token from the per-attributes-type
+        // push-to-start tokens Live Activities and Now Playing remote sessions use. No FK to users.
+        id: "2026-10-16-apn-devices",
+        up: async (conn) => {
+            if (await tableExists(conn, "apn_devices")) return;
+            await conn.query(`
+                CREATE TABLE apn_devices (
+                    id VARCHAR(36) PRIMARY KEY,
+                    userId VARCHAR(36) NOT NULL,
+                    sessionId VARCHAR(36) NOT NULL,
+                    token VARCHAR(255) NOT NULL,
+                    kind VARCHAR(32) NOT NULL,
+                    environment VARCHAR(16) NOT NULL,
+                    deviceName VARCHAR(100) NULL,
+                    events TEXT NULL,
+                    createdAt BIGINT NOT NULL,
+                    lastSeenAt BIGINT NOT NULL,
+                    UNIQUE KEY uq_apn_devices_token_kind (token, kind),
+                    INDEX idx_apn_devices_userId (userId),
+                    INDEX idx_apn_devices_sessionId (sessionId)
+                )
+            `);
+        }
+    },
+    {
+        // per-activity APNs update tokens: a running Live Activity (request progress, release countdown) or a
+        // Now Playing remote session hands the app a token that only addresses that one activity/session.
+        // Bound to the registering login (sessionId = JWT jti) like apn_devices, and swept with it.
+        id: "2026-10-16-apn-activity-tokens",
+        up: async (conn) => {
+            if (await tableExists(conn, "apn_activity_tokens")) return;
+            await conn.query(`
+                CREATE TABLE apn_activity_tokens (
+                    id VARCHAR(36) PRIMARY KEY,
+                    userId VARCHAR(36) NOT NULL,
+                    sessionId VARCHAR(36) NOT NULL,
+                    kind VARCHAR(16) NOT NULL,
+                    refId VARCHAR(64) NOT NULL,
+                    token VARCHAR(255) NOT NULL,
+                    environment VARCHAR(16) NOT NULL,
+                    createdAt BIGINT NOT NULL,
+                    UNIQUE KEY uq_apn_activity (kind, refId, sessionId),
+                    INDEX idx_apn_activity_userId (userId)
+                )
+            `);
+        }
+    },
+    {
+        // "notify me when this comes out" for unreleased albums/tracks (server/core/releaseSubscriptions.ts).
+        // releaseAt is the UTC instant of local midnight on releaseDate in the subscriber's own timezone,
+        // which is when the notification goes out. No FK to users.
+        id: "2026-10-16-release-subscriptions",
+        up: async (conn) => {
+            if (await tableExists(conn, "release_subscriptions")) return;
+            await conn.query(`
+                CREATE TABLE release_subscriptions (
+                    id VARCHAR(36) PRIMARY KEY,
+                    userId VARCHAR(36) NOT NULL,
+                    musicbrainzId VARCHAR(36) NOT NULL,
+                    type VARCHAR(16) NOT NULL,
+                    title TEXT NULL,
+                    artistName TEXT NULL,
+                    coverArt TEXT NULL,
+                    releaseDate CHAR(10) NOT NULL,
+                    timezone VARCHAR(64) NOT NULL,
+                    releaseAt BIGINT NOT NULL,
+                    activityStartedAt BIGINT NULL,
+                    notifiedAt BIGINT NULL,
+                    createdAt BIGINT NOT NULL,
+                    UNIQUE KEY uq_release_sub (userId, musicbrainzId),
+                    INDEX idx_release_sub_due (notifiedAt, releaseAt)
+                )
+            `);
+        }
     }
 ];
 

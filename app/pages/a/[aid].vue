@@ -9,8 +9,16 @@
         </span>
         <p class="artist">{{ typeof album.artist == "string" ? album.artist : album.artist.name }}</p>
         <p class="description" v-if="album.description">{{ album.description }}</p>
+        <div class="upcoming" v-if="!album.released">
+          <span class="label">{{ $t('upcoming.label') }}</span>
+          <ReleaseCountdown v-if="album.releaseDate && album.releaseDatePrecision === 'day'" class="value" :date="album.releaseDate" @released="refreshNuxtData(`album-${aid}`)" />
+          <span v-else-if="album.releaseDate" class="value">{{ $t('upcoming.expected', { date: formatPartialDate(album.releaseDate, album.releaseDatePrecision) }) }}</span>
+        </div>
         <span class="albumactions">
-          <button filled @click="requestMedia(album.id, 'album', album.title)">{{ $t('album.request') }}</button>
+          <button filled v-if="album.released" @click="requestMedia(album.id, 'album', album.title)">{{ $t('album.request') }}</button>
+          <button v-else :filled="album.subscribed ? 'hollow' : ''" :disabled="subscriptionPending" @click="toggleSubscription">
+            {{ album.subscribed ? $t('upcoming.following') : $t('upcoming.notifyMe') }}
+          </button>
           <!-- <button filled="hollow" v-if="albumMediaIds.length > 0" @click="openPicker(albumMediaIds)">{{ $t('playlist.addToPlaylist') }}</button> -->
         </span>
       </div>
@@ -21,6 +29,7 @@
       <li v-for="track in album.tracks" :key="track.id" :class="{ unreleased: !track.released, playing: currentTrack?.id === track.mediaId, playable: track.mediaId }" @click="track.mediaId ? playTrack(track) : undefined" @contextmenu.prevent="track.mediaId ? onTrackContextMenu($event, track.mediaId) : undefined">
         <span class="number">{{ track.trackNumber }}</span>
         <span class="title">{{ track.title }}</span>
+        <ReleaseCountdown v-if="!track.released && track.releaseDate && album.released" compact :date="track.releaseDate" />
         <button filled="hollow" @click.stop="requestTrack(track)" v-if="track.released && (!track.requested && !track.inLibrary)"><img src="../../assets/icons/download.svg" draggable="false"></button>
         <button type="button" class="ellipsis" v-if="track.mediaId" @click.stop="onTrackEllipsis($event, track.mediaId)">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
@@ -48,6 +57,7 @@ import noCover from '~/assets/no-cover.png';
 import ContextMenu, { type ContextMenuItem } from '~/components/ContextMenu.vue';
 import PlaylistPickerModal from '~/components/PlaylistPickerModal.vue';
 import { useAuthToken } from '~/composables/useAuthToken';
+import ReleaseCountdown from '~/components/ReleaseCountdown.vue';
 
 const { locale } = useI18n();
 const aid = useRoute().params.aid as string;
@@ -129,6 +139,21 @@ function formatDate(date: string | Date): string {
   return new Date(date).toLocaleDateString(locale.value, { year: "numeric", month: "long", day: "numeric" });
 }
 
+// "2027" / "November 2027" for a date MusicBrainz only partly knows
+function formatPartialDate(date: string | Date, precision: "day" | "month" | "year" | null): string {
+  const d = new Date(date);
+  if (precision === "year") return String(d.getUTCFullYear());
+  if (precision === "month") return d.toLocaleDateString(locale.value, { year: "numeric", month: "long", timeZone: "UTC" });
+  return formatDate(date);
+}
+
+const { toggle, pending: subscriptionPending } = useReleaseSubscription();
+
+async function toggleSubscription() {
+  if (!album.value) return;
+  album.value.subscribed = await toggle(album.value.id, "album", album.value.subscribed, album.value.title);
+}
+
 function formatDuration(seconds: number): string {
   const minutes = Math.floor(seconds / 60);
   const rest = Math.floor(seconds % 60);
@@ -207,7 +232,27 @@ function sendToast(title: string | null, message: string, success: boolean = tru
 
 .album .meta .albumactions {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
+}
+
+.album .upcoming {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 15px;
+}
+
+.album .upcoming .label {
+  font-size: 0.75em;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #666666;
+}
+
+.album .upcoming .value {
+  font-family: "Discy";
+  font-size: 1.1em;
 }
 
 .album .tracks li .ellipsis {

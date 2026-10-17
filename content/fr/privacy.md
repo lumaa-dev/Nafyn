@@ -93,6 +93,23 @@ Réglages d'affichage, de lecture et de Nafyn Unity, ainsi que votre choix conce
 
 *Conservé jusqu'à la suppression de votre compte.*
 
+### Notifications
+
+Uniquement ce que vous configurez vous-même :
+
+- **Les webhooks** que vous ajoutez : leur nom, leur adresse et les événements qu'ils reçoivent. Une adresse
+  de webhook fonctionne comme un mot de passe pour le salon où elle publie ; elle ne vous est donc jamais
+  réaffichée en entier ni incluse dans votre export.
+- **Les jetons d'appareils Apple**, enregistrés par l'app Nafyn sur iPhone ou iPad pour afficher
+  notifications, Activités en direct et commandes « À l'écoute ». Chaque jeton est lié à la connexion qui l'a
+  enregistré.
+- **Les sorties suivies** : les albums et titres à venir dont vous avez demandé à être notifié, et votre fuseau
+  horaire, pour que la notification arrive à minuit chez vous.
+
+*Les jetons d'appareils sont supprimés lorsque vous vous déconnectez de cet appareil ou révoquez sa session,
+et après 6 mois sans utilisation. Les sorties suivies sont supprimées 30 jours après leur sortie. Les webhooks
+sont conservés jusqu'à ce que vous les supprimiez ou que vous supprimiez votre compte.*
+
 ## Ce qui sort du serveur
 
 Nafyn interroge des services externes pour trouver et identifier la musique. Ces appels transportent ce qui
@@ -110,6 +127,18 @@ historique d'écoute.
 
 Une recherche textuelle que vous saisissez est transmise telle quelle à ces fournisseurs. C'est la seule
 donnée de cette liste sur laquelle vous avez la main directement.
+
+**Les notifications font exception** au « jamais votre nom d'utilisateur », puisque prévenir quelqu'un d'une
+demande est tout leur intérêt :
+
+- **Les webhooks** (Discord, Slack, ntfy, Gotify ou un autre service choisi par le propriétaire du webhook)
+  reçoivent le titre, l'artiste et la pochette du média concerné, ainsi que le nom affiché de l'auteur de la
+  demande. Vos propres webhooks ne reçoivent que les notifications qui vous sont destinées. Les webhooks
+  configurés par l'opérateur pour toute l'instance reçoivent toutes les demandes de téléchargement - y compris
+  votre nom lorsque vous en faites une.
+- **Le service Apple Push Notification** achemine les notifications vers les appareils Apple que vous avez
+  enregistrés via l'app Nafyn ; Apple agit en sous-traitant pour cet acheminement. Si vous gérez les demandes,
+  vos appareils sont informés des demandes des autres, noms affichés compris.
 
 ## Vos droits
 

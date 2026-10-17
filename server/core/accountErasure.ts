@@ -40,6 +40,9 @@ import { deleteUser } from "./users";
 import { deleteAvatar } from "../utils/avatar";
 import { deletePlaylistImage } from "../utils/playlistImage";
 import { dropUnitySession } from "../utils/unityRegistry";
+import { deleteApnDataForUser } from "../utils/apn";
+import { deleteWebhooksForUser } from "../utils/webhook";
+import { deleteReleaseSubscriptionsForUser } from "./releaseSubscriptions";
 
 export interface ErasureReport {
     removed: boolean,
@@ -47,6 +50,9 @@ export interface ErasureReport {
     apiTokens: number,
     passkeys: number,
     registerTokens: number,
+    appleDevices: number,
+    webhooks: number,
+    releaseSubscriptions: number,
     playlistsDeleted: number,
     membershipsRemoved: number,
     playlistEntriesAnonymized: number,
@@ -70,11 +76,15 @@ export async function eraseAccount(userId: string): Promise<ErasureReport> {
     const apiTokens = await deleteAllApiTokensForUser(userId);
     const passkeys = await deleteAllPasskeysForUser(userId);
     const registerTokens = await deleteRegisterTokensCreatedBy(userId);
+    // push tokens address this person's devices; webhook URLs are credentials to their channels
+    const appleDevices = await deleteApnDataForUser(userId);
+    const webhooks = await deleteWebhooksForUser(userId);
 
     // 2. per-user preferences
     await deleteAppearanceSettings(userId);
     await deletePlaybackSettings(userId);
     await deleteUnitySettings(userId);
+    const releaseSubscriptions = await deleteReleaseSubscriptionsForUser(userId);
 
     // 3. listening data. Snapshots name the rendered reel files, so those are listed before the rows go
     const snapshots = await listYearSnapshots(userId);
@@ -112,6 +122,9 @@ export async function eraseAccount(userId: string): Promise<ErasureReport> {
         apiTokens,
         passkeys,
         registerTokens,
+        appleDevices,
+        webhooks,
+        releaseSubscriptions,
         playlistsDeleted: owned.length,
         membershipsRemoved,
         playlistEntriesAnonymized,

@@ -5,11 +5,14 @@ import { getPermissionsById } from "~~/server/core/users";
 import { hasPermission, Permission } from "~~/server/entity/Permission";
 import { NafynRequest } from "~~/server/entity/NafynRequest";
 import { assertMbid } from "~~/server/utils/ids";
+import { getMediaInfo } from "~~/server/utils/musicbrainz";
+import { isReleased } from "~~/server/utils/releaseDate";
+import { notifyRequestCreated } from "~~/server/core/notifications";
 import { consumeRateLimit } from "~~/server/utils/rateLimit";
 
 defineRouteMeta({
     openAPI: {
-        description: "Create a download request for an album or track by MusicBrainz ID. If the requesting user has the matching AUTOACCEPT permission, the download starts immediately; otherwise it's queued as \"waiting\" for a MANAGE_REQUESTS user to accept",
+        description: "Create a download request for an album or track by MusicBrainz ID. If the requesting user has the matching AUTOACCEPT permission, the download starts immediately; otherwise it's queued as \"waiting\" for a MANAGE_REQUESTS user to accept. Unreleased media can never be requested, whatever the caller's permissions - subscribe to it instead (POST /api/v1/subscriptions)",
         tags: ["request"],
         operationId: "createRequest",
         requestBody: {
@@ -50,6 +53,14 @@ defineRouteMeta({
                         schema: { $ref: "#/components/schemas/NuxtError" }
                     }
                 }
+            },
+            "403": {
+                description: "Missing REQUEST_ALBUMS/REQUEST_TRACKS, or the media isn't released yet",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NuxtError" }
+                    }
+                }
             }
         },
         $global: {
@@ -66,7 +77,7 @@ defineRouteMeta({
                                 nullable: true
                             },
                             type: { type: "string", enum: ["album", "track"] },
-                            status: { type: "string", enum: ["waiting", "searching", "downloading", "processing", "completed", "failed"] },
+                            status: { type: "string", enum: ["waiting", "searching", "downloading", "processing", "completed", "failed", "denied"] },
                             requestedBy: {
                                 type: ["object", "string"],
                                 oneOf: [
@@ -119,9 +130,17 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 403, message: "Unsufficient permissions" })
     }
 
+    // unreleased media can't be requested by anyone - ADMIN included, there's simply nothing to download yet.
+    // A failed lookup isn't treated as "unreleased": the pipeline re-checks the date before searching anyway.
+    const info = await getMediaInfo(mbId, type).catch(() => null);
+    if (info && !isReleased(info.releaseDate)) {
+        throw createError({ statusCode: 403, message: "Not released yet" });
+    }
+
     let autoAccept: boolean = hasPermission(permcount, type == "album" ? Permission.AUTOACCEPT_ALBUMS : Permission.AUTOACCEPT_TRACKS);
 
     let newRequest: NafynRequest = await createRequest(mbId as UUID, type, userId as UUID, autoAccept ? "searching" : "waiting");
+    notifyRequestCreated(newRequest, autoAccept);
     if (autoAccept) {
         processDownloadRequest(newRequest);
     }

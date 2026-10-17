@@ -3,12 +3,16 @@ import { getRequestById, updateRequestStatus } from "~~/server/core/requests";
 import { getPermissionsById } from "~~/server/core/users";
 import { hasPermission, Permission } from "~~/server/entity/Permission";
 import type { RequestStatus } from "~~/server/entity/NafynRequest";
+import { notifyRequestAccepted, notifyRequestDenied } from "~~/server/core/notifications";
 
-const REQUEST_STATUSES: RequestStatus[] = ["waiting", "searching", "downloading", "processing", "completed", "failed"];
+// a manager's only two decisions on a waiting request: accept it (starts the download) or deny it. "failed" is
+// still accepted for older clients and read as a denial - it was how a request got refused before "denied"
+// existed. Every other status belongs to the download pipeline, not to a person.
+const REQUEST_STATUSES: RequestStatus[] = ["searching", "denied", "failed"];
 
 defineRouteMeta({
     openAPI: {
-        description: "Update a waiting request's status. Requires MANAGE_REQUESTS. Setting status to \"searching\" starts the download pipeline for it",
+        description: "Accept or deny a waiting request. Requires MANAGE_REQUESTS. \"searching\" accepts it and starts the download pipeline; \"denied\" refuses it (\"failed\" is accepted as a legacy alias for \"denied\"). Both notify the requester and request managers",
         tags: ["request"],
         operationId: "updateRequestStatus",
         requestBody: {
@@ -19,7 +23,7 @@ defineRouteMeta({
                         required: ["requestId", "status"],
                         properties: {
                             requestId: { type: "string" },
-                            status: { type: "string", enum: ["waiting", "searching", "downloading", "processing", "completed", "failed"] }
+                            status: { type: "string", enum: ["searching", "denied", "failed"] }
                         }
                     }
                 }
@@ -85,13 +89,18 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: "Malformed request" })
   }
 
-  const newStatus = rawStatus as RequestStatus;
+  const newStatus: RequestStatus = rawStatus === "failed" ? "denied" : rawStatus as RequestStatus;
 
   if (await updateRequestStatus(requestId, newStatus, true)) {
+    const request = await getRequestById(requestId);
+    if (request) {
+      if (newStatus == "searching") notifyRequestAccepted(request, userId);
+      else notifyRequestDenied(request, userId);
+    }
     if (newStatus == "searching") {
       processDownloadRequestId(requestId);
     }
-    return await getRequestById(requestId);
+    return request;
   } else {
     throw createError({ statusCode: 500, message: "Request status couldn't be modified" })
   }

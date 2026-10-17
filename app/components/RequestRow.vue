@@ -104,7 +104,7 @@ const progressPercent = computed(() => {
   return Math.min(100, (p.bytesDownloaded ?? 0) / p.totalBytes * 100);
 });
 
-const TERMINAL_STAGES: RequestStatus[] = ["completed", "failed"];
+const TERMINAL_STAGES: RequestStatus[] = ["completed", "failed", "denied"];
 
 let socket: WebSocket | null = null;
 
@@ -228,6 +228,11 @@ onUnmounted(disconnect);
 .reqrow .status.failed {
   background: #cf4444;
   color: #ffffffae;
+}
+
+.reqrow .status.denied {
+  border: #cf4444 1px solid;
+  color: #cf4444;
 }
 
 .reqrow .progress {

@@ -14,6 +14,8 @@
 // finished before this one starts.
 import { pruneRecentlyPlayedOlderThan } from "~~/server/core/recentlyPlayed";
 import { getSetting } from "~~/server/core/appSettings";
+import { pruneNotifiedSubscriptions } from "~~/server/core/releaseSubscriptions";
+import { sweepApnTokens } from "~~/server/utils/apn";
 
 const TICK_INTERVAL_MS = 60 * 60 * 1000;
 
@@ -30,9 +32,20 @@ async function recentlyPlayedRetentionDays(): Promise<number> {
     return Number.isFinite(parsed) && parsed >= 0 ? parsed : DEFAULT_RECENTLY_PLAYED_DAYS;
 }
 
+// an Apple device the app hasn't re-registered from in this long is almost certainly gone; the app refreshes
+// its tokens on every launch
+const APN_DEVICE_STALE_DAYS = 180;
+// a delivered release subscription stays listed (as "out now") in Settings -> Notifications for this long
+const NOTIFIED_SUBSCRIPTION_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
+
 async function tick(): Promise<void> {
     const removed = await pruneRecentlyPlayedOlderThan(await recentlyPlayedRetentionDays());
     if (removed > 0) console.info(`[retention] removed ${removed} stale recently-played rows`);
+
+    // push tokens of logins that no longer exist, devices long gone, update tokens of finished activities
+    await sweepApnTokens(APN_DEVICE_STALE_DAYS);
+    const subscriptions = await pruneNotifiedSubscriptions(NOTIFIED_SUBSCRIPTION_RETENTION_MS);
+    if (subscriptions > 0) console.info(`[retention] removed ${subscriptions} delivered release subscriptions`);
 }
 
 export default defineNitroPlugin(() => {

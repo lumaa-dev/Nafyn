@@ -8,7 +8,8 @@ export enum Permission {
     MANAGE_ACCOUNTS = 32,
     MANAGE_MUSIC = 64,
     MANAGE_NOTIFICATIONS = 128,
-    ADMIN = 256
+    ADMIN = 256,
+    MANAGE_WEBHOOKS = 512
 }
 
 export function hasPermission(permissions: number, requiredPermission: Permission): boolean {
