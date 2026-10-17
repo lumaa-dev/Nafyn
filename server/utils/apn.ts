@@ -109,6 +109,18 @@ export function apnEnabled(): boolean {
     return !!env("APN_KEY_ID", "KEY_ID") && !!env("APN_TEAM_ID", "TEAM_ID") && keyPath() !== null;
 }
 
+/** the effective APNs settings, as read from the environment - for diagnostics (envCheck.ts, scripts/apn-test.ts) */
+export function apnSettings() {
+    return {
+        keyId: env("APN_KEY_ID", "KEY_ID"),
+        teamId: env("APN_TEAM_ID", "TEAM_ID"),
+        bundleId: bundleId(),
+        keyDir: env("APN_KEY_DIR", "KEY_DIR") || ".",
+        keyPath: keyPath(),
+        legacyNames: ["KEY_ID", "TEAM_ID", "APP_BUNDLE", "KEY_DIR"].filter((name) => process.env[name] !== undefined)
+    };
+}
+
 // one provider per APNs environment: a token minted by a development (Xcode) build is only valid against the
 // sandbox gateway, a TestFlight/App Store one only against production - each token row says which it is
 const providers = new Map<ApnEnvironment, Provider>();
@@ -446,6 +458,89 @@ export async function sendNotificationToUsers(userIds: string[], event: Notifica
     if (!apnEnabled()) return;
     const targets = await deviceTargets(userIds, "alert", event);
     await send(targets, () => alertNotification(alert), `alert ${event}`);
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// diagnostics: `bun run apn:test` (scripts/apn-test.ts)
+// ---------------------------------------------------------------------------------------------------------
+
+export interface ApnTestResult {
+    token: string,
+    environment: ApnEnvironment,
+    /** Apple accepted the push for delivery. That is not the same as it being shown on the device. */
+    accepted: boolean,
+    status: number | null,
+    reason: string | null,
+    hint: string | null
+}
+
+// Apple's rejection reasons, with what usually causes each one in a Nafyn setup
+const FAILURE_HINTS: Record<string, string> = {
+    BadDeviceToken: "The token is malformed, or belongs to the other APNs environment (Xcode debug builds are sandbox, TestFlight/App Store are production), or to another app.",
+    DeviceTokenNotForTopic: "The token was issued to an app with a different bundle ID than APN_BUNDLE_ID.",
+    TopicDisallowed: "This key may not push for APN_BUNDLE_ID. Check the bundle ID, and that the key has the APNs service enabled.",
+    BadTopic: "APN_BUNDLE_ID is not a valid topic.",
+    MissingTopic: "APN_BUNDLE_ID is empty.",
+    InvalidProviderToken: "Apple rejected the signing key: APN_KEY_ID and APN_TEAM_ID don't match the .p8 file.",
+    MissingProviderToken: "No signing token was sent - the .p8 key could not be read.",
+    ExpiredProviderToken: "The signing token expired. Check this machine's clock.",
+    Forbidden: "The key is not authorised for this app. Check APN_TEAM_ID and that the key belongs to that team.",
+    Unregistered: "The app was uninstalled, or the token is no longer valid. The app has to register a new one.",
+    ExpiredToken: "The token expired. The app has to register a new one.",
+    TooManyProviderTokenUpdates: "Too many signing tokens were minted in a short time. Wait a few minutes.",
+    PayloadTooLarge: "The payload is over Apple's size limit.",
+    InternalServerError: "Apple-side error, try again.",
+    ServiceUnavailable: "Apple-side error, try again."
+};
+
+/**
+ * Sends one plain alert to one token and reports exactly what Apple answered.
+ *
+ * Deliberately NOT sendNotification(): that path deletes a token from apn_devices on BadDeviceToken, and the
+ * commonest cause of that answer when testing is asking the wrong environment - which would wipe a perfectly
+ * good registration. A diagnostic must never change state.
+ */
+export async function sendTestAlert(token: string, environment: ApnEnvironment, message: string = "APNs is working"): Promise<ApnTestResult> {
+    const base = { token, environment, accepted: false, status: null, reason: null, hint: null };
+    if (!apnEnabled()) {
+        return { ...base, reason: "NotConfigured", hint: "APN_KEY_ID, APN_TEAM_ID or the .p8 key is missing. Run `bun run check:env`." };
+    }
+
+    const notif = baseNotification("alert", null);
+    notif.sound = "default";
+    notif.aps.alert = { title: "Nafyn", body: message };
+    notif.payload = { nafyn: { event: "test" } };
+
+    try {
+        const result = await getProvider(environment).send(notif, [token]);
+        const failure = result.failed[0];
+        if (!failure) return { ...base, accepted: true };
+
+        const reason = failure.response?.reason ?? failure.error?.message ?? null;
+        return { ...base, status: failure.status ?? null, reason, hint: reason ? FAILURE_HINTS[reason] ?? null : null };
+    } catch (err) {
+        return {
+            ...base,
+            reason: err instanceof Error ? err.message : "Unknown error",
+            hint: "Could not complete the request. Check the .p8 key is readable, and that this machine can reach api.push.apple.com and api.sandbox.push.apple.com on port 443."
+        };
+    }
+}
+
+/** the `alert` tokens a user registered through the iOS app, with the environment each one belongs to */
+export async function listAlertTargetsForUsername(username: string): Promise<{ token: string, environment: ApnEnvironment, deviceName: string | null }[] | null> {
+    const db = getUsersDb();
+    const user = await db.prepare(`SELECT id FROM users WHERE username = ?`).get(username) as { id: string } | undefined;
+    if (!user) return null;
+    return await db.prepare(
+        `SELECT token, environment, deviceName FROM apn_devices WHERE userId = ? AND kind = 'alert' ORDER BY lastSeenAt DESC`
+    ).all(user.id) as { token: string, environment: ApnEnvironment, deviceName: string | null }[];
+}
+
+/** closes the HTTP/2 connections so a one-shot script can exit */
+export async function shutdownApn(): Promise<void> {
+    await Promise.allSettled([...providers.values()].map((provider) => provider.shutdown()));
+    providers.clear();
 }
 
 // ---------------------------------------------------------------------------------------------------------

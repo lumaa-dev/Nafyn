@@ -17,7 +17,9 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "slskd": ".dev/slskd/slskd"
+    "slskd": ".dev/slskd/slskd",
+    "check:env": "bun scripts/check-env.ts",
+    "apn:test": "bun scripts/apn-test.ts"
   },
   "dependencies": {
     "@nuxt/content": "3.15.0",
