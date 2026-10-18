@@ -203,7 +203,7 @@ onUnmounted(() => {
 }
 
 .lyrics-panel .status {
-  color: #666666;
+  color: color-mix(in srgb, var(--np-text, #ffffff) 70%, transparent);
   text-align: center;
   margin-top: 20px;
 }
@@ -211,7 +211,7 @@ onUnmounted(() => {
 .lyrics-panel .static {
   white-space: pre-wrap;
   font-family: inherit;
-  color: #ffffffae;
+  color: var(--np-text, #ffffff);
   line-height: 1.6;
   padding: 20px 4px;
 }
@@ -226,7 +226,9 @@ onUnmounted(() => {
 }
 
 .lyrics-panel .lines li {
-  color: #666666;
+  /* --np-text is set by now-playing.vue from the cover (black on a light one, white on a dark one), so the
+     lyrics follow the same WCAG-picked colour as the rest of the page instead of a hardcoded white */
+  color: color-mix(in srgb, var(--np-text, #ffffff) 65%, transparent);
   font-size: 1.3em;
   font-weight: 600;
   line-height: 1.4;
@@ -236,7 +238,7 @@ onUnmounted(() => {
 }
 
 .lyrics-panel .lines li:hover {
-  color: #ffffff;
+  color: var(--np-text, #ffffff);
 }
 
 .lyrics-panel .lines li.gap {
@@ -249,11 +251,11 @@ onUnmounted(() => {
 }
 
 .lyrics-panel .lines li.active {
-  color: #ffffff;
+  color: var(--np-text, #ffffff);
 }
 
 .lyrics-panel .segment {
-  background-image: linear-gradient(90deg, #ffffff 50%, #ffffff4d 50%);
+  background-image: linear-gradient(90deg, var(--np-text, #ffffff) 50%, color-mix(in srgb, var(--np-text, #ffffff) 35%, transparent) 50%);
   background-size: 200% 100%;
   background-position-x: 100%;
   background-clip: text;
