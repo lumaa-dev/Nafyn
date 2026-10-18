@@ -44,11 +44,12 @@ const tid = useRoute().params.tid as string;
 const { token } = useAuthToken();
 const appearance = useAppearanceSettings();
 
-const { data: track } = await useAsyncData<MediaRow>(`library-track-${tid}`, () => {
+const { data: track, error } = await useAsyncData<MediaRow>(`library-track-${tid}`, () => {
   return token.value
     ? $fetch(`/api/v1/library/track/${tid}`, { headers: { Authorization: token.value } })
     : Promise.reject(new Error("Not authenticated"));
 });
+useLoadErrorToast(error);
 
 const { play } = useUnity();
 

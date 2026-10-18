@@ -24,6 +24,21 @@
           <span>
             <p :filled="liveStatus == 'waiting' ? 'hollow' : ''" :class="`status ${liveStatus}`">{{ $t(`requests.status.${liveStatus}`) }}</p>
           </span>
+          <!-- accept / deny / delete: only for people who manage requests (the server checks it again) -->
+          <span class="actions" v-if="canManageRequests && (liveStatus === 'waiting' || !active)">
+            <template v-if="liveStatus === 'waiting'">
+              <button type="button" class="accept" :disabled="busy" :title="$t('requests.accept')" :aria-label="$t('requests.accept')" @click="decide('searching')">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+              </button>
+              <button type="button" class="deny" :disabled="busy" :title="$t('requests.deny')" :aria-label="$t('requests.deny')" @click="decide('denied')">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+              </button>
+            </template>
+            <!-- nobody can delete a request the pipeline is working on, ADMIN included -->
+            <button v-if="!active" type="button" class="remove" :disabled="busy" :title="$t('requests.delete')" :aria-label="$t('requests.delete')" @click="remove">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a1 1 0 001 1h8a1 1 0 001-1l1-12M9 7V4h6v3" /></svg>
+            </button>
+          </span>
         </div>
       </div>
     </div>
@@ -48,8 +63,10 @@
 </template>
 
 <script lang="ts" setup>
-import type { NafynRequest, RequestStatus } from '~~/server/entity/NafynRequest';
+import { isRequestActive, type NafynRequest, type RequestStatus } from '~~/server/entity/NafynRequest';
+import { Permission } from '~~/server/entity/Permission';
 import { useAuthToken } from '~/composables/useAuthToken';
+import { useCurrentUser } from '~/composables/useCurrentUser';
 
 interface DownloadProgressEvent {
   requestId: string;
@@ -65,6 +82,7 @@ interface DownloadProgressEvent {
 }
 
 const props = defineProps<{ request: NafynRequest, isCompact: boolean; }>();
+const emit = defineEmits<{ deleted: [id: string] }>();
 
 const { locale } = useI18n();
 
@@ -106,6 +124,73 @@ const progressPercent = computed(() => {
 
 const TERMINAL_STAGES: RequestStatus[] = ["completed", "failed", "denied"];
 
+// -- managing the request (MANAGE_REQUESTS) --
+
+const { can, ensureLoaded } = useCurrentUser();
+const canManageRequests = computed(() => can(Permission.MANAGE_REQUESTS));
+const active = computed(() => isRequestActive(liveStatus.value));
+const busy = ref(false);
+
+// the server rejects a decision on a request that is no longer waiting (another manager got there first);
+// re-reading it puts the row back in step with what actually happened
+async function resync() {
+  const token = useAuthToken().token.value;
+  if (!token) return;
+  try {
+    const current = await $fetch<NafynRequest>(`/api/v1/request/${props.request.id}`, { headers: { Authorization: token } });
+    liveStatus.value = current.status;
+  } catch {
+    // the row stays as it was; the toast from the failed action has already said what went wrong
+  }
+}
+
+async function decide(status: "searching" | "denied") {
+  const token = useAuthToken().token.value;
+  if (!token || busy.value) return;
+
+  busy.value = true;
+  try {
+    await $fetch("/api/v1/request/status", {
+      method: "POST",
+      headers: { Authorization: token },
+      body: { requestId: props.request.id, status }
+    });
+    liveStatus.value = status;
+    if (status === "denied") disconnect();
+    useToast().sendToast({
+      title: props.request.info?.title ?? null,
+      content: status === "searching" ? $t('requests.accepted') : $t('requests.denied'),
+      tint: "green",
+      icon: null
+    });
+  } catch (e) {
+    useToast().sendError(props.request.info?.title ?? null, e);
+    await resync();
+  } finally {
+    busy.value = false;
+  }
+}
+
+async function remove() {
+  const token = useAuthToken().token.value;
+  if (!token || busy.value || active.value) return;
+  if (!confirm($t('requests.deleteConfirm'))) return;
+
+  busy.value = true;
+  try {
+    await $fetch(`/api/v1/request/${props.request.id}`, { method: "DELETE", headers: { Authorization: token } });
+    disconnect();
+    emit("deleted", props.request.id);
+    useToast().sendToast({ title: props.request.info?.title ?? null, content: $t('requests.deleted'), tint: "green", icon: null });
+  } catch (e) {
+    // 409 when it started processing meanwhile; the server's message says so
+    useToast().sendError(props.request.info?.title ?? null, e, $t('requests.deleteBusy'));
+    await resync();
+  } finally {
+    busy.value = false;
+  }
+}
+
 let socket: WebSocket | null = null;
 
 function connect() {
@@ -136,7 +221,10 @@ function disconnect() {
   socket = null;
 }
 
-onMounted(connect);
+onMounted(() => {
+  void ensureLoaded();
+  connect();
+});
 onUnmounted(disconnect);
 </script>
 
@@ -223,6 +311,41 @@ onUnmounted(disconnect);
 .reqrow .status.searching, .reqrow .status.downloading, .reqrow .status.processing {
   background: #e18c46;
   color: #ffffffae;
+}
+
+.reqrow .actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.reqrow .actions button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2em;
+  height: 2.2em;
+  padding: 0;
+  border: 1px solid #ffffffae;
+  border-radius: 50%;
+  color: #ffffffae;
+  transition: background 0.2s ease-out, border-color 0.2s ease-out, color 0.2s ease-out;
+}
+
+.reqrow .actions button:hover:not(:disabled) {
+  color: #000;
+}
+
+.reqrow .actions button.accept:hover:not(:disabled) {
+  background: #44cf44;
+  border-color: #44cf44;
+}
+
+.reqrow .actions button.deny:hover:not(:disabled),
+.reqrow .actions button.remove:hover:not(:disabled) {
+  background: #cf4444;
+  border-color: #cf4444;
 }
 
 .reqrow .status.failed {

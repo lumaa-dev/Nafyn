@@ -24,6 +24,12 @@ export function useInfiniteList<T>(fetchPage: (page: number, limit: number) => P
       items.value.push(...result.items);
       page.value = result.page;
       hasMore.value = result.hasMore;
+    } catch (e) {
+      // stop paging: the scroll sentinel would otherwise retry on every intersection, a toast per attempt.
+      // reset() starts over. Server-side the failure isn't toasted (it would be serialised into the page
+      // state without its dismiss timer) - the client repeats this same load while hydrating and reports it.
+      hasMore.value = false;
+      if (import.meta.client) useToast().sendError(null, e);
     } finally {
       loadingMore.value = false;
       initialLoading.value = false;

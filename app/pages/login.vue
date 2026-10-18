@@ -22,8 +22,6 @@ import { browserSupportsWebAuthn, startAuthentication } from '@simplewebauthn/br
 const username = ref("");
 const password = ref("");
 
-const hasError: globalThis.Ref<string | null, string | null> = ref(null);
-
 interface LoginResponse {
   user: NafynUser,
   token: string
@@ -47,14 +45,16 @@ function applyLogin(token: string) {
 }
 
 async function logIn() {
-  const result: LoginResponse = await $fetch("/api/v1/auth/login", {
-    method: "POST",
-    body: { username: username.value, password: password.value }
-  }).catch(r => hasError.value = r)
-
-  if (!result || hasError.value) return hasError.value = $t("auth.login.error");
-
-  applyLogin(result.token);
+  try {
+    const result = await $fetch<LoginResponse>("/api/v1/auth/login", {
+      method: "POST",
+      body: { username: username.value, password: password.value }
+    });
+    applyLogin(result.token);
+  } catch (e) {
+    // the server says why: wrong credentials, or too many attempts (429) - shown as-is
+    useToast().sendError($t("auth.login.title"), e, $t("auth.login.error"));
+  }
 }
 
 const passkeySupported = import.meta.client ? browserSupportsWebAuthn() : false;
@@ -65,7 +65,6 @@ const passkeyLoading = ref(false);
 
 async function logInWithPasskey() {
   passkeyLoading.value = true;
-  hasError.value = null;
   try {
     const { challengeId, options } = await $fetch<{ challengeId: string, options: object }>("/api/v1/auth/passkey/login-options", { method: "POST" });
     const response = await startAuthentication({ optionsJSON: options as never });
@@ -74,10 +73,11 @@ async function logInWithPasskey() {
       body: { challengeId, response }
     });
     applyLogin(result.token);
-  } catch {
-    // covers both a $fetch error (server rejected it) and the browser's own Error (user cancelled the
-    // prompt, no matching passkey, ...) - neither case has anything more specific worth showing
-    hasError.value = $t("auth.login.error");
+  } catch (e) {
+    // covers both a $fetch error (server rejected it, so its message is shown) and the browser's own Error
+    // (user cancelled the prompt, no matching passkey, ...), which has no message worth showing - that case
+    // falls back to the generic one
+    useToast().sendError($t("auth.login.title"), e, $t("auth.login.error"));
   } finally {
     passkeyLoading.value = false;
   }

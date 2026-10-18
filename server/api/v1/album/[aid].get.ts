@@ -86,13 +86,13 @@ defineRouteMeta({
                             releaseDate: { type: "string", format: "date-time", nullable: true },
                             released: { type: "boolean", description: "Whether the release date has already passed" },
                             inLibrary: { type: "boolean", description: "Whether the requesting user already has this track" },
-                            requested: { type: "boolean", description: "Whether the requesting user has an active (non-failed) request for this track" },
+                            requested: { type: "boolean", description: "Whether the requesting user has a request for this track that is waiting or being processed" },
                             mediaId: { type: "string", nullable: true, description: "Nafyn's internal media ID, if this recording has been downloaded by anyone" }
                         }
                     },
                     AlbumDetail: {
                         type: "object",
-                        required: ["id", "releaseId", "title", "artist", "type", "coverArt", "imageColors", "textColor", "releaseDate", "releaseDatePrecision", "released", "subscribed", "description", "label", "tracks"],
+                        required: ["id", "releaseId", "title", "artist", "type", "coverArt", "imageColors", "textColor", "releaseDate", "releaseDatePrecision", "released", "subscribed", "requested", "description", "label", "tracks"],
                         properties: {
                             id: { type: "string", description: "MusicBrainz release-group ID" },
                             releaseId: { type: "string", description: "MusicBrainz release ID for the selected release" },
@@ -112,6 +112,7 @@ defineRouteMeta({
                             releaseDatePrecision: { type: "string", enum: ["day", "month", "year"], nullable: true, description: "How much of releaseDate MusicBrainz actually knows; a partial date is padded to its first day" },
                             released: { type: "boolean", description: "false while the release date hasn't started anywhere yet - unreleased albums can't be requested" },
                             subscribed: { type: "boolean", description: "Whether the caller follows this upcoming album (POST /api/v1/subscriptions)" },
+                            requested: { type: "boolean", description: "Whether the caller has a request for this album that is waiting or being processed - false again once it completed, failed or was denied" },
                             description: { type: "string", nullable: true },
                             label: { type: "string", nullable: true },
                             tracks: {
@@ -199,6 +200,7 @@ export default defineEventHandler(async (event): Promise<AlbumDetail> => {
         releaseDatePrecision: normalizeReleaseDate(releaseGroup["first-release-date"])?.precision ?? null,
         released,
         subscribed: released ? false : await isSubscribed(userId, releaseGroup.id),
+        requested: await hasActiveRequest(userId, releaseGroup.id),
         description: releaseGroup.disambiguation || null,
         label,
         tracks

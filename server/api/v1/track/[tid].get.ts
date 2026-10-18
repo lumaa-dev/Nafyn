@@ -9,6 +9,7 @@ import { getImageColors } from "~~/server/utils/imageColors";
 import { enforceUpstreamLookupLimit } from "~~/server/utils/rateLimit";
 import { isReleased, normalizeReleaseDate } from "~~/server/utils/releaseDate";
 import { isSubscribed } from "~~/server/core/releaseSubscriptions";
+import { hasActiveRequest } from "~~/server/core/requests";
 
 defineRouteMeta({
     openAPI: {
@@ -35,12 +36,13 @@ defineRouteMeta({
                                 { $ref: "#/components/schemas/MediaInfo" },
                                 {
                                     type: "object",
-                                    required: ["albumMbid", "releaseDatePrecision", "released", "subscribed"],
+                                    required: ["albumMbid", "releaseDatePrecision", "released", "subscribed", "requested"],
                                     properties: {
                                         albumMbid: { type: "string", nullable: true, description: "MusicBrainz release-group ID for the track's release, if any" },
                                         releaseDatePrecision: { type: "string", enum: ["day", "month", "year"], nullable: true, description: "How much of releaseDate MusicBrainz actually knows; a partial date is padded to its first day" },
                                         released: { type: "boolean", description: "false while the release date hasn't started anywhere yet - unreleased tracks can't be requested" },
-                                        subscribed: { type: "boolean", description: "Whether the caller follows this upcoming track (POST /api/v1/subscriptions)" }
+                                        subscribed: { type: "boolean", description: "Whether the caller follows this upcoming track (POST /api/v1/subscriptions)" },
+                                        requested: { type: "boolean", description: "Whether the caller has a request for this track that is waiting or being processed - false again once it completed, failed or was denied" }
                                     }
                                 }
                             ]
@@ -128,5 +130,7 @@ export default defineEventHandler(async (event) => {
 
     const releaseDatePrecision = normalizeReleaseDate(recording["first-release-date"])?.precision ?? null;
 
-    return { ...media, albumMbid, releaseDatePrecision, released, subscribed };
+    const requested = await hasActiveRequest(userId, recording.id);
+
+    return { ...media, albumMbid, releaseDatePrecision, released, subscribed, requested };
 });

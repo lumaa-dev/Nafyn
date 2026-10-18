@@ -12,11 +12,9 @@
       <ul v-if="devices.length > 0" class="api-token-list">
         <li v-for="d in devices" :key="d.id">
           <span class="col">
-            <span class="title">{{ d.deviceName || $t('settings.notifications.devices.unnamed') }}</span>
+            <span class="title">{{ d.deviceName || $t('settings.notifications.devices.unnamed') }}{{ d.currentSession ? ` (${$t('settings.notifications.devices.thisDevice')})` : '' }}</span>
             <span class="artist">
-              {{ $t(`settings.notifications.devices.kinds.${kindKey(d.kind)}`) }}
-              <template v-if="d.environment === 'sandbox'"> &middot; {{ $t('settings.notifications.devices.sandbox') }}</template>
-              &middot; {{ $t('settings.notifications.devices.lastSeen', { date: formatDate(d.lastSeenAt) }) }}
+              <template v-if="d.environment === 'sandbox'">{{ $t('settings.notifications.devices.sandbox') }} &middot; </template>{{ $t('settings.notifications.devices.lastSeen', { date: formatDate(d.lastSeenAt) }) }}
             </span>
           </span>
           <button class="danger" type="button" filled="hollow" :disabled="busyDeviceId === d.id" @click="removeDevice(d.id)">{{ $t('settings.notifications.devices.remove') }}</button>
@@ -47,7 +45,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { ApnDeviceKind, ApnDeviceSummary } from '~~/server/utils/apn';
+import type { ApnDeviceSummary } from '~~/server/utils/apn';
 import type { ReleaseSubscription } from '~~/server/core/releaseSubscriptions';
 import type { Paginated } from '~~/server/utils/pagination';
 import WebhookManager from '~/components/settings/WebhookManager.vue';
@@ -71,16 +69,11 @@ function toast(content: string, success: boolean = true) {
 }
 
 function errorMessage(e: unknown): string {
-  return (e as { data?: { statusMessage?: string } })?.data?.statusMessage ?? t('settings.profile.error');
+  return apiErrorMessage(e, t('settings.profile.error'));
 }
 
 function formatDate(ms: number): string {
   return new Date(ms).toLocaleDateString(locale.value, { year: "numeric", month: "short", day: "numeric" });
-}
-
-// i18n keys can't hold ":" - "la-start:request" -> "la-start-request"
-function kindKey(kind: ApnDeviceKind): string {
-  return kind.replace(":", "-");
 }
 
 async function load() {

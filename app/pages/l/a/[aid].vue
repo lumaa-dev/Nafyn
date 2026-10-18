@@ -49,11 +49,12 @@ interface LibraryAlbumDetail {
   tracks: MediaRow[];
 }
 
-const { data: detail } = await useAsyncData<LibraryAlbumDetail>(`library-album-${aid}`, () => {
+const { data: detail, error } = await useAsyncData<LibraryAlbumDetail>(`library-album-${aid}`, () => {
   return token.value
     ? $fetch(`/api/v1/library/album/${aid}`, { headers: { Authorization: token.value } })
     : Promise.reject(new Error("Not authenticated"));
 });
+useLoadErrorToast(error);
 
 const tracks = computed<MediaRow[]>(() => detail.value?.tracks ?? []);
 

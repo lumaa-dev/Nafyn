@@ -33,11 +33,12 @@ import { useAuthToken } from '~/composables/useAuthToken';
 const aid = useRoute().params.aid as string;
 const { token } = useAuthToken();
 
-const { data: artist } = await useAsyncData<ArtistDetail>(`artist-${aid}`, () => {
+const { data: artist, error } = await useAsyncData<ArtistDetail>(`artist-${aid}`, () => {
   return token.value
     ? $fetch(`/api/v1/artist/${aid}`, { headers: { Authorization: token.value } })
     : Promise.reject(new Error("Not authenticated"));
 });
+useLoadErrorToast(error);
 </script>
 
 <style scoped>

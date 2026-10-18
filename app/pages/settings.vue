@@ -366,7 +366,7 @@
 
 <script lang="ts" setup>
 import type { NafynUser } from '~~/server/entity/NafynUser';
-import { hasPermission, Permission } from '~~/server/entity/Permission';
+import { canManageUser, hasPermission, Permission } from '~~/server/entity/Permission';
 import type { RegisterTokenRow } from '~~/server/core/registerTokens';
 import type { ApiTokenSummary, ApiTokenRow } from '~~/server/core/apiTokens';
 import { syncHistorySetting, useHistoryEnabled, setHistoryEnabledState } from '~/composables/usePlayTracking';
@@ -445,8 +445,17 @@ const newToken = ref<ApiTokenRow | null>(null);
 const generatingApiToken = ref(false);
 const deletingTokenId = ref<string | null>(null);
 
+// a panel that fails to load would just sit empty; say why instead
+function loadFailed(title: string, e: unknown) {
+  useToast().sendError(title, e, $t('settings.profile.error'));
+}
+
 async function loadApiTokens() {
-  apiTokens.value = await $fetch<ApiTokenSummary[]>("/api/v1/user/tokens", { headers: { Authorization: token } });
+  try {
+    apiTokens.value = await $fetch<ApiTokenSummary[]>("/api/v1/user/tokens", { headers: { Authorization: token } });
+  } catch (e) {
+    loadFailed($t('settings.subsonic.tokens.title'), e);
+  }
 }
 
 async function generateApiToken() {
@@ -461,7 +470,7 @@ async function generateApiToken() {
     newTokenName.value = "";
     await loadApiTokens();
   } catch (e) {
-    sendToast($t('settings.subsonic.tokens.title'), (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error'), false);
+    sendToast($t('settings.subsonic.tokens.title'), apiErrorMessage(e, $t('settings.profile.error')), false);
   } finally {
     generatingApiToken.value = false;
   }
@@ -473,7 +482,7 @@ async function removeApiToken(id: string) {
     await $fetch(`/api/v1/user/tokens/${id}`, { method: "DELETE", headers: { Authorization: token } });
     apiTokens.value = apiTokens.value.filter((t) => t.id !== id);
   } catch (e) {
-    sendToast($t('settings.subsonic.tokens.title'), (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error'), false);
+    sendToast($t('settings.subsonic.tokens.title'), apiErrorMessage(e, $t('settings.profile.error')), false);
   } finally {
     deletingTokenId.value = null;
   }
@@ -493,7 +502,8 @@ const initial = computed(() => (displayName.value || user.value?.username || "?"
 
 const canSave = computed(() => displayName.value.trim().length >= 1 && displayName.value.trim().length <= 20);
 
-const { data } = await useFetch<NafynUser>("/api/v1/user/me", { headers: { Authorization: token } });
+const { data, error: meError } = await useFetch<NafynUser>("/api/v1/user/me", { headers: { Authorization: token } });
+useLoadErrorToast(meError);
 if (data.value) {
   applyUser(data.value);
 }
@@ -529,7 +539,7 @@ async function removeAvatar() {
 
   await $fetch("/api/v1/user/avatar", { method: "DELETE", headers: { Authorization: token } })
     .catch((e) => {
-      const err = e?.data?.statusMessage ?? $t('settings.profile.error');
+      const err = apiErrorMessage(e, $t('settings.profile.error'));
       sendToast($t('settings.profile.removeAvatar'), err, false);
     });
   avatarVersion.value = null;
@@ -569,7 +579,7 @@ async function save() {
 
     sendToast($t('settings.profile.title'), $t('settings.profile.saved'));
   } catch (e) {
-    const err = (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error');
+    const err = apiErrorMessage(e, $t('settings.profile.error'));
     sendToast($t('settings.profile.title'), err, false);
   } finally {
     saving.value = false;
@@ -616,12 +626,10 @@ function isRestrictedBit(p: Permission): boolean {
   return p === Permission.MANAGE_ACCOUNTS || p === Permission.ADMIN;
 }
 
+// the same rule the server enforces (server/entity/Permission.ts): ADMIN edits anyone; MANAGE_ACCOUNTS only
+// accounts below it - not another MANAGE_ACCOUNTS holder, not an ADMIN, not itself
 function canManage(u: NafynUser): boolean {
-  if (isAdmin.value) return true;
-  if (!canManageAccounts.value) return false;
-  if (u.id === user.value?.id) return true;
-  const bits = typeof u.permissions === "number" ? u.permissions : 0;
-  return !(bits & (Permission.MANAGE_ACCOUNTS | Permission.ADMIN));
+  return canManageUser(user.value?.id ?? "", perms.value, u.id, typeof u.permissions === "number" ? u.permissions : 0);
 }
 
 function avatarStyleFor(u: NafynUser) {
@@ -633,20 +641,24 @@ function tokenUrl(t: string): string {
 }
 
 async function loadAccountsPanel() {
-  const [reg, tokens] = await Promise.all([
-    $fetch<{ open: boolean }>("/api/v1/settings/register"),
-    $fetch<RegisterTokenRow[]>("/api/v1/settings/register-tokens", { headers: { Authorization: token } }),
-    loadMoreUsers()
-  ]);
-  registerOpen.value = reg.open;
-  activeTokens.value = tokens;
+  try {
+    const [reg, tokens] = await Promise.all([
+      $fetch<{ open: boolean }>("/api/v1/settings/register"),
+      $fetch<RegisterTokenRow[]>("/api/v1/settings/register-tokens", { headers: { Authorization: token } }),
+      loadMoreUsers()
+    ]);
+    registerOpen.value = reg.open;
+    activeTokens.value = tokens;
+  } catch (e) {
+    loadFailed($t('settings.accounts.title'), e);
+  }
 }
 
 async function toggleRegisterOpen() {
   await $fetch("/api/v1/settings/register", { method: "PATCH", headers: { Authorization: token }, body: { open: registerOpen.value } })
     .catch((e) => {
       registerOpen.value = !registerOpen.value;
-      sendToast($t('settings.accounts.title'), e?.data?.statusMessage ?? $t('settings.profile.error'), false);
+      sendToast($t('settings.accounts.title'), apiErrorMessage(e, $t('settings.profile.error')), false);
     });
 }
 
@@ -656,7 +668,7 @@ async function generateToken() {
     const t = await $fetch<RegisterTokenRow>("/api/v1/settings/register-tokens", { method: "POST", headers: { Authorization: token } });
     activeTokens.value = [t, ...activeTokens.value];
   } catch (e) {
-    sendToast($t('settings.accounts.title'), (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error'), false);
+    sendToast($t('settings.accounts.title'), apiErrorMessage(e, $t('settings.profile.error')), false);
   } finally {
     generatingToken.value = false;
   }
@@ -698,7 +710,7 @@ async function saveUser(u: NafynUser) {
     editingId.value = null;
     sendToast($t('settings.accounts.title'), $t('settings.profile.saved'));
   } catch (e) {
-    sendToast($t('settings.accounts.title'), (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error'), false);
+    sendToast($t('settings.accounts.title'), apiErrorMessage(e, $t('settings.profile.error')), false);
   } finally {
     savingUser.value = false;
   }
@@ -711,7 +723,7 @@ async function removeUser(u: NafynUser) {
     users.value = users.value.filter((x) => x.id !== u.id);
     editingId.value = null;
   } catch (e) {
-    sendToast($t('settings.accounts.title'), (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error'), false);
+    sendToast($t('settings.accounts.title'), apiErrorMessage(e, $t('settings.profile.error')), false);
   } finally {
     savingUser.value = false;
   }
@@ -729,7 +741,11 @@ interface StorageResponse {
 const storage = ref<StorageResponse | null>(null);
 
 async function loadStoragePanel() {
-  storage.value = await $fetch<StorageResponse>("/api/v1/settings/storage", { headers: { Authorization: token } });
+  try {
+    storage.value = await $fetch<StorageResponse>("/api/v1/settings/storage", { headers: { Authorization: token } });
+  } catch (e) {
+    loadFailed($t('settings.storage.title'), e);
+  }
 }
 
 const usedPercent = computed(() => {
@@ -848,8 +864,12 @@ const deletingAccount = ref(false);
 const deleteAccountPassword = ref("");
 
 async function loadPrivacyPanel() {
-  await syncHistorySetting();
-  if (passkeys.value.length === 0) passkeys.value = await $fetch<PasskeySummary[]>("/api/v1/user/passkeys", { headers: { Authorization: token } });
+  try {
+    await syncHistorySetting();
+    if (passkeys.value.length === 0) passkeys.value = await $fetch<PasskeySummary[]>("/api/v1/user/passkeys", { headers: { Authorization: token } });
+  } catch (e) {
+    loadFailed($t('settings.privacy.title'), e);
+  }
 }
 
 async function toggleHistory() {
@@ -869,7 +889,7 @@ async function toggleHistory() {
   } catch (e) {
     // put the switch back where it was rather than leaving it showing a state the server never accepted
     setHistoryEnabledState(!wanted);
-    sendToast($t('settings.privacy.title'), (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error'), false);
+    sendToast($t('settings.privacy.title'), apiErrorMessage(e, $t('settings.profile.error')), false);
   }
 }
 
@@ -890,7 +910,7 @@ async function exportHistory() {
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   } catch (e) {
-    sendToast($t('settings.privacy.title'), (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error'), false);
+    sendToast($t('settings.privacy.title'), apiErrorMessage(e, $t('settings.profile.error')), false);
   } finally {
     exporting.value = false;
   }
@@ -913,7 +933,7 @@ async function exportAccount() {
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   } catch (e) {
-    sendToast($t('settings.privacy.title'), (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error'), false);
+    sendToast($t('settings.privacy.title'), apiErrorMessage(e, $t('settings.profile.error')), false);
   } finally {
     exportingAccount.value = false;
   }
@@ -937,7 +957,7 @@ async function deleteOwnAccount() {
     tokenCookie.value = null;
     navigateTo("/login");
   } catch (e) {
-    sendToast($t('settings.privacy.title'), (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error'), false);
+    sendToast($t('settings.privacy.title'), apiErrorMessage(e, $t('settings.profile.error')), false);
   } finally {
     deletingAccount.value = false;
   }
@@ -952,7 +972,7 @@ async function deleteHistory() {
     await insights.deleteHistory();
     sendToast($t('settings.privacy.title'), $t('settings.privacy.delete.done'));
   } catch (e) {
-    sendToast($t('settings.privacy.title'), (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error'), false);
+    sendToast($t('settings.privacy.title'), apiErrorMessage(e, $t('settings.profile.error')), false);
   } finally {
     deletingHistory.value = false;
   }
@@ -974,8 +994,12 @@ const sessions = ref<SessionSummary[]>([]);
 const revokingSessionId = ref<string | null>(null);
 
 async function loadSessionsPanel() {
-  await syncUnitySettings();
-  sessions.value = await $fetch<SessionSummary[]>("/api/v1/user/sessions", { headers: { Authorization: token } });
+  try {
+    await syncUnitySettings();
+    sessions.value = await $fetch<SessionSummary[]>("/api/v1/user/sessions", { headers: { Authorization: token } });
+  } catch (e) {
+    loadFailed($t('settings.sessions.title'), e);
+  }
 }
 
 async function toggleUnity(e: Event) {
@@ -997,7 +1021,7 @@ async function revokeSession(id: string) {
     await $fetch(`/api/v1/user/sessions/${id}`, { method: "DELETE", headers: { Authorization: token } });
     sessions.value = sessions.value.filter((s) => s.id !== id);
   } catch (e) {
-    sendToast($t('settings.sessions.title'), (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error'), false);
+    sendToast($t('settings.sessions.title'), apiErrorMessage(e, $t('settings.profile.error')), false);
   } finally {
     revokingSessionId.value = null;
   }
@@ -1030,7 +1054,7 @@ async function addPasskey() {
     sendToast($t('settings.privacy.title'), $t('settings.privacy.passkeys.added'));
   } catch (e) {
     // the browser throws its own Error (e.g. user cancelled) rather than a $fetch error in that case
-    const message = (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error');
+    const message = apiErrorMessage(e, $t('settings.profile.error'));
     sendToast($t('settings.privacy.title'), message, false);
   } finally {
     addingPasskey.value = false;
@@ -1043,7 +1067,7 @@ async function removePasskey(id: string) {
     await $fetch(`/api/v1/user/passkeys/${id}`, { method: "DELETE", headers: { Authorization: token } });
     passkeys.value = passkeys.value.filter((p) => p.id !== id);
   } catch (e) {
-    sendToast($t('settings.privacy.title'), (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error'), false);
+    sendToast($t('settings.privacy.title'), apiErrorMessage(e, $t('settings.profile.error')), false);
   } finally {
     deletingPasskeyId.value = null;
   }
@@ -1078,7 +1102,7 @@ async function toggleSampleData() {
     sendToast($t('settings.developer.title'), wanted ? $t('settings.developer.sampleData.on') : $t('settings.developer.sampleData.off'));
   } catch (e) {
     sampleDataEnabled.value = !wanted;
-    sendToast($t('settings.developer.title'), (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error'), false);
+    sendToast($t('settings.developer.title'), apiErrorMessage(e, $t('settings.profile.error')), false);
   } finally {
     togglingSampleData.value = false;
   }

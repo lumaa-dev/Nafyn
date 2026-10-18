@@ -15,7 +15,7 @@
           <span v-else-if="album.releaseDate" class="value">{{ $t('upcoming.expected', { date: formatPartialDate(album.releaseDate, album.releaseDatePrecision) }) }}</span>
         </div>
         <span class="albumactions">
-          <button filled v-if="album.released" @click="requestMedia(album.id, 'album', album.title)">{{ $t('album.request') }}</button>
+          <button filled v-if="album.released" :disabled="album.requested" @click="requestAlbum">{{ album.requested ? $t('album.alreadyRequested') : $t('album.request') }}</button>
           <button v-else :filled="album.subscribed ? 'hollow' : ''" :disabled="subscriptionPending" @click="toggleSubscription">
             {{ album.subscribed ? $t('upcoming.following') : $t('upcoming.notifyMe') }}
           </button>
@@ -30,7 +30,7 @@
         <span class="number">{{ track.trackNumber }}</span>
         <span class="title">{{ track.title }}</span>
         <ReleaseCountdown v-if="!track.released && track.releaseDate && album.released" compact :date="track.releaseDate" />
-        <button filled="hollow" @click.stop="requestTrack(track)" v-if="track.released && (!track.requested && !track.inLibrary)"><img src="../../assets/icons/download.svg" draggable="false"></button>
+        <button filled="hollow" @click.stop="requestTrack(track)" :disabled="track.requested" v-if="track.released && !track.inLibrary"><img src="../../assets/icons/download.svg" draggable="false"></button>
         <button type="button" class="ellipsis" v-if="track.mediaId" @click.stop="onTrackEllipsis($event, track.mediaId)">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
         </button>
@@ -63,11 +63,14 @@ const { locale } = useI18n();
 const aid = useRoute().params.aid as string;
 const { token } = useAuthToken();
 
-const { data: album } = await useAsyncData<AlbumDetail>(`album-${aid}`, () => {
+// deep: the page flips flags on the loaded album (subscribed, requested) and expects the buttons to follow;
+// Nuxt 4's useAsyncData data is a shallow ref by default, which would swallow those writes
+const { data: album, error } = await useAsyncData<AlbumDetail>(`album-${aid}`, () => {
   return token.value
     ? $fetch(`/api/v1/album/${aid}`, { headers: { Authorization: token.value } })
     : Promise.reject(new Error("Not authenticated"));
-});
+}, { deep: true });
+useLoadErrorToast(error);
 
 const albumMediaIds = computed(() => album.value?.tracks.map((t) => t.mediaId).filter((id): id is string => id !== null) ?? []);
 
@@ -160,39 +163,24 @@ function formatDuration(seconds: number): string {
   return `${minutes}:${rest.toString().padStart(2, "0")}`;
 }
 
-async function requestMedia(musicbrainzId: string, type: "album" | "track", toastTitle: string | null) {
-  if (!token.value) return;
-  try {
-    await $fetch("/api/v1/request", {
-      method: "POST",
-      headers: { Authorization: token.value },
-      body: { id: musicbrainzId, type }
-    })
+const { request } = useMediaRequest();
 
-    sendToast(toastTitle ?? (album.value?.title ?? null), $t(`${type}.requested`))
-  } catch (e) {
-    let err = (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? (e as string) ?? $t('album.error');
-    sendToast(toastTitle ?? (album.value?.title ?? null), err, false)
-  };
+// The button is disabled *before* the request goes out, and only comes back if it failed: a double click
+// used to queue the same album over and over. (It also comes back on the next visit once a manager denied
+// it - the server reports `requested` as false for denied and failed requests.)
+async function requestAlbum() {
+  const current = album.value;
+  if (!current || current.requested) return;
+
+  current.requested = true;
+  if (!await request(current.id, "album", current.title)) current.requested = false;
 }
 
 async function requestTrack(track: TrackInfo) {
-  await requestMedia(track.id, "track", track.title);
-  
-  let i = album.value!.tracks.lastIndexOf(track);
-  if (i > 0) {
-    track.requested = true;
-    album.value!.tracks[i] = track;
-  }
-}
+  if (track.requested) return;
 
-function sendToast(title: string | null, message: string, success: boolean = true) {
-  useToast().sendToast({
-    content: message,
-    tint: success ? "green" : "red",
-    icon: null,
-    title
-  })
+  track.requested = true;
+  if (!await request(track.id, "track", track.title)) track.requested = false;
 }
 </script>
 

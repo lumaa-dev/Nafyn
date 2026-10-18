@@ -2,7 +2,7 @@ import { deleteDevice } from "~~/server/utils/apn";
 
 defineRouteMeta({
     openAPI: {
-        description: "Unregister one of the currently authenticated user's Apple device tokens - that device stops receiving pushes of that kind until the app registers again",
+        description: "Remove one of the currently authenticated user's Apple devices - every token it registered (notifications, Live Activities, Now Playing) is deleted at once, and it receives nothing until the app registers again",
         tags: ["user"],
         operationId: "deleteMyAppleDevice",
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],

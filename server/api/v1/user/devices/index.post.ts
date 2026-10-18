@@ -1,9 +1,9 @@
-import { APN_DEVICE_KINDS, isValidApnToken, listDevices, registerDevice, type ApnDeviceKind } from "~~/server/utils/apn";
+import { APN_DEVICE_KINDS, countDeviceTokens, isValidApnToken, registerDevice, type ApnDeviceKind } from "~~/server/utils/apn";
 import { isNotificationEvent } from "~~/server/entity/Notification";
 
 defineRouteMeta({
     openAPI: {
-        description: "Register (or refresh) an APNs token from the Nafyn iOS app. The token is bound to the login making the request: logging that session out, or revoking it, unregisters it. `alert` is the regular device token; the other kinds are push-to-start tokens for request/release Live Activities and iOS 27 Now Playing remote sessions. Call again on every launch and whenever a token changes",
+        description: "Register (or refresh) an APNs token from the Nafyn iOS app; the response is the device it belongs to (all of that login's tokens are one device). The token is bound to the login making the request: logging that session out, or revoking it, unregisters it. `alert` is the regular device token; the other kinds are push-to-start tokens for request/release Live Activities and iOS 27 Now Playing remote sessions. Call again on every launch and whenever a token changes",
         tags: ["user"],
         operationId: "registerAppleDevice",
         requestBody: {
@@ -58,8 +58,7 @@ export default defineEventHandler(async (event) => {
     }
     const deviceName = typeof body?.deviceName === "string" && body.deviceName.trim() ? body.deviceName.trim().slice(0, 100) : null;
 
-    const existing = await listDevices(userId);
-    if (existing.length >= MAX_DEVICES_PER_USER) {
+    if (await countDeviceTokens(userId) >= MAX_DEVICES_PER_USER) {
         throw createError({ statusCode: 409, statusMessage: `At most ${MAX_DEVICES_PER_USER} device tokens - remove one first` });
     }
 

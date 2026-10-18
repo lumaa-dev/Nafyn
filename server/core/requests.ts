@@ -142,10 +142,15 @@ export async function updateRequestStatus(id: UUID | string, status: RequestStat
     return req;
 }
 
-// true if this user already has a live request for this MusicBrainz ID (failed/denied ones can be retried)
+// true if this user already has a request for this MusicBrainz ID that hasn't reached an end state:
+// waiting for a manager, or being worked on. Completed, failed and denied ones don't count - a completed
+// request whose track was later deleted from the library, a failed download and a denied request must all be
+// requestable again. This is what stops the Request button creating the same request over and over.
 export async function hasActiveRequest(requestedBy: string, musicbrainzId: string): Promise<boolean> {
     const row = await getRequestsDb().prepare(`
-        SELECT 1 FROM requests WHERE requestedBy = ? AND musicbrainzId = ? AND status NOT IN ('failed', 'denied') LIMIT 1
+        SELECT 1 FROM requests
+        WHERE requestedBy = ? AND musicbrainzId = ? AND status IN ('waiting', 'searching', 'downloading', 'processing')
+        LIMIT 1
     `).get(requestedBy, musicbrainzId);
     return row != null;
 }
@@ -153,6 +158,22 @@ export async function hasActiveRequest(requestedBy: string, musicbrainzId: strin
 export async function deleteRequest(id: string): Promise<boolean> {
     const result = await getRequestsDb().prepare(`DELETE FROM requests WHERE id = ?`).run(id);
     return result.changes > 0;
+}
+
+/**
+ * Deletes a request unless the pipeline is working on it. The "not active" condition is part of the DELETE
+ * itself, so a request that a manager accepts a moment before someone else deletes it can't slip through a
+ * check-then-delete gap.
+ */
+export async function deleteRequestIfIdle(id: string): Promise<"deleted" | "active" | "missing"> {
+    const db = getRequestsDb();
+    const result = await db.prepare(
+        `DELETE FROM requests WHERE id = ? AND status NOT IN ('searching', 'downloading', 'processing')`
+    ).run(id);
+    if (result.changes > 0) return "deleted";
+
+    const stillThere = await db.prepare(`SELECT 1 FROM requests WHERE id = ?`).get(id);
+    return stillThere ? "active" : "missing";
 }
 
 // erasure helper (GDPR art. 17). A request row is an operational record of what the instance downloaded,

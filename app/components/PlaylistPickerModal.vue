@@ -33,12 +33,18 @@ watch(() => props.modelValue, async (isOpen) => {
   if (!isOpen) return;
 
   if (props.admin) {
-    playlists.value = await $fetch<PlaylistRow[]>("/api/v1/playlist/all", { headers: { Authorization: token } }).catch(() => []);
+    playlists.value = await $fetch<PlaylistRow[]>("/api/v1/playlist/all", { headers: { Authorization: token } }).catch((e) => {
+      useToast().sendError(null, e, $t('playlist.picker.error'));
+      return [];
+    });
     return;
   }
 
   // paginated (server/utils/pagination.ts); a picker realistically never needs more than one generous page
-  const result = await $fetch<{ items: PlaylistRow[] }>("/api/v1/playlist", { headers: { Authorization: token }, query: { limit: 200 } }).catch(() => ({ items: [] }));
+  const result = await $fetch<{ items: PlaylistRow[] }>("/api/v1/playlist", { headers: { Authorization: token }, query: { limit: 200 } }).catch((e) => {
+    useToast().sendError(null, e, $t('playlist.picker.error'));
+    return { items: [] };
+  });
   playlists.value = result.items;
 });
 
@@ -56,7 +62,7 @@ async function addTo(playlistId: string) {
     useToast().sendToast({ content: $t('playlist.picker.added'), tint: "green", icon: null, title: null });
     close();
   } catch (e) {
-    const err = (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('playlist.picker.error');
+    const err = apiErrorMessage(e, $t('playlist.picker.error'));
     useToast().sendToast({ content: err, tint: "red", icon: null, title: null });
   }
 }

@@ -61,9 +61,10 @@ const contact = config.public.privacyContact as string;
 // `locale` is a ref, so useFetch watches it and refetches when the language changes. The English document
 // is the server's fallback when a locale has no translated file, so adding a language stays "drop in
 // content/<code>/privacy.md".
-const { data: doc } = await useFetch<PrivacyDoc | null>("/api/v1/privacy", {
+const { data: doc, error } = await useFetch<PrivacyDoc | null>("/api/v1/privacy", {
     query: { locale }
 });
+useLoadErrorToast(error);
 
 useHead(() => ({ title: `Nafyn - ${doc.value?.title ?? "Privacy"}` }));
 </script>

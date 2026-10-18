@@ -34,7 +34,7 @@ export function useReleaseSubscription() {
       toast(title, t("upcoming.subscribed"), true);
       return true;
     } catch (e) {
-      const message = (e as { data?: { statusMessage?: string } })?.data?.statusMessage ?? t("upcoming.error");
+      const message = apiErrorMessage(e, t("upcoming.error"));
       toast(title, message, false);
       return subscribed;
     } finally {

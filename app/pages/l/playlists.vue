@@ -86,7 +86,7 @@ async function create() {
     newPrivacy.value = "private";
     await reset();
   } catch (e) {
-    const err = (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error');
+    const err = apiErrorMessage(e, $t('settings.profile.error'));
     useToast().sendToast({ content: err, tint: "red", icon: null, title: null });
   } finally {
     creating.value = false;

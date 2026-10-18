@@ -16,6 +16,18 @@ export interface Toast {
 
 export type ToastID = `${string}-${number}`
 
+/**
+ * The text to show for a failed API call: the server's own message when it sent one (routes use either
+ * `statusMessage` or `message`), otherwise `fallback`. Never an object, never "[object Object]".
+ */
+export function apiErrorMessage(e: unknown, fallback?: string): string {
+  const err = e as { data?: { statusMessage?: unknown, message?: unknown }, statusMessage?: unknown } | null | undefined;
+  for (const candidate of [err?.data?.statusMessage, err?.data?.message, err?.statusMessage]) {
+    if (typeof candidate === "string" && candidate.trim()) return candidate;
+  }
+  return fallback ?? $t('common.error');
+}
+
 export const useToast = () => {
   const state = useState<ToastState>("toasts", () => ({
     toasts: [],
@@ -60,10 +72,16 @@ export const useToast = () => {
     return removedToast!;
   }
 
+  /** Shows a failed API call as a red toast. This is how every page reports an error - see CLAUDE.md. */
+  function sendError(title: string | null, e: unknown, fallback?: string) {
+    sendToast({ title, content: apiErrorMessage(e, fallback), tint: "red", icon: null });
+  }
+
   return {
     state,
     toastDuration: TOAST_DURATION,
     sendToast,
+    sendError,
     removeToast,
     errorToast: (title: string, content: string): Omit<Toast, "id" | "timeout"> => {
       return {

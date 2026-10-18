@@ -228,7 +228,11 @@ async function loadYearly(year?: number) {
 
 async function selectYear(year: number) {
   if (year === selectedYear.value) return;
-  await loadYearly(year);
+  try {
+    await loadYearly(year);
+  } catch (e) {
+    useToast().sendError($t('insights.title'), e);
+  }
 }
 
 async function shareMonth() {
@@ -253,6 +257,8 @@ async function shareMonth() {
       })),
       footer: "Nafyn"
     }, `nafyn-${monthly.value.month}.png`);
+  } catch (e) {
+    useToast().sendError($t('insights.title'), e);
   } finally {
     sharing.value = false;
   }
@@ -260,9 +266,13 @@ async function shareMonth() {
 
 // panels load on first visit only, so switching tabs back and forth doesn't refetch
 watch(activeTab, async (tab) => {
-  if (tab === "weekly" && !weekly.value) await loadWeekly();
-  if (tab === "monthly" && !monthly.value) await loadMonthly();
-  if (tab === "yearly" && !yearly.value) await loadYearly();
+  try {
+    if (tab === "weekly" && !weekly.value) await loadWeekly();
+    if (tab === "monthly" && !monthly.value) await loadMonthly();
+    if (tab === "yearly" && !yearly.value) await loadYearly();
+  } catch (e) {
+    useToast().sendError($t('insights.title'), e);
+  }
 });
 
 // --- live updates ---
@@ -305,8 +315,12 @@ let unsubscribe: (() => void) | null = null;
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 
 onMounted(async () => {
-  const enabled = await syncHistorySetting();
-  if (enabled) await loadWeekly();
+  try {
+    const enabled = await syncHistorySetting();
+    if (enabled) await loadWeekly();
+  } catch (e) {
+    useToast().sendError($t('insights.title'), e);
+  }
 
   unsubscribe = onInsightsUpdated(() => { void refreshActive(); });
   document.addEventListener("visibilitychange", onVisibilityChange);

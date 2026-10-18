@@ -200,7 +200,7 @@ async function save() {
     emit("saved", updated);
     open.value = false;
   } catch (e) {
-    const message = (e as { data?: { statusMessage?: string } })?.data?.statusMessage ?? $t('edit.error');
+    const message = apiErrorMessage(e, $t('edit.error'));
     sendToast({ title: null, content: message, icon: null, tint: "red" });
   } finally {
     saving.value = false;

@@ -3,7 +3,8 @@
     "search": "Rechercher...",
     "unknownAlbum": "Album inconnu",
     "loadingMore": "Chargement...",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "error": "Une erreur est survenue"
   },
   "sidebar": {
     "library": "Librairie",
@@ -33,7 +34,8 @@
       "subtitle": "Créez votre compte Nafyn",
       "orPrefix": "ou",
       "loginLink": "connectez-vous à votre compte",
-      "submit": "Créer un compte"
+      "submit": "Créer un compte",
+      "error": "Impossible de créer votre compte"
     },
     "privacyPrefix": "En créant un compte, vous acceptez que cette instance enregistre les données décrites dans sa",
     "privacyLink": "politique de confidentialité",
@@ -42,7 +44,8 @@
   "library": {
     "tracks": {
       "title": "Titres",
-      "empty": "Aucun titre dans votre bibliothèque pour l'instant."
+      "empty": "Aucun titre dans votre bibliothèque pour l'instant.",
+      "add": "Ajouter un titre depuis un fichier"
     },
     "all": {
       "title": "Bibliothèque de tous",
@@ -65,14 +68,17 @@
     "trackList": "Liste des titres",
     "request": "Demander",
     "requested": "Demandé",
-    "viewInMusicbrainz": "Voir dans MusicBrainz"
+    "viewInMusicbrainz": "Voir dans MusicBrainz",
+    "alreadyRequested": "Demandé"
   },
   "track": {
     "request": "Demander",
     "requested": "Demandé",
     "viewInMusicbrainz": "Voir dans MusicBrainz",
     "delete": "Supprimer la piste",
-    "viewDetails": "Voir les détails"
+    "viewDetails": "Voir les détails",
+    "alreadyRequested": "Demandé",
+    "deleteError": "Impossible de supprimer le titre"
   },
   "artist": {
     "discography": "Discographie",
@@ -105,7 +111,15 @@
     "progress": {
       "eta": "{time} restant",
       "track": "Titre {index} sur {count}"
-    }
+    },
+    "accept": "Accepter",
+    "deny": "Refuser",
+    "delete": "Supprimer",
+    "deleteConfirm": "Supprimer cette demande ? Cette action est irréversible.",
+    "deleteBusy": "Cette demande est en cours de traitement et ne peut pas être supprimée.",
+    "accepted": "Demande acceptée",
+    "denied": "Demande refusée",
+    "deleted": "Demande supprimée"
   },
   "settings": {
     "title": "Paramètres",
@@ -305,18 +319,13 @@
       },
       "devices": {
         "title": "Appareils Apple",
-        "intro": "Appareils enregistrés par l'app Nafyn sur iPhone et iPad. Se déconnecter de l'app, ou révoquer sa session, les supprime aussi.",
+        "intro": "Appareils Apple où l'app Nafyn est connectée. Supprimer un appareil coupe toutes ses notifications, Activités en direct et commandes « À l'écoute » ; se déconnecter de l'app, ou révoquer sa session, fait de même.",
         "unnamed": "Appareil sans nom",
-        "kinds": {
-          "alert": "Notifications",
-          "la-start-request": "Activités en direct des demandes",
-          "la-start-release": "Comptes à rebours de sortie",
-          "nowplaying-start": "Contrôle à distance (À l'écoute)"
-        },
         "sandbox": "Version de développement",
         "lastSeen": "Vu le {date}",
         "remove": "Supprimer",
-        "empty": "Aucun appareil Apple n'est encore enregistré pour les notifications."
+        "empty": "Aucun appareil Apple n'est encore enregistré pour les notifications.",
+        "thisDevice": "Cet appareil"
       },
       "releases": {
         "title": "Sorties suivies",

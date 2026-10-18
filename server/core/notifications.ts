@@ -78,7 +78,7 @@ const REQUEST_COPY: Record<Extract<NotificationEvent, `request.${string}`>, { ti
     "request.failed": { title: "Download failed", body: (c) => `${c.title} by ${c.artist} could not be downloaded`, key: "REQUEST_FAILED" }
 };
 
-async function dispatchRequestEvent(event: keyof typeof REQUEST_COPY, ctx: RequestContext, options: { actorId?: string | null, includeRequester: boolean, detail?: string | null }): Promise<void> {
+async function dispatchRequestEvent(event: keyof typeof REQUEST_COPY, ctx: RequestContext, options: { actorId?: string | null, includeRequester: boolean, detail?: string | null, skipPush?: boolean }): Promise<void> {
     const copy = REQUEST_COPY[event];
     const body = options.detail ? `${copy.body(ctx)} (${options.detail})` : copy.body(ctx);
 
@@ -121,7 +121,7 @@ async function dispatchRequestEvent(event: keyof typeof REQUEST_COPY, ctx: Reque
     };
 
     await Promise.allSettled([
-        sendNotificationToUsers(userIds, event, alert),
+        options.skipPush ? Promise.resolve() : sendNotificationToUsers(userIds, event, alert),
         sendWebhookToUsers(userIds, message),
         sendGlobalWebhook(message)
     ]);
@@ -131,12 +131,18 @@ function liveActivityAttributes(ctx: RequestContext) {
     return { requestId: ctx.requestId, type: ctx.type, title: ctx.title, artistName: ctx.artist, coverArt: ctx.coverArt };
 }
 
-/** A request was just created. Auto-accepted ones also start the requester's Live Activity right away. */
+/**
+ * A request was just created. Auto-accepted ones also start the requester's Live Activity right away.
+ *
+ * "New request" exists to tell the people who manage requests there is something for them to decide. An
+ * auto-accepted request has nothing to decide - it is already downloading - so it sends managers no push.
+ * Webhooks still carry it (flagged "auto-accepted"): they double as an activity feed for the instance.
+ */
 export function notifyRequestCreated(request: NafynRequest, autoAccepted: boolean): void {
     fireAndForget("request.created", async () => {
         const ctx = await requestContext(request);
         await Promise.allSettled([
-            dispatchRequestEvent("request.created", ctx, { includeRequester: false, detail: autoAccepted ? "auto-accepted" : null }),
+            dispatchRequestEvent("request.created", ctx, { includeRequester: false, detail: autoAccepted ? "auto-accepted" : null, skipPush: autoAccepted }),
             autoAccepted && ctx.requesterId ? startRequestActivity(ctx.requesterId, liveActivityAttributes(ctx)) : Promise.resolve()
         ]);
     });

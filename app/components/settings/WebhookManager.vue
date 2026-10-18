@@ -73,7 +73,7 @@ function headers() {
 }
 
 function errorMessage(e: unknown): string {
-  return (e as { data?: { statusMessage?: string } })?.data?.statusMessage ?? t('settings.profile.error');
+  return apiErrorMessage(e, t('settings.profile.error'));
 }
 
 function toast(content: string, success: boolean = true) {

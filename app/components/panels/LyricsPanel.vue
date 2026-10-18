@@ -168,9 +168,11 @@ async function loadLyrics(id: string | null) {
     const res = await $fetch<LyricsResponse>(`/api/v1/library/${id}/lyrics`, { headers: { Authorization: token }, timeout: 120_000 });
     if (seq !== requestSeq) return;
     paragraphs.value = res.paragraphs;
-  } catch {
+  } catch (e) {
     if (seq !== requestSeq) return;
     paragraphs.value = null;
+    // a 404 is the normal "no lyrics for this track"; anything else (rate limit, provider down, timeout) is a failure worth saying
+    if ((e as { statusCode?: number })?.statusCode !== 404) useToast().sendError(null, e);
   } finally {
     if (seq === requestSeq) loading.value = false;
   }

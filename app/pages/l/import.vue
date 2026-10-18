@@ -126,7 +126,7 @@ async function submit() {
     sendToast({ title: media.title, content: $t('import.done'), icon: null, tint: "green" });
     await navigateTo(`/l/t/${media.id}`);
   } catch (e) {
-    const message = (e as { data?: { statusMessage?: string } })?.data?.statusMessage ?? $t('import.error');
+    const message = apiErrorMessage(e, $t('import.error'));
     sendToast({ title: null, content: message, icon: null, tint: "red" });
   } finally {
     importing.value = false;

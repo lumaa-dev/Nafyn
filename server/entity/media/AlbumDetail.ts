@@ -19,6 +19,8 @@ export interface AlbumDetail {
     released: boolean,
     // whether the caller follows this upcoming album for a release notification
     subscribed: boolean,
+    // whether the caller already has a waiting/in-progress request for this album
+    requested: boolean,
     description: string | null,
     label: string | null,
     tracks: TrackInfo[]

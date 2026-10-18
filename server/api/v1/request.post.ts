@@ -1,6 +1,6 @@
 import type { UUID } from "crypto";
 import { processDownloadRequest } from "~~/server/core/downloads";
-import { createRequest } from "~~/server/core/requests";
+import { createRequest, hasActiveRequest } from "~~/server/core/requests";
 import { getPermissionsById } from "~~/server/core/users";
 import { hasPermission, Permission } from "~~/server/entity/Permission";
 import { NafynRequest } from "~~/server/entity/NafynRequest";
@@ -61,6 +61,14 @@ defineRouteMeta({
                         schema: { $ref: "#/components/schemas/NuxtError" }
                     }
                 }
+            },
+            "409": {
+                description: "The caller already has a request for this that is waiting or being processed",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NuxtError" }
+                    }
+                }
             }
         },
         $global: {
@@ -99,6 +107,11 @@ defineRouteMeta({
 // per-account ceiling keeps one account from queueing thousands of them
 const MAX_REQUESTS = 30;
 const REQUEST_WINDOW_MS = 10 * 60 * 1000;
+
+// requests currently being created, keyed by user + MusicBrainz ID. The "already requested" check below reads
+// the database, so two clicks landing in the same instant would both pass it before either row exists;
+// this closes that gap within the (single) server process.
+const inFlight = new Set<string>();
 
 export default defineEventHandler(async (event) => {
     const { sub: userId } = await requireAuthToken(event);
@@ -139,7 +152,21 @@ export default defineEventHandler(async (event) => {
 
     let autoAccept: boolean = hasPermission(permcount, type == "album" ? Permission.AUTOACCEPT_ALBUMS : Permission.AUTOACCEPT_TRACKS);
 
-    let newRequest: NafynRequest = await createRequest(mbId as UUID, type, userId as UUID, autoAccept ? "searching" : "waiting");
+    // one live request per user and item: the button on the album/track page disables itself, but that is a
+    // courtesy - a second tab, a script or a double click must not queue the same download again
+    const flightKey = `${userId}:${mbId}`;
+    if (inFlight.has(flightKey) || await hasActiveRequest(userId, mbId)) {
+        throw createError({ statusCode: 409, message: "You already requested this" });
+    }
+
+    inFlight.add(flightKey);
+    let newRequest: NafynRequest;
+    try {
+        newRequest = await createRequest(mbId as UUID, type, userId as UUID, autoAccept ? "searching" : "waiting");
+    } finally {
+        inFlight.delete(flightKey);
+    }
+
     notifyRequestCreated(newRequest, autoAccept);
     if (autoAccept) {
         processDownloadRequest(newRequest);

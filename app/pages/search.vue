@@ -56,7 +56,7 @@ const route = useRoute();
 const { token } = useAuthToken();
 
 // re-runs whenever `?q=` changes, so searching again while already on this page updates the results without a full page reload (which would kill audio playback)
-const { data: results } = await useAsyncData<SearchResponse>("search", () => {
+const { data: results, error: searchError } = await useAsyncData<SearchResponse>("search", () => {
   const q = route.query.q;
   // an ISRC, platform ID or link means nothing to MusicBrainz' text search - the metadata lookup below
   // resolves those to a MusicBrainz recording itself
@@ -64,6 +64,7 @@ const { data: results } = await useAsyncData<SearchResponse>("search", () => {
     ? $fetch("/api/v1/search", { headers: { Authorization: token.value }, query: { q } })
     : Promise.resolve({ albums: [], tracks: [], artists: [] });
 }, { default: () => {}, watch: [() => route.query.q] });
+useLoadErrorToast(searchError);
 
 // other services (Deezer, iTunes, ...) are slower and optional, so they load client-side after the
 // MusicBrainz results rather than holding the page up
@@ -92,18 +93,15 @@ async function openMetadata(meta: SongMetadata) {
   try {
     const resolved = await $fetch<{ kind: "track" | "album", musicbrainzId: string }>("/api/v1/metadata/resolve", { headers: { Authorization: token.value }, query: { ref: meta.ref } });
     navigateTo(resolved.kind === "album" ? `/a/${resolved.musicbrainzId}` : `/t/${resolved.musicbrainzId}`);
-  } catch {
+  } catch (e) {
     // no MusicBrainz match - fall back to the provider's own page when it has one
     if (meta.url) window.open(meta.url, "_blank", "noopener,noreferrer");
-    else sendToast(meta.title, $t('search.notFound'), false);
+    else useToast().sendError(meta.title, e, $t('search.notFound'));
   } finally {
     resolving.value.delete(meta.ref);
   }
 }
 
-function sendToast(title: string | null, message: string, success: boolean = true) {
-  useToast().sendToast({ content: message, tint: success ? "green" : "red", icon: null, title });
-}
 </script>
 
 <style>

@@ -1,6 +1,11 @@
 <template>
   <div class="libtracks">
-    <h1>{{ $t('library.tracks.title') }}</h1>
+    <div class="title-row">
+      <h1>{{ $t('library.tracks.title') }}</h1>
+      <NuxtLink to="/l/import" class="add-track" :aria-label="$t('library.tracks.add')" :title="$t('library.tracks.add')">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
+      </NuxtLink>
+    </div>
     <ol class="tracks" v-if="tracks.length > 0">
       <li v-for="track in tracks" :key="track.id" :class="{ playing: currentTrack?.id === track.id }" @click="play(track, tracks, { type: 'track', refId: track.id })" @contextmenu.prevent="onContextMenu($event, track)">
         <img :src="coverSrc(track)" @error="($event.target as HTMLImageElement).src = noCover" loading="lazy" draggable="false" />
@@ -46,7 +51,7 @@ const { items: tracks, initialLoading, loadingMore, sentinel, loadMore, reset } 
 await loadMore();
 
 const { currentTrack, play } = useUnity();
-const { errorToast, sendToast } = useToast();
+const { sendError } = useToast();
 
 const showPicker = ref(false);
 const pickerMediaIds = ref<string[]>([]);
@@ -101,13 +106,14 @@ function onEllipsis(e: MouseEvent, track: MediaRow) {
 async function deleteTrack(track: MediaRow) {
   if (!token.value) return;
 
-  var hasError: string | null = null
-  const result = await $fetch(`/api/v1/library/${track.id}`, {
-    headers: { Authorization: token.value },
-    method: "DELETE",
-  }).catch(r => hasError = r)
-
-  if (!result || hasError) { return sendToast(errorToast("Track", "Failed to delete")) }
+  try {
+    await $fetch(`/api/v1/library/${track.id}`, {
+      headers: { Authorization: token.value },
+      method: "DELETE",
+    });
+  } catch (e) {
+    return sendError(track.title, e, $t('track.deleteError'));
+  }
 
   return reset();
 }
@@ -118,6 +124,31 @@ async function deleteTrack(track: MediaRow) {
   width: 70vw;
   max-width: 1200px;
   margin: calc(15vh - 10px) auto;
+}
+
+/* a div, not a <header>: Header.vue's unscoped bare `header {}` rule would turn it into a second fixed bar */
+.libtracks .title-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.libtracks .add-track {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #ffffffae;
+  border-radius: 50%;
+  color: #ffffffae;
+  text-decoration: none;
+  transition: background 0.2s ease-out, color 0.2s ease-out;
+}
+
+.libtracks .add-track:hover {
+  background: #ffffffae;
+  color: #000;
 }
 
 .libtracks .empty {

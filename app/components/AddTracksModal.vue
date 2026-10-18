@@ -36,7 +36,10 @@ const availableTracks = computed(() => {
 watch(() => props.modelValue, async (isOpen) => {
   if (!isOpen) return;
   addedIds.value = new Set();
-  const res = await $fetch<{ items: MediaRow[] }>("/api/v1/library/tracks", { headers: { Authorization: token }, query: { limit: 200 } }).catch(() => ({ items: [] }));
+  const res = await $fetch<{ items: MediaRow[] }>("/api/v1/library/tracks", { headers: { Authorization: token }, query: { limit: 200 } }).catch((e) => {
+    useToast().sendError(null, e, $t('playlist.addTracks.error'));
+    return { items: [] };
+  });
   libraryTracks.value = res.items;
 });
 
@@ -51,7 +54,7 @@ async function addTrack(mediaId: string) {
     useToast().sendToast({ content: $t('playlist.addTracks.added'), tint: "green", icon: null, title: null });
     emit("added");
   } catch (e) {
-    const err = (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('playlist.addTracks.error');
+    const err = apiErrorMessage(e, $t('playlist.addTracks.error'));
     useToast().sendToast({ content: err, tint: "red", icon: null, title: null });
   }
 }

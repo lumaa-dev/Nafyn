@@ -55,7 +55,7 @@ const { items: tracks, initialLoading, loadingMore, sentinel, loadMore, reset } 
 });
 await loadMore();
 
-const { errorToast, sendToast } = useToast();
+const { sendError } = useToast();
 
 const showPicker = ref(false);
 const pickerMediaIds = ref<string[]>([]);
@@ -97,13 +97,14 @@ function onEllipsis(e: MouseEvent, track: AllMediaRow) {
 async function deleteTrack(track: AllMediaRow, ownerId: string) {
   if (!token.value) return;
 
-  let hasError: string | null = null
-  const result = await $fetch(`/api/v1/library/${track.id}/${ownerId}`, {
-    headers: { Authorization: token.value },
-    method: "DELETE",
-  }).catch(r => hasError = r)
-
-  if (!result || hasError) { return sendToast(errorToast("Track", "Failed to delete")) }
+  try {
+    await $fetch(`/api/v1/library/${track.id}/${ownerId}`, {
+      headers: { Authorization: token.value },
+      method: "DELETE",
+    });
+  } catch (e) {
+    return sendError(track.title, e, $t('track.deleteError'));
+  }
 
   return reset();
 }

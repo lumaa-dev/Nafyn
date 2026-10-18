@@ -2,7 +2,7 @@
   <div class="requests">
     <h1>{{ $t('requests.title') }}</h1>
     <div class="reqs" v-if="requests.length > 0">
-      <RequestRow v-for="req in requests" :key="req.id" :request="req" :is-compact="false" />
+      <RequestRow v-for="req in requests" :key="req.id" :request="req" :is-compact="false" @deleted="onDeleted" />
     </div>
     <div class="err" v-else-if="!initialLoading">
       <p>{{ $t('requests.empty') }}</p>
@@ -25,6 +25,13 @@ const { items: requests, initialLoading, loadingMore, sentinel, loadMore } = use
     : Promise.resolve({ items: [], page, limit, total: 0, hasMore: false });
 });
 await loadMore();
+
+// the accept/deny/delete buttons depend on what the viewer may do; load that before the rows render
+await useCurrentUser().ensureLoaded();
+
+function onDeleted(id: string) {
+  requests.value = requests.value.filter((r) => r.id !== id);
+}
 </script>
 
 <style>

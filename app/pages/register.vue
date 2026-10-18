@@ -29,20 +29,23 @@ if (!allowed.value) {
 const username = ref("");
 const password = ref("");
 
-const hasError: globalThis.Ref<string | null, string | null> = ref(null);
-
 interface RegisterResponse {
   user: NafynUser,
   token: string
 }
 
 async function register() {
-  const result: RegisterResponse = await $fetch("/api/v1/auth/register", {
-    method: "POST",
-    body: { username: username.value, password: password.value, token: registerToken }
-  }).catch(r => hasError.value = r)
-
-  if (!result || hasError.value) return hasError.value = $t("auth.register.error");;
+  let result: RegisterResponse;
+  try {
+    result = await $fetch<RegisterResponse>("/api/v1/auth/register", {
+      method: "POST",
+      body: { username: username.value, password: password.value, token: registerToken }
+    });
+  } catch (e) {
+    // username taken, password too weak, registration closed, rate limited... the server says which
+    useToast().sendError($t("auth.register.title"), e, $t("auth.register.error"));
+    return;
+  }
 
   // see login.vue: explicit maxAge so iOS Safari doesn't drop this as a session cookie before the JWT expires
   // `secure` over https so the token never rides a plain-http request; `sameSite: "lax"` keeps it off

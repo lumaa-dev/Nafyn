@@ -15,7 +15,7 @@
           <ReleaseCountdown v-if="track.releaseDate && track.releaseDatePrecision === 'day'" class="value" :date="track.releaseDate" @released="refreshNuxtData(`track-${tid}`)" />
           <span v-else-if="track.releaseDate" class="value">{{ $t('upcoming.expected', { date: formatPartialDate(track.releaseDate, track.releaseDatePrecision) }) }}</span>
         </div>
-        <button filled @click="requestMedia(track.id, 'track', track.title)" v-if="track.released && !track.inLibrary">{{ $t('track.request') }}</button>
+        <button filled :disabled="track.requested" @click="requestTrack" v-if="track.released && !track.inLibrary">{{ track.requested ? $t('track.alreadyRequested') : $t('track.request') }}</button>
         <button v-else-if="!track.released" :filled="track.subscribed ? 'hollow' : ''" :disabled="subscriptionPending" @click="toggleSubscription">
           {{ track.subscribed ? $t('upcoming.following') : $t('upcoming.notifyMe') }}
         </button>
@@ -41,18 +41,21 @@ type TrackDetail = MediaInfo & {
   albumMbid: string | null,
   releaseDatePrecision: "day" | "month" | "year" | null,
   released: boolean,
-  subscribed: boolean
+  subscribed: boolean,
+  requested: boolean
 };
 
 const { locale } = useI18n();
 const tid = useRoute().params.tid as string;
 const { token } = useAuthToken();
 
-const { data: track } = await useAsyncData<TrackDetail>(`track-${tid}`, () => {
+// deep: see the matching note in a/[aid].vue
+const { data: track, error } = await useAsyncData<TrackDetail>(`track-${tid}`, () => {
   return token.value
     ? $fetch(`/api/v1/track/${tid}`, { headers: { Authorization: token.value } })
     : Promise.reject(new Error("Not authenticated"));
-});
+}, { deep: true });
+useLoadErrorToast(error);
 
 function formatDate(date: string | Date): string {
   return new Date(date).toLocaleDateString(locale.value, { year: "numeric", month: "long", day: "numeric" });
@@ -79,30 +82,15 @@ function formatDuration(seconds: number): string {
   return `${minutes}:${rest.toString().padStart(2, "0")}`;
 }
 
-async function requestMedia(musicbrainzId: string, type: "album" | "track", toastTitle: string | null) {
-  if (!token.value) return;
+const { request } = useMediaRequest();
 
-  try {
-    await $fetch("/api/v1/request", {
-      method: "POST",
-      headers: { Authorization: token.value },
-      body: { id: musicbrainzId, type }
-    });
+// disabled before the request goes out, re-enabled only if it failed (see a/[aid].vue)
+async function requestTrack() {
+  const current = track.value;
+  if (!current || current.requested) return;
 
-    sendToast(toastTitle ?? (track.value?.title ?? null), $t(`${type}.requested`))
-  } catch (e) {
-    let err = (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? (e as string) ?? $t('album.error');
-    sendToast(toastTitle ?? (track.value?.title ?? null), err, false)
-  }
-}
-
-function sendToast(title: string | null, message: string, success: boolean = true) {
-  useToast().sendToast({
-    content: message,
-    tint: success ? "green" : "red",
-    icon: null,
-    title
-  })
+  current.requested = true;
+  if (!await request(current.id, "track", current.title)) current.requested = false;
 }
 </script>
 

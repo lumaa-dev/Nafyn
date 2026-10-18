@@ -55,6 +55,8 @@ export async function indexExists(conn: PoolConnection, table: string, index: st
     return (rows as unknown[]).length > 0;
 }
 
+const ADMIN_HIGHEST_BIT_MIGRATION = "2026-10-18-admin-highest-permission-bit";
+
 // append-only; see the rules at the top of this file
 const MIGRATIONS: Migration[] = [
     {
@@ -347,6 +349,34 @@ const MIGRATIONS: Migration[] = [
                     INDEX idx_release_sub_due (notifiedAt, releaseAt)
                 )
             `);
+        }
+    },
+    {
+        // ADMIN is meant to be the highest permission bit, but MANAGE_WEBHOOKS was added above it (512). The two
+        // trade places: 256 becomes MANAGE_WEBHOOKS and 512 becomes ADMIN, so every stored ADMIN (256) has to
+        // become 512, and the other way round for anyone already given MANAGE_WEBHOOKS.
+        //
+        // A swap is its own inverse, so unlike every other migration this one is NOT safe to run twice - it
+        // would hand every admin MANAGE_WEBHOOKS and nothing else. The schema_migrations row is therefore
+        // written inside the same transaction as the UPDATE, so either both happen or neither does.
+        id: ADMIN_HIGHEST_BIT_MIGRATION,
+        up: async (conn) => {
+            await conn.beginTransaction();
+            try {
+                await conn.query(`
+                    UPDATE users
+                    SET permissions = permissions - (permissions & 768) + IF(permissions & 256, 512, 0) + IF(permissions & 512, 256, 0)
+                    WHERE (permissions & 768) <> 0
+                `);
+                await conn.execute(
+                    `INSERT INTO schema_migrations (id, applied_at) VALUES (?, ?) ON DUPLICATE KEY UPDATE applied_at = applied_at`,
+                    [ADMIN_HIGHEST_BIT_MIGRATION, Date.now()]
+                );
+                await conn.commit();
+            } catch (error) {
+                await conn.rollback().catch(() => {});
+                throw error;
+            }
         }
     }
 ];

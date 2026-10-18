@@ -3,7 +3,8 @@
     "search": "Search...",
     "unknownAlbum": "Unknown Album",
     "loadingMore": "Loading more...",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "error": "Something went wrong"
   },
   "sidebar": {
     "library": "Library",
@@ -33,7 +34,8 @@
       "subtitle": "Create your own Nafyn account",
       "orPrefix": "or",
       "loginLink": "log in your account",
-      "submit": "Create account"
+      "submit": "Create account",
+      "error": "Couldn't create your account"
     },
     "privacyPrefix": "By creating an account you accept that this instance stores the data described in its",
     "privacyLink": "privacy notice",
@@ -42,7 +44,8 @@
   "library": {
     "tracks": {
       "title": "Tracks",
-      "empty": "No tracks in your library yet."
+      "empty": "No tracks in your library yet.",
+      "add": "Add a track from a file"
     },
     "all": {
       "title": "Everyone's Library",
@@ -65,14 +68,17 @@
     "trackList": "Track list",
     "request": "Request",
     "requested": "Requested successfully",
-    "viewInMusicbrainz": "View in MusicBrainz"
+    "viewInMusicbrainz": "View in MusicBrainz",
+    "alreadyRequested": "Requested"
   },
   "track": {
     "request": "Request",
     "requested": "Requested successfully",
     "viewInMusicbrainz": "View in MusicBrainz",
     "delete": "Delete track",
-    "viewDetails": "View details"
+    "viewDetails": "View details",
+    "alreadyRequested": "Requested",
+    "deleteError": "Failed to delete the track"
   },
   "artist": {
     "discography": "Discography",
@@ -105,7 +111,15 @@
     "progress": {
       "eta": "{time} left",
       "track": "Track {index} of {count}"
-    }
+    },
+    "accept": "Accept",
+    "deny": "Deny",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this request? This can't be undone.",
+    "deleteBusy": "This request is being processed and can't be deleted.",
+    "accepted": "Request accepted",
+    "denied": "Request denied",
+    "deleted": "Request deleted"
   },
   "settings": {
     "title": "Settings",
@@ -305,18 +319,13 @@
       },
       "devices": {
         "title": "Apple devices",
-        "intro": "Devices registered by the Nafyn app on iPhone and iPad. Signing out of the app, or revoking its session, removes them too.",
+        "intro": "Apple devices where the Nafyn app is signed in. Removing a device stops all of its notifications, Live Activities and Now Playing controls; signing out of the app, or revoking its session, does the same.",
         "unnamed": "Unnamed device",
-        "kinds": {
-          "alert": "Notifications",
-          "la-start-request": "Request Live Activities",
-          "la-start-release": "Release countdowns",
-          "nowplaying-start": "Now Playing remote control"
-        },
         "sandbox": "Development build",
         "lastSeen": "Last seen {date}",
         "remove": "Remove",
-        "empty": "No Apple device has registered for notifications yet."
+        "empty": "No Apple device has registered for notifications yet.",
+        "thisDevice": "This device"
       },
       "releases": {
         "title": "Followed releases",

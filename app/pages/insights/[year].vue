@@ -151,8 +151,9 @@ async function requestVideo() {
     if (reel.value) reel.value.reelStatus = result.reelStatus as HighlightReel["reelStatus"];
     // the render runs on the scheduler, so the page polls rather than waits
     pollReel();
-  } catch {
-    // the button re-enables; the reel section already shows whatever status the server last reported
+  } catch (e) {
+    // the button re-enables, and the person is told why it didn't start
+    useToast().sendError($t('insights.title'), e);
   } finally {
     requestingVideo.value = false;
   }
@@ -198,6 +199,8 @@ async function shareYear() {
       list: yearly.value.top.artist.slice(0, 5).map((a) => ({ rank: a.rank, title: a.title ?? "?", subtitle: null })),
       footer: "Nafyn"
     }, `nafyn-${year}.png`);
+  } catch (e) {
+    useToast().sendError($t('insights.title'), e);
   } finally {
     sharing.value = false;
   }
@@ -249,15 +252,20 @@ let statsUnsubscribe: (() => void) | null = null;
 let statsPollTimer: ReturnType<typeof setInterval> | null = null;
 
 onMounted(async () => {
-  yearly.value = await insights.yearly(year);
+  try {
+    yearly.value = await insights.yearly(year);
 
-  // the reel manifest only exists once the year has been snapshotted, so a 404 here is an ordinary state
-  reel.value = await insights.reel(year).catch(() => null);
-  if (reelStatus.value === "queued" || reelStatus.value === "rendering") pollReel();
+    // the reel manifest only exists once the year has been snapshotted, so a 404 here is an ordinary state
+    reel.value = await insights.reel(year).catch(() => null);
+    if (reelStatus.value === "queued" || reelStatus.value === "rendering") pollReel();
 
-  comparison.value = await insights.compare().catch(() => []);
+    comparison.value = await insights.compare().catch(() => []);
 
-  await Promise.all(entityTypes.map((type) => loadMore(type)));
+    await Promise.all(entityTypes.map((type) => loadMore(type)));
+  } catch (e) {
+    // still go on to register the live updates below: a later refresh may well succeed
+    useToast().sendError($t('insights.title'), e);
+  }
 
   statsUnsubscribe = onInsightsUpdated(() => { void refreshStats(); });
   document.addEventListener("visibilitychange", onStatsVisibility);

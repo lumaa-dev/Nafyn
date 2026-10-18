@@ -18,11 +18,12 @@ defineProps<{ variant: "grid" | "scroll" }>();
 
 const token = useAuthToken().token.value;
 
-const { data: recentlyPlayed } = await useAsyncData<RecentlyPlayedEntry[]>("recently-played", () => {
+const { data: recentlyPlayed, error } = await useAsyncData<RecentlyPlayedEntry[]>("recently-played", () => {
   return token
     ? $fetch("/api/v1/library/recently-played", { headers: { Authorization: token } })
     : Promise.resolve([]);
 }, { default: () => [] });
+useLoadErrorToast(error);
 
 function entryCover(item: RecentlyPlayedEntry): string {
   if (item.type === "playlist") {

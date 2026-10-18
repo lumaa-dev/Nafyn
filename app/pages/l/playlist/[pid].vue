@@ -188,9 +188,12 @@ interface PlaylistEntry {
   media: MediaRow;
 }
 
-const { data: detail, refresh } = await useAsyncData<(PlaylistDetail & { entriesTotal: number; entriesHasMore: boolean }) | null>(`playlist-${pid}`, () => {
-  return $fetch(`/api/v1/playlist/${pid}`, { headers: token ? { Authorization: token } : {} }).catch(() => null);
+// a playlist that can't be loaded (gone, or private and not yours) leaves `detail` null and the page empty;
+// the error is what tells the person why
+const { data: detail, refresh, error } = await useAsyncData<(PlaylistDetail & { entriesTotal: number; entriesHasMore: boolean }) | null>(`playlist-${pid}`, () => {
+  return $fetch(`/api/v1/playlist/${pid}`, { headers: token ? { Authorization: token } : {} });
 });
+useLoadErrorToast(error);
 
 const viewer = computed(() => detail.value?.viewer ?? { userId: null, isOwner: false, isMember: false });
 
@@ -484,8 +487,7 @@ async function deletePlaylist() {
 }
 
 function sendError(e: unknown) {
-  const err = (e as { data?: { statusMessage?: string; }; })?.data?.statusMessage ?? $t('settings.profile.error');
-  useToast().sendToast({ content: err, tint: "red", icon: null, title: null });
+  useToast().sendError(null, e, $t('settings.profile.error'));
 }
 </script>
 

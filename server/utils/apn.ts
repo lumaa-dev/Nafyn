@@ -173,11 +173,19 @@ interface ActivityTokenRow {
     createdAt: number
 }
 
+/**
+ * One physical Apple device, as the settings screen shows it. The iOS app registers up to four tokens per
+ * device (alert, request Live Activities, release countdowns, Now Playing) - an implementation detail nobody
+ * should have to manage separately - so they are folded into one entry per login (`sessionId`), the thing
+ * that is actually 1:1 with an install. Removing the device removes every token behind it.
+ */
 export interface ApnDeviceSummary {
+    /** the login's session id; what DELETE /api/v1/user/devices/{id} takes */
     id: string,
-    kind: ApnDeviceKind,
-    environment: ApnEnvironment,
     deviceName: string | null,
+    environment: ApnEnvironment,
+    /** which push features this device registered for */
+    kinds: ApnDeviceKind[],
     events: NotificationEvent[] | null,
     /** true when it was registered by the session making the request */
     currentSession: boolean,
@@ -209,17 +217,29 @@ function parseEvents(raw: string | null): NotificationEvent[] | null {
     }
 }
 
-function rowToSummary(row: DeviceRow, currentSessionId?: string): ApnDeviceSummary {
-    return {
-        id: row.id,
-        kind: row.kind,
-        environment: row.environment,
-        deviceName: row.deviceName,
-        events: parseEvents(row.events),
-        currentSession: row.sessionId === currentSessionId,
-        createdAt: Number(row.createdAt),
-        lastSeenAt: Number(row.lastSeenAt)
-    };
+function groupDevices(rows: DeviceRow[], currentSessionId?: string): ApnDeviceSummary[] {
+    const bySession = new Map<string, DeviceRow[]>();
+    for (const row of rows) {
+        const group = bySession.get(row.sessionId) ?? [];
+        group.push(row);
+        bySession.set(row.sessionId, group);
+    }
+
+    return [...bySession.entries()].map(([sessionId, group]) => {
+        // the alert token carries the user's event filter and is the one every device has; the rest follow it
+        const primary = group.find((r) => r.kind === "alert") ?? group[0]!;
+        const newestFirst = [...group].sort((a, b) => Number(b.lastSeenAt) - Number(a.lastSeenAt));
+        return {
+            id: sessionId,
+            deviceName: newestFirst.find((r) => r.deviceName)?.deviceName ?? null,
+            environment: primary.environment,
+            kinds: [...new Set(group.map((r) => r.kind))],
+            events: parseEvents(primary.events),
+            currentSession: sessionId === currentSessionId,
+            createdAt: Math.min(...group.map((r) => Number(r.createdAt))),
+            lastSeenAt: Math.max(...group.map((r) => Number(r.lastSeenAt)))
+        };
+    }).sort((a, b) => b.lastSeenAt - a.lastSeenAt);
 }
 
 export interface RegisterDeviceInput {
@@ -254,18 +274,27 @@ export async function registerDevice(userId: string, sessionId: string, input: R
         now
     });
 
-    const row = await db.prepare(`SELECT * FROM apn_devices WHERE token = ? AND kind = ?`).get(input.token.toLowerCase(), input.kind) as DeviceRow;
-    return rowToSummary(row, sessionId);
+    const rows = await db.prepare(`SELECT * FROM apn_devices WHERE userId = ? AND sessionId = ?`).all(userId, sessionId) as DeviceRow[];
+    return groupDevices(rows, sessionId)[0]!;
 }
 
 export async function listDevices(userId: string, currentSessionId?: string): Promise<ApnDeviceSummary[]> {
     const rows = await getUsersDb().prepare(`SELECT * FROM apn_devices WHERE userId = ? ORDER BY lastSeenAt DESC`).all(userId) as DeviceRow[];
-    return rows.map((row) => rowToSummary(row, currentSessionId));
+    return groupDevices(rows, currentSessionId);
 }
 
+/** how many raw tokens the user has registered - what the per-user cap counts, not the device count */
+export async function countDeviceTokens(userId: string): Promise<number> {
+    const row = await getUsersDb().prepare(`SELECT COUNT(*) AS count FROM apn_devices WHERE userId = ?`).get(userId) as { count: number };
+    return Number(row.count);
+}
+
+/** Removes a device (every token it registered, including running Live Activities and Now Playing). `id` is the device's session id. */
 export async function deleteDevice(userId: string, id: string): Promise<boolean> {
-    const result = await getUsersDb().prepare(`DELETE FROM apn_devices WHERE id = ? AND userId = ?`).run(id, userId);
-    return result.changes > 0;
+    const db = getUsersDb();
+    const tokens = await db.prepare(`DELETE FROM apn_devices WHERE userId = ? AND sessionId = ?`).run(userId, id);
+    const activities = await db.prepare(`DELETE FROM apn_activity_tokens WHERE userId = ? AND sessionId = ?`).run(userId, id);
+    return tokens.changes + activities.changes > 0;
 }
 
 /** Registers the update token of a running Live Activity / Now Playing session. Ownership of `refId` is the caller's job. */
@@ -312,7 +341,7 @@ export async function deleteApnDataForUser(userId: string): Promise<number> {
 }
 
 // data-access export (GDPR art. 15): metadata only, tokens are credentials for pushing to that device
-export async function listDeviceExportForUser(userId: string): Promise<Omit<ApnDeviceSummary, "id" | "currentSession">[]> {
+export async function listDeviceExportForUser(userId: string): Promise<{ kind: ApnDeviceKind, environment: ApnEnvironment, deviceName: string | null, events: NotificationEvent[] | null, createdAt: number, lastSeenAt: number }[]> {
     const rows = await getUsersDb().prepare(`SELECT * FROM apn_devices WHERE userId = ? ORDER BY createdAt ASC`).all(userId) as DeviceRow[];
     return rows.map(({ kind, environment, deviceName, events, createdAt, lastSeenAt }) => ({
         kind, environment, deviceName, events: parseEvents(events), createdAt: Number(createdAt), lastSeenAt: Number(lastSeenAt)

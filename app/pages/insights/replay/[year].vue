@@ -115,7 +115,12 @@ function onCoverError(e: Event) {
 async function load() {
   const param = String(route.params.year);
   // "current" is the friendly URL the sidebar and hub link to, so nobody has to know the year
-  mix.value = param === "current" ? await insights.replay() : await insights.replayYear(param === "all-time" ? "all-time" : Number(param));
+  try {
+    mix.value = param === "current" ? await insights.replay() : await insights.replayYear(param === "all-time" ? "all-time" : Number(param));
+  } catch (e) {
+    // import.meta.client: the first load also runs during SSR, where a toast would never be dismissed
+    if (import.meta.client) useToast().sendError($t('insights.title'), e);
+  }
 }
 
 await load();
