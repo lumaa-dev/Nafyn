@@ -273,7 +273,12 @@ async function downloadTrack(
     }
     if (results.length === 0) {
         console.log(`[downloads] "${target.title}" not found in album search results, falling back to per-track search (last resort)`);
-        const rawResults = await searchWithFallback([`${target.artistName} ${target.title}`, `${target.title} ${target.artistName}`]);
+        const rawResults = await searchWithFallback([
+            `${target.artistName} ${target.title}`,
+            `${target.title} ${target.artistName}`,
+            `*${target.artistName.substring(1, target.artistName.length)} ${target.title}`,
+            `${target.title} *${target.artistName.substring(1, target.artistName.length)}`,
+        ]);
         results = rawResults.filter((result) => !isExcludedVersion(basename(result.file.replace(/\\/g, "/"), extname(result.file)), target.title));
     }
 
@@ -465,7 +470,9 @@ export async function processDownloadRequest(request: NafynRequest): Promise<voi
             emitDownloadProgress({ requestId: request.id, stage: "searching", message: "Searching Soulseek for album" });
             const rawResults = await searchWithFallback([
                 `${targets[0].artistName} ${targets[0].album}`,
-                `${targets[0].album} ${targets[0].artistName}`
+                `${targets[0].album} ${targets[0].artistName}`,
+                `*${targets[0]?.artistName.substring(1, targets[0]?.artistName.length)} ${targets[0].album}`,
+                `${targets[0].album} *${targets[0]?.artistName.substring(1, targets[0]?.artistName.length)}`
             ]);
             poolResults = rawResults;
 
