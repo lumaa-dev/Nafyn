@@ -49,6 +49,7 @@ import {
 import { emitDownloadProgress, clearDownloadEmitter } from "../utils/downloadEvents";
 import { isReleased } from "../utils/releaseDate";
 import { notifyRequestFinished } from "./notifications";
+import { acquireDownloadSlot } from "./downloadQueue";
 import { NafynRequest } from "../entity/NafynRequest";
 
 const TMP_DIR = join(process.cwd(), ".data", "tmp");
@@ -75,7 +76,8 @@ interface TrackTarget {
     duration: number,
     label: string | null,
     coverArt: string | null,
-    amId: string | null
+    amId: string | null,
+    discNumber: number
 }
 
 function parseReleaseDate(date: string | undefined): Date | null {
@@ -112,7 +114,8 @@ async function resolveTargets(client: MusicBrainzApi, musicbrainzId: string, typ
             duration: recording.length ? Math.round(recording.length / 1000) : 0,
             label: null,
             coverArt: release?.id ? `https://coverartarchive.org/release/${release.id}/front-250` : null,
-            amId: getAppleMusicTrackID(recording, release) ?? null
+            amId: getAppleMusicTrackID(recording, release) ?? null,
+            discNumber: 1
         }];
     }
 
@@ -132,7 +135,7 @@ async function resolveTargets(client: MusicBrainzApi, musicbrainzId: string, typ
     const amId = getAppleMusicTrackID(undefined, release) ?? null;
 
     const targets: TrackTarget[] = [];
-    for (const medium of release.media ?? []) {
+    for (const [mediumIndex, medium] of (release.media ?? []).entries()) {
         for (const track of medium.tracks ?? []) {
             const trackArtist = track["artist-credit"]?.[0]?.artist ?? releaseArtist;
             targets.push({
@@ -148,11 +151,13 @@ async function resolveTargets(client: MusicBrainzApi, musicbrainzId: string, typ
                 duration: track.length ? Math.round(track.length / 1000) : 0,
                 label,
                 coverArt,
-                amId
+                amId,
+                discNumber: medium.position ?? mediumIndex + 1
             });
         }
     }
-    return targets;
+    // disc by disc, track by track: the order the downloads run in and the order the library ends up in
+    return targets.sort((a, b) => (a.discNumber - b.discNumber) || ((a.trackNumber ?? 0) - (b.trackNumber ?? 0)));
 }
 
 // only the extension is ever trusted from a peer's filename; everything else about the candidate is validated
@@ -237,9 +242,16 @@ async function downloadTrack(
     primaryResults?: SlskSearchResult[],
     poolResults?: SlskSearchResult[]
 ): Promise<boolean> {
-    const progress = (fields: Partial<Parameters<typeof emitDownloadProgress>[0]>) =>
-        emitDownloadProgress({ requestId, trackTitle: target.title, trackIndex, trackCount, stage: "searching", ...fields });
-
+    // a single track finishing or failing is never the end of the request (finish() in processDownloadRequest
+    // emits that): sent as "completed"/"failed" it would freeze the client's live view mid-album, so it goes
+    // out as "processing" with the track's own outcome in `trackResult`
+    const progress = (fields: Partial<Parameters<typeof emitDownloadProgress>[0]>) => {
+        const trackResult = fields.stage === "completed" || fields.stage === "failed" ? fields.stage : undefined;
+        emitDownloadProgress({
+            requestId, trackTitle: target.title, trackIndex, trackCount, stage: "searching", ...fields,
+            ...(trackResult ? { stage: "processing" as const, trackResult } : {})
+        });
+    };
     // step 3: already downloaded by someone else? copy instead of hitting Soulseek again
     const existingMedia = await findMediaByMusicbrainzId(target.recordingId);
     if (existingMedia) {
@@ -308,7 +320,7 @@ async function downloadTrack(
                     totalBytes: dl.totalBytes,
                     speedBytesPerSec: dl.speedBytesPerSec,
                     etaSeconds: dl.etaSeconds,
-                    message: `${dl.bytesDownloaded / dl.totalBytes * 100}%`
+                    message: "Downloading"
                 });
             });
 
@@ -430,6 +442,19 @@ export async function processDownloadRequestId(requestId: UUID | string): Promis
 export async function processDownloadRequest(request: NafynRequest): Promise<void> {
     if (!request || request.status === "completed" || request.status === "failed" || request.status === "denied") return;
 
+    // instance-wide cap on requests in the pipeline; past it the request waits here, still "searching"
+    const release = await acquireDownloadSlot(request.id, (position) => {
+        emitDownloadProgress({ requestId: request.id, stage: "searching", message: `Queued (position ${position})` });
+    });
+    try {
+        await runDownloadRequest(request);
+    } finally {
+        release();
+    }
+}
+
+async function runDownloadRequest(request: NafynRequest): Promise<void> {
+
     // the one way a request leaves the pipeline: status, live progress and notifications all agree on it
     const finish = async (outcome: "completed" | "failed", message?: string) => {
         await updateRequestStatus(request.id, outcome);
@@ -499,13 +524,27 @@ export async function processDownloadRequest(request: NafynRequest): Promise<voi
             return;
         }
 
-        let anyFailed = false;
+        // strictly in track order, and a track that did not land gets one more go (fresh per-track search,
+        // no preferred seller) before the next one starts, so a skipped track can't slip through unnoticed
         for (const [i, target] of targets.entries()) {
-            const ok = await downloadTrack(request.id, requestedById, target, i + 1, targets.length, primaryResults, poolResults);
-            if (!ok) anyFailed = true;
+            let ok = await downloadTrack(request.id, requestedById, target, i + 1, targets.length, primaryResults, poolResults);
+            if (!ok) ok = await downloadTrack(request.id, requestedById, target, i + 1, targets.length);
         }
 
-        await finish(anyFailed ? "failed" : "completed", anyFailed ? "Some tracks could not be downloaded" : undefined);
+        // the request is only complete when the requester really owns every track of it
+        const missing: string[] = [];
+        for (const [i, target] of targets.entries()) {
+            const media = await findMediaByMusicbrainzId(target.recordingId);
+            if (!media || !(await findLibraryEntry(requestedById, media.id))) {
+                missing.push(`${target.trackNumber ?? i + 1}. ${target.title}`);
+            }
+        }
+
+        if (missing.length > 0) {
+            await finish("failed", `${missing.length} of ${targets.length} tracks could not be downloaded: ${missing.join(", ")}`);
+        } else {
+            await finish("completed");
+        }
     } catch (err) {
         await finish("failed", err instanceof Error ? err.message : "Unknown error");
     } finally {

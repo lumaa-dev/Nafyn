@@ -13,7 +13,9 @@ export interface DownloadProgressEvent {
     totalBytes?: number,
     speedBytesPerSec?: number,
     etaSeconds?: number | null,
-    message?: string
+    message?: string,
+    // set when this event reports one track of a multi-track request ending; `stage` stays non-terminal
+    trackResult?: "completed" | "failed"
 }
 
 const emitters = new Map<string, EventEmitter>();

@@ -79,6 +79,7 @@ interface DownloadProgressEvent {
   speedBytesPerSec?: number;
   etaSeconds?: number | null;
   message?: string;
+  trackResult?: "completed" | "failed";
 }
 
 const props = defineProps<{ request: NafynRequest, isCompact: boolean; }>();
