@@ -4,7 +4,8 @@
 // only decides recipients and wording:
 //   * request events go to the requester and every MANAGE_REQUESTS holder (ADMIN included), minus whoever
 //     caused the event (a manager doesn't need a push about the request they just accepted), over APNs alerts
-//     and their personal webhooks - and to every global (instance) webhook;
+//     and their personal webhooks - and to every global (instance) webhook. Exception: the APNs push for
+//     request.completed goes to the requester alone (request.failed still reaches managers too);
 //   * a release going out goes to its subscriber only, over APNs and their personal webhooks. Never global.
 //
 // Every entry point is fire-and-forget: a slow Discord or an APNs outage must never hold up, or fail, the
@@ -78,7 +79,7 @@ const REQUEST_COPY: Record<Extract<NotificationEvent, `request.${string}`>, { ti
     "request.failed": { title: "Download failed", body: (c) => `${c.title} by ${c.artist} could not be downloaded`, key: "REQUEST_FAILED" }
 };
 
-async function dispatchRequestEvent(event: keyof typeof REQUEST_COPY, ctx: RequestContext, options: { actorId?: string | null, includeRequester: boolean, detail?: string | null, skipPush?: boolean }): Promise<void> {
+async function dispatchRequestEvent(event: keyof typeof REQUEST_COPY, ctx: RequestContext, options: { actorId?: string | null, includeRequester: boolean, detail?: string | null, skipPush?: boolean, requesterOnlyPush?: boolean }): Promise<void> {
     const copy = REQUEST_COPY[event];
     const body = options.detail ? `${copy.body(ctx)} (${options.detail})` : copy.body(ctx);
 
@@ -88,6 +89,8 @@ async function dispatchRequestEvent(event: keyof typeof REQUEST_COPY, ctx: Reque
     else if (ctx.requesterId) recipients.delete(ctx.requesterId);
     if (options.actorId) recipients.delete(options.actorId);
     const userIds = [...recipients];
+    // APNs only: "Download complete" is for whoever asked, managers keep hearing about it over webhooks
+    const pushUserIds = options.requesterOnlyPush ? (ctx.requesterId ? [ctx.requesterId] : []) : userIds;
 
     const message: NotificationMessage = {
         event,
@@ -121,7 +124,7 @@ async function dispatchRequestEvent(event: keyof typeof REQUEST_COPY, ctx: Reque
     };
 
     await Promise.allSettled([
-        options.skipPush ? Promise.resolve() : sendNotificationToUsers(userIds, event, alert),
+        options.skipPush ? Promise.resolve() : sendNotificationToUsers(pushUserIds, event, alert),
         sendWebhookToUsers(userIds, message),
         sendGlobalWebhook(message)
     ]);
@@ -173,7 +176,7 @@ export function notifyRequestFinished(requestId: string, outcome: "completed" | 
         const request = await getRequestById(requestId);
         if (!request) return;
         const ctx = await requestContext(request);
-        await dispatchRequestEvent(outcome === "completed" ? "request.completed" : "request.failed", ctx, { includeRequester: true, detail });
+        await dispatchRequestEvent(outcome === "completed" ? "request.completed" : "request.failed", ctx, { includeRequester: true, detail, requesterOnlyPush: outcome === "completed" });
     });
 }
 
