@@ -2,6 +2,7 @@
 .*/
 dist
 music/
+openapi/
 
 # Node dependencies
 node_modules

@@ -226,6 +226,7 @@ bun run dev       # dev server, --host
 bun run build     # production build
 bun run generate  # static generation
 bun run preview   # preview production build
+bun run openapi    # write the OpenAPI spec to openapi/nafyn.openapi.json (--out <file>, --server <url>)
 ```
 
 Built on Nuxt 4.4.8. See [Nuxt docs](https://nuxt.com/docs/getting-started/introduction) for framework details.
