@@ -16,7 +16,21 @@ export interface MediaInfo {
     inLibrary: boolean | null,
     duration: number,
     label: string | null,
-    relations: MediaRelations
+    relations: MediaRelations,
+    // only on album/track search results (GET /api/v1/search)
+    // true on at most one result of a response: the confident top match
+    bestResult?: boolean,
+    match?: SearchMatch
+}
+
+export interface SearchMatch {
+    title: number,
+    artist: number,
+    relevance: number,
+    exactness: number,
+    sources: number,
+    hasFrontCover: boolean,
+    flags: string[]
 }
 
 interface MediaAlbumInfo {
