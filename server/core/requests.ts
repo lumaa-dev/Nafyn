@@ -50,10 +50,10 @@ async function rowToRequest(row: RequestRow): Promise<NafynRequest> {
     };
 }
 
-// creates a request, starts at "waiting" status; fetches MediaInfo once here and stores the
-// display fields (title/artistName/coverArt) so later reads never have to call MusicBrainz again
-export async function createRequest(musicbrainzId: UUID, type: "album" | "track", requestedBy: UUID, defaultStatus: RequestStatus = "waiting"): Promise<NafynRequest> {
-    const info: MediaInfo | null = await getMediaInfo(musicbrainzId, type).catch(() => null);
+// creates a request, starts at "waiting" status; fetches MediaInfo once here (unless the caller already has it)
+// and stores the display fields (title/artistName/coverArt) so later reads never have to call MusicBrainz again
+export async function createRequest(musicbrainzId: UUID, type: "album" | "track", requestedBy: UUID, defaultStatus: RequestStatus = "waiting", knownInfo?: MediaInfo | null): Promise<NafynRequest> {
+    const info: MediaInfo | null = knownInfo ?? await getMediaInfo(musicbrainzId, type).catch(() => null);
     const artistName = info ? (typeof info.artist === "string" ? info.artist : info.artist.name) : null;
 
     const request: NafynRequest = {
@@ -91,17 +91,37 @@ export async function getRequestById(id: string): Promise<NafynRequest | null> {
     return row ? rowToRequest(row) : null;
 }
 
-export async function listRequests(limit?: number, offset?: number): Promise<NafynRequest[]> {
-    let sql = `SELECT * FROM requests ORDER BY createdAt DESC, id ASC`;
+// statuses a list can be filtered by, as the groups the API exposes (`denied` has no filter and is always
+// listed)
+export const REQUEST_STATUS_GROUPS = {
+    succeeded: ["completed"],
+    failed: ["failed"],
+    waiting: ["waiting"],
+    processing: ["searching", "downloading", "processing"]
+} as const satisfies Record<string, RequestStatus[]>;
+
+export type RequestStatusGroup = keyof typeof REQUEST_STATUS_GROUPS;
+
+// `AND status NOT IN (...)` for the excluded groups, empty when nothing is excluded
+function excludeClause(excluded: RequestStatusGroup[]): { sql: string, params: string[] } {
+    const statuses: string[] = excluded.flatMap((group) => [...REQUEST_STATUS_GROUPS[group]]);
+    if (statuses.length === 0) return { sql: "", params: [] };
+    return { sql: ` AND status NOT IN (${statuses.map(() => "?").join(", ")})`, params: statuses };
+}
+
+export async function listRequests(limit?: number, offset?: number, excluded: RequestStatusGroup[] = []): Promise<NafynRequest[]> {
+    const filter = excludeClause(excluded);
+    let sql = `SELECT * FROM requests WHERE 1 = 1${filter.sql} ORDER BY createdAt DESC, id ASC`;
     if (limit !== undefined) {
         sql += ` LIMIT ${sqlInt(limit)} OFFSET ${sqlInt(offset ?? 0)}`;
     }
-    const rows = await getRequestsDb().prepare(sql).all() as RequestRow[];
+    const rows = await getRequestsDb().prepare(sql).all(...filter.params) as RequestRow[];
     return Promise.all(rows.map(rowToRequest));
 }
 
-export async function countRequests(): Promise<number> {
-    const row = await getRequestsDb().prepare(`SELECT COUNT(*) AS count FROM requests`).get() as { count: number };
+export async function countRequests(excluded: RequestStatusGroup[] = []): Promise<number> {
+    const filter = excludeClause(excluded);
+    const row = await getRequestsDb().prepare(`SELECT COUNT(*) AS count FROM requests WHERE 1 = 1${filter.sql}`).get(...filter.params) as { count: number };
     return Number(row.count);
 }
 
@@ -110,9 +130,10 @@ export async function listRequestsByStatus(status: RequestStatus): Promise<Nafyn
     return Promise.all(rows.map(rowToRequest));
 }
 
-export async function listRequestsByUser(requestedBy: string, limit?: number, offset?: number): Promise<NafynRequest[]> {
-    let sql = `SELECT * FROM requests WHERE requestedBy = ? ORDER BY createdAt DESC, id ASC`;
-    const params: unknown[] = [requestedBy];
+export async function listRequestsByUser(requestedBy: string, limit?: number, offset?: number, excluded: RequestStatusGroup[] = []): Promise<NafynRequest[]> {
+    const filter = excludeClause(excluded);
+    let sql = `SELECT * FROM requests WHERE requestedBy = ?${filter.sql} ORDER BY createdAt DESC, id ASC`;
+    const params: unknown[] = [requestedBy, ...filter.params];
     if (limit !== undefined) {
         sql += ` LIMIT ${sqlInt(limit)} OFFSET ${sqlInt(offset ?? 0)}`;
     }
@@ -120,8 +141,9 @@ export async function listRequestsByUser(requestedBy: string, limit?: number, of
     return Promise.all(rows.map(rowToRequest));
 }
 
-export async function countRequestsByUser(requestedBy: string): Promise<number> {
-    const row = await getRequestsDb().prepare(`SELECT COUNT(*) AS count FROM requests WHERE requestedBy = ?`).get(requestedBy) as { count: number };
+export async function countRequestsByUser(requestedBy: string, excluded: RequestStatusGroup[] = []): Promise<number> {
+    const filter = excludeClause(excluded);
+    const row = await getRequestsDb().prepare(`SELECT COUNT(*) AS count FROM requests WHERE requestedBy = ?${filter.sql}`).get(requestedBy, ...filter.params) as { count: number };
     return Number(row.count);
 }
 
@@ -145,13 +167,20 @@ export async function updateRequestStatus(id: UUID | string, status: RequestStat
 // true if this user already has a request for this MusicBrainz ID that hasn't reached an end state:
 // waiting for a manager, or being worked on. Completed, failed and denied ones don't count - a completed
 // request whose track was later deleted from the library, a failed download and a denied request must all be
-// requestable again. This is what stops the Request button creating the same request over and over.
-export async function hasActiveRequest(requestedBy: string, musicbrainzId: string): Promise<boolean> {
+// requestable again (a completed one whose songs are all still there is refused by the library check in
+// POST /api/v1/request instead). This is what stops the Request button creating the same request over and over.
+//
+// Takes every MBID the item is known by - the one asked for and the one MusicBrainz redirected it to - since
+// a request stores the canonical one but older rows may hold whatever ID the client sent.
+export async function hasActiveRequest(requestedBy: string, musicbrainzIds: string | string[]): Promise<boolean> {
+    const ids = [...new Set((Array.isArray(musicbrainzIds) ? musicbrainzIds : [musicbrainzIds]).filter(Boolean))];
+    if (ids.length === 0) return false;
     const row = await getRequestsDb().prepare(`
         SELECT 1 FROM requests
-        WHERE requestedBy = ? AND musicbrainzId = ? AND status IN ('waiting', 'searching', 'downloading', 'processing')
+        WHERE requestedBy = ? AND musicbrainzId IN (${ids.map(() => "?").join(", ")})
+          AND status IN ('waiting', 'searching', 'downloading', 'processing')
         LIMIT 1
-    `).get(requestedBy, musicbrainzId);
+    `).get(requestedBy, ...ids);
     return row != null;
 }
 

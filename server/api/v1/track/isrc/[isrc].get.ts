@@ -1,4 +1,7 @@
-import { getMusicBrainzClient, parseReleaseDate } from "~~/server/utils/musicbrainz";
+import { getMusicBrainzRepository, parseReleaseDate } from "~~/server/utils/musicbrainz";
+import { MusicBrainzError } from "~~/server/utils/musicbrainzRepository";
+import { getSearchDeps } from "~~/server/utils/catalogSearch";
+import { searchTracks } from "~~/server/utils/search/engine";
 import type { MediaInfo } from "~~/server/entity/media/MediaInfo";
 import type { ArtistInfo } from "~~/server/entity/media/ArtistInfo";
 import { getImageColors } from "~~/server/utils/imageColors";
@@ -9,7 +12,7 @@ const ISRC_PATTERN = /^[A-Z]{2}[A-Z0-9]{3}\d{2}\d{5}$/i;
 
 defineRouteMeta({
     openAPI: {
-        description: "Look up a track by its ISRC (International Standard Recording Code)",
+        description: "Look up a track by its ISRC (International Standard Recording Code). When MusicBrainz knows no recording with that ISRC and `title` and `artist` are given, the track is searched by title + artist with the same engine as `GET /api/v1/search` (Official digital releases only, ranked, front covers first) and the best match is returned if it is relevant enough.",
         tags: ["track"],
         operationId: "getTrackByIsrc",
         parameters: [
@@ -18,6 +21,20 @@ defineRouteMeta({
                 in: "path",
                 required: true,
                 description: "ISRC, e.g. `USRC17607839`",
+                schema: { type: "string" }
+            },
+            {
+                name: "title",
+                in: "query",
+                required: false,
+                description: "Track title, fallback when no recording has this ISRC. Needs `artist` too.",
+                schema: { type: "string" }
+            },
+            {
+                name: "artist",
+                in: "query",
+                required: false,
+                description: "Artist name, fallback when no recording has this ISRC. Needs `title` too.",
                 schema: { type: "string" }
             }
         ],
@@ -32,9 +49,10 @@ defineRouteMeta({
                                 { $ref: "#/components/schemas/MediaInfo" },
                                 {
                                     type: "object",
-                                    required: ["albumMbid"],
+                                    required: ["albumMbid", "searchFallback"],
                                     properties: {
-                                        albumMbid: { type: "string", nullable: true, description: "MusicBrainz release-group ID for the track's release, if any" }
+                                        albumMbid: { type: "string", nullable: true, description: "MusicBrainz release-group ID for the track's release, if any" },
+                                        searchFallback: { type: "boolean", description: "True when no recording had this ISRC and the track was found by searching `title` + `artist` instead" }
                                     }
                                 }
                             ]
@@ -58,8 +76,16 @@ defineRouteMeta({
                     }
                 }
             },
+            "503": {
+                description: "MusicBrainz is unreachable or overloaded (only when the title + artist fallback was needed)",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NuxtError" }
+                    }
+                }
+            },
             "404": {
-                description: "No song found for that ISRC",
+                description: "No song found for that ISRC, nor (when `title` and `artist` were given) by title + artist",
                 content: {
                     "application/json": {
                         schema: { $ref: "#/components/schemas/NuxtError" }
@@ -70,6 +96,10 @@ defineRouteMeta({
     },
 });
 
+function param(value: unknown): string {
+    return (typeof value === "string" ? value.trim() : "").slice(0, 200);
+}
+
 export default defineEventHandler(async (event) => {
     const { sub: userId } = await requireAuthToken(event);
     enforceUpstreamLookupLimit(event, userId);
@@ -79,18 +109,44 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 400, statusMessage: "Invalid or missing ISRC" });
     }
 
-    const client = getMusicBrainzClient();
+    const query = getQuery(event);
+    const title = param(query?.title);
+    const artistName = param(query?.artist);
 
-    const result = await client.search("recording", { query: `isrc:${isrc}`, limit: 1 }).catch(() => {
-        throw createError({ statusCode: 404, statusMessage: "No song found for ISRC " + isrc });
-    });
+    const client = getMusicBrainzRepository();
 
-    const match = result.recordings?.[0];
-    if (!match) {
-        throw createError({ statusCode: 404, statusMessage: "No song found for ISRC " + isrc });
+    // an upstream failure here is treated like "not found": the title + artist fallback below may still answer
+    const result = await client.search("recording", { query: `isrc:${isrc}`, limit: 1 }).catch(() => null);
+    let recordingId: string | undefined = result?.recordings?.[0]?.id;
+    let searchFallback = false;
+
+    if (!recordingId) {
+        if (!title || !artistName) {
+            throw createError({ statusCode: 404, statusMessage: "No song found for ISRC " + isrc + " (give `title` and `artist` to search by name instead)" });
+        }
+
+        // same engine as GET /api/v1/search. The ISRC goes along as evidence, it just found nothing on its own.
+        const deps = getSearchDeps();
+        let top;
+        try {
+            [top] = (await searchTracks({ title, artist: artistName, isrc }, deps, 1)).results;
+        } catch (error) {
+            if (error instanceof MusicBrainzError) {
+                setResponseHeader(event, "Retry-After", 30);
+                throw createError({ statusCode: 503, statusMessage: "MusicBrainz is unavailable, try again later" });
+            }
+            throw error;
+        }
+
+        // a guess is worse than a 404: the match has to be as strong as one `bestResult` would need on score
+        if (!top || top.match.relevance < deps.config.bestResultMinScore || top.match.flags.includes("code_contradiction")) {
+            throw createError({ statusCode: 404, statusMessage: "No song found for ISRC " + isrc + " or for that title and artist" });
+        }
+        recordingId = top.id;
+        searchFallback = true;
     }
 
-    const recording = await client.lookup("recording", match.id, ["artist-credits", "releases", "release-groups"]).catch(() => {
+    const recording = await client.lookup("recording", recordingId, ["artist-credits", "releases", "release-groups"]).catch(() => {
         throw createError({ statusCode: 404, statusMessage: "No song found for ISRC " + isrc });
     });
 
@@ -120,5 +176,5 @@ export default defineEventHandler(async (event) => {
         label: null
     };
 
-    return { ...media, albumMbid };
+    return { ...media, albumMbid, searchFallback };
 });

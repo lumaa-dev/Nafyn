@@ -69,7 +69,8 @@
     "request": "Request",
     "requested": "Requested successfully",
     "viewInMusicbrainz": "View in MusicBrainz",
-    "alreadyRequested": "Requested"
+    "alreadyRequested": "Requested",
+    "inLibrary": "In library"
   },
   "track": {
     "request": "Request",
@@ -78,6 +79,7 @@
     "delete": "Delete track",
     "viewDetails": "View details",
     "alreadyRequested": "Requested",
+    "inLibrary": "In library",
     "deleteError": "Failed to delete the track"
   },
   "artist": {

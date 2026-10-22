@@ -113,10 +113,22 @@ Besides MusicBrainz (which stays the source of truth for requests), the search b
 
 What can go in the search bar:
 
-- **Free text** — MusicBrainz results as before, plus a "From other services" row. Write it as `Artist - Title` to let providers that need separate fields (TheAudioDB) join in.
+- **Free text** — ranked MusicBrainz results (see below), plus a "From other services" row. Write it as `Artist - Title` to let providers that need separate fields (TheAudioDB) join in; Nafyn tries both orders.
 - **An ISRC** (`GBAYE0601498`, dashes allowed) — or **a platform ID / pasted link** from the table above. These skip the MusicBrainz text search: the record is fetched from its provider, matched against MusicBrainz (by ISRC, else a strict title + artist search), and enriched with the other providers' best match. The first card then opens the MusicBrainz track in Nafyn, ready to request.
 
 Leave a key empty and that provider is skipped silently — the keyless ones (Deezer, iTunes, ReccoBeats) are always on. Each provider is called with a Nafyn `User-Agent`, results are cached in memory for 10 minutes, and a provider that answers with a rate limit (`429`, iTunes' `403`, Deezer's quota error, or a `Retry-After` / `X-RateLimit-Remaining: 0` / `X-Discogs-Ratelimit-Remaining: 0` header) is backed off until its window resets. Also available directly over the API: `GET /api/v1/metadata/search?q=` and `GET /api/v1/metadata/providers`.
+
+### How album and track search works
+
+`GET /api/v1/search` ([`server/utils/search/`](server/utils/search/)) normalizes the query (accents, full-width forms, `feat.` credits, edition words like *Deluxe* / *Remastered 2011*, track numbers, YouTube noise; CJK is never transliterated), recalls candidates from several MusicBrainz searches (phrase, loose terms, artist aliases), then filters and ranks them:
+
+- **Only Official releases with a Digital Media edition** count. Bootlegs, promos, pseudo-releases, compilations / "best of" titles (multilingual) and Deluxe / Remaster editions are dropped — unless the query itself asks for a deluxe, a remaster or a "best of" title (a release-group typed *Compilation* is never returned).
+- **Relevance** is a containment score: *Led Zeppelin* does not match *Led Zeppelin II*. Artists are compared with all their aliases and sort names, so `Utada Hikaru` finds `宇多田ヒカル`.
+- **Ranking puts results with a front cover first**, then relevance, artist, title exactness, album > EP > single, earliest digital release date. A correct match without a cover therefore ranks below a covered, relevant one, on purpose.
+- Every album/track result carries a `match` score breakdown and a `bestResult` flag. `bestResult` is true on **at most one** result: the top one, when it scores high enough, has a front cover (or an exact UPC/ISRC match) and clearly beats the runner-up. If the top results are too close, nobody is flagged and the consumer decides.
+- Optional query parameters: `title`, `artist`, `upc` (UPC-A/EAN-13 of the album) and `isrc` (of the track). A valid code is strong evidence and boosts its result; an invalid one is ignored, and a code that finds nothing usable falls back to `title` + `artist`, which must accompany it. Tunables: see `NAFYN_SEARCH_*` in [`.env.example`](.env.example).
+
+`bun run test` runs the unit tests and a regression set replayed from recorded MusicBrainz responses (no network); `bun run search:record [case]` re-records those fixtures.
 
 To add a provider, write one file under [`server/utils/metadata/providers/`](server/utils/metadata/providers/) implementing `MetadataProvider` ([`types.ts`](server/utils/metadata/types.ts)) and add it to `PROVIDERS` in [`server/utils/metadata/index.ts`](server/utils/metadata/index.ts).
 
@@ -195,7 +207,7 @@ Both password-based login (`p=`) and token-based login (`t=`/`s=`) work, but not
 
 - [Nuxt 4](https://nuxt.com/) (Vue 3) — frontend + server API routes (Nitro)
 - `mysql2` — database
-- `musicbrainz-api` — track/album metadata search
+- `musicbrainz-api` — TypeScript types for MusicBrainz payloads only; all requests go through Nafyn's own rate-limited [`MusicBrainzRepository`](server/utils/musicbrainzRepository.ts)
 - Last.fm API — artist bios/images (optional, `LASTFM_API_KEY`)
 - Deezer, iTunes, ReccoBeats, TheAudioDB, Discogs, Genius — song metadata (plain HTTP, keyed ones optional)
 - `slskd` (external, self-hosted) — Soulseek network access

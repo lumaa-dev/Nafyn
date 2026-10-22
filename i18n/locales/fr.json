@@ -69,7 +69,8 @@
     "request": "Demander",
     "requested": "Demandé",
     "viewInMusicbrainz": "Voir dans MusicBrainz",
-    "alreadyRequested": "Demandé"
+    "alreadyRequested": "Demandé",
+    "inLibrary": "Dans la bibliothèque"
   },
   "track": {
     "request": "Demander",
@@ -78,6 +79,7 @@
     "delete": "Supprimer la piste",
     "viewDetails": "Voir les détails",
     "alreadyRequested": "Demandé",
+    "inLibrary": "Dans la bibliothèque",
     "deleteError": "Impossible de supprimer le titre"
   },
   "artist": {

@@ -19,7 +19,8 @@
     "postinstall": "nuxt prepare",
     "slskd": ".dev/slskd/slskd",
     "check:env": "bun scripts/check-env.ts",
-    "apn:test": "bun scripts/apn-test.ts"
+    "apn:test": "bun scripts/apn-test.ts",
+    "search:record": "bun scripts/record-search-fixtures.ts"
   },
   "dependencies": {
     "@nuxt/content": "3.15.0",

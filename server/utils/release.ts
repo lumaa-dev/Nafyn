@@ -17,9 +17,6 @@ import type { IRelease, IReleaseGroup } from "musicbrainz-api";
 // audience recordings, pseudo-releases are transliterations of an existing release.
 const OFFICIAL_STATUS = "official";
 
-// release-group secondary types that mark the entry as something other than the artist's own release
-const UNOFFICIAL_SECONDARY_TYPES = new Set(["bootleg", "demo", "interview", "audiobook", "audio drama", "spokenword"]);
-
 // edition markers: a release titled/disambiguated with one of these is an alternate edition of the album
 // rather than the album itself, unless the release group is genuinely named that way
 const EDITION_KEYWORDS = [
@@ -44,10 +41,12 @@ export function isOfficialRelease(release: IRelease): boolean {
     return status === "" || status === OFFICIAL_STATUS;
 }
 
-// true unless the release group itself is a bootleg/demo/spoken-word style entry rather than a release
-export function isOfficialReleaseGroup(releaseGroup: Pick<IReleaseGroup, "secondary-types">): boolean {
-    const secondary = releaseGroup["secondary-types"] ?? [];
-    return !secondary.some((type) => UNOFFICIAL_SECONDARY_TYPES.has(lower(type)));
+// true when the Cover Art Archive holds a front image for the release. MusicBrainz includes this summary on
+// every release in a lookup/browse, so no extra include or request is needed. `darkened` marks art taken down
+// by the archive (its image URL no longer serves), so it doesn't count.
+export function hasFrontCover(release: IRelease): boolean {
+    const archive = release["cover-art-archive"];
+    return archive?.front === true && archive.darkened !== true;
 }
 
 function trackCount(release: IRelease): number {
@@ -82,25 +81,31 @@ function scoreRelease(release: IRelease, options: ReleasePickOptions, medianTrac
     if (status === OFFICIAL_STATUS) score += 10000;
     else if (status === "") score += 5000;
 
-    // 2. the release that carries the album's own name, undecorated, is the album
+    // 2. a release with a front cover is far more likely to be the one people know, and it is the one whose
+    //    cover art (written into tags, shown on cards and the track page) actually exists. A strong nudge
+    //    among releases of the same status, but never enough to outweigh status (above) or pull in a
+    //    deluxe over the standard edition (edition penalty, below, is applied per keyword).
+    if (hasFrontCover(release)) score += 700;
+
+    // 3. the release that carries the album's own name, undecorated, is the album
     if (options.releaseGroupTitle && lower(release.title) === lower(options.releaseGroupTitle)) score += 800;
     score -= editionPenalty(release, options.releaseGroupTitle ?? "") * 600;
 
-    // 3. the original edition normally comes out on the release group's first release date; deluxes and
+    // 4. the original edition normally comes out on the release group's first release date; deluxes and
     //    reissues land later
     if (options.firstReleaseDate && release.date && release.date.startsWith(options.firstReleaseDate)) score += 400;
 
-    // 4. digital media is what Nafyn actually distributes, and its tracklist matches streaming services
+    // 5. digital media is what Nafyn actually distributes, and its tracklist matches streaming services
     if (release.media?.some((medium) => medium.format === "Digital Media")) score += 200;
 
-    // 5. a release far larger than its siblings is a deluxe/box set. Penalize the *distance above* the
+    // 6. a release far larger than its siblings is a deluxe/box set. Penalize the *distance above* the
     //    median rather than size outright, so a genuinely long album isn't punished for existing.
     const tracks = trackCount(release);
     if (tracks > 0 && medianTracks > 0 && tracks > medianTracks) {
         score -= Math.min((tracks - medianTracks) * 20, 1000);
     }
 
-    // 6. tiebreaker: a release with an actual tracklist beats one with none
+    // 7. tiebreaker: a release with an actual tracklist beats one with none
     if (tracks > 0) score += 10;
 
     return score;

@@ -1,5 +1,5 @@
 import type { IReleaseGroup } from "musicbrainz-api";
-import { getMusicBrainzClient, parseReleaseDate } from "~~/server/utils/musicbrainz";
+import { getMusicBrainzRepository, parseReleaseDate } from "~~/server/utils/musicbrainz";
 import { getLastfmArtistInfo } from "~~/server/utils/lastfm";
 import { userOwnsAlbum } from "~~/server/core/library";
 import type { ArtistDetail } from "~~/server/entity/media/ArtistDetail";
@@ -86,7 +86,7 @@ export default defineEventHandler(async (event) => {
     // SECURITY: see the note in track/[tid].get.ts - this reaches an upstream MusicBrainz REST path
     const aid = assertMbid(getRouterParam(event, "aid"), "artist ID");
 
-    const client = getMusicBrainzClient();
+    const client = getMusicBrainzRepository();
 
     const artist = await client.lookup("artist", aid).catch(() => null);
     if (!artist) {

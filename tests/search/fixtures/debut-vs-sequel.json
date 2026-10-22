@@ -1,0 +1,6485 @@
+{
+ "requests": {
+  "https://musicbrainz.org/ws/2/release-group?fmt=json&limit=40&query=releasegroup%3A%22led%20zeppelin%22%20AND%20artist%3A%22led%20zeppelin%22%20AND%20status%3Aofficial": {
+   "created": "2026-10-22T18:57:17.437Z",
+   "offset": 0,
+   "release-groups": [
+    {
+     "id": "07e182ae-6567-4bc4-90f0-73619c942d73",
+     "score": 100,
+     "title": "Led Zeppelin x Led Zeppelin",
+     "first-release-date": "2018-09-27",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "25a9c57a-a49b-4f4d-a73a-bcf35f01168c",
+       "title": "Led Zeppelin x Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "eca4f64f-78af-471d-86fe-24ed1b3a3e6b",
+       "title": "Led Zeppelin x Led Zeppelin",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "fadd0405-9ba3-496b-890c-ad250336f3c2",
+     "score": 99,
+     "title": "Led Zeppelin",
+     "first-release-date": "2006-07",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "8841b4c9-524f-49e6-9660-05f31248c26d",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "362f3fa7-d298-3998-ae1c-4ac0d02b7718",
+     "score": 99,
+     "title": "Led Zeppelin",
+     "first-release-date": "2003-05-26",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation",
+      "Live"
+     ],
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "bc5a0db2-a123-4a29-bb75-de01c52da293",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "e6f913af-351d-4959-a2ca-791022892940",
+       "title": "DVD",
+       "status": "Official"
+      },
+      {
+       "id": "90a599ae-0b00-4a4a-bbd0-a266762875e9",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "92d5e425-6dff-34d7-8edf-0c82156b46b0",
+     "score": 99,
+     "title": "Led Zeppelin",
+     "disambiguation": "remastered box set",
+     "first-release-date": "1990-10-08",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "cc09bf24-1a1d-4b0f-a447-3aaf89fa6aa2",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "e53120aa-ef15-491d-ad39-8ef159a6ca6b",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "dcf1454b-5354-4c65-8c7b-616aff3490ed",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "ee4fc1bb-ebd0-3473-85f4-9a9d48c6f0d7",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "4bd72d5b-1033-395a-9ed3-6110b7b85556",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "5fdf774f-d9be-48b8-89df-d4c4761c4271",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "4c9ff4de-69db-4613-9467-ca2d8a79d996",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "f9dce536-f711-4d3c-a33e-62667d89d46d",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "a8d1a687-e323-42cc-8f6f-17f9661b03c2",
+     "score": 99,
+     "title": "Led Zeppelin",
+     "first-release-date": "1990",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "f3bd72bf-19a4-4491-b408-9c889fa322d2",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "0f18ec88-aa87-38a9-8a65-f03d81763560",
+     "score": 99,
+     "title": "Led Zeppelin",
+     "disambiguation": "I",
+     "first-release-date": "1969-01-12",
+     "primary-type": "Album",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "e81adfde-c463-4e7e-9057-7ab9fee56dbc",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "5156d820-7676-4009-a8fc-58aec49b3d2a",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "baec6e8c-b4c9-4f60-a51f-0d193b22edd8",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "c9adbe12-3a34-41e4-890a-68872b8ff3de",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "81b3a21c-3349-48cc-a438-64b814297d9c",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "eeb6596f-9492-4d4c-91d2-37ba949b9e4c",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "09a0282a-dbef-4f21-927b-93dc1d45d9c5",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "20d36c41-67e9-464a-a338-47a1a0866ea5",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "418cbfdf-087f-4aac-8188-0ae8c6f0554f",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "61021afd-63fc-49f2-9062-79cb317ed032",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "e601f979-c329-4533-a61e-62e0ed33ba59",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "7f0e3608-e19b-4b6b-88be-e341706ef841",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "5018f59c-8e91-4f77-8625-aca963e005f8",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "9eba4a95-9809-4485-8024-00f37e92514a",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "fcbc8ada-58a7-42a9-a34c-51983c730562",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "11aacee5-aaf0-44dd-b020-a6c619d6c230",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "6166b18d-6055-38e0-886f-b265dd1a980f",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "7022708a-b7e2-41b1-b03a-2461d5570630",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "64c802a2-77db-3a78-8b36-edd4122f2eb2",
+       "title": "Led Zeppelin",
+       "status": "Bootleg"
+      },
+      {
+       "id": "a98e37d8-973f-4501-a6aa-2d1d3befcc76",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "923ff8a5-7aae-47eb-876d-0bab30dc6e16",
+       "title": "Led Zeppelin",
+       "status": "Bootleg"
+      },
+      {
+       "id": "e6ac555e-e831-32d7-8e0a-10d7cc187950",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "3af9635d-bb68-433d-a28c-3d42f09a4297",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "42438dbb-db38-469a-a7e6-e1617b6ac104",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "0806f8b0-d6a4-4284-8556-67406be6e97e",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "b52097f4-cb26-4965-867c-0d87fba4e09f",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "0d2b2c43-b595-4aaa-8cae-3dd889b92df6",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "9e7f83ef-6d0d-425e-92da-344331bc000c",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "868ba4b4-03bb-48c7-a30c-09523f050bc9",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "7ed76949-79b8-4e32-9401-e66b70fd115b",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "b7572894-2d4c-47cd-a355-a19755bf118b",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "db51be41-c79b-3eee-9b63-74bcace8a357",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "25317bbe-66da-44d9-8c71-5c0b3b4ee1af",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "016516a6-c0bc-4636-b325-ec7db777458b",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "f838fb20-a950-46de-ba44-be02e0b7a014",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "49a37840-8359-4fe2-957e-fafac8461ba5",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "3df3b60f-d6e1-3af9-913f-0014e73650ee",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "d701916c-4398-4b00-a3d3-6eb7cd4a940e",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "a95b726d-441f-43b2-b963-7d44612ebacc",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "ae7b3036-aecd-4e0b-b107-fc0675b3db00",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "10f90dad-4cb7-42d3-89e7-db4b619eddf7",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "213afef1-f474-379d-9ebd-0dee46703381",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "f0e0a3c5-6bee-415f-990e-9064fb3876ec",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "82ab13ce-5cdb-4756-a9cf-28f8cfef51e9",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "913e4310-e710-4f8d-8c33-41befd7591f1",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "15ad9398-dfc7-46d6-aec2-618d4efb62e8",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "8522a979-eadc-41fe-a207-ef676c0f3c06",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "aa75e8de-675c-4563-8fa1-d04d21b67a1d",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "3bb1054e-0ffd-4937-9758-662be56f9aec",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "a022e5e2-7887-4269-914d-f6d8e07f9848",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "026864c4-c426-4f83-b4ca-d01c297b6ac9",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "68a3c217-3ce7-4383-a41c-e6f9b76b1e0b",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "be4180b3-105a-430a-8a87-a42ae2ee2ae0",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "7214f50e-e7d6-4948-806a-024a00a1eda7",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "c1ad1b90-13b3-4389-b3a4-e9e556cd0bd5",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "9b0c3ce3-76e1-3b70-b8d0-dd716ea311f2",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "2ff3108a-1e3f-34b8-8bdc-415df8bb759d",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "30adf1e4-4eb1-4ccb-9fb9-92358b10cd2f",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "ed69765d-bb07-4775-bc02-d0376bd363b0",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "6ad8bb9c-bddc-481e-846a-e0f2e20f1516",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "80a7b2be-7b0e-4ca8-9a7a-87f00d176e79",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "048165f1-f721-4eef-8e1d-5f380a127dde",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "d78c3cbf-dc33-424d-85c2-2de4dde24f65",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "7f171293-c1a3-4101-b7cc-74d354762622",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "2014da02-d763-4d5d-b7f8-6cf9320c08ee",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "078499d1-7ff8-482f-902c-6bfbf05bf141",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "5240f76b-af63-46a8-8a5a-87a970685d18",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "2ee17f1f-b040-4820-a6af-9f4e6c7ebc5b",
+       "title": "Led Zeppelin",
+       "status": "Bootleg"
+      },
+      {
+       "id": "98edca95-9ce3-3308-a88f-e799face0a29",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "33b4653d-006e-3cc1-8afb-386b15a6cd6e",
+     "score": 92,
+     "title": "Led Zeppelin II",
+     "first-release-date": "1969-10-22",
+     "primary-type": "Album",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "1edd5844-7a0e-41bc-b122-fa6b1d402c83",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "80d99d0d-93d9-4f9a-8873-7c3f7dd5ab7f",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "66a211d6-9b56-4eb1-8bde-06456c8388fe",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "ffd29f20-e0e4-4d42-b476-0a5ea7e0c3ba",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "56685555-ad19-4968-ac2c-6525897681b4",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "7e4a5c43-eb33-49ad-baf3-6d794dc26b60",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "d39ef8e7-a0e4-4acf-99e0-33405399cd2d",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "0fc6adbb-cc6a-4825-a4be-01b0a35844de",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "35317cff-f99a-4baf-93b0-bb456190c480",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "aa9e9070-32da-4dd3-bab5-e8b430f28032",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "a3396fed-af4e-474a-83f6-555b15424acd",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "8ba96cce-73f4-4d2d-80d9-99d9cab46e53",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "2ac3b867-02d7-47fb-a360-f1f5828d5e9b",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "4caaad0c-79f2-4d08-8eb3-b3a6a3229bbf",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "472aea5a-ef4f-360f-84b9-0ed21abcec65",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "812ab973-05b8-4542-9c42-a8e934a785cc",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "b01b8dc4-a033-4f3c-8623-f77e9a2f34a3",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "929b2b59-9a4e-4e8d-96f4-49a86153fec6",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "e91ed5de-bee1-4246-b64c-3218ef64ab0b",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "7bba9861-f7bb-4bee-b1df-14eb2fb7b65c",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "0d1fc06f-4dcb-45b0-8fae-33deb44f46ed",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "164f9f2e-5d0e-48c9-ad32-3853375cd9fa",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "295470dc-66e4-4d93-a464-25cb2ee03aaf",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "743c0976-3f48-4109-841c-cd5158536a45",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "5f1fc485-bc31-478f-9a4e-5b7aec3a2a93",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "672b9d14-15c1-4a14-a62c-9600629d3b07",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "18ba83c2-354c-4ebc-918d-8795f821747f",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "3687ea29-1243-4b0b-8983-35197365327d",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "ba07bb97-6239-4a27-9c27-6a4e6996ba64",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "0848b6e5-858b-4219-9df6-6cbe8705a191",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "c2ac2fe1-817d-4979-ad7b-40b3e880645c",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "9421d5a3-c6bd-4a3b-ade1-007831920694",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "3f06b417-926a-4566-b180-fb09fb7b3552",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "a650ab1f-283d-4630-9e44-69d8d099144a",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "af1fda38-1832-443a-8af6-2519804c0ca2",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "9b2b4f9f-4bcb-3130-90bb-db8261b27f28",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "2c2d301d-30de-44fd-89f4-e2d78a4a9de2",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "3b5b27bc-776d-4e2b-b7da-6a02b4ce20bc",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "1eedb603-6818-4201-a934-4a537abb59e4",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "0529e595-a06a-461b-916e-5f4a69cba847",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "c6b2d713-feec-4592-b3c4-1cc8b971a189",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "f0e7c9b0-f5a5-3022-89a6-48c94e965fc8",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "44a720dd-6fe8-4c97-8503-aa9023e02bd3",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "c918d2fa-24ed-3b9f-8cfa-94c7a3417960",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "dd235704-a182-415c-bb8e-9033bffe2817",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "a19631e2-b689-44e2-b9d1-2879f45410e4",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "f79e96d2-fb5d-4a41-bf45-4a270133b631",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "cdb24572-175c-4317-9bf4-9411979439f9",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "8808b68e-fdb9-4830-9345-184709039ceb",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "4bc6a5d2-98bc-4e42-a46f-bbc90139fd9a",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "fe05227e-73ad-4ee7-9f6c-89f6246c2cf2",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "57eb35c9-0e7b-4b1e-a120-f63883e7aad3",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "97e89db2-e0fe-3e49-8183-ec846c2892ce",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "ab45f915-cd5a-4929-8b3a-9048efe052e5",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "d7be0adc-dbcb-3a6c-878c-ddac4dc711f5",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "87e8eaa5-2285-4fd5-b392-f0e8bad5b2f9",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "ee5fd8b2-59da-4ba3-8356-25d7a04efb41",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "8e4600bc-cd9a-4822-b615-d9095dc6cf8e",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "3a02aff7-7b03-425e-bc2f-2ab8f7edf679",
+       "title": "Led Zeppelin II: Whola Lotta Love",
+       "status": "Bootleg"
+      },
+      {
+       "id": "57fc464a-a8da-3b4c-a7de-6ca260297f65",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "8e4ddfc0-c68c-3f77-9248-340e665d18b7",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "6950a53c-c22b-431d-a0e9-639ffda0c470",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "de3ba4ad-1865-4f08-af15-dd4273b8fe09",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "bffe742c-7e3a-4fef-9630-9df459a34470",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "c4889ad4-55d4-4d23-8f27-5353750585fe",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "7f6aca4e-faf4-4f62-a6a7-e1b6fe50308e",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "04f0936c-1d0b-4901-872b-aad32826562f",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "ca108fb0-b6f2-45ff-89f6-d13e18792cf4",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "fe0aec30-6538-4ff6-98e1-2af99e93ac1f",
+       "title": "Led Zeppelin II",
+       "status": "Bootleg"
+      },
+      {
+       "id": "1e16716f-ed6c-4390-afe5-94267f9c4254",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "e85b6f60-4293-3cf2-ba44-7f653d3887f1",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "3c33c843-148e-4323-9b44-868ac0656456",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "c85c1ab1-2cfa-444c-a092-eadefd1bd927",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "53f80f76-f8af-3558-bfd5-e7221e055c75",
+     "score": 92,
+     "title": "Led Zeppelin III",
+     "first-release-date": "1970-10-05",
+     "primary-type": "Album",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "23dfbb8a-3a09-49d5-b827-d8fce67c0e45",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "2945534f-04e2-4878-9938-0cfda8b16e30",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "93ac1812-d38d-4125-88e8-8440e3e89072",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "f54222f5-cf0e-48fe-8016-d42c218c9b7f",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "764154d0-7af5-4ac4-bd2c-97ad0df99969",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "a02147ae-8ce6-41a4-8464-f334f6ef9d1d",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "0db5c072-0e7a-4a1f-8641-fb59b25eee92",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "d5aa4ff7-f31d-45c4-a22a-2fd9d22937c4",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "f5bae327-83cd-4620-a63a-b5d2f6b633a3",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "15d2ca31-abe0-4402-a5db-21089679d213",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "22eee162-378f-44f4-823d-6011c06d5322",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "433d59f8-7bd9-3d3b-a2ec-79189708cc96",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "30344744-9d34-4921-aab9-25716b610789",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "9754ff0a-89bf-450b-91c3-052af74b76a4",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "e6ec152f-2913-4598-8552-17fea3798730",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "174dc15a-a98a-4c1e-a1bf-c71261c6738a",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "bb9eba85-e59c-405b-855b-410d97a3bf60",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "026f7714-9f06-4be1-a7c9-2119204554c3",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "9e0ec3fb-8bd6-42c8-80fc-07db9bb5a23e",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "e5b14515-bdde-4297-b147-e059d47bdf67",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "34f2d012-0cbe-4ab8-bfe5-8fdcbab20e06",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "6a39483f-a5b1-4acb-a8fd-0be6a3a45c6f",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "7b8fa945-040e-4de1-9595-656ee9980bee",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "23ecb899-ea42-4388-9f4d-4f414380b6a7",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "eb7f26f5-30e6-4582-a76e-938078b9eb69",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "d8f77a5f-5e49-4fe5-8c38-09ac54613d61",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "01ad8c74-de8b-40f7-a7ad-e21ed3149e39",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "721180e3-88f0-40a1-83cc-468215819a0d",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "1fad1e39-3bbb-45b9-b8d5-2399149fd25e",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "22581b0f-47d9-424e-b58e-834e512ca362",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "5ae4f223-8a9c-40fc-836b-c265ba2ee4c0",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "2dd7fb9f-db42-4cac-af9b-0a7b5dcef307",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "8918cbe2-0e4f-453e-b3dc-eb1a7ce2db9e",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "6fcfefc2-68aa-4aaf-92e4-cec01aec6659",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "49974cc5-cb7c-3b6a-9252-761ea6a6d7b8",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "1c842883-5353-4379-ad2c-423e1d936b16",
+       "title": "Led Zeppelin III = レッド・ツェッペリン III",
+       "status": "Official"
+      },
+      {
+       "id": "f1d3171e-10e1-4912-9da5-163a142118d8",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "a35c3caf-fc83-4ce1-9892-557fb962e7c2",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "0914d44a-c33e-3d75-ad42-38bb710360e1",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "3ec981d6-0665-36a0-bf3a-f9c09dbf8809",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "cc1bc5c1-ca5e-44db-98af-a0693fc226ff",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "c8069a95-a8db-4cd2-a666-3ff0f30d86b1",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "f7af97bf-db4e-39c5-adde-60ee70a5ec4c",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "b0460935-5db5-4a28-a851-e1d2d44a8aa0",
+       "title": "Led Zeppelin III",
+       "status": "Bootleg"
+      },
+      {
+       "id": "4d24faf6-ac92-44ea-944e-c9a6feda87f0",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "b6a8306d-5da2-4bd0-b10b-f0d8d2b22f70",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "7aadcfa2-df82-480e-8d2d-7ec4d0b41172",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "5e0624ef-9c7f-36e2-be42-8f8c2a1aa7d0",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "0ba6f036-9913-4250-acc0-1066cf3de700",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "972e6e2c-a116-4d02-8cfa-fd81a140985d",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "a41da5c4-a6e0-3e73-87ce-25e6510ebdcf",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "a057a1c8-7627-3dc3-9730-96f0361657e1",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "fd4b1a62-82b2-3195-ad69-f27dfa94fbb3",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "1334bb2e-1ff3-4677-bc91-35d5c9ece83a",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "6bd5b3c0-97b6-4d95-a7a0-aed90b94d216",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "4433bb9e-4dfd-4e8b-9a9c-a046a33580b5",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "ed772962-3b5f-4a59-8248-24a060165a20",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "f0d63408-a10c-4b38-9a25-4a871f83abb0",
+       "title": "Led Zeppelin III",
+       "status": "Bootleg"
+      },
+      {
+       "id": "f93711d8-eb71-4a81-b183-7c2a44d9e149",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "44585d75-19df-44ef-8c9f-85484a6b624c",
+       "title": "Led Zeppelin III 5.1 DTS",
+       "status": "Bootleg"
+      },
+      {
+       "id": "c32655ad-76c6-4c0b-bf1d-24643e611541",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "d4b2ee0b-7e24-487c-9ee6-7b87123ba0bb",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "46bd112b-1af0-44a6-bad4-aba3bfdcf72e",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "a9f09628-112e-4c35-8754-8494d3ba592b",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "2e61da88-39e9-3473-81d2-c964cb394952",
+     "score": 92,
+     "title": "[Led Zeppelin IV]",
+     "first-release-date": "1971-11-08",
+     "primary-type": "Album",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "1541f75d-a7be-4f61-ba16-371c866a7052",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "f69e2c3d-1d0c-432f-8652-c01176181ae3",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "77a2022a-f7e5-4b97-9e14-575174845e87",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "cf3fb645-6033-4d4d-b003-384d8bed5659",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "9c37d8ec-39a0-4ef3-baab-1133efba8ac7",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "605f18d0-d707-4343-bb1a-92e2f0a8528c",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "25ec0368-4666-40fa-a898-b32f3216cb76",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "780c103b-b33b-45ad-bd11-98205b233bce",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "491356c0-b505-4623-8d18-a495483decc5",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "97fd4094-7aa9-4e2c-b594-b0a2815c3d7c",
+       "title": "Led Zeppelin IV",
+       "status": "Official"
+      },
+      {
+       "id": "f80b58c7-8d4c-3943-b4a4-a1ce64093d1b",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "400901f5-8b79-4f74-9ef5-5f1c037c9634",
+       "title": "[Led Zeppelin IV]"
+      },
+      {
+       "id": "f3f7abed-a1b1-4e76-be32-2f4d71218256",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "a41f59ee-500d-4f03-a6ac-661783dffdc5",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "802a4060-ea13-4577-8763-edd330642fbf",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "f88ff8dc-f868-4ade-b64a-9ffb8a2c9b7d",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "1d0a5c49-998e-43fe-86a7-17118e5fb74c",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "1fa80fd0-dcd6-494b-bd5b-efb4bdcd9eb7",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "50c1e2db-6dcd-45c8-8f92-b21381a87445",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "db11882b-f357-4587-ba3a-d561319679d4",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "3ae21f71-1d5f-40ec-a62a-69ae54bceaf7",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "9a6e0e17-8c6e-4f4c-bc5a-773e89cb7f48",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "f9212b00-bd3a-4f9f-8c05-506b9df5888d",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "9add4274-f9e5-44ac-a8c2-b7f6594d67e6",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "a186c398-6339-4bf2-99ee-d03d41d7e19f",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "bdd8d7c5-eda2-46ab-a272-4f096e13a7f9",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "e40ce9e5-844a-4cde-a7c2-b316191ec981",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "872ed663-7885-44f9-b13f-c628d6c84f29",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "d204c2a6-665a-35ef-9b7c-799df194dea1",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "f9285d90-68a9-4978-80f1-7eff6609e7c8",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "3fa3958d-333d-4c02-b7f5-7134d72cf6e7",
+       "title": "[Led Zeppelin IV]",
+       "status": "Bootleg"
+      },
+      {
+       "id": "7ccc3023-3ea3-47b1-b6d5-0b74bd9d92ac",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "1da28879-c832-4d8a-a227-06595d49b2c8",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "0fca4b6f-26e9-470c-95dd-5204ce73e9b5",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "881f80ba-0afb-3993-b8d8-aa10416ecc6c",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "ad4139c8-1b8b-42cc-a5bb-a905d80e0317",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "b953d691-8779-49c2-b46e-deb3eea2ad1d",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "a55a7de4-5a1c-3c84-98c6-28b042ee5202",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "40e62ae2-57b2-4e66-b527-685aacf1c3c6",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "ec9dbd4b-2a29-4b3e-941b-af7b363dc23d",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "b41c9d20-e263-4961-86e8-c90b413dcf02",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "822fffb0-7c54-4395-bf18-30c56a3738b2",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "2a73b5f2-f680-4c3b-902f-7e395dece103",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "ca98b31f-3e81-4d8c-87d8-f0b64632e5fc",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "d8984a59-052f-435a-b245-7df239b384f7",
+       "title": "[Led Zeppelin IV]",
+       "status": "Bootleg"
+      },
+      {
+       "id": "959621bf-6536-4f37-a60d-148168d98700",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "a0d9033b-01ec-48b2-bf05-395bd103aad9",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "de714b9d-51ec-49b6-8e70-81849ba31e79",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "a68e5783-c5d0-4e3b-ad50-2b3dca1e6d80",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "3c7da150-60d4-4ad2-952a-0dc3b088b153",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "43dad408-5207-460b-a0ce-52a685776850",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "7e89be43-0c3a-3d05-9471-40dd26a98385",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "9cfdee47-1d3f-3d95-8ad2-528ec3b09fa1",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "8ad7ce96-070a-4f56-8d9b-38639c7e2d36",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "46ecd4a5-db56-4d17-8d1f-243b4a1f72f7",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "c66df7b9-c773-4d7c-9a21-7d3f2518dd29",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "5a17beb8-d7d7-4680-baa8-d6517aca1c68",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "bacbd0b1-a596-43ee-ace4-1d19664fcd3c",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "3b2dcb10-347d-49f8-beea-7474a77aebf6",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "a1f2ad19-3e0f-4e74-a949-a5f04968cdfe",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "a22c222e-1a75-469d-82ab-2d84e5f6a3e7",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "9bac5138-4ec6-38de-9ace-e419bb96a753",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "c4b3eaa1-b82b-47e4-937b-c0851712a920",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "07fe0684-3069-4b44-b30a-8443f3627b83",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "a938d2f1-72c7-4f9b-9c2b-9997676abc21",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "c3bbef1d-053f-4f7e-b739-a09fbdfc8ee5",
+       "title": "[Led Zeppelin IV]",
+       "status": "Bootleg"
+      },
+      {
+       "id": "29c124e7-cd34-483e-bbb2-d44546c48b29",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "153c9ffe-6d22-4ee1-bffa-e29aedc315dc",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "e20a139c-a9a7-4fac-9303-a8a2143d9552",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "a69c9d57-62be-3e40-b9aa-ef3557d53c5f",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "103a462d-a9f2-4f05-9490-3d8fe506c8a6",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "bfd8e1cd-0361-4599-bbe6-50c0d93ca82d",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "98716612-b8fd-3334-9fb2-a17afdd17173",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "4779d5d3-e57e-3a0b-9f2d-688ebb25e509",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "3a4f0cbb-a599-48ea-af19-f2f6d397a3d9",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "f14e2921-5a5c-3e83-834b-92e84ab146d8",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "eec0b9f7-3044-3cd2-9140-db912dbc97ad",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "fe378f76-72cb-4664-8d5f-2dffe9670a11",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "2b65ce0c-0ee7-4838-b457-4201f6c6ca16",
+       "title": "[Led Zeppelin IV]",
+       "status": "Bootleg"
+      },
+      {
+       "id": "3df00781-2eb1-47d7-801d-340964a624d3",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "a9a8d0de-0d1a-40a5-af83-b223a3435683",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "14b8e7a3-ed63-416b-85ac-cfcb0377ffca",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "d1196083-39c3-36c6-85a3-b775902d09da",
+       "title": "Led Zeppelin IV",
+       "status": "Official"
+      },
+      {
+       "id": "4eb4eb2f-f905-4cfb-8be8-1802b9867600",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "9e91516d-fd47-4deb-ae12-6cf94abfdb99",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "71eafe5d-33b0-4e41-9b51-754b8450302e",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "fc117ce1-5dbb-450c-b560-ded23d5dae2d",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "ffeb9258-4101-360b-8a84-69b2b1a10c22",
+     "score": 87,
+     "title": "This Is Led Zeppelin",
+     "first-release-date": "1971",
+     "primary-type": "EP",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "98609afc-cecd-4d74-ac1b-937dfd7bff6b",
+       "title": "This Is Led Zeppelin",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "87ac6730-6a50-408e-839d-002a7685df6c",
+     "score": 82,
+     "title": "An Introduction to Led Zeppelin",
+     "first-release-date": "2018-09-27",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "3ada4e4e-2794-4be0-bf77-acac8b90d0e4",
+       "title": "An Introduction to Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "a4345d1a-52d1-4304-a5c1-dfe2318dad99",
+       "title": "An Introduction to Led Zeppelin",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "301d5ef1-1cde-4ca5-9069-8d9890e7fa17",
+     "score": 76,
+     "title": "Rock Report Led Zeppelin Stairway to Heaven",
+     "first-release-date": "1998",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Interview"
+     ],
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "cb28340a-6447-419e-9c1b-131be9f709c4",
+       "title": "Rock Report Led Zeppelin Stairway to Heaven",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "7e9cb719-968a-41e0-866c-7cdc139da9eb",
+     "score": 75,
+     "title": "Tribute to Led Zeppelin",
+     "first-release-date": "1994",
+     "primary-type": "Album",
+     "artist-credit": [
+      {
+       "name": "They Play Led Zeppelin",
+       "artist": {
+        "id": "2b5032c1-2e20-4027-8b33-b02c976b54f1",
+        "name": "They Play Led Zeppelin",
+        "sort-name": "They Play Led Zeppelin"
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "99ee48c5-5a87-471d-bc9b-37b5fe590eb8",
+       "title": "Tribute to Led Zeppelin",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "26e073a1-a825-4098-b9c9-f1e14135678d",
+     "score": 71,
+     "title": "AT&T Showcase of Rock – The Led Zeppelin Story",
+     "first-release-date": "1993-03-20",
+     "primary-type": "Broadcast",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "9b124aa6-26cb-4c68-b5b6-7ae7468df8ec",
+       "title": "AT&T Showcase of Rock – The Led Zeppelin Story",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "6d5c316e-1dcf-30e1-ac4d-726d67a747c4",
+     "score": 71,
+     "title": "Early Days: The Best of Led Zeppelin, Volume One",
+     "first-release-date": "1999-11-23",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "f5020d23-44a7-4ce7-ab61-156fb9ae30f8",
+       "title": "Early Days: The Best of Led Zeppelin, Volume One",
+       "status": "Official"
+      },
+      {
+       "id": "e2975df2-72e0-40ad-bc89-1c2f76c1db1b",
+       "title": "Early Days: The Best of Led Zeppelin, Volume One",
+       "status": "Official"
+      },
+      {
+       "id": "0b619a0c-675e-450a-a645-0211c2ffdc65",
+       "title": "Early Days: The Best of Led Zeppelin, Volume One",
+       "status": "Official"
+      },
+      {
+       "id": "1288824c-5760-4046-81e0-f8d0a9e0c14b",
+       "title": "Early Days: The Best of Led Zeppelin, Volume One",
+       "status": "Official"
+      },
+      {
+       "id": "73ad55fe-5cc4-4780-9d5e-65106aa94e09",
+       "title": "Early Days: The Best of Led Zeppelin, Volume One",
+       "status": "Official"
+      },
+      {
+       "id": "5558345b-6df7-3c68-8b2c-2d21226a7f56",
+       "title": "Early Days: The Best of Led Zeppelin, Volume One",
+       "status": "Official"
+      },
+      {
+       "id": "35b756ec-b32d-3a3f-b109-ca195d2f2dc1",
+       "title": "Early Days: The Best of Led Zeppelin, Volume One",
+       "status": "Official"
+      },
+      {
+       "id": "3cf6ad08-6ea0-3a58-9088-88b94c759b4b",
+       "title": "Early Days: The Best of Led Zeppelin, Volume One",
+       "status": "Official"
+      },
+      {
+       "id": "0613b46b-f3b6-4995-8edb-879632c04788",
+       "title": "Early Days: The Best of Led Zeppelin, Volume One",
+       "status": "Official"
+      },
+      {
+       "id": "7522847d-eced-4f39-a406-88b27dac401e",
+       "title": "Early Days: ベスト・オブ・レッド・ツェッペリン VOL.1",
+       "status": "Pseudo-Release"
+      }
+     ]
+    },
+    {
+     "id": "d9d3b39a-c55b-31b4-84de-f423da4c39b0",
+     "score": 71,
+     "title": "Latter Days: The Best of Led Zeppelin, Volume Two",
+     "first-release-date": "2000-03-21",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "1b17ad0c-4a30-489b-87e3-1f0711ed26f9",
+       "title": "Latter Days: The Best of Led Zeppelin, Volume Two",
+       "status": "Official"
+      },
+      {
+       "id": "d3c520f6-0497-49d1-a20f-731ad77e023d",
+       "title": "Latter Days: The Best of Led Zeppelin, Volume Two",
+       "status": "Official"
+      },
+      {
+       "id": "00517098-31c1-4be0-9eb7-dcf0397d3749",
+       "title": "Latter Days: The Best of Led Zeppelin, Volume Two",
+       "status": "Official"
+      },
+      {
+       "id": "55ffa369-eac3-4c3f-a542-584e3a9af8a0",
+       "title": "Latter Days - The Best Of Led Zeppelin Volume Two",
+       "status": "Official"
+      },
+      {
+       "id": "54eb6bf3-5156-3a7e-92dd-aff617fb4a61",
+       "title": "Latter Days: The Best of Led Zeppelin, Volume Two",
+       "status": "Official"
+      },
+      {
+       "id": "882a4729-1a5b-43a1-96f6-0c0c72a3353e",
+       "title": "Latter Days: The Best of Led Zeppelin, Volume Two",
+       "status": "Official"
+      },
+      {
+       "id": "e5020ab2-1011-33a5-a407-9557b9765e02",
+       "title": "Latter Days: The Best of Led Zeppelin, Volume Two",
+       "status": "Official"
+      },
+      {
+       "id": "b726e175-cca4-4ee0-ac81-f4d131c6bfbc",
+       "title": "Latter Days: The Best of Led Zeppelin, Volume Two",
+       "status": "Official"
+      },
+      {
+       "id": "5ddd8429-2032-4741-9bc0-fe6055ab3c5b",
+       "title": "Latter Days: The Best of Led Zeppelin, Volume Two",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "0994b340-aa7c-45b9-91c3-379f8b6ac0a7",
+     "score": 64,
+     "title": "Early Days & Latter Days: The Best of Led Zeppelin, Volumes One and Two",
+     "first-release-date": "2002-11-19",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "be43b15f-b31a-4357-ac8c-8d1a534e5f60",
+       "title": "Early Days & Latter Days: The Best of Led Zeppelin, Volumes One and Two",
+       "status": "Official"
+      },
+      {
+       "id": "832e0862-e4d1-4747-8051-d8e12a720e1c",
+       "title": "The Very Best of Led Zeppelin: Early Days & Latter Days",
+       "status": "Official"
+      },
+      {
+       "id": "f4f7b03b-e483-3ebb-8dee-4bdbd4b32c5a",
+       "title": "Early Days & Latter Days: The Best of Led Zeppelin, Volumes One and Two",
+       "status": "Official"
+      },
+      {
+       "id": "e78f68ef-5009-44d9-8dbd-49691660b2fd",
+       "title": "The Very Best of Led Zeppelin - Early Days & Latter Days",
+       "status": "Official"
+      },
+      {
+       "id": "e38d73ad-b72f-4ecd-ba6d-68e62b1ae25b",
+       "title": "Early Days & Latter Days: The Best of Led Zeppelin, Volumes One and Two",
+       "status": "Official"
+      },
+      {
+       "id": "72b5c27b-7e87-400c-8d97-805f03e6d9bd",
+       "title": "Early Days & Latter Days: The Best of Led Zeppelin, Volumes One and Two",
+       "status": "Official"
+      }
+     ]
+    }
+   ]
+  },
+  "https://musicbrainz.org/ws/2/release-group?fmt=json&limit=40&query=releasegroup%3A(led%20AND%20zeppelin)%20AND%20artist%3A(led%20AND%20zeppelin)%20AND%20status%3Aofficial": {
+   "created": "2026-10-22T18:57:18.582Z",
+   "offset": 0,
+   "release-groups": [
+    {
+     "id": "07e182ae-6567-4bc4-90f0-73619c942d73",
+     "score": 100,
+     "title": "Led Zeppelin x Led Zeppelin",
+     "first-release-date": "2018-09-27",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "25a9c57a-a49b-4f4d-a73a-bcf35f01168c",
+       "title": "Led Zeppelin x Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "eca4f64f-78af-471d-86fe-24ed1b3a3e6b",
+       "title": "Led Zeppelin x Led Zeppelin",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "fadd0405-9ba3-496b-890c-ad250336f3c2",
+     "score": 99,
+     "title": "Led Zeppelin",
+     "first-release-date": "2006-07",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "8841b4c9-524f-49e6-9660-05f31248c26d",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "362f3fa7-d298-3998-ae1c-4ac0d02b7718",
+     "score": 99,
+     "title": "Led Zeppelin",
+     "first-release-date": "2003-05-26",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation",
+      "Live"
+     ],
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "bc5a0db2-a123-4a29-bb75-de01c52da293",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "e6f913af-351d-4959-a2ca-791022892940",
+       "title": "DVD",
+       "status": "Official"
+      },
+      {
+       "id": "90a599ae-0b00-4a4a-bbd0-a266762875e9",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "92d5e425-6dff-34d7-8edf-0c82156b46b0",
+     "score": 99,
+     "title": "Led Zeppelin",
+     "disambiguation": "remastered box set",
+     "first-release-date": "1990-10-08",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "cc09bf24-1a1d-4b0f-a447-3aaf89fa6aa2",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "e53120aa-ef15-491d-ad39-8ef159a6ca6b",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "dcf1454b-5354-4c65-8c7b-616aff3490ed",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "ee4fc1bb-ebd0-3473-85f4-9a9d48c6f0d7",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "4bd72d5b-1033-395a-9ed3-6110b7b85556",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "5fdf774f-d9be-48b8-89df-d4c4761c4271",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "4c9ff4de-69db-4613-9467-ca2d8a79d996",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "f9dce536-f711-4d3c-a33e-62667d89d46d",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "a8d1a687-e323-42cc-8f6f-17f9661b03c2",
+     "score": 99,
+     "title": "Led Zeppelin",
+     "first-release-date": "1990",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "f3bd72bf-19a4-4491-b408-9c889fa322d2",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "0f18ec88-aa87-38a9-8a65-f03d81763560",
+     "score": 99,
+     "title": "Led Zeppelin",
+     "disambiguation": "I",
+     "first-release-date": "1969-01-12",
+     "primary-type": "Album",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "e81adfde-c463-4e7e-9057-7ab9fee56dbc",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "5156d820-7676-4009-a8fc-58aec49b3d2a",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "baec6e8c-b4c9-4f60-a51f-0d193b22edd8",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "c9adbe12-3a34-41e4-890a-68872b8ff3de",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "81b3a21c-3349-48cc-a438-64b814297d9c",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "eeb6596f-9492-4d4c-91d2-37ba949b9e4c",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "09a0282a-dbef-4f21-927b-93dc1d45d9c5",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "20d36c41-67e9-464a-a338-47a1a0866ea5",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "418cbfdf-087f-4aac-8188-0ae8c6f0554f",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "61021afd-63fc-49f2-9062-79cb317ed032",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "e601f979-c329-4533-a61e-62e0ed33ba59",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "7f0e3608-e19b-4b6b-88be-e341706ef841",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "5018f59c-8e91-4f77-8625-aca963e005f8",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "9eba4a95-9809-4485-8024-00f37e92514a",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "fcbc8ada-58a7-42a9-a34c-51983c730562",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "11aacee5-aaf0-44dd-b020-a6c619d6c230",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "6166b18d-6055-38e0-886f-b265dd1a980f",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "7022708a-b7e2-41b1-b03a-2461d5570630",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "64c802a2-77db-3a78-8b36-edd4122f2eb2",
+       "title": "Led Zeppelin",
+       "status": "Bootleg"
+      },
+      {
+       "id": "a98e37d8-973f-4501-a6aa-2d1d3befcc76",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "923ff8a5-7aae-47eb-876d-0bab30dc6e16",
+       "title": "Led Zeppelin",
+       "status": "Bootleg"
+      },
+      {
+       "id": "e6ac555e-e831-32d7-8e0a-10d7cc187950",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "3af9635d-bb68-433d-a28c-3d42f09a4297",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "42438dbb-db38-469a-a7e6-e1617b6ac104",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "0806f8b0-d6a4-4284-8556-67406be6e97e",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "b52097f4-cb26-4965-867c-0d87fba4e09f",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "0d2b2c43-b595-4aaa-8cae-3dd889b92df6",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "9e7f83ef-6d0d-425e-92da-344331bc000c",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "868ba4b4-03bb-48c7-a30c-09523f050bc9",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "7ed76949-79b8-4e32-9401-e66b70fd115b",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "b7572894-2d4c-47cd-a355-a19755bf118b",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "db51be41-c79b-3eee-9b63-74bcace8a357",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "25317bbe-66da-44d9-8c71-5c0b3b4ee1af",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "016516a6-c0bc-4636-b325-ec7db777458b",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "f838fb20-a950-46de-ba44-be02e0b7a014",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "49a37840-8359-4fe2-957e-fafac8461ba5",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "3df3b60f-d6e1-3af9-913f-0014e73650ee",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "d701916c-4398-4b00-a3d3-6eb7cd4a940e",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "a95b726d-441f-43b2-b963-7d44612ebacc",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "ae7b3036-aecd-4e0b-b107-fc0675b3db00",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "10f90dad-4cb7-42d3-89e7-db4b619eddf7",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "213afef1-f474-379d-9ebd-0dee46703381",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "f0e0a3c5-6bee-415f-990e-9064fb3876ec",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "82ab13ce-5cdb-4756-a9cf-28f8cfef51e9",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "913e4310-e710-4f8d-8c33-41befd7591f1",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "15ad9398-dfc7-46d6-aec2-618d4efb62e8",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "8522a979-eadc-41fe-a207-ef676c0f3c06",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "aa75e8de-675c-4563-8fa1-d04d21b67a1d",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "3bb1054e-0ffd-4937-9758-662be56f9aec",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "a022e5e2-7887-4269-914d-f6d8e07f9848",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "026864c4-c426-4f83-b4ca-d01c297b6ac9",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "68a3c217-3ce7-4383-a41c-e6f9b76b1e0b",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "be4180b3-105a-430a-8a87-a42ae2ee2ae0",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "7214f50e-e7d6-4948-806a-024a00a1eda7",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "c1ad1b90-13b3-4389-b3a4-e9e556cd0bd5",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "9b0c3ce3-76e1-3b70-b8d0-dd716ea311f2",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "2ff3108a-1e3f-34b8-8bdc-415df8bb759d",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "30adf1e4-4eb1-4ccb-9fb9-92358b10cd2f",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "ed69765d-bb07-4775-bc02-d0376bd363b0",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "6ad8bb9c-bddc-481e-846a-e0f2e20f1516",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "80a7b2be-7b0e-4ca8-9a7a-87f00d176e79",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "048165f1-f721-4eef-8e1d-5f380a127dde",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "d78c3cbf-dc33-424d-85c2-2de4dde24f65",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "7f171293-c1a3-4101-b7cc-74d354762622",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "2014da02-d763-4d5d-b7f8-6cf9320c08ee",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "078499d1-7ff8-482f-902c-6bfbf05bf141",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "5240f76b-af63-46a8-8a5a-87a970685d18",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "2ee17f1f-b040-4820-a6af-9f4e6c7ebc5b",
+       "title": "Led Zeppelin",
+       "status": "Bootleg"
+      },
+      {
+       "id": "98edca95-9ce3-3308-a88f-e799face0a29",
+       "title": "Led Zeppelin",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "33b4653d-006e-3cc1-8afb-386b15a6cd6e",
+     "score": 92,
+     "title": "Led Zeppelin II",
+     "first-release-date": "1969-10-22",
+     "primary-type": "Album",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "1edd5844-7a0e-41bc-b122-fa6b1d402c83",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "80d99d0d-93d9-4f9a-8873-7c3f7dd5ab7f",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "66a211d6-9b56-4eb1-8bde-06456c8388fe",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "ffd29f20-e0e4-4d42-b476-0a5ea7e0c3ba",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "56685555-ad19-4968-ac2c-6525897681b4",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "7e4a5c43-eb33-49ad-baf3-6d794dc26b60",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "d39ef8e7-a0e4-4acf-99e0-33405399cd2d",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "0fc6adbb-cc6a-4825-a4be-01b0a35844de",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "35317cff-f99a-4baf-93b0-bb456190c480",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "aa9e9070-32da-4dd3-bab5-e8b430f28032",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "a3396fed-af4e-474a-83f6-555b15424acd",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "8ba96cce-73f4-4d2d-80d9-99d9cab46e53",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "2ac3b867-02d7-47fb-a360-f1f5828d5e9b",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "4caaad0c-79f2-4d08-8eb3-b3a6a3229bbf",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "472aea5a-ef4f-360f-84b9-0ed21abcec65",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "812ab973-05b8-4542-9c42-a8e934a785cc",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "b01b8dc4-a033-4f3c-8623-f77e9a2f34a3",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "929b2b59-9a4e-4e8d-96f4-49a86153fec6",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "e91ed5de-bee1-4246-b64c-3218ef64ab0b",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "7bba9861-f7bb-4bee-b1df-14eb2fb7b65c",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "0d1fc06f-4dcb-45b0-8fae-33deb44f46ed",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "164f9f2e-5d0e-48c9-ad32-3853375cd9fa",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "295470dc-66e4-4d93-a464-25cb2ee03aaf",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "743c0976-3f48-4109-841c-cd5158536a45",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "5f1fc485-bc31-478f-9a4e-5b7aec3a2a93",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "672b9d14-15c1-4a14-a62c-9600629d3b07",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "18ba83c2-354c-4ebc-918d-8795f821747f",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "3687ea29-1243-4b0b-8983-35197365327d",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "ba07bb97-6239-4a27-9c27-6a4e6996ba64",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "0848b6e5-858b-4219-9df6-6cbe8705a191",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "c2ac2fe1-817d-4979-ad7b-40b3e880645c",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "9421d5a3-c6bd-4a3b-ade1-007831920694",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "3f06b417-926a-4566-b180-fb09fb7b3552",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "a650ab1f-283d-4630-9e44-69d8d099144a",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "af1fda38-1832-443a-8af6-2519804c0ca2",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "9b2b4f9f-4bcb-3130-90bb-db8261b27f28",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "2c2d301d-30de-44fd-89f4-e2d78a4a9de2",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "3b5b27bc-776d-4e2b-b7da-6a02b4ce20bc",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "1eedb603-6818-4201-a934-4a537abb59e4",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "0529e595-a06a-461b-916e-5f4a69cba847",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "c6b2d713-feec-4592-b3c4-1cc8b971a189",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "f0e7c9b0-f5a5-3022-89a6-48c94e965fc8",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "44a720dd-6fe8-4c97-8503-aa9023e02bd3",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "c918d2fa-24ed-3b9f-8cfa-94c7a3417960",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "dd235704-a182-415c-bb8e-9033bffe2817",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "a19631e2-b689-44e2-b9d1-2879f45410e4",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "f79e96d2-fb5d-4a41-bf45-4a270133b631",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "cdb24572-175c-4317-9bf4-9411979439f9",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "8808b68e-fdb9-4830-9345-184709039ceb",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "4bc6a5d2-98bc-4e42-a46f-bbc90139fd9a",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "fe05227e-73ad-4ee7-9f6c-89f6246c2cf2",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "57eb35c9-0e7b-4b1e-a120-f63883e7aad3",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "97e89db2-e0fe-3e49-8183-ec846c2892ce",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "ab45f915-cd5a-4929-8b3a-9048efe052e5",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "d7be0adc-dbcb-3a6c-878c-ddac4dc711f5",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "87e8eaa5-2285-4fd5-b392-f0e8bad5b2f9",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "ee5fd8b2-59da-4ba3-8356-25d7a04efb41",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "8e4600bc-cd9a-4822-b615-d9095dc6cf8e",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "3a02aff7-7b03-425e-bc2f-2ab8f7edf679",
+       "title": "Led Zeppelin II: Whola Lotta Love",
+       "status": "Bootleg"
+      },
+      {
+       "id": "57fc464a-a8da-3b4c-a7de-6ca260297f65",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "8e4ddfc0-c68c-3f77-9248-340e665d18b7",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "6950a53c-c22b-431d-a0e9-639ffda0c470",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "de3ba4ad-1865-4f08-af15-dd4273b8fe09",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "bffe742c-7e3a-4fef-9630-9df459a34470",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "c4889ad4-55d4-4d23-8f27-5353750585fe",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "7f6aca4e-faf4-4f62-a6a7-e1b6fe50308e",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "04f0936c-1d0b-4901-872b-aad32826562f",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "ca108fb0-b6f2-45ff-89f6-d13e18792cf4",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "fe0aec30-6538-4ff6-98e1-2af99e93ac1f",
+       "title": "Led Zeppelin II",
+       "status": "Bootleg"
+      },
+      {
+       "id": "1e16716f-ed6c-4390-afe5-94267f9c4254",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "e85b6f60-4293-3cf2-ba44-7f653d3887f1",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "3c33c843-148e-4323-9b44-868ac0656456",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "c85c1ab1-2cfa-444c-a092-eadefd1bd927",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "53f80f76-f8af-3558-bfd5-e7221e055c75",
+     "score": 92,
+     "title": "Led Zeppelin III",
+     "first-release-date": "1970-10-05",
+     "primary-type": "Album",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "23dfbb8a-3a09-49d5-b827-d8fce67c0e45",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "2945534f-04e2-4878-9938-0cfda8b16e30",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "93ac1812-d38d-4125-88e8-8440e3e89072",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "f54222f5-cf0e-48fe-8016-d42c218c9b7f",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "764154d0-7af5-4ac4-bd2c-97ad0df99969",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "a02147ae-8ce6-41a4-8464-f334f6ef9d1d",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "0db5c072-0e7a-4a1f-8641-fb59b25eee92",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "d5aa4ff7-f31d-45c4-a22a-2fd9d22937c4",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "f5bae327-83cd-4620-a63a-b5d2f6b633a3",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "15d2ca31-abe0-4402-a5db-21089679d213",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "22eee162-378f-44f4-823d-6011c06d5322",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "433d59f8-7bd9-3d3b-a2ec-79189708cc96",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "30344744-9d34-4921-aab9-25716b610789",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "9754ff0a-89bf-450b-91c3-052af74b76a4",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "e6ec152f-2913-4598-8552-17fea3798730",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "174dc15a-a98a-4c1e-a1bf-c71261c6738a",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "bb9eba85-e59c-405b-855b-410d97a3bf60",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "026f7714-9f06-4be1-a7c9-2119204554c3",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "9e0ec3fb-8bd6-42c8-80fc-07db9bb5a23e",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "e5b14515-bdde-4297-b147-e059d47bdf67",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "34f2d012-0cbe-4ab8-bfe5-8fdcbab20e06",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "6a39483f-a5b1-4acb-a8fd-0be6a3a45c6f",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "7b8fa945-040e-4de1-9595-656ee9980bee",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "23ecb899-ea42-4388-9f4d-4f414380b6a7",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "eb7f26f5-30e6-4582-a76e-938078b9eb69",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "d8f77a5f-5e49-4fe5-8c38-09ac54613d61",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "01ad8c74-de8b-40f7-a7ad-e21ed3149e39",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "721180e3-88f0-40a1-83cc-468215819a0d",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "1fad1e39-3bbb-45b9-b8d5-2399149fd25e",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "22581b0f-47d9-424e-b58e-834e512ca362",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "5ae4f223-8a9c-40fc-836b-c265ba2ee4c0",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "2dd7fb9f-db42-4cac-af9b-0a7b5dcef307",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "8918cbe2-0e4f-453e-b3dc-eb1a7ce2db9e",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "6fcfefc2-68aa-4aaf-92e4-cec01aec6659",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "49974cc5-cb7c-3b6a-9252-761ea6a6d7b8",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "1c842883-5353-4379-ad2c-423e1d936b16",
+       "title": "Led Zeppelin III = レッド・ツェッペリン III",
+       "status": "Official"
+      },
+      {
+       "id": "f1d3171e-10e1-4912-9da5-163a142118d8",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "a35c3caf-fc83-4ce1-9892-557fb962e7c2",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "0914d44a-c33e-3d75-ad42-38bb710360e1",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "3ec981d6-0665-36a0-bf3a-f9c09dbf8809",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "cc1bc5c1-ca5e-44db-98af-a0693fc226ff",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "c8069a95-a8db-4cd2-a666-3ff0f30d86b1",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "f7af97bf-db4e-39c5-adde-60ee70a5ec4c",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "b0460935-5db5-4a28-a851-e1d2d44a8aa0",
+       "title": "Led Zeppelin III",
+       "status": "Bootleg"
+      },
+      {
+       "id": "4d24faf6-ac92-44ea-944e-c9a6feda87f0",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "b6a8306d-5da2-4bd0-b10b-f0d8d2b22f70",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "7aadcfa2-df82-480e-8d2d-7ec4d0b41172",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "5e0624ef-9c7f-36e2-be42-8f8c2a1aa7d0",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "0ba6f036-9913-4250-acc0-1066cf3de700",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "972e6e2c-a116-4d02-8cfa-fd81a140985d",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "a41da5c4-a6e0-3e73-87ce-25e6510ebdcf",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "a057a1c8-7627-3dc3-9730-96f0361657e1",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "fd4b1a62-82b2-3195-ad69-f27dfa94fbb3",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "1334bb2e-1ff3-4677-bc91-35d5c9ece83a",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "6bd5b3c0-97b6-4d95-a7a0-aed90b94d216",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "4433bb9e-4dfd-4e8b-9a9c-a046a33580b5",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "ed772962-3b5f-4a59-8248-24a060165a20",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "f0d63408-a10c-4b38-9a25-4a871f83abb0",
+       "title": "Led Zeppelin III",
+       "status": "Bootleg"
+      },
+      {
+       "id": "f93711d8-eb71-4a81-b183-7c2a44d9e149",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "44585d75-19df-44ef-8c9f-85484a6b624c",
+       "title": "Led Zeppelin III 5.1 DTS",
+       "status": "Bootleg"
+      },
+      {
+       "id": "c32655ad-76c6-4c0b-bf1d-24643e611541",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "d4b2ee0b-7e24-487c-9ee6-7b87123ba0bb",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "46bd112b-1af0-44a6-bad4-aba3bfdcf72e",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      },
+      {
+       "id": "a9f09628-112e-4c35-8754-8494d3ba592b",
+       "title": "Led Zeppelin III",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "2e61da88-39e9-3473-81d2-c964cb394952",
+     "score": 92,
+     "title": "[Led Zeppelin IV]",
+     "first-release-date": "1971-11-08",
+     "primary-type": "Album",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "1541f75d-a7be-4f61-ba16-371c866a7052",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "f69e2c3d-1d0c-432f-8652-c01176181ae3",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "77a2022a-f7e5-4b97-9e14-575174845e87",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "cf3fb645-6033-4d4d-b003-384d8bed5659",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "9c37d8ec-39a0-4ef3-baab-1133efba8ac7",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "605f18d0-d707-4343-bb1a-92e2f0a8528c",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "25ec0368-4666-40fa-a898-b32f3216cb76",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "780c103b-b33b-45ad-bd11-98205b233bce",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "491356c0-b505-4623-8d18-a495483decc5",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "97fd4094-7aa9-4e2c-b594-b0a2815c3d7c",
+       "title": "Led Zeppelin IV",
+       "status": "Official"
+      },
+      {
+       "id": "f80b58c7-8d4c-3943-b4a4-a1ce64093d1b",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "400901f5-8b79-4f74-9ef5-5f1c037c9634",
+       "title": "[Led Zeppelin IV]"
+      },
+      {
+       "id": "f3f7abed-a1b1-4e76-be32-2f4d71218256",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "a41f59ee-500d-4f03-a6ac-661783dffdc5",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "802a4060-ea13-4577-8763-edd330642fbf",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "f88ff8dc-f868-4ade-b64a-9ffb8a2c9b7d",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "1d0a5c49-998e-43fe-86a7-17118e5fb74c",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "1fa80fd0-dcd6-494b-bd5b-efb4bdcd9eb7",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "50c1e2db-6dcd-45c8-8f92-b21381a87445",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "db11882b-f357-4587-ba3a-d561319679d4",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "3ae21f71-1d5f-40ec-a62a-69ae54bceaf7",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "9a6e0e17-8c6e-4f4c-bc5a-773e89cb7f48",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "f9212b00-bd3a-4f9f-8c05-506b9df5888d",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "9add4274-f9e5-44ac-a8c2-b7f6594d67e6",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "a186c398-6339-4bf2-99ee-d03d41d7e19f",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "bdd8d7c5-eda2-46ab-a272-4f096e13a7f9",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "e40ce9e5-844a-4cde-a7c2-b316191ec981",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "872ed663-7885-44f9-b13f-c628d6c84f29",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "d204c2a6-665a-35ef-9b7c-799df194dea1",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "f9285d90-68a9-4978-80f1-7eff6609e7c8",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "3fa3958d-333d-4c02-b7f5-7134d72cf6e7",
+       "title": "[Led Zeppelin IV]",
+       "status": "Bootleg"
+      },
+      {
+       "id": "7ccc3023-3ea3-47b1-b6d5-0b74bd9d92ac",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "1da28879-c832-4d8a-a227-06595d49b2c8",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "0fca4b6f-26e9-470c-95dd-5204ce73e9b5",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "881f80ba-0afb-3993-b8d8-aa10416ecc6c",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "ad4139c8-1b8b-42cc-a5bb-a905d80e0317",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "b953d691-8779-49c2-b46e-deb3eea2ad1d",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "a55a7de4-5a1c-3c84-98c6-28b042ee5202",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "40e62ae2-57b2-4e66-b527-685aacf1c3c6",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "ec9dbd4b-2a29-4b3e-941b-af7b363dc23d",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "b41c9d20-e263-4961-86e8-c90b413dcf02",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "822fffb0-7c54-4395-bf18-30c56a3738b2",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "2a73b5f2-f680-4c3b-902f-7e395dece103",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "ca98b31f-3e81-4d8c-87d8-f0b64632e5fc",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "d8984a59-052f-435a-b245-7df239b384f7",
+       "title": "[Led Zeppelin IV]",
+       "status": "Bootleg"
+      },
+      {
+       "id": "959621bf-6536-4f37-a60d-148168d98700",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "a0d9033b-01ec-48b2-bf05-395bd103aad9",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "de714b9d-51ec-49b6-8e70-81849ba31e79",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "a68e5783-c5d0-4e3b-ad50-2b3dca1e6d80",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "3c7da150-60d4-4ad2-952a-0dc3b088b153",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "43dad408-5207-460b-a0ce-52a685776850",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "7e89be43-0c3a-3d05-9471-40dd26a98385",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "9cfdee47-1d3f-3d95-8ad2-528ec3b09fa1",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "8ad7ce96-070a-4f56-8d9b-38639c7e2d36",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "46ecd4a5-db56-4d17-8d1f-243b4a1f72f7",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "c66df7b9-c773-4d7c-9a21-7d3f2518dd29",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "5a17beb8-d7d7-4680-baa8-d6517aca1c68",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "bacbd0b1-a596-43ee-ace4-1d19664fcd3c",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "3b2dcb10-347d-49f8-beea-7474a77aebf6",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "a1f2ad19-3e0f-4e74-a949-a5f04968cdfe",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "a22c222e-1a75-469d-82ab-2d84e5f6a3e7",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "9bac5138-4ec6-38de-9ace-e419bb96a753",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "c4b3eaa1-b82b-47e4-937b-c0851712a920",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "07fe0684-3069-4b44-b30a-8443f3627b83",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "a938d2f1-72c7-4f9b-9c2b-9997676abc21",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "c3bbef1d-053f-4f7e-b739-a09fbdfc8ee5",
+       "title": "[Led Zeppelin IV]",
+       "status": "Bootleg"
+      },
+      {
+       "id": "29c124e7-cd34-483e-bbb2-d44546c48b29",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "153c9ffe-6d22-4ee1-bffa-e29aedc315dc",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "e20a139c-a9a7-4fac-9303-a8a2143d9552",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "a69c9d57-62be-3e40-b9aa-ef3557d53c5f",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "103a462d-a9f2-4f05-9490-3d8fe506c8a6",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "bfd8e1cd-0361-4599-bbe6-50c0d93ca82d",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "98716612-b8fd-3334-9fb2-a17afdd17173",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "4779d5d3-e57e-3a0b-9f2d-688ebb25e509",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "3a4f0cbb-a599-48ea-af19-f2f6d397a3d9",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "f14e2921-5a5c-3e83-834b-92e84ab146d8",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "eec0b9f7-3044-3cd2-9140-db912dbc97ad",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "fe378f76-72cb-4664-8d5f-2dffe9670a11",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "2b65ce0c-0ee7-4838-b457-4201f6c6ca16",
+       "title": "[Led Zeppelin IV]",
+       "status": "Bootleg"
+      },
+      {
+       "id": "3df00781-2eb1-47d7-801d-340964a624d3",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "a9a8d0de-0d1a-40a5-af83-b223a3435683",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "14b8e7a3-ed63-416b-85ac-cfcb0377ffca",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "d1196083-39c3-36c6-85a3-b775902d09da",
+       "title": "Led Zeppelin IV",
+       "status": "Official"
+      },
+      {
+       "id": "4eb4eb2f-f905-4cfb-8be8-1802b9867600",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "9e91516d-fd47-4deb-ae12-6cf94abfdb99",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "71eafe5d-33b0-4e41-9b51-754b8450302e",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      },
+      {
+       "id": "fc117ce1-5dbb-450c-b560-ded23d5dae2d",
+       "title": "[Led Zeppelin IV]",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "ffeb9258-4101-360b-8a84-69b2b1a10c22",
+     "score": 87,
+     "title": "This Is Led Zeppelin",
+     "first-release-date": "1971",
+     "primary-type": "EP",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "98609afc-cecd-4d74-ac1b-937dfd7bff6b",
+       "title": "This Is Led Zeppelin",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "87ac6730-6a50-408e-839d-002a7685df6c",
+     "score": 82,
+     "title": "An Introduction to Led Zeppelin",
+     "first-release-date": "2018-09-27",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "3ada4e4e-2794-4be0-bf77-acac8b90d0e4",
+       "title": "An Introduction to Led Zeppelin",
+       "status": "Official"
+      },
+      {
+       "id": "a4345d1a-52d1-4304-a5c1-dfe2318dad99",
+       "title": "An Introduction to Led Zeppelin",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "301d5ef1-1cde-4ca5-9069-8d9890e7fa17",
+     "score": 76,
+     "title": "Rock Report Led Zeppelin Stairway to Heaven",
+     "first-release-date": "1998",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Interview"
+     ],
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "cb28340a-6447-419e-9c1b-131be9f709c4",
+       "title": "Rock Report Led Zeppelin Stairway to Heaven",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "7e9cb719-968a-41e0-866c-7cdc139da9eb",
+     "score": 75,
+     "title": "Tribute to Led Zeppelin",
+     "first-release-date": "1994",
+     "primary-type": "Album",
+     "artist-credit": [
+      {
+       "name": "They Play Led Zeppelin",
+       "artist": {
+        "id": "2b5032c1-2e20-4027-8b33-b02c976b54f1",
+        "name": "They Play Led Zeppelin",
+        "sort-name": "They Play Led Zeppelin"
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "99ee48c5-5a87-471d-bc9b-37b5fe590eb8",
+       "title": "Tribute to Led Zeppelin",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "26e073a1-a825-4098-b9c9-f1e14135678d",
+     "score": 71,
+     "title": "AT&T Showcase of Rock – The Led Zeppelin Story",
+     "first-release-date": "1993-03-20",
+     "primary-type": "Broadcast",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "9b124aa6-26cb-4c68-b5b6-7ae7468df8ec",
+       "title": "AT&T Showcase of Rock – The Led Zeppelin Story",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "6d5c316e-1dcf-30e1-ac4d-726d67a747c4",
+     "score": 71,
+     "title": "Early Days: The Best of Led Zeppelin, Volume One",
+     "first-release-date": "1999-11-23",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "f5020d23-44a7-4ce7-ab61-156fb9ae30f8",
+       "title": "Early Days: The Best of Led Zeppelin, Volume One",
+       "status": "Official"
+      },
+      {
+       "id": "e2975df2-72e0-40ad-bc89-1c2f76c1db1b",
+       "title": "Early Days: The Best of Led Zeppelin, Volume One",
+       "status": "Official"
+      },
+      {
+       "id": "0b619a0c-675e-450a-a645-0211c2ffdc65",
+       "title": "Early Days: The Best of Led Zeppelin, Volume One",
+       "status": "Official"
+      },
+      {
+       "id": "1288824c-5760-4046-81e0-f8d0a9e0c14b",
+       "title": "Early Days: The Best of Led Zeppelin, Volume One",
+       "status": "Official"
+      },
+      {
+       "id": "73ad55fe-5cc4-4780-9d5e-65106aa94e09",
+       "title": "Early Days: The Best of Led Zeppelin, Volume One",
+       "status": "Official"
+      },
+      {
+       "id": "5558345b-6df7-3c68-8b2c-2d21226a7f56",
+       "title": "Early Days: The Best of Led Zeppelin, Volume One",
+       "status": "Official"
+      },
+      {
+       "id": "35b756ec-b32d-3a3f-b109-ca195d2f2dc1",
+       "title": "Early Days: The Best of Led Zeppelin, Volume One",
+       "status": "Official"
+      },
+      {
+       "id": "3cf6ad08-6ea0-3a58-9088-88b94c759b4b",
+       "title": "Early Days: The Best of Led Zeppelin, Volume One",
+       "status": "Official"
+      },
+      {
+       "id": "0613b46b-f3b6-4995-8edb-879632c04788",
+       "title": "Early Days: The Best of Led Zeppelin, Volume One",
+       "status": "Official"
+      },
+      {
+       "id": "7522847d-eced-4f39-a406-88b27dac401e",
+       "title": "Early Days: ベスト・オブ・レッド・ツェッペリン VOL.1",
+       "status": "Pseudo-Release"
+      }
+     ]
+    },
+    {
+     "id": "d9d3b39a-c55b-31b4-84de-f423da4c39b0",
+     "score": 71,
+     "title": "Latter Days: The Best of Led Zeppelin, Volume Two",
+     "first-release-date": "2000-03-21",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "1b17ad0c-4a30-489b-87e3-1f0711ed26f9",
+       "title": "Latter Days: The Best of Led Zeppelin, Volume Two",
+       "status": "Official"
+      },
+      {
+       "id": "d3c520f6-0497-49d1-a20f-731ad77e023d",
+       "title": "Latter Days: The Best of Led Zeppelin, Volume Two",
+       "status": "Official"
+      },
+      {
+       "id": "00517098-31c1-4be0-9eb7-dcf0397d3749",
+       "title": "Latter Days: The Best of Led Zeppelin, Volume Two",
+       "status": "Official"
+      },
+      {
+       "id": "55ffa369-eac3-4c3f-a542-584e3a9af8a0",
+       "title": "Latter Days - The Best Of Led Zeppelin Volume Two",
+       "status": "Official"
+      },
+      {
+       "id": "54eb6bf3-5156-3a7e-92dd-aff617fb4a61",
+       "title": "Latter Days: The Best of Led Zeppelin, Volume Two",
+       "status": "Official"
+      },
+      {
+       "id": "882a4729-1a5b-43a1-96f6-0c0c72a3353e",
+       "title": "Latter Days: The Best of Led Zeppelin, Volume Two",
+       "status": "Official"
+      },
+      {
+       "id": "e5020ab2-1011-33a5-a407-9557b9765e02",
+       "title": "Latter Days: The Best of Led Zeppelin, Volume Two",
+       "status": "Official"
+      },
+      {
+       "id": "b726e175-cca4-4ee0-ac81-f4d131c6bfbc",
+       "title": "Latter Days: The Best of Led Zeppelin, Volume Two",
+       "status": "Official"
+      },
+      {
+       "id": "5ddd8429-2032-4741-9bc0-fe6055ab3c5b",
+       "title": "Latter Days: The Best of Led Zeppelin, Volume Two",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "0994b340-aa7c-45b9-91c3-379f8b6ac0a7",
+     "score": 64,
+     "title": "Early Days & Latter Days: The Best of Led Zeppelin, Volumes One and Two",
+     "first-release-date": "2002-11-19",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "レッド・ツェッペリン",
+          "name": "レッド・ツェッペリン"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "レッド・ゼップ",
+          "name": "レッド・ゼップ"
+         },
+         {
+          "sort-name": "レッドゼップ",
+          "name": "レッドゼップ"
+         },
+         {
+          "sort-name": "ゼップ",
+          "name": "ゼップ"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "レッド ツェッペリン",
+          "name": "レッド ツェッペリン"
+         },
+         {
+          "sort-name": "レッドツェッペリン",
+          "name": "レッドツェッペリン"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "be43b15f-b31a-4357-ac8c-8d1a534e5f60",
+       "title": "Early Days & Latter Days: The Best of Led Zeppelin, Volumes One and Two",
+       "status": "Official"
+      },
+      {
+       "id": "832e0862-e4d1-4747-8051-d8e12a720e1c",
+       "title": "The Very Best of Led Zeppelin: Early Days & Latter Days",
+       "status": "Official"
+      },
+      {
+       "id": "f4f7b03b-e483-3ebb-8dee-4bdbd4b32c5a",
+       "title": "Early Days & Latter Days: The Best of Led Zeppelin, Volumes One and Two",
+       "status": "Official"
+      },
+      {
+       "id": "e78f68ef-5009-44d9-8dbd-49691660b2fd",
+       "title": "The Very Best of Led Zeppelin - Early Days & Latter Days",
+       "status": "Official"
+      },
+      {
+       "id": "e38d73ad-b72f-4ecd-ba6d-68e62b1ae25b",
+       "title": "Early Days & Latter Days: The Best of Led Zeppelin, Volumes One and Two",
+       "status": "Official"
+      },
+      {
+       "id": "72b5c27b-7e87-400c-8d97-805f03e6d9bd",
+       "title": "Early Days & Latter Days: The Best of Led Zeppelin, Volumes One and Two",
+       "status": "Official"
+      }
+     ]
+    }
+   ]
+  },
+  "https://musicbrainz.org/ws/2/release?fmt=json&limit=100&query=rgid%3A(0f18ec88-aa87-38a9-8a65-f03d81763560)%20AND%20status%3Aofficial%20AND%20format%3A%22Digital%20Media%22": {
+   "created": "2026-10-22T18:57:19.803Z",
+   "offset": 0,
+   "releases": [
+    {
+     "id": "9eba4a95-9809-4485-8024-00f37e92514a",
+     "score": 100,
+     "title": "Led Zeppelin",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "0f18ec88-aa87-38a9-8a65-f03d81763560",
+      "title": "Led Zeppelin",
+      "disambiguation": "I",
+      "primary-type": "Album"
+     },
+     "date": "2014",
+     "track-count": 9,
+     "media": [
+      {
+       "id": "09da50e7-0395-3660-af3b-37bbe9925283",
+       "format": "Digital Media",
+       "track-count": 9
+      }
+     ]
+    },
+    {
+     "id": "7f0e3608-e19b-4b6b-88be-e341706ef841",
+     "score": 100,
+     "title": "Led Zeppelin",
+     "status": "Official",
+     "disambiguation": "Deluxe Edition | High-Resolution | 2 mediums",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "0f18ec88-aa87-38a9-8a65-f03d81763560",
+      "title": "Led Zeppelin",
+      "disambiguation": "I",
+      "primary-type": "Album"
+     },
+     "date": "2014-06-02",
+     "barcode": "603497920112",
+     "track-count": 17,
+     "media": [
+      {
+       "id": "4272df53-9628-3a9f-ba81-bfce84a38d11",
+       "format": "Digital Media",
+       "track-count": 9
+      },
+      {
+       "id": "d5bc1597-7db8-35ab-b7fa-8eb8b65aae2c",
+       "format": "Digital Media",
+       "track-count": 8
+      }
+     ]
+    },
+    {
+     "id": "11aacee5-aaf0-44dd-b020-a6c619d6c230",
+     "score": 100,
+     "title": "Led Zeppelin",
+     "status": "Official",
+     "disambiguation": "Apple digital master",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "0f18ec88-aa87-38a9-8a65-f03d81763560",
+      "title": "Led Zeppelin",
+      "disambiguation": "I",
+      "primary-type": "Album"
+     },
+     "date": "",
+     "track-count": 9,
+     "media": [
+      {
+       "id": "643fe53e-258a-3000-9273-1f107d36b375",
+       "format": "Digital Media",
+       "track-count": 9
+      }
+     ]
+    },
+    {
+     "id": "0806f8b0-d6a4-4284-8556-67406be6e97e",
+     "score": 100,
+     "title": "Led Zeppelin",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "0f18ec88-aa87-38a9-8a65-f03d81763560",
+      "title": "Led Zeppelin",
+      "disambiguation": "I",
+      "primary-type": "Album"
+     },
+     "date": "2014-06-03",
+     "barcode": "603497920136",
+     "track-count": 9,
+     "media": [
+      {
+       "id": "2b5bf283-8c8c-35d5-b59e-ba60f795350d",
+       "format": "Digital Media",
+       "track-count": 9
+      }
+     ]
+    },
+    {
+     "id": "20d36c41-67e9-464a-a338-47a1a0866ea5",
+     "score": 100,
+     "title": "Led Zeppelin",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "0f18ec88-aa87-38a9-8a65-f03d81763560",
+      "title": "Led Zeppelin",
+      "disambiguation": "I",
+      "primary-type": "Album"
+     },
+     "date": "",
+     "barcode": "603497900862",
+     "track-count": 9,
+     "media": [
+      {
+       "id": "710b3814-42ce-38ec-a134-e47fa40dd0cc",
+       "format": "Digital Media",
+       "track-count": 9
+      }
+     ]
+    },
+    {
+     "id": "b52097f4-cb26-4965-867c-0d87fba4e09f",
+     "score": 100,
+     "title": "Led Zeppelin",
+     "status": "Official",
+     "disambiguation": "deluxe edition",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "0f18ec88-aa87-38a9-8a65-f03d81763560",
+      "title": "Led Zeppelin",
+      "disambiguation": "I",
+      "primary-type": "Album"
+     },
+     "date": "2014-06-03",
+     "barcode": "603497920105",
+     "track-count": 17,
+     "media": [
+      {
+       "id": "35f72517-ea50-3666-bf15-133c02b659b6",
+       "format": "Digital Media",
+       "track-count": 9
+      },
+      {
+       "id": "be74fc91-6671-330a-89b8-1fbe80ea96f0",
+       "format": "Digital Media",
+       "track-count": 8
+      }
+     ]
+    },
+    {
+     "id": "026864c4-c426-4f83-b4ca-d01c297b6ac9",
+     "score": 100,
+     "title": "Led Zeppelin",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "0f18ec88-aa87-38a9-8a65-f03d81763560",
+      "title": "Led Zeppelin",
+      "disambiguation": "I",
+      "primary-type": "Album"
+     },
+     "date": "2012-12-20",
+     "barcode": "603497926152",
+     "track-count": 9,
+     "media": [
+      {
+       "id": "5b92e018-fdd0-3906-aecf-82af85b0b88c",
+       "format": "Digital Media",
+       "track-count": 9
+      }
+     ]
+    },
+    {
+     "id": "0d2b2c43-b595-4aaa-8cae-3dd889b92df6",
+     "score": 100,
+     "title": "Led Zeppelin",
+     "status": "Official",
+     "disambiguation": "deluxe edition",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "0f18ec88-aa87-38a9-8a65-f03d81763560",
+      "title": "Led Zeppelin",
+      "disambiguation": "I",
+      "primary-type": "Album"
+     },
+     "date": "2014",
+     "barcode": "603497900848",
+     "track-count": 17,
+     "media": [
+      {
+       "id": "8e82db15-0dbc-386a-aa8c-d77f5724b637",
+       "format": "Digital Media",
+       "track-count": 9
+      },
+      {
+       "id": "3d857f87-d442-3907-9d94-bc14ff3bf87f",
+       "format": "Digital Media",
+       "track-count": 8
+      }
+     ]
+    },
+    {
+     "id": "fcbc8ada-58a7-42a9-a34c-51983c730562",
+     "score": 100,
+     "title": "Led Zeppelin",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "0f18ec88-aa87-38a9-8a65-f03d81763560",
+      "title": "Led Zeppelin",
+      "disambiguation": "I",
+      "primary-type": "Album"
+     },
+     "date": "2014-06-02",
+     "track-count": 9,
+     "media": [
+      {
+       "id": "d1759ea2-dc0e-3741-9655-bb7f47c2d9c0",
+       "format": "Digital Media",
+       "track-count": 9
+      }
+     ]
+    },
+    {
+     "id": "868ba4b4-03bb-48c7-a30c-09523f050bc9",
+     "score": 100,
+     "title": "Led Zeppelin",
+     "status": "Official",
+     "disambiguation": "deluxe edition, 1 medium",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "0f18ec88-aa87-38a9-8a65-f03d81763560",
+      "title": "Led Zeppelin",
+      "disambiguation": "I",
+      "primary-type": "Album"
+     },
+     "date": "2014-06-03",
+     "barcode": "603497920112",
+     "track-count": 17,
+     "media": [
+      {
+       "id": "dc12430c-9e6e-3289-b387-d0bc8aa17cac",
+       "format": "Digital Media",
+       "track-count": 17
+      }
+     ]
+    },
+    {
+     "id": "9e7f83ef-6d0d-425e-92da-344331bc000c",
+     "score": 100,
+     "title": "Led Zeppelin",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "0f18ec88-aa87-38a9-8a65-f03d81763560",
+      "title": "Led Zeppelin",
+      "disambiguation": "I",
+      "primary-type": "Album"
+     },
+     "date": "",
+     "barcode": "603497906185",
+     "track-count": 9,
+     "media": [
+      {
+       "id": "564b6913-4b46-3a3d-9a1b-90aeaef828a7",
+       "format": "Digital Media",
+       "track-count": 9
+      }
+     ]
+    },
+    {
+     "id": "10f90dad-4cb7-42d3-89e7-db4b619eddf7",
+     "score": 100,
+     "title": "Led Zeppelin",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "0f18ec88-aa87-38a9-8a65-f03d81763560",
+      "title": "Led Zeppelin",
+      "disambiguation": "I",
+      "primary-type": "Album"
+     },
+     "date": "",
+     "barcode": "",
+     "asin": "B0011Z1BT2",
+     "track-count": 9,
+     "media": [
+      {
+       "id": "2cc58568-4487-3622-8c31-500473a2b523",
+       "format": "Digital Media",
+       "track-count": 9
+      }
+     ]
+    },
+    {
+     "id": "42438dbb-db38-469a-a7e6-e1617b6ac104",
+     "score": 100,
+     "title": "Led Zeppelin",
+     "status": "Official",
+     "disambiguation": "deluxe edition",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "0f18ec88-aa87-38a9-8a65-f03d81763560",
+      "title": "Led Zeppelin",
+      "disambiguation": "I",
+      "primary-type": "Album"
+     },
+     "date": "2014",
+     "barcode": "603497920129",
+     "track-count": 17,
+     "media": [
+      {
+       "id": "052ef8ed-8b39-3d0f-9bd8-d88997b88ed7",
+       "format": "Digital Media",
+       "track-count": 9
+      },
+      {
+       "id": "c4a3b416-e5c6-3b38-896b-822533061e66",
+       "format": "Digital Media",
+       "track-count": 8
+      }
+     ]
+    },
+    {
+     "id": "5240f76b-af63-46a8-8a5a-87a970685d18",
+     "score": 100,
+     "title": "Led Zeppelin",
+     "status": "Official",
+     "disambiguation": "deluxe edition, updated HD audio",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "0f18ec88-aa87-38a9-8a65-f03d81763560",
+      "title": "Led Zeppelin",
+      "disambiguation": "I",
+      "primary-type": "Album"
+     },
+     "date": "2015",
+     "track-count": 17,
+     "media": [
+      {
+       "id": "71ed2ef7-5b1e-3349-96e7-1a59a12cbaba",
+       "format": "Digital Media",
+       "track-count": 17
+      }
+     ]
+    },
+    {
+     "id": "81b3a21c-3349-48cc-a438-64b814297d9c",
+     "score": 100,
+     "title": "Led Zeppelin",
+     "status": "Official",
+     "disambiguation": "remaster",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "0f18ec88-aa87-38a9-8a65-f03d81763560",
+      "title": "Led Zeppelin",
+      "disambiguation": "I",
+      "primary-type": "Album"
+     },
+     "barcode": "603497920143",
+     "track-count": 9,
+     "media": [
+      {
+       "id": "d8b3f437-7b31-4934-a916-414c2eded992",
+       "format": "Digital Media",
+       "track-count": 9
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "covers": {
+  "https://coverartarchive.org/release/026864c4-c426-4f83-b4ca-d01c297b6ac9/front": 307
+ }
+}

@@ -1,26 +1,22 @@
-import {
-	MusicBrainzApi,
-	IReleaseGroup,
-	IRelease,
-	IRecording,
-} from "musicbrainz-api";
+import type { IReleaseGroup, IRelease, IRecording } from "musicbrainz-api";
 import { APP_NAME, APP_VERSION, APP_GITHUB } from "./app";
+import { MusicBrainzRepository } from "./musicbrainzRepository";
 import type { MediaInfo } from "../entity/media/MediaInfo";
 import type { ArtistInfo } from "../entity/media/ArtistInfo";
 import { pickCanonicalRelease, pickReleaseForGroup } from "./release";
 
-let client: MusicBrainzApi | null = null;
+let repository: MusicBrainzRepository | null = null;
 
-// shared MusicBrainz client, identifies Nafyn with its app name/version/contact per MusicBrainz's API requirements
-export function getMusicBrainzClient(): MusicBrainzApi {
-	if (!client) {
-		client = new MusicBrainzApi({
-			appName: APP_NAME,
-			appVersion: APP_VERSION,
-			appContactInfo: APP_GITHUB,
+// The shared MusicBrainz repository: every request to MusicBrainz in Nafyn goes through this one instance, so
+// the 1 request/second limiter, retry, circuit breaker and cache are global. Identifies Nafyn with its app
+// name/version/contact per MusicBrainz's API requirements.
+export function getMusicBrainzRepository(): MusicBrainzRepository {
+	if (!repository) {
+		repository = new MusicBrainzRepository({
+			userAgent: `${APP_NAME}/${APP_VERSION} ( ${APP_GITHUB} )`,
 		});
 	}
-	return client;
+	return repository;
 }
 
 export function parseReleaseDate(date: string | undefined): Date | null {
@@ -31,7 +27,7 @@ export function parseReleaseDate(date: string | undefined): Date | null {
 
 // fetches a single recording (track) from MusicBrainz and maps it to a MediaInfo
 async function getTrackMediaInfo(
-	client: MusicBrainzApi,
+	client: MusicBrainzRepository,
 	musicbrainzId: string,
 ): Promise<MediaInfo> {
 	const recording = await client.lookup("recording", musicbrainzId, [
@@ -74,7 +70,7 @@ async function getTrackMediaInfo(
 
 // fetches a release-group (album/EP) from MusicBrainz and maps it to a MediaInfo
 async function getAlbumMediaInfo(
-	client: MusicBrainzApi,
+	client: MusicBrainzRepository,
 	musicbrainzId: string,
 ): Promise<MediaInfo> {
 	const releaseGroup: IReleaseGroup = await client.lookup(
@@ -128,7 +124,7 @@ export async function getMediaInfo(
 	musicbrainzId: string,
 	type: "album" | "track",
 ): Promise<MediaInfo> {
-	const client = getMusicBrainzClient();
+	const client = getMusicBrainzRepository();
 	return type === "track"
 		? getTrackMediaInfo(client, musicbrainzId)
 		: getAlbumMediaInfo(client, musicbrainzId);

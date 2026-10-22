@@ -1,0 +1,6955 @@
+{
+ "requests": {
+  "https://musicbrainz.org/ws/2/release-group?fmt=json&limit=40&query=releasegroup%3A%22greatest%20hits%22%20AND%20artist%3A%22queen%22%20AND%20status%3Aofficial": {
+   "created": "2026-10-22T18:53:53.073Z",
+   "offset": 0,
+   "release-groups": [
+    {
+     "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+     "score": 100,
+     "title": "Greatest Hits",
+     "first-release-date": "1981-11-03",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "4d90c583-f433-40f5-b663-f18505cebfd7",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "1b166d8a-bbb9-46ef-8004-ba0e016dbfa4",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "fd6132b4-20b7-4be5-8590-310ed86191e2",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "c5227430-6fc9-485a-a4fa-44040d0b8e3b",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "494a7fdb-2e66-4597-9093-3662c27882a2",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "a980aeba-26be-4b71-9fd6-c6a14d7a0a16",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "e0be7d43-5647-4525-be61-c390fd6d5528",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "248c88af-132d-4cf8-90e0-679d96de6387",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "3d8ee315-1fc2-4fdc-8832-1b1faf6d74ab",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "928f0785-eefe-3a03-b0a8-aaf6e3f652be",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "5032df80-9baf-44f2-b20f-6058ae79a93d",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "a23332b3-c5e9-4785-85a6-0e3e12e21404",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "2ba90d62-2ebe-447a-8b0c-8d79827b4972",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "b524d296-a518-4570-9894-f3e03310199d",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "5b24cfea-4ca9-4e7e-ba3a-79963910f6f7",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "1eeecbde-a411-451f-9360-7f92e9878485",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "6c94c60f-7e5f-408b-952f-c8400b3839d4",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "f0fe5760-370f-4c5d-9f0c-a2d62d7b0006",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "49d341a0-3a04-499c-9902-766b07c66320",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "597afbec-4ab5-427b-ad49-7203259f798a",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "cbd69284-dbe9-45d2-8564-110e85fc3048",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "5bf3eba2-f12f-409e-856f-14c0608d96bb",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "0d450b12-cf5c-424e-9398-bade09814326",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "704725bc-e78c-436d-b95a-1859c30b9a47",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "ca1ce030-0f27-4370-9e39-1dcb5538dfd1",
+       "title": "The Crown Jewels",
+       "status": "Promotion"
+      },
+      {
+       "id": "60d89c30-ff24-4dde-9b1d-9dfe2ab77440",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "5849837a-d033-4251-afa0-864a64f9ec52",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "c439d277-1290-40da-a210-6713913bd40e",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "594cd4b4-fd4f-4dec-bf85-80eb437d2e1d",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "0b840651-dffa-421e-a247-1249716c2ace",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "30e91ba4-1ec0-4701-ad75-944699b9f44e",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "2192a09b-80d7-4b89-8e1e-bfa65dbbe485",
+       "title": "Greatest Hits"
+      },
+      {
+       "id": "88eff6de-1374-4dc8-87d4-0a451ff99c4c",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "aba1cf59-e390-4279-b4a4-ad7bd1f7ab28",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "cd7e7ec1-244c-47dc-80b1-f9f476cb5f62",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "d69686cc-d1e2-489c-af47-9351dd46832e",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "7a86329f-7623-426c-bc25-166e5a63e786",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "92ff5ffc-2bb6-4eff-afa6-4d2d819fd10e",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "552e25b5-f75a-480e-84cc-e9ab578e3d1c",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "e510d91f-f1dc-469c-9927-e7f2e31fdbd3",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "768c74da-7fa3-461c-90a2-8fa1adc2fd5e",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "afc81b3f-e022-4769-bce1-0c0c0df12bcf",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "cd250ffb-19b8-43b5-b4e9-b23ac5db5d5b",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "1c918552-099d-47b7-b809-8d1729f50670",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "0f589a81-2afc-4895-8db9-2557b7b2c044",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "5f4d7802-9ab7-4fc5-9dcf-e6d9f7a6fbb8",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "aa3aef5f-b2ac-4f58-affc-3407bf4e89b1",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "664e1719-4260-43b4-9531-fb92ee424d7f",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "9900bd31-2a10-4d4f-9292-9a9159092df2",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "46912201-fced-366f-8121-8ed884887b0e",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "7c5988a4-062a-3818-a019-2c1ea6bc419c",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "8ffceca8-e548-48de-95d8-2945a943393f",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "87f214f5-39bf-3341-848a-547697d02474",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "6d1830ce-2ac6-46a3-b3be-f56b8eb14a98",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "0668d85b-9d8f-4d8e-9b74-3b1420b605be",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "4662a6ff-34e5-462f-bac0-584ac29cfd4d",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "67359849-625a-4017-baa8-d8cf74cb0daf",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "84213105-f89d-4243-9b71-c27f1d17598c",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "d31f506d-1580-4861-8426-320f071c4312",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "aceaf449-ca32-443d-af49-993aeb5a56a7",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "f67a1e58-693b-4c64-8acd-93aaefb1345f",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "37a87252-618e-46e5-8f3b-d86218e6c866",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "bab57bb1-67a7-460a-a5c4-15c9a1df7d2d",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "4d3b6105-4ecd-3a50-87f0-d9c9e4f777c3",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "fcb78d0d-8067-4b93-ae58-1e4347e20216",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "2d5a2c87-db8e-42fb-afad-5a9bada23be8",
+       "title": "Greatest Hits",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "ee87a455-debf-467e-89a3-027c1cf6d9a2",
+     "score": 100,
+     "title": "Greatest Hits",
+     "first-release-date": "2023",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "78b44592-6a05-4bea-8511-528b7b70a6a7",
+       "title": "Greatest Hits",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "152499ea-d489-386a-bfde-f632dcc950f3",
+     "score": 93,
+     "title": "Greatest Hits II",
+     "first-release-date": "1991-10-28",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "57245338-89ce-4e56-bec3-fcc367d3fe8b",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "853cd5a0-4f03-4951-ab8f-3b4509349b01",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "c0931184-2cba-47ea-984d-40a203e1d537",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "9eea4bd4-d4ed-4026-a1aa-26583fdff5f1",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "ea4211cc-8744-486e-899b-57e8f71ab1e6",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "5b3347c4-b22d-4174-904b-641f67f30599",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "5e58788d-73a9-4ea9-abc5-8c37cbef1d2a",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "3fa8b5ca-0d53-441e-be1f-f7605008c815",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "da2f4244-052c-414a-b3da-232ad6605778",
+       "title": "Greatest Hits II"
+      },
+      {
+       "id": "bbcd726c-fa5e-4de1-8fd3-d76d581619c7",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "1976b54c-71a8-43de-a554-4cb64f2968f4",
+       "title": "Greatest Hits II"
+      },
+      {
+       "id": "eaa58848-3bea-4f6f-8b59-0acb9f9852bf",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "c727a2aa-7796-40da-834d-b782f65f1d9d",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "28a91cf2-859d-4525-b4f8-099ef9c47704",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "78184c2c-cb3b-46c6-8e1d-534344a16a10",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "1a069d64-a2a7-437b-a107-e4332accdd8a",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "a7309843-5c01-4586-bd75-61c838d12c11",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "fb5d78b3-0901-47f5-88bf-003eeae878a5",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "dfa76dbc-2c49-41d5-8073-af0a2c5f615a",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "ba555c66-2f7a-4fd3-a47b-82c43742cbf4",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "92655853-3fcc-3491-b166-0c932420f594",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "64ad7602-a124-4d05-bb81-40cd8ec668ae",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "652a6f8d-82d9-4719-b5bc-e66f16fc3b17",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "20973aff-6363-3a0c-9b48-f34d70ce7e7c",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "18b15287-8472-4e03-af0c-bcdadc1eaeb4",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "d41e648e-ef84-409f-a590-fbec1e4364f6",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "1bdd3ce3-0a76-467c-8283-ba7ca795fb30",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "71e01c0e-3391-456e-a52e-34e33c053a6d",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "81f4eb9b-f025-4ea9-9a4e-f85cd5f64d07",
+       "title": "Greatest Hits II: A Sample of Magic",
+       "status": "Promotion"
+      },
+      {
+       "id": "77db2004-9c6e-49d6-887a-c05f26a87e49",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "e66653dc-e884-37cf-9fb5-88136138e121",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "981d0690-8a36-4f1b-87be-1fddc524c4f2",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "5116694e-30b8-41b4-8283-629594aba958",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "c352b895-da61-3443-b4a3-bf7b2a49e936",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "1ec4c953-724c-465f-ae54-e9dcb4fc5674",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "e32f56e5-f999-4dfa-b273-951b765b1b93",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "de5eb5cd-fc17-4043-95ee-92d46da696ba",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "5bde5d60-60e0-4330-8400-19aafecbf201",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "92faa683-a1a5-4198-a55d-af3471f14c94",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "669e4101-afdb-3dc3-926d-779667e8a867",
+     "score": 93,
+     "title": "Greatest Hits III",
+     "first-release-date": "1999-11-08",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "joinphrase": "+",
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "9fee438f-3f8c-40bf-aebe-b9b2e5b4cd03",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "453da63d-d4c8-465e-98a2-d1c51e31bd2f",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "abe60e10-c8e7-48df-9d1c-9d3dad7ab58c",
+       "title": "Greatest Hits III",
+       "status": "Bootleg"
+      },
+      {
+       "id": "fd5d56f2-3928-41ab-a540-ae2d12fd4989",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "3161feeb-bd25-408b-9bdd-6764e6e4df4c",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "0ab079b8-143e-4107-a516-deab41669c51",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "16d2a7ca-847c-4f9f-8820-f1c4eaacff5b",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "280e0d6b-b908-4be6-bd10-eb360e13ca95",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "a54e8273-616f-4dbc-b866-1cdcb4887c4f",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "5fac9886-f823-4ccd-9027-0509e247a49e",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "72ef9c86-b831-43ee-8cb7-b4f024b16010",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "25ea4fb9-b2e1-49a9-a4e3-b7ffb1c61c4a",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "36f3340b-0f19-4a2f-8e56-a10fd0e03c9f",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "ca366625-6341-49fc-8bfa-ceb93281ee3f",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "bdec8ef9-1f35-455f-9fed-d5eb13209b83",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "a0192cbc-5c6a-31f3-b19c-5d95df636f3d",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "1528e521-fb3d-4a76-b6dd-bf60c92c8347",
+     "score": 87,
+     "title": "Greatest Hits in Japan",
+     "first-release-date": "2020-01-15",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "d097d912-5daa-4831-94f4-cfbd4a6f4fed",
+       "title": "Greatest Hits In Japan",
+       "status": "Official"
+      },
+      {
+       "id": "8c24b173-c986-4086-932f-1001b60885c8",
+       "title": "Greatest Hits in Japan",
+       "status": "Official"
+      },
+      {
+       "id": "591b8942-9e39-44ff-ab2e-a9c63c8aebfa",
+       "title": "Greatest Hits in Japan",
+       "status": "Official"
+      },
+      {
+       "id": "7faa9494-8b7c-46a8-a075-d28424bee29d",
+       "title": "Greatest Hits in Japan",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "adf8f970-547e-3171-965a-707745c51808",
+     "score": 83,
+     "title": "Greatest Hits I & II",
+     "first-release-date": "1994",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "1bb17a32-c5bc-3af7-8d25-6dda5a0699bb",
+       "title": "Greatest Hits I & II",
+       "status": "Official"
+      },
+      {
+       "id": "0adf0b21-707f-4a66-94bd-8e86eddb00bc",
+       "title": "Greatest Hits I & II",
+       "status": "Official"
+      },
+      {
+       "id": "d2aaa62b-0a22-4731-a45e-0554a4fffbb0",
+       "title": "Greatest Hits I & II",
+       "status": "Official"
+      },
+      {
+       "id": "5f5a2eec-2fe0-4590-9db5-b220788d2149",
+       "title": "Greatest Hits I & II",
+       "status": "Official"
+      },
+      {
+       "id": "ec8507ae-dff6-478e-ab6f-9b6a375d7e7d",
+       "title": "The Very Best of Queen",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "015fa681-78e3-37b2-bff2-fa19f8d5a8d4",
+     "score": 80,
+     "title": "Greatest Hits: We Will Rock You",
+     "first-release-date": "2004-08-17",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "056e79c2-4cbb-4999-9c0d-902c44560838",
+       "title": "Greatest Hits (We Will Rock You Edition)",
+       "status": "Official"
+      },
+      {
+       "id": "5ef3806b-c1b0-4d42-8951-7171963dd46b",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "bbe1d3d9-a5c3-4087-8f95-ef4e97a9c22f",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "7a05cff9-4d63-4f4b-8d84-9c9e78059a49",
+       "title": "Greatest Hits: We Will Rock You"
+      },
+      {
+       "id": "0b36280e-bbc6-47bd-a24c-12afff13826e",
+       "title": "Greatest Hits: We Will Rock You",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "f61e762a-2799-312c-a121-9e4114d66c0d",
+     "score": 72,
+     "title": "Greatest Hits I, II & III: The Platinum Collection",
+     "first-release-date": "2000-11-13",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "2cb8787a-2c09-4bf2-84c5-d7bf0ba17fe8",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "621f0171-7ddd-4dd7-8a86-5638c6c01581",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "dd122cb7-b77a-425e-9437-b3352927a32f",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "dfb004d1-83d3-4b73-a091-0d303f8145da",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "190c90c4-acd1-4309-8ec0-97d09b6abbc0",
+       "title": "The Platinum Collection (Greatest Hits I II & III)",
+       "status": "Official"
+      },
+      {
+       "id": "00066f8c-9957-4738-9828-a6db37431dd9",
+       "title": "The Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "d5d9195e-252f-43fc-9e63-63be7e1dccf9",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "d171c2fd-1c7c-4d26-b369-77dfb3f8d1b2",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "e0dd2e17-60ed-3387-bfb6-25c3cf7bdba7",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "a9c51dd8-b55a-3aea-ba6f-11e62447e6fb",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "2fe47337-a82e-490b-add9-5138091d6848",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "0955c8ab-fb12-4aea-ad25-5b9f4b087a33",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "540f52d4-6c18-40ee-927a-6ca426575f0d",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "b5db7157-e354-40be-8ec1-fb6c50f82c75",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "0eef816e-6e4c-499f-8dce-f93cf807ef74",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "1bdaf566-a096-4500-8827-c59daefdaaaf",
+       "title": "The Platinum Collection: Greatest Hits I, II & III",
+       "status": "Official"
+      },
+      {
+       "id": "a0e12645-41a2-4bb7-b8be-cf91c7ff15dc",
+       "title": "The Platinum Collection: Greatest Hits I, II & III",
+       "status": "Official"
+      },
+      {
+       "id": "72fef61a-52f6-4a90-902e-dafa12e4137c",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      }
+     ]
+    }
+   ]
+  },
+  "https://musicbrainz.org/ws/2/release-group?fmt=json&limit=40&query=releasegroup%3A(greatest%20AND%20hits)%20AND%20artist%3A(queen)%20AND%20status%3Aofficial": {
+   "created": "2026-10-22T18:53:54.168Z",
+   "offset": 0,
+   "release-groups": [
+    {
+     "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+     "score": 100,
+     "title": "Greatest Hits",
+     "first-release-date": "1981-11-03",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "4d90c583-f433-40f5-b663-f18505cebfd7",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "1b166d8a-bbb9-46ef-8004-ba0e016dbfa4",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "fd6132b4-20b7-4be5-8590-310ed86191e2",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "c5227430-6fc9-485a-a4fa-44040d0b8e3b",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "494a7fdb-2e66-4597-9093-3662c27882a2",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "a980aeba-26be-4b71-9fd6-c6a14d7a0a16",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "e0be7d43-5647-4525-be61-c390fd6d5528",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "248c88af-132d-4cf8-90e0-679d96de6387",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "3d8ee315-1fc2-4fdc-8832-1b1faf6d74ab",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "928f0785-eefe-3a03-b0a8-aaf6e3f652be",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "5032df80-9baf-44f2-b20f-6058ae79a93d",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "a23332b3-c5e9-4785-85a6-0e3e12e21404",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "2ba90d62-2ebe-447a-8b0c-8d79827b4972",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "b524d296-a518-4570-9894-f3e03310199d",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "5b24cfea-4ca9-4e7e-ba3a-79963910f6f7",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "1eeecbde-a411-451f-9360-7f92e9878485",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "6c94c60f-7e5f-408b-952f-c8400b3839d4",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "f0fe5760-370f-4c5d-9f0c-a2d62d7b0006",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "49d341a0-3a04-499c-9902-766b07c66320",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "597afbec-4ab5-427b-ad49-7203259f798a",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "cbd69284-dbe9-45d2-8564-110e85fc3048",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "5bf3eba2-f12f-409e-856f-14c0608d96bb",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "0d450b12-cf5c-424e-9398-bade09814326",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "704725bc-e78c-436d-b95a-1859c30b9a47",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "ca1ce030-0f27-4370-9e39-1dcb5538dfd1",
+       "title": "The Crown Jewels",
+       "status": "Promotion"
+      },
+      {
+       "id": "60d89c30-ff24-4dde-9b1d-9dfe2ab77440",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "5849837a-d033-4251-afa0-864a64f9ec52",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "c439d277-1290-40da-a210-6713913bd40e",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "594cd4b4-fd4f-4dec-bf85-80eb437d2e1d",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "0b840651-dffa-421e-a247-1249716c2ace",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "30e91ba4-1ec0-4701-ad75-944699b9f44e",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "2192a09b-80d7-4b89-8e1e-bfa65dbbe485",
+       "title": "Greatest Hits"
+      },
+      {
+       "id": "88eff6de-1374-4dc8-87d4-0a451ff99c4c",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "aba1cf59-e390-4279-b4a4-ad7bd1f7ab28",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "cd7e7ec1-244c-47dc-80b1-f9f476cb5f62",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "d69686cc-d1e2-489c-af47-9351dd46832e",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "7a86329f-7623-426c-bc25-166e5a63e786",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "92ff5ffc-2bb6-4eff-afa6-4d2d819fd10e",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "552e25b5-f75a-480e-84cc-e9ab578e3d1c",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "e510d91f-f1dc-469c-9927-e7f2e31fdbd3",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "768c74da-7fa3-461c-90a2-8fa1adc2fd5e",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "afc81b3f-e022-4769-bce1-0c0c0df12bcf",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "cd250ffb-19b8-43b5-b4e9-b23ac5db5d5b",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "1c918552-099d-47b7-b809-8d1729f50670",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "0f589a81-2afc-4895-8db9-2557b7b2c044",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "5f4d7802-9ab7-4fc5-9dcf-e6d9f7a6fbb8",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "aa3aef5f-b2ac-4f58-affc-3407bf4e89b1",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "664e1719-4260-43b4-9531-fb92ee424d7f",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "9900bd31-2a10-4d4f-9292-9a9159092df2",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "46912201-fced-366f-8121-8ed884887b0e",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "7c5988a4-062a-3818-a019-2c1ea6bc419c",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "8ffceca8-e548-48de-95d8-2945a943393f",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "87f214f5-39bf-3341-848a-547697d02474",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "6d1830ce-2ac6-46a3-b3be-f56b8eb14a98",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "0668d85b-9d8f-4d8e-9b74-3b1420b605be",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "4662a6ff-34e5-462f-bac0-584ac29cfd4d",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "67359849-625a-4017-baa8-d8cf74cb0daf",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "84213105-f89d-4243-9b71-c27f1d17598c",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "d31f506d-1580-4861-8426-320f071c4312",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "aceaf449-ca32-443d-af49-993aeb5a56a7",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "f67a1e58-693b-4c64-8acd-93aaefb1345f",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "37a87252-618e-46e5-8f3b-d86218e6c866",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "bab57bb1-67a7-460a-a5c4-15c9a1df7d2d",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "4d3b6105-4ecd-3a50-87f0-d9c9e4f777c3",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "fcb78d0d-8067-4b93-ae58-1e4347e20216",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "2d5a2c87-db8e-42fb-afad-5a9bada23be8",
+       "title": "Greatest Hits",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "ee87a455-debf-467e-89a3-027c1cf6d9a2",
+     "score": 100,
+     "title": "Greatest Hits",
+     "first-release-date": "2023",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "78b44592-6a05-4bea-8511-528b7b70a6a7",
+       "title": "Greatest Hits",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "152499ea-d489-386a-bfde-f632dcc950f3",
+     "score": 93,
+     "title": "Greatest Hits II",
+     "first-release-date": "1991-10-28",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "57245338-89ce-4e56-bec3-fcc367d3fe8b",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "853cd5a0-4f03-4951-ab8f-3b4509349b01",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "c0931184-2cba-47ea-984d-40a203e1d537",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "9eea4bd4-d4ed-4026-a1aa-26583fdff5f1",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "ea4211cc-8744-486e-899b-57e8f71ab1e6",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "5b3347c4-b22d-4174-904b-641f67f30599",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "5e58788d-73a9-4ea9-abc5-8c37cbef1d2a",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "3fa8b5ca-0d53-441e-be1f-f7605008c815",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "da2f4244-052c-414a-b3da-232ad6605778",
+       "title": "Greatest Hits II"
+      },
+      {
+       "id": "bbcd726c-fa5e-4de1-8fd3-d76d581619c7",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "1976b54c-71a8-43de-a554-4cb64f2968f4",
+       "title": "Greatest Hits II"
+      },
+      {
+       "id": "eaa58848-3bea-4f6f-8b59-0acb9f9852bf",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "c727a2aa-7796-40da-834d-b782f65f1d9d",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "28a91cf2-859d-4525-b4f8-099ef9c47704",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "78184c2c-cb3b-46c6-8e1d-534344a16a10",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "1a069d64-a2a7-437b-a107-e4332accdd8a",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "a7309843-5c01-4586-bd75-61c838d12c11",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "fb5d78b3-0901-47f5-88bf-003eeae878a5",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "dfa76dbc-2c49-41d5-8073-af0a2c5f615a",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "ba555c66-2f7a-4fd3-a47b-82c43742cbf4",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "92655853-3fcc-3491-b166-0c932420f594",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "64ad7602-a124-4d05-bb81-40cd8ec668ae",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "652a6f8d-82d9-4719-b5bc-e66f16fc3b17",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "20973aff-6363-3a0c-9b48-f34d70ce7e7c",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "18b15287-8472-4e03-af0c-bcdadc1eaeb4",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "d41e648e-ef84-409f-a590-fbec1e4364f6",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "1bdd3ce3-0a76-467c-8283-ba7ca795fb30",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "71e01c0e-3391-456e-a52e-34e33c053a6d",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "81f4eb9b-f025-4ea9-9a4e-f85cd5f64d07",
+       "title": "Greatest Hits II: A Sample of Magic",
+       "status": "Promotion"
+      },
+      {
+       "id": "77db2004-9c6e-49d6-887a-c05f26a87e49",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "e66653dc-e884-37cf-9fb5-88136138e121",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "981d0690-8a36-4f1b-87be-1fddc524c4f2",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "5116694e-30b8-41b4-8283-629594aba958",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "c352b895-da61-3443-b4a3-bf7b2a49e936",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "1ec4c953-724c-465f-ae54-e9dcb4fc5674",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "e32f56e5-f999-4dfa-b273-951b765b1b93",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "de5eb5cd-fc17-4043-95ee-92d46da696ba",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "5bde5d60-60e0-4330-8400-19aafecbf201",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "92faa683-a1a5-4198-a55d-af3471f14c94",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "669e4101-afdb-3dc3-926d-779667e8a867",
+     "score": 93,
+     "title": "Greatest Hits III",
+     "first-release-date": "1999-11-08",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "joinphrase": "+",
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "9fee438f-3f8c-40bf-aebe-b9b2e5b4cd03",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "453da63d-d4c8-465e-98a2-d1c51e31bd2f",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "abe60e10-c8e7-48df-9d1c-9d3dad7ab58c",
+       "title": "Greatest Hits III",
+       "status": "Bootleg"
+      },
+      {
+       "id": "fd5d56f2-3928-41ab-a540-ae2d12fd4989",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "3161feeb-bd25-408b-9bdd-6764e6e4df4c",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "0ab079b8-143e-4107-a516-deab41669c51",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "16d2a7ca-847c-4f9f-8820-f1c4eaacff5b",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "280e0d6b-b908-4be6-bd10-eb360e13ca95",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "a54e8273-616f-4dbc-b866-1cdcb4887c4f",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "5fac9886-f823-4ccd-9027-0509e247a49e",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "72ef9c86-b831-43ee-8cb7-b4f024b16010",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "25ea4fb9-b2e1-49a9-a4e3-b7ffb1c61c4a",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "36f3340b-0f19-4a2f-8e56-a10fd0e03c9f",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "ca366625-6341-49fc-8bfa-ceb93281ee3f",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "bdec8ef9-1f35-455f-9fed-d5eb13209b83",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "a0192cbc-5c6a-31f3-b19c-5d95df636f3d",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "302d7356-2057-3f60-80a1-97dc31160164",
+     "score": 93,
+     "title": "Greatest Karaoke Hits",
+     "first-release-date": "1998-11-18",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "5fd21a83-12fc-47aa-b6dc-2bf74ff4feb8",
+       "title": "Greatest Karaoke Hits",
+       "status": "Official"
+      },
+      {
+       "id": "b4ee6596-643a-4baf-861b-bd5934c21bd0",
+       "title": "Greatest Karaoke Hits",
+       "status": "Official"
+      },
+      {
+       "id": "6786ab84-ffee-452b-970c-d8240119000a",
+       "title": "Greatest Karaoke Hits",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "513f0d0f-6a96-35fb-94e8-3621b1ca04a3",
+     "score": 87,
+     "title": "Greatest Video Hits 1",
+     "first-release-date": "2002",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "a6878d77-b816-44db-bd66-cc9636bb8b06",
+       "title": "Greatest Video Hits 1",
+       "status": "Official"
+      },
+      {
+       "id": "eff41d9f-0cd1-49f7-be2f-8e881e8182ae",
+       "title": "Greatest Video Hits 1",
+       "status": "Official"
+      },
+      {
+       "id": "c036f268-3db1-4a15-8dc3-8667286a77b9",
+       "title": "Greatest Video Hits 1 (disc 1)",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "3903cc52-20df-4819-8b4e-432a4ea24d04",
+     "score": 87,
+     "title": "Queen: Greatest Video Hits",
+     "first-release-date": "2012-08-28",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "a8e5772e-757f-4ba8-8452-56b785d13d0a",
+       "title": "Queen: Greatest Video Hits",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "d1b28aef-3b7f-48f8-bf80-7d2e5c52fed6",
+     "score": 87,
+     "title": "Greatest Video Hits 2",
+     "first-release-date": "2003-11-03",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "8808daf4-9beb-4669-a59b-899d148e6824",
+       "title": "Greatest Video Hits 2",
+       "status": "Official"
+      },
+      {
+       "id": "0a2757e4-fe46-44e6-914a-f8ba8ce19a9f",
+       "title": "Greatest Video Hits 2",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "1528e521-fb3d-4a76-b6dd-bf60c92c8347",
+     "score": 87,
+     "title": "Greatest Hits in Japan",
+     "first-release-date": "2020-01-15",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "d097d912-5daa-4831-94f4-cfbd4a6f4fed",
+       "title": "Greatest Hits In Japan",
+       "status": "Official"
+      },
+      {
+       "id": "8c24b173-c986-4086-932f-1001b60885c8",
+       "title": "Greatest Hits in Japan",
+       "status": "Official"
+      },
+      {
+       "id": "591b8942-9e39-44ff-ab2e-a9c63c8aebfa",
+       "title": "Greatest Hits in Japan",
+       "status": "Official"
+      },
+      {
+       "id": "7faa9494-8b7c-46a8-a075-d28424bee29d",
+       "title": "Greatest Hits in Japan",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "adf8f970-547e-3171-965a-707745c51808",
+     "score": 83,
+     "title": "Greatest Hits I & II",
+     "first-release-date": "1994",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "1bb17a32-c5bc-3af7-8d25-6dda5a0699bb",
+       "title": "Greatest Hits I & II",
+       "status": "Official"
+      },
+      {
+       "id": "0adf0b21-707f-4a66-94bd-8e86eddb00bc",
+       "title": "Greatest Hits I & II",
+       "status": "Official"
+      },
+      {
+       "id": "d2aaa62b-0a22-4731-a45e-0554a4fffbb0",
+       "title": "Greatest Hits I & II",
+       "status": "Official"
+      },
+      {
+       "id": "5f5a2eec-2fe0-4590-9db5-b220788d2149",
+       "title": "Greatest Hits I & II",
+       "status": "Official"
+      },
+      {
+       "id": "ec8507ae-dff6-478e-ab6f-9b6a375d7e7d",
+       "title": "The Very Best of Queen",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "015fa681-78e3-37b2-bff2-fa19f8d5a8d4",
+     "score": 80,
+     "title": "Greatest Hits: We Will Rock You",
+     "first-release-date": "2004-08-17",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "056e79c2-4cbb-4999-9c0d-902c44560838",
+       "title": "Greatest Hits (We Will Rock You Edition)",
+       "status": "Official"
+      },
+      {
+       "id": "5ef3806b-c1b0-4d42-8951-7171963dd46b",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "bbe1d3d9-a5c3-4087-8f95-ef4e97a9c22f",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "7a05cff9-4d63-4f4b-8d84-9c9e78059a49",
+       "title": "Greatest Hits: We Will Rock You"
+      },
+      {
+       "id": "0b36280e-bbc6-47bd-a24c-12afff13826e",
+       "title": "Greatest Hits: We Will Rock You",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "f61e762a-2799-312c-a121-9e4114d66c0d",
+     "score": 72,
+     "title": "Greatest Hits I, II & III: The Platinum Collection",
+     "first-release-date": "2000-11-13",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "2cb8787a-2c09-4bf2-84c5-d7bf0ba17fe8",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "621f0171-7ddd-4dd7-8a86-5638c6c01581",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "dd122cb7-b77a-425e-9437-b3352927a32f",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "dfb004d1-83d3-4b73-a091-0d303f8145da",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "190c90c4-acd1-4309-8ec0-97d09b6abbc0",
+       "title": "The Platinum Collection (Greatest Hits I II & III)",
+       "status": "Official"
+      },
+      {
+       "id": "00066f8c-9957-4738-9828-a6db37431dd9",
+       "title": "The Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "d5d9195e-252f-43fc-9e63-63be7e1dccf9",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "d171c2fd-1c7c-4d26-b369-77dfb3f8d1b2",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "e0dd2e17-60ed-3387-bfb6-25c3cf7bdba7",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "a9c51dd8-b55a-3aea-ba6f-11e62447e6fb",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "2fe47337-a82e-490b-add9-5138091d6848",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "0955c8ab-fb12-4aea-ad25-5b9f4b087a33",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "540f52d4-6c18-40ee-927a-6ca426575f0d",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "b5db7157-e354-40be-8ec1-fb6c50f82c75",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "0eef816e-6e4c-499f-8dce-f93cf807ef74",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "1bdaf566-a096-4500-8827-c59daefdaaaf",
+       "title": "The Platinum Collection: Greatest Hits I, II & III",
+       "status": "Official"
+      },
+      {
+       "id": "a0e12645-41a2-4bb7-b8be-cf91c7ff15dc",
+       "title": "The Platinum Collection: Greatest Hits I, II & III",
+       "status": "Official"
+      },
+      {
+       "id": "72fef61a-52f6-4a90-902e-dafa12e4137c",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      }
+     ]
+    }
+   ]
+  },
+  "https://musicbrainz.org/ws/2/artist?fmt=json&limit=5&query=alias%3A%22queen%22%20OR%20artist%3A%22queen%22%20OR%20sortname%3A%22queen%22": {
+   "created": "2026-10-22T18:53:55.161Z",
+   "offset": 0,
+   "artists": [
+    {
+     "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+     "score": 100,
+     "name": "Queen",
+     "sort-name": "Queen",
+     "disambiguation": "UK rock group",
+     "aliases": [
+      {
+       "sort-name": "Queen",
+       "name": "Queen"
+      },
+      {
+       "sort-name": "皇后乐队",
+       "name": "皇后乐队"
+      },
+      {
+       "sort-name": "クイーン",
+       "name": "クイーン"
+      }
+     ]
+    },
+    {
+     "id": "420ca290-76c5-41af-999e-564d7c71f1a7",
+     "score": 75,
+     "name": "Queen",
+     "sort-name": "Queen",
+     "disambiguation": "character voiced by Itano Tomomi",
+     "aliases": [
+      {
+       "sort-name": "Queen",
+       "name": "Queen"
+      }
+     ]
+    },
+    {
+     "id": "bb31abcd-fbd4-4bc1-b460-9fc5352811b1",
+     "score": 75,
+     "name": "Queen Ifrica",
+     "sort-name": "Queen Ifrica",
+     "aliases": [
+      {
+       "sort-name": "Queen Africa",
+       "name": "Queen Africa"
+      },
+      {
+       "sort-name": "Queen Irica",
+       "name": "Queen Irica"
+      }
+     ]
+    },
+    {
+     "id": "7a305f29-539a-456e-93b7-61b0e2ba3ef2",
+     "score": 73,
+     "name": "Queen Latifah",
+     "sort-name": "Queen Latifah",
+     "aliases": [
+      {
+       "sort-name": "Owens, Dana Elaine",
+       "name": "Dana Elaine Owens"
+      },
+      {
+       "sort-name": "Latifa, Queen",
+       "name": "Queen Latifa"
+      },
+      {
+       "sort-name": "Dana Owens",
+       "name": "Dana Owens"
+      }
+     ]
+    },
+    {
+     "id": "ff06ecc0-72a5-4a81-a253-d840d9aefb32",
+     "score": 73,
+     "name": "Ivy Queen",
+     "sort-name": "Ivy Queen",
+     "disambiguation": "Martha Ivelisse Pesante Rodríguez",
+     "aliases": [
+      {
+       "sort-name": "Queen, La",
+       "name": "La Queen"
+      },
+      {
+       "sort-name": "Pesante Rodríguez, Martha Ivelisse",
+       "name": "Martha Ivelisse Pesante Rodríguez"
+      }
+     ]
+    }
+   ]
+  },
+  "https://musicbrainz.org/ws/2/release-group?fmt=json&limit=40&query=arid%3A(0383dadf-2a4e-4d10-a46a-e9e041da8eb3)%20AND%20releasegroup%3A(greatest%20AND%20hits)%20AND%20status%3Aofficial": {
+   "created": "2026-10-22T18:53:56.270Z",
+   "offset": 0,
+   "release-groups": [
+    {
+     "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+     "score": 100,
+     "title": "Greatest Hits",
+     "first-release-date": "1981-11-03",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "4d90c583-f433-40f5-b663-f18505cebfd7",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "1b166d8a-bbb9-46ef-8004-ba0e016dbfa4",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "fd6132b4-20b7-4be5-8590-310ed86191e2",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "c5227430-6fc9-485a-a4fa-44040d0b8e3b",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "494a7fdb-2e66-4597-9093-3662c27882a2",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "a980aeba-26be-4b71-9fd6-c6a14d7a0a16",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "e0be7d43-5647-4525-be61-c390fd6d5528",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "248c88af-132d-4cf8-90e0-679d96de6387",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "3d8ee315-1fc2-4fdc-8832-1b1faf6d74ab",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "928f0785-eefe-3a03-b0a8-aaf6e3f652be",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "5032df80-9baf-44f2-b20f-6058ae79a93d",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "a23332b3-c5e9-4785-85a6-0e3e12e21404",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "2ba90d62-2ebe-447a-8b0c-8d79827b4972",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "b524d296-a518-4570-9894-f3e03310199d",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "5b24cfea-4ca9-4e7e-ba3a-79963910f6f7",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "1eeecbde-a411-451f-9360-7f92e9878485",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "6c94c60f-7e5f-408b-952f-c8400b3839d4",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "f0fe5760-370f-4c5d-9f0c-a2d62d7b0006",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "49d341a0-3a04-499c-9902-766b07c66320",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "597afbec-4ab5-427b-ad49-7203259f798a",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "cbd69284-dbe9-45d2-8564-110e85fc3048",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "5bf3eba2-f12f-409e-856f-14c0608d96bb",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "0d450b12-cf5c-424e-9398-bade09814326",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "704725bc-e78c-436d-b95a-1859c30b9a47",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "ca1ce030-0f27-4370-9e39-1dcb5538dfd1",
+       "title": "The Crown Jewels",
+       "status": "Promotion"
+      },
+      {
+       "id": "60d89c30-ff24-4dde-9b1d-9dfe2ab77440",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "5849837a-d033-4251-afa0-864a64f9ec52",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "c439d277-1290-40da-a210-6713913bd40e",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "594cd4b4-fd4f-4dec-bf85-80eb437d2e1d",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "0b840651-dffa-421e-a247-1249716c2ace",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "30e91ba4-1ec0-4701-ad75-944699b9f44e",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "2192a09b-80d7-4b89-8e1e-bfa65dbbe485",
+       "title": "Greatest Hits"
+      },
+      {
+       "id": "88eff6de-1374-4dc8-87d4-0a451ff99c4c",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "aba1cf59-e390-4279-b4a4-ad7bd1f7ab28",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "cd7e7ec1-244c-47dc-80b1-f9f476cb5f62",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "d69686cc-d1e2-489c-af47-9351dd46832e",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "7a86329f-7623-426c-bc25-166e5a63e786",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "92ff5ffc-2bb6-4eff-afa6-4d2d819fd10e",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "552e25b5-f75a-480e-84cc-e9ab578e3d1c",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "e510d91f-f1dc-469c-9927-e7f2e31fdbd3",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "768c74da-7fa3-461c-90a2-8fa1adc2fd5e",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "afc81b3f-e022-4769-bce1-0c0c0df12bcf",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "cd250ffb-19b8-43b5-b4e9-b23ac5db5d5b",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "1c918552-099d-47b7-b809-8d1729f50670",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "0f589a81-2afc-4895-8db9-2557b7b2c044",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "5f4d7802-9ab7-4fc5-9dcf-e6d9f7a6fbb8",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "aa3aef5f-b2ac-4f58-affc-3407bf4e89b1",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "664e1719-4260-43b4-9531-fb92ee424d7f",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "9900bd31-2a10-4d4f-9292-9a9159092df2",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "46912201-fced-366f-8121-8ed884887b0e",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "7c5988a4-062a-3818-a019-2c1ea6bc419c",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "8ffceca8-e548-48de-95d8-2945a943393f",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "87f214f5-39bf-3341-848a-547697d02474",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "6d1830ce-2ac6-46a3-b3be-f56b8eb14a98",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "0668d85b-9d8f-4d8e-9b74-3b1420b605be",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "4662a6ff-34e5-462f-bac0-584ac29cfd4d",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "67359849-625a-4017-baa8-d8cf74cb0daf",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "84213105-f89d-4243-9b71-c27f1d17598c",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "d31f506d-1580-4861-8426-320f071c4312",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "aceaf449-ca32-443d-af49-993aeb5a56a7",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "f67a1e58-693b-4c64-8acd-93aaefb1345f",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "37a87252-618e-46e5-8f3b-d86218e6c866",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "bab57bb1-67a7-460a-a5c4-15c9a1df7d2d",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "4d3b6105-4ecd-3a50-87f0-d9c9e4f777c3",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "fcb78d0d-8067-4b93-ae58-1e4347e20216",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "2d5a2c87-db8e-42fb-afad-5a9bada23be8",
+       "title": "Greatest Hits",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "ee87a455-debf-467e-89a3-027c1cf6d9a2",
+     "score": 100,
+     "title": "Greatest Hits",
+     "first-release-date": "2023",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "78b44592-6a05-4bea-8511-528b7b70a6a7",
+       "title": "Greatest Hits",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "669e4101-afdb-3dc3-926d-779667e8a867",
+     "score": 92,
+     "title": "Greatest Hits III",
+     "first-release-date": "1999-11-08",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "joinphrase": "+",
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "9fee438f-3f8c-40bf-aebe-b9b2e5b4cd03",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "453da63d-d4c8-465e-98a2-d1c51e31bd2f",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "abe60e10-c8e7-48df-9d1c-9d3dad7ab58c",
+       "title": "Greatest Hits III",
+       "status": "Bootleg"
+      },
+      {
+       "id": "fd5d56f2-3928-41ab-a540-ae2d12fd4989",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "3161feeb-bd25-408b-9bdd-6764e6e4df4c",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "0ab079b8-143e-4107-a516-deab41669c51",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "16d2a7ca-847c-4f9f-8820-f1c4eaacff5b",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "280e0d6b-b908-4be6-bd10-eb360e13ca95",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "a54e8273-616f-4dbc-b866-1cdcb4887c4f",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "5fac9886-f823-4ccd-9027-0509e247a49e",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "72ef9c86-b831-43ee-8cb7-b4f024b16010",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "25ea4fb9-b2e1-49a9-a4e3-b7ffb1c61c4a",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "36f3340b-0f19-4a2f-8e56-a10fd0e03c9f",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "ca366625-6341-49fc-8bfa-ceb93281ee3f",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "bdec8ef9-1f35-455f-9fed-d5eb13209b83",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      },
+      {
+       "id": "a0192cbc-5c6a-31f3-b19c-5d95df636f3d",
+       "title": "Greatest Hits III",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "152499ea-d489-386a-bfde-f632dcc950f3",
+     "score": 92,
+     "title": "Greatest Hits II",
+     "first-release-date": "1991-10-28",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "57245338-89ce-4e56-bec3-fcc367d3fe8b",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "853cd5a0-4f03-4951-ab8f-3b4509349b01",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "c0931184-2cba-47ea-984d-40a203e1d537",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "9eea4bd4-d4ed-4026-a1aa-26583fdff5f1",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "ea4211cc-8744-486e-899b-57e8f71ab1e6",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "5b3347c4-b22d-4174-904b-641f67f30599",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "5e58788d-73a9-4ea9-abc5-8c37cbef1d2a",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "3fa8b5ca-0d53-441e-be1f-f7605008c815",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "da2f4244-052c-414a-b3da-232ad6605778",
+       "title": "Greatest Hits II"
+      },
+      {
+       "id": "bbcd726c-fa5e-4de1-8fd3-d76d581619c7",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "1976b54c-71a8-43de-a554-4cb64f2968f4",
+       "title": "Greatest Hits II"
+      },
+      {
+       "id": "eaa58848-3bea-4f6f-8b59-0acb9f9852bf",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "c727a2aa-7796-40da-834d-b782f65f1d9d",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "28a91cf2-859d-4525-b4f8-099ef9c47704",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "78184c2c-cb3b-46c6-8e1d-534344a16a10",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "1a069d64-a2a7-437b-a107-e4332accdd8a",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "a7309843-5c01-4586-bd75-61c838d12c11",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "fb5d78b3-0901-47f5-88bf-003eeae878a5",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "dfa76dbc-2c49-41d5-8073-af0a2c5f615a",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "ba555c66-2f7a-4fd3-a47b-82c43742cbf4",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "92655853-3fcc-3491-b166-0c932420f594",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "64ad7602-a124-4d05-bb81-40cd8ec668ae",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "652a6f8d-82d9-4719-b5bc-e66f16fc3b17",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "20973aff-6363-3a0c-9b48-f34d70ce7e7c",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "18b15287-8472-4e03-af0c-bcdadc1eaeb4",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "d41e648e-ef84-409f-a590-fbec1e4364f6",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "1bdd3ce3-0a76-467c-8283-ba7ca795fb30",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "71e01c0e-3391-456e-a52e-34e33c053a6d",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "81f4eb9b-f025-4ea9-9a4e-f85cd5f64d07",
+       "title": "Greatest Hits II: A Sample of Magic",
+       "status": "Promotion"
+      },
+      {
+       "id": "77db2004-9c6e-49d6-887a-c05f26a87e49",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "e66653dc-e884-37cf-9fb5-88136138e121",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "981d0690-8a36-4f1b-87be-1fddc524c4f2",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "5116694e-30b8-41b4-8283-629594aba958",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "c352b895-da61-3443-b4a3-bf7b2a49e936",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "1ec4c953-724c-465f-ae54-e9dcb4fc5674",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "e32f56e5-f999-4dfa-b273-951b765b1b93",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "de5eb5cd-fc17-4043-95ee-92d46da696ba",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "5bde5d60-60e0-4330-8400-19aafecbf201",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      },
+      {
+       "id": "92faa683-a1a5-4198-a55d-af3471f14c94",
+       "title": "Greatest Hits II",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "302d7356-2057-3f60-80a1-97dc31160164",
+     "score": 92,
+     "title": "Greatest Karaoke Hits",
+     "first-release-date": "1998-11-18",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "5fd21a83-12fc-47aa-b6dc-2bf74ff4feb8",
+       "title": "Greatest Karaoke Hits",
+       "status": "Official"
+      },
+      {
+       "id": "b4ee6596-643a-4baf-861b-bd5934c21bd0",
+       "title": "Greatest Karaoke Hits",
+       "status": "Official"
+      },
+      {
+       "id": "6786ab84-ffee-452b-970c-d8240119000a",
+       "title": "Greatest Karaoke Hits",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "513f0d0f-6a96-35fb-94e8-3621b1ca04a3",
+     "score": 87,
+     "title": "Greatest Video Hits 1",
+     "first-release-date": "2002",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "a6878d77-b816-44db-bd66-cc9636bb8b06",
+       "title": "Greatest Video Hits 1",
+       "status": "Official"
+      },
+      {
+       "id": "eff41d9f-0cd1-49f7-be2f-8e881e8182ae",
+       "title": "Greatest Video Hits 1",
+       "status": "Official"
+      },
+      {
+       "id": "c036f268-3db1-4a15-8dc3-8667286a77b9",
+       "title": "Greatest Video Hits 1 (disc 1)",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "d1b28aef-3b7f-48f8-bf80-7d2e5c52fed6",
+     "score": 87,
+     "title": "Greatest Video Hits 2",
+     "first-release-date": "2003-11-03",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "8808daf4-9beb-4669-a59b-899d148e6824",
+       "title": "Greatest Video Hits 2",
+       "status": "Official"
+      },
+      {
+       "id": "0a2757e4-fe46-44e6-914a-f8ba8ce19a9f",
+       "title": "Greatest Video Hits 2",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "3903cc52-20df-4819-8b4e-432a4ea24d04",
+     "score": 87,
+     "title": "Queen: Greatest Video Hits",
+     "first-release-date": "2012-08-28",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "a8e5772e-757f-4ba8-8452-56b785d13d0a",
+       "title": "Queen: Greatest Video Hits",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "1528e521-fb3d-4a76-b6dd-bf60c92c8347",
+     "score": 87,
+     "title": "Greatest Hits in Japan",
+     "first-release-date": "2020-01-15",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "d097d912-5daa-4831-94f4-cfbd4a6f4fed",
+       "title": "Greatest Hits In Japan",
+       "status": "Official"
+      },
+      {
+       "id": "8c24b173-c986-4086-932f-1001b60885c8",
+       "title": "Greatest Hits in Japan",
+       "status": "Official"
+      },
+      {
+       "id": "591b8942-9e39-44ff-ab2e-a9c63c8aebfa",
+       "title": "Greatest Hits in Japan",
+       "status": "Official"
+      },
+      {
+       "id": "7faa9494-8b7c-46a8-a075-d28424bee29d",
+       "title": "Greatest Hits in Japan",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "adf8f970-547e-3171-965a-707745c51808",
+     "score": 83,
+     "title": "Greatest Hits I & II",
+     "first-release-date": "1994",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "1bb17a32-c5bc-3af7-8d25-6dda5a0699bb",
+       "title": "Greatest Hits I & II",
+       "status": "Official"
+      },
+      {
+       "id": "0adf0b21-707f-4a66-94bd-8e86eddb00bc",
+       "title": "Greatest Hits I & II",
+       "status": "Official"
+      },
+      {
+       "id": "d2aaa62b-0a22-4731-a45e-0554a4fffbb0",
+       "title": "Greatest Hits I & II",
+       "status": "Official"
+      },
+      {
+       "id": "5f5a2eec-2fe0-4590-9db5-b220788d2149",
+       "title": "Greatest Hits I & II",
+       "status": "Official"
+      },
+      {
+       "id": "ec8507ae-dff6-478e-ab6f-9b6a375d7e7d",
+       "title": "The Very Best of Queen",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "015fa681-78e3-37b2-bff2-fa19f8d5a8d4",
+     "score": 79,
+     "title": "Greatest Hits: We Will Rock You",
+     "first-release-date": "2004-08-17",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "056e79c2-4cbb-4999-9c0d-902c44560838",
+       "title": "Greatest Hits (We Will Rock You Edition)",
+       "status": "Official"
+      },
+      {
+       "id": "5ef3806b-c1b0-4d42-8951-7171963dd46b",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "bbe1d3d9-a5c3-4087-8f95-ef4e97a9c22f",
+       "title": "Greatest Hits",
+       "status": "Official"
+      },
+      {
+       "id": "7a05cff9-4d63-4f4b-8d84-9c9e78059a49",
+       "title": "Greatest Hits: We Will Rock You"
+      },
+      {
+       "id": "0b36280e-bbc6-47bd-a24c-12afff13826e",
+       "title": "Greatest Hits: We Will Rock You",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "f61e762a-2799-312c-a121-9e4114d66c0d",
+     "score": 71,
+     "title": "Greatest Hits I, II & III: The Platinum Collection",
+     "first-release-date": "2000-11-13",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "2cb8787a-2c09-4bf2-84c5-d7bf0ba17fe8",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "621f0171-7ddd-4dd7-8a86-5638c6c01581",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "dd122cb7-b77a-425e-9437-b3352927a32f",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "dfb004d1-83d3-4b73-a091-0d303f8145da",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "190c90c4-acd1-4309-8ec0-97d09b6abbc0",
+       "title": "The Platinum Collection (Greatest Hits I II & III)",
+       "status": "Official"
+      },
+      {
+       "id": "00066f8c-9957-4738-9828-a6db37431dd9",
+       "title": "The Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "d5d9195e-252f-43fc-9e63-63be7e1dccf9",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "d171c2fd-1c7c-4d26-b369-77dfb3f8d1b2",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "e0dd2e17-60ed-3387-bfb6-25c3cf7bdba7",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "a9c51dd8-b55a-3aea-ba6f-11e62447e6fb",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "2fe47337-a82e-490b-add9-5138091d6848",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "0955c8ab-fb12-4aea-ad25-5b9f4b087a33",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "540f52d4-6c18-40ee-927a-6ca426575f0d",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "b5db7157-e354-40be-8ec1-fb6c50f82c75",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "0eef816e-6e4c-499f-8dce-f93cf807ef74",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      },
+      {
+       "id": "1bdaf566-a096-4500-8827-c59daefdaaaf",
+       "title": "The Platinum Collection: Greatest Hits I, II & III",
+       "status": "Official"
+      },
+      {
+       "id": "a0e12645-41a2-4bb7-b8be-cf91c7ff15dc",
+       "title": "The Platinum Collection: Greatest Hits I, II & III",
+       "status": "Official"
+      },
+      {
+       "id": "72fef61a-52f6-4a90-902e-dafa12e4137c",
+       "title": "Greatest Hits I, II & III: The Platinum Collection",
+       "status": "Official"
+      }
+     ]
+    }
+   ]
+  },
+  "https://musicbrainz.org/ws/2/recording?fmt=json&limit=40&query=release%3A%22greatest%20hits%22%20AND%20artist%3A%22queen%22%20AND%20status%3Aofficial": {
+   "created": "2026-10-22T18:53:57.847Z",
+   "offset": 0,
+   "recordings": [
+    {
+     "id": "b387579a-d555-4fe2-8a74-63dfd73b1852",
+     "score": 100,
+     "title": "Flash",
+     "length": 166000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2023",
+     "releases": [
+      {
+       "id": "78b44592-6a05-4bea-8511-528b7b70a6a7",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "ee87a455-debf-467e-89a3-027c1cf6d9a2",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2023",
+       "track-count": 17,
+       "media": [
+        {
+         "id": "c003b18a-2c58-44c6-b787-fe10ad5d16b1",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "2ee918b9-320c-449a-9340-48c1b5da12fa",
+           "number": "14",
+           "title": "Flash",
+           "length": 166000
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "b669ad9e-bfb6-430b-a718-0f42f1050a51",
+     "score": 100,
+     "title": "We Will Rock You",
+     "length": 120000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "1981",
+     "releases": [
+      {
+       "id": "5032df80-9baf-44f2-b20f-6058ae79a93d",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "1981",
+       "track-count": 18,
+       "media": [
+        {
+         "id": "102a03ef-6058-311f-87f7-e8d25515d5a0",
+         "position": 1,
+         "format": "12\" Vinyl",
+         "track": [
+          {
+           "id": "2922d2bf-9f66-4002-8a78-a6bf8b0f6511",
+           "number": "B8",
+           "title": "We Will Rock You",
+           "length": 120000
+          }
+         ],
+         "track-count": 18
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "2d957bd6-283b-4919-a978-fc1573e9de9c",
+     "score": 100,
+     "title": "Now I’m Here",
+     "length": 255000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "1981",
+     "releases": [
+      {
+       "id": "5032df80-9baf-44f2-b20f-6058ae79a93d",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "1981",
+       "track-count": 18,
+       "media": [
+        {
+         "id": "102a03ef-6058-311f-87f7-e8d25515d5a0",
+         "position": 1,
+         "format": "12\" Vinyl",
+         "track": [
+          {
+           "id": "d2cffe1a-d8b2-42b4-a1f9-04caef81d8d3",
+           "number": "B3",
+           "title": "Now I’m Here",
+           "length": 255000
+          }
+         ],
+         "track-count": 18
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "66915133-c585-4010-b08c-60fc99bc5eec",
+     "score": 100,
+     "title": "You’re My Best Friend",
+     "length": 159000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "1981",
+     "releases": [
+      {
+       "id": "5032df80-9baf-44f2-b20f-6058ae79a93d",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "1981",
+       "track-count": 18,
+       "media": [
+        {
+         "id": "102a03ef-6058-311f-87f7-e8d25515d5a0",
+         "position": 1,
+         "format": "12\" Vinyl",
+         "track": [
+          {
+           "id": "de8c5977-1233-465a-a9d3-be90aa1520ab",
+           "number": "A6",
+           "title": "You’re My Best Friend",
+           "length": 159000
+          }
+         ],
+         "track-count": 18
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "593f2fe8-1bcc-448d-a656-01f3893606cd",
+     "score": 100,
+     "title": "Fat Bottomed Girls",
+     "length": 201000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2023",
+     "releases": [
+      {
+       "id": "78b44592-6a05-4bea-8511-528b7b70a6a7",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "ee87a455-debf-467e-89a3-027c1cf6d9a2",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2023",
+       "track-count": 17,
+       "media": [
+        {
+         "id": "c003b18a-2c58-44c6-b787-fe10ad5d16b1",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "4fcb3f17-ec3a-45a6-9709-39414bfe9856",
+           "number": "4",
+           "title": "Fat Bottomed Girls",
+           "length": 201000
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "b4589bae-baa9-426e-85c8-12d19328aef0",
+     "score": 100,
+     "title": "We Will Rock You",
+     "length": 120000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2023",
+     "releases": [
+      {
+       "id": "78b44592-6a05-4bea-8511-528b7b70a6a7",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "ee87a455-debf-467e-89a3-027c1cf6d9a2",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2023",
+       "track-count": 17,
+       "media": [
+        {
+         "id": "c003b18a-2c58-44c6-b787-fe10ad5d16b1",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "f3ddcd1c-3181-4195-bf0c-20e8e804d08a",
+           "number": "16",
+           "title": "We Will Rock You",
+           "length": 120000
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "8a5d6ef0-eb8b-4af7-a984-6a5916dd11f9",
+     "score": 100,
+     "title": "Keep Yourself Alive",
+     "length": 210000,
+     "disambiguation": "mono single edit",
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "1981",
+     "releases": [
+      {
+       "id": "1eeecbde-a411-451f-9360-7f92e9878485",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "1981",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "deae83e1-2b61-31ac-ada9-eeb27a4accc5",
+         "position": 1,
+         "format": "Cassette",
+         "track": [
+          {
+           "id": "227ccaeb-1d60-49f9-8376-d56c405b0329",
+           "number": "B6",
+           "title": "Keep Yourself Alive",
+           "length": 210000
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "0b840651-dffa-421e-a247-1249716c2ace",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "1985-11-28",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "e1557f6f-c0da-3641-9029-73fdc3693540",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "725dd43d-641b-4c31-8972-12e25d3c14e0",
+           "number": "13",
+           "title": "Keep Yourself Alive",
+           "length": 210000
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "88eff6de-1374-4dc8-87d4-0a451ff99c4c",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "1984",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "927c2e89-0a0b-337a-b0bf-6dd6738ca89b",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "fa164959-1698-4b79-a345-ed86801d98b2",
+           "number": "13",
+           "title": "Keep Yourself Alive",
+           "length": 210000
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "ba8df868-ee59-43cb-a70f-0259cfd22f97",
+     "score": 100,
+     "title": "Play The Game (Remastered 2011)",
+     "length": 215000,
+     "disambiguation": "Dolby Atmos Mix",
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2021-07-02",
+     "releases": [
+      {
+       "id": "597afbec-4ab5-427b-ad49-7203259f798a",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "disambiguation": "Dolby Atmos Mix",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "track-count": 5,
+       "media": [
+        {
+         "id": "1ee3b744-9e80-3a1d-aa8c-ca703e7cadfa",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "cc1669f0-891a-49e9-93b9-760f49020d17",
+           "number": "5",
+           "title": "Play The Game (Remastered 2011)",
+           "length": 215000
+          }
+         ],
+         "track-count": 5
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "d01bf068-a818-48e3-a523-fff6621581aa",
+     "score": 100,
+     "title": "We Are The Champions",
+     "length": 178000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "1981",
+     "releases": [
+      {
+       "id": "5032df80-9baf-44f2-b20f-6058ae79a93d",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "1981",
+       "track-count": 18,
+       "media": [
+        {
+         "id": "102a03ef-6058-311f-87f7-e8d25515d5a0",
+         "position": 1,
+         "format": "12\" Vinyl",
+         "track": [
+          {
+           "id": "7beb4921-3290-4f66-ad65-2cc27b40ba9c",
+           "number": "B9",
+           "title": "We Are The Champions",
+           "length": 178000
+          }
+         ],
+         "track-count": 18
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "8c5c4bfc-9b6c-4f41-a7b1-d772710316f0",
+     "score": 100,
+     "title": "Under Pressure",
+     "length": 246000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "1985-11-28",
+     "releases": [
+      {
+       "id": "0b840651-dffa-421e-a247-1249716c2ace",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "1985-11-28",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "e1557f6f-c0da-3641-9029-73fdc3693540",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "cf8c861f-e939-4b8e-875c-364e23098101",
+           "number": "7",
+           "title": "Under Pressure",
+           "length": 246000
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "89857814-8ca2-4b2e-b517-9926103181fc",
+     "score": 100,
+     "title": "Now I'm Here",
+     "length": 252000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2023",
+     "releases": [
+      {
+       "id": "78b44592-6a05-4bea-8511-528b7b70a6a7",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "ee87a455-debf-467e-89a3-027c1cf6d9a2",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2023",
+       "track-count": 17,
+       "media": [
+        {
+         "id": "c003b18a-2c58-44c6-b787-fe10ad5d16b1",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "21ddef8f-1a94-4d98-a153-80f7a501e0eb",
+           "number": "11",
+           "title": "Now I'm Here",
+           "length": 252000
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "fd16c9e0-1fae-4675-9283-7d003ef00419",
+     "score": 100,
+     "title": "Seven Seas Of Rhye",
+     "length": 166000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "1981",
+     "releases": [
+      {
+       "id": "5032df80-9baf-44f2-b20f-6058ae79a93d",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "1981",
+       "track-count": 18,
+       "media": [
+        {
+         "id": "102a03ef-6058-311f-87f7-e8d25515d5a0",
+         "position": 1,
+         "format": "12\" Vinyl",
+         "track": [
+          {
+           "id": "266c053c-9639-4e6e-be29-c85b28535bd3",
+           "number": "B7",
+           "title": "Seven Seas Of Rhye",
+           "length": 166000
+          }
+         ],
+         "track-count": 18
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "8f6f4410-e80e-448b-a030-bfae3ae64732",
+     "score": 100,
+     "title": "Fat Bottomed Girls",
+     "length": 202000,
+     "disambiguation": "single version",
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "1981",
+     "releases": [
+      {
+       "id": "1eeecbde-a411-451f-9360-7f92e9878485",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "1981",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "deae83e1-2b61-31ac-ada9-eeb27a4accc5",
+         "position": 1,
+         "format": "Cassette",
+         "track": [
+          {
+           "id": "045fe9c5-99cf-4d59-b6b3-a8c1c2d353d3",
+           "number": "A5",
+           "title": "Fat Bottomed Girls",
+           "length": 202000
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "88eff6de-1374-4dc8-87d4-0a451ff99c4c",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "1984",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "927c2e89-0a0b-337a-b0bf-6dd6738ca89b",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "66d3d8b6-7597-4872-9277-d5962808f8df",
+           "number": "5",
+           "title": "Fat Bottomed Girls",
+           "length": 202000
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "4ecc5ace-a397-4617-b80a-ae83aa5b7974",
+     "score": 100,
+     "title": "Seven Seas Of Rhye",
+     "length": 167000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2023",
+     "releases": [
+      {
+       "id": "78b44592-6a05-4bea-8511-528b7b70a6a7",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "ee87a455-debf-467e-89a3-027c1cf6d9a2",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2023",
+       "track-count": 17,
+       "media": [
+        {
+         "id": "c003b18a-2c58-44c6-b787-fe10ad5d16b1",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "695ca6ec-11c3-4f74-a4c5-84f9a23a8f48",
+           "number": "15",
+           "title": "Seven Seas Of Rhye",
+           "length": 167000
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "1231a0c3-7090-4216-baf9-44cb9b05ebe7",
+     "score": 100,
+     "title": "Keep Yourself Alive",
+     "length": 212000,
+     "disambiguation": "mono single",
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "1981-11-03",
+     "releases": [
+      {
+       "id": "bab57bb1-67a7-460a-a5c4-15c9a1df7d2d",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "1981-11-03",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "d00a3c2c-0fa1-34eb-9f9f-62e296de264c",
+         "position": 1,
+         "format": "12\" Vinyl",
+         "track": [
+          {
+           "id": "b189cd73-7972-335a-b00f-455cd6ea5c40",
+           "number": "13",
+           "title": "Keep Yourself Alive",
+           "length": 212000
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "2d5a2c87-db8e-42fb-afad-5a9bada23be8",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "1983",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "9b4f8a61-a8fd-3322-ad62-12831142e08c",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "8476ecd2-31ac-334c-acb5-8428f14753aa",
+           "number": "13",
+           "title": "Keep Yourself Alive",
+           "length": 212173
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "35dd3e86-1945-4887-96c9-abddd7806c15",
+     "score": 100,
+     "title": "Save Me",
+     "length": 225000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "1981",
+     "releases": [
+      {
+       "id": "5032df80-9baf-44f2-b20f-6058ae79a93d",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "1981",
+       "track-count": 18,
+       "media": [
+        {
+         "id": "102a03ef-6058-311f-87f7-e8d25515d5a0",
+         "position": 1,
+         "format": "12\" Vinyl",
+         "track": [
+          {
+           "id": "f604c063-dde6-42b5-ae32-bc503b26d618",
+           "number": "A9",
+           "title": "Save Me",
+           "length": 225000
+          }
+         ],
+         "track-count": 18
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "35a7efd8-9773-4ace-b7ec-16ab1bec4871",
+     "score": 100,
+     "title": "Good Old-Fashioned Lover Boy",
+     "length": 173000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2023",
+     "releases": [
+      {
+       "id": "78b44592-6a05-4bea-8511-528b7b70a6a7",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "ee87a455-debf-467e-89a3-027c1cf6d9a2",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2023",
+       "track-count": 17,
+       "media": [
+        {
+         "id": "c003b18a-2c58-44c6-b787-fe10ad5d16b1",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "83bb2f24-1ff6-4fd1-8dc4-094082e46f63",
+           "number": "12",
+           "title": "Good Old-Fashioned Lover Boy",
+           "length": 173000
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "dc6b33ac-c649-414d-bd5d-b6403d23969c",
+     "score": 100,
+     "title": "Bohemian Rhapsody",
+     "length": 332000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "1981",
+     "releases": [
+      {
+       "id": "5032df80-9baf-44f2-b20f-6058ae79a93d",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "1981",
+       "track-count": 18,
+       "media": [
+        {
+         "id": "102a03ef-6058-311f-87f7-e8d25515d5a0",
+         "position": 1,
+         "format": "12\" Vinyl",
+         "track": [
+          {
+           "id": "1773c1c2-7f12-48d6-abf8-bd8633ceae77",
+           "number": "A1",
+           "title": "Bohemian Rhapsody",
+           "length": 332000
+          }
+         ],
+         "track-count": 18
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "fab89ef3-522e-489c-9859-3b9e26872b29",
+     "score": 100,
+     "title": "Flash",
+     "length": 174000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "1981",
+     "releases": [
+      {
+       "id": "5032df80-9baf-44f2-b20f-6058ae79a93d",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "1981",
+       "track-count": 18,
+       "media": [
+        {
+         "id": "102a03ef-6058-311f-87f7-e8d25515d5a0",
+         "position": 1,
+         "format": "12\" Vinyl",
+         "track": [
+          {
+           "id": "b679d4c2-3aa0-4e5c-92db-da0940d740e2",
+           "number": "B6",
+           "title": "Flash",
+           "length": 174000
+          }
+         ],
+         "track-count": 18
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "40721358-aae1-4bbc-8d22-17a083c972ff",
+     "score": 100,
+     "title": "Another One Bites The Dust",
+     "length": 212000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2023",
+     "releases": [
+      {
+       "id": "78b44592-6a05-4bea-8511-528b7b70a6a7",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "ee87a455-debf-467e-89a3-027c1cf6d9a2",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2023",
+       "track-count": 17,
+       "media": [
+        {
+         "id": "c003b18a-2c58-44c6-b787-fe10ad5d16b1",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "5d590a04-585f-4470-8929-5268accca838",
+           "number": "2",
+           "title": "Another One Bites The Dust",
+           "length": 212000
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "eb68c39f-1bd0-432f-9ddc-6a4ac4fc96bc",
+     "score": 100,
+     "title": "Play The Game",
+     "length": 208000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2023",
+     "releases": [
+      {
+       "id": "78b44592-6a05-4bea-8511-528b7b70a6a7",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "ee87a455-debf-467e-89a3-027c1cf6d9a2",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2023",
+       "track-count": 17,
+       "media": [
+        {
+         "id": "c003b18a-2c58-44c6-b787-fe10ad5d16b1",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "1ca0fdf3-aa92-46e0-abb6-76ddfd8631b7",
+           "number": "13",
+           "title": "Play The Game",
+           "length": 208000
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "df83bab5-b0de-42e7-87ce-42dbda91271f",
+     "score": 100,
+     "title": "Bicycle Race",
+     "length": 179000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2023",
+     "releases": [
+      {
+       "id": "78b44592-6a05-4bea-8511-528b7b70a6a7",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "ee87a455-debf-467e-89a3-027c1cf6d9a2",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2023",
+       "track-count": 17,
+       "media": [
+        {
+         "id": "c003b18a-2c58-44c6-b787-fe10ad5d16b1",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "eb7b5c97-3122-401f-b7f1-d47bbbaea005",
+           "number": "5",
+           "title": "Bicycle Race",
+           "length": 179000
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "6bcbd7cc-d282-4a85-bf97-47eba9d9ee59",
+     "score": 100,
+     "title": "Crazy Little Thing Called Love",
+     "length": 161000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2023",
+     "releases": [
+      {
+       "id": "78b44592-6a05-4bea-8511-528b7b70a6a7",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "ee87a455-debf-467e-89a3-027c1cf6d9a2",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2023",
+       "track-count": 17,
+       "media": [
+        {
+         "id": "c003b18a-2c58-44c6-b787-fe10ad5d16b1",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "426e4364-365d-48c0-bf67-a7b982bf01cf",
+           "number": "9",
+           "title": "Crazy Little Thing Called Love",
+           "length": 161000
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "335aa240-2921-4afb-aa40-2a6fa5069d29",
+     "score": 100,
+     "title": "Bohemian Rhapsody (Remastered 2011)",
+     "length": 356000,
+     "disambiguation": "Dolby Atmos Mix",
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2021-07-02",
+     "releases": [
+      {
+       "id": "597afbec-4ab5-427b-ad49-7203259f798a",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "disambiguation": "Dolby Atmos Mix",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "track-count": 5,
+       "media": [
+        {
+         "id": "1ee3b744-9e80-3a1d-aa8c-ca703e7cadfa",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "1a4f65e3-7c71-457c-9f80-8a0b154168aa",
+           "number": "1",
+           "title": "Bohemian Rhapsody (Remastered 2011)",
+           "length": 356000
+          }
+         ],
+         "track-count": 5
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "4942ebbe-84d9-409c-b14c-d87a9410acb2",
+     "score": 100,
+     "title": "Flash",
+     "length": 177000,
+     "disambiguation": "single version",
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "1981",
+     "releases": [
+      {
+       "id": "1eeecbde-a411-451f-9360-7f92e9878485",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "1981",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "deae83e1-2b61-31ac-ada9-eeb27a4accc5",
+         "position": 1,
+         "format": "Cassette",
+         "track": [
+          {
+           "id": "b9f79a64-b83a-4b33-80a2-60e6ab04c120",
+           "number": "B3",
+           "title": "Flash",
+           "length": 177000
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "88eff6de-1374-4dc8-87d4-0a451ff99c4c",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "1984",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "927c2e89-0a0b-337a-b0bf-6dd6738ca89b",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "89fd60d6-a8e0-478f-9892-2e8059cc1180",
+           "number": "10",
+           "title": "Flash",
+           "length": 177000
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "cd47dd98-1c93-4c2a-ae05-4d64ca72dbdb",
+     "score": 100,
+     "title": "Somebody To Love",
+     "length": 290000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "1981",
+     "releases": [
+      {
+       "id": "5032df80-9baf-44f2-b20f-6058ae79a93d",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "1981",
+       "track-count": 18,
+       "media": [
+        {
+         "id": "102a03ef-6058-311f-87f7-e8d25515d5a0",
+         "position": 1,
+         "format": "12\" Vinyl",
+         "track": [
+          {
+           "id": "f73430e4-3119-46ac-a301-126caa972045",
+           "number": "B2",
+           "title": "Somebody To Love",
+           "length": 290000
+          }
+         ],
+         "track-count": 18
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "429cc876-2fa1-482f-b1b8-385c905576b1",
+     "score": 100,
+     "title": "Flash (single mix)",
+     "length": 168426,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "1988",
+     "releases": [
+      {
+       "id": "594cd4b4-fd4f-4dec-bf85-80eb437d2e1d",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "1988",
+       "track-count": 17,
+       "media": [
+        {
+         "id": "92b58508-94dd-3a32-a523-daaab812fd66",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "2453f460-b3de-4218-8295-f2e28163623d",
+           "number": "14",
+           "title": "Flash (single mix)",
+           "length": 168426
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "5d500acc-e103-4558-bca6-0309902914f2",
+     "score": 100,
+     "title": "Killer Queen",
+     "length": 180000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "1981",
+     "releases": [
+      {
+       "id": "5032df80-9baf-44f2-b20f-6058ae79a93d",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "1981",
+       "track-count": 18,
+       "media": [
+        {
+         "id": "102a03ef-6058-311f-87f7-e8d25515d5a0",
+         "position": 1,
+         "format": "12\" Vinyl",
+         "track": [
+          {
+           "id": "7a7f559f-caae-4fdb-b57f-0338d12274fb",
+           "number": "A3",
+           "title": "Killer Queen",
+           "length": 180000
+          }
+         ],
+         "track-count": 18
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "2bc13d2a-3262-42fe-baf6-9967c76b028e",
+     "score": 100,
+     "title": "We Are The Champions",
+     "length": 180000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2023",
+     "releases": [
+      {
+       "id": "78b44592-6a05-4bea-8511-528b7b70a6a7",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "ee87a455-debf-467e-89a3-027c1cf6d9a2",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2023",
+       "track-count": 17,
+       "media": [
+        {
+         "id": "c003b18a-2c58-44c6-b787-fe10ad5d16b1",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "acc66d28-deeb-45bc-950c-0aa61dd686b7",
+           "number": "17",
+           "title": "We Are The Champions",
+           "length": 180000
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "438adfb6-c032-44ee-ace7-609281db063f",
+     "score": 100,
+     "title": "Another One Bites The Dust (Remastered 2011)",
+     "length": 220000,
+     "disambiguation": "Dolby Atmos Mix",
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2021-07-02",
+     "releases": [
+      {
+       "id": "597afbec-4ab5-427b-ad49-7203259f798a",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "disambiguation": "Dolby Atmos Mix",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "track-count": 5,
+       "media": [
+        {
+         "id": "1ee3b744-9e80-3a1d-aa8c-ca703e7cadfa",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "d5d01b37-a131-425b-b5e0-900ec4d843b7",
+           "number": "3",
+           "title": "Another One Bites The Dust (Remastered 2011)",
+           "length": 220000
+          }
+         ],
+         "track-count": 5
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "70842347-3a16-478f-aa59-bf547bdd3d78",
+     "score": 100,
+     "title": "You're My Best Friend",
+     "length": 170000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2023",
+     "releases": [
+      {
+       "id": "78b44592-6a05-4bea-8511-528b7b70a6a7",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "ee87a455-debf-467e-89a3-027c1cf6d9a2",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2023",
+       "track-count": 17,
+       "media": [
+        {
+         "id": "c003b18a-2c58-44c6-b787-fe10ad5d16b1",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "2739adfa-627c-42a5-9ed4-5b714b4f0aec",
+           "number": "6",
+           "title": "You're My Best Friend",
+           "length": 170000
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "5132eed4-4798-4bd2-a6ec-cf6e2b73ca0b",
+     "score": 100,
+     "title": "Somebody To Love",
+     "length": 293000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2023",
+     "releases": [
+      {
+       "id": "78b44592-6a05-4bea-8511-528b7b70a6a7",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "ee87a455-debf-467e-89a3-027c1cf6d9a2",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2023",
+       "track-count": 17,
+       "media": [
+        {
+         "id": "c003b18a-2c58-44c6-b787-fe10ad5d16b1",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "4e913b1f-195e-4c86-a5ab-fd452a56fa74",
+           "number": "10",
+           "title": "Somebody To Love",
+           "length": 293000
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "df9696f8-3804-442b-941f-7a4eb84e89f9",
+     "score": 100,
+     "title": "Bohemian Rhapsody",
+     "length": 352000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2023",
+     "releases": [
+      {
+       "id": "78b44592-6a05-4bea-8511-528b7b70a6a7",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "ee87a455-debf-467e-89a3-027c1cf6d9a2",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2023",
+       "track-count": 17,
+       "media": [
+        {
+         "id": "c003b18a-2c58-44c6-b787-fe10ad5d16b1",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "36e5d685-1491-4316-b8f8-456b77478b15",
+           "number": "1",
+           "title": "Bohemian Rhapsody",
+           "length": 352000
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "cd7096d1-cdc3-4f4b-8d47-b653fed73c8d",
+     "score": 100,
+     "title": "Save Me",
+     "length": 228000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2023",
+     "releases": [
+      {
+       "id": "78b44592-6a05-4bea-8511-528b7b70a6a7",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "ee87a455-debf-467e-89a3-027c1cf6d9a2",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2023",
+       "track-count": 17,
+       "media": [
+        {
+         "id": "c003b18a-2c58-44c6-b787-fe10ad5d16b1",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "23422c34-7d17-433d-b9bc-9cbb32a0dd95",
+           "number": "8",
+           "title": "Save Me",
+           "length": 228000
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "7a88e66b-5af1-4dac-9015-7c337d392ad7",
+     "score": 100,
+     "title": "You're My Best Friend (Remastered 2011)",
+     "length": 174000,
+     "disambiguation": "Dolby Atmos Mix",
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2021-07-02",
+     "releases": [
+      {
+       "id": "597afbec-4ab5-427b-ad49-7203259f798a",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "disambiguation": "Dolby Atmos Mix",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "track-count": 5,
+       "media": [
+        {
+         "id": "1ee3b744-9e80-3a1d-aa8c-ca703e7cadfa",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "75edde81-ed9b-4464-a6f2-3ed5ae5d16b0",
+           "number": "2",
+           "title": "You're My Best Friend (Remastered 2011)",
+           "length": 174000
+          }
+         ],
+         "track-count": 5
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "31b55b75-fb16-4396-b364-715e662e90f9",
+     "score": 100,
+     "title": "Good Old-Fashioned Lover Boy",
+     "length": 167000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "1981",
+     "releases": [
+      {
+       "id": "5032df80-9baf-44f2-b20f-6058ae79a93d",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "1981",
+       "track-count": 18,
+       "media": [
+        {
+         "id": "102a03ef-6058-311f-87f7-e8d25515d5a0",
+         "position": 1,
+         "format": "12\" Vinyl",
+         "track": [
+          {
+           "id": "e7fc30e5-c0c7-415b-8eee-52a7935fc531",
+           "number": "B4",
+           "title": "Good Old-Fashioned Lover Boy",
+           "length": 167000
+          }
+         ],
+         "track-count": 18
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "f667c7a4-52ef-4d79-9858-88c7380d0b26",
+     "score": 100,
+     "title": "Fat Bottomed Girls",
+     "length": 254000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "1981",
+     "releases": [
+      {
+       "id": "5032df80-9baf-44f2-b20f-6058ae79a93d",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "1981",
+       "track-count": 18,
+       "media": [
+        {
+         "id": "102a03ef-6058-311f-87f7-e8d25515d5a0",
+         "position": 1,
+         "format": "12\" Vinyl",
+         "track": [
+          {
+           "id": "e2838276-0fa5-44ae-88e1-0e744b49085b",
+           "number": "A4",
+           "title": "Fat Bottomed Girls",
+           "length": 254000
+          }
+         ],
+         "track-count": 18
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "c3427665-9305-414b-b9ce-c1d8653c3da8",
+     "score": 100,
+     "title": "Play The Game",
+     "length": 208000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "1981",
+     "releases": [
+      {
+       "id": "5032df80-9baf-44f2-b20f-6058ae79a93d",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "1981",
+       "track-count": 18,
+       "media": [
+        {
+         "id": "102a03ef-6058-311f-87f7-e8d25515d5a0",
+         "position": 1,
+         "format": "12\" Vinyl",
+         "track": [
+          {
+           "id": "bd838707-003a-4eb6-aa07-666efdd6e5bc",
+           "number": "B5",
+           "title": "Play The Game",
+           "length": 208000
+          }
+         ],
+         "track-count": 18
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "643c3ea9-cecf-4bb8-ad2e-c52035b08451",
+     "score": 100,
+     "title": "Spread Your Wings",
+     "length": 271000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "1981",
+     "releases": [
+      {
+       "id": "5032df80-9baf-44f2-b20f-6058ae79a93d",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "69ce61c8-127f-3809-95d8-62fdf3ae1347",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "1981",
+       "track-count": 18,
+       "media": [
+        {
+         "id": "102a03ef-6058-311f-87f7-e8d25515d5a0",
+         "position": 1,
+         "format": "12\" Vinyl",
+         "track": [
+          {
+           "id": "63562fa1-6ecb-4142-95d9-9b6d1e1fabf3",
+           "number": "A7",
+           "title": "Spread Your Wings",
+           "length": 271000
+          }
+         ],
+         "track-count": 18
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "cafcc9ed-18bd-4182-bcc9-acbf8ac59ddf",
+     "score": 100,
+     "title": "Don't Stop Me Now",
+     "length": 209000,
+     "artist-credit": [
+      {
+       "name": "Queen",
+       "artist": {
+        "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+        "name": "Queen",
+        "sort-name": "Queen",
+        "disambiguation": "UK rock group",
+        "aliases": [
+         {
+          "sort-name": "Queen",
+          "name": "Queen"
+         },
+         {
+          "sort-name": "皇后乐队",
+          "name": "皇后乐队"
+         },
+         {
+          "sort-name": "クイーン",
+          "name": "クイーン"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2023",
+     "releases": [
+      {
+       "id": "78b44592-6a05-4bea-8511-528b7b70a6a7",
+       "title": "Greatest Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Queen",
+         "artist": {
+          "id": "0383dadf-2a4e-4d10-a46a-e9e041da8eb3",
+          "name": "Queen",
+          "sort-name": "Queen",
+          "disambiguation": "UK rock group"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "ee87a455-debf-467e-89a3-027c1cf6d9a2",
+        "title": "Greatest Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2023",
+       "track-count": 17,
+       "media": [
+        {
+         "id": "c003b18a-2c58-44c6-b787-fe10ad5d16b1",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "6f00d301-10d0-46fa-9ea5-798e58563328",
+           "number": "7",
+           "title": "Don't Stop Me Now",
+           "length": 209000
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "covers": {}
+}

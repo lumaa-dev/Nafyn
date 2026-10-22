@@ -27,25 +27,30 @@ import { randomUUID, UUID } from "node:crypto";
 import { basename, dirname, extname, join } from "node:path";
 import { mkdir, rm } from "node:fs/promises";
 import { statSync } from "node:fs";
-import type { IRelease, IReleaseGroup, MusicBrainzApi } from "musicbrainz-api";
+import type { IRecording, IRelease, IReleaseGroup, RecordingIncludes } from "musicbrainz-api";
 import type { SlskSearchResult } from "../utils/soulseek";
-import { getMusicBrainzClient, getAppleMusicTrackID } from "../utils/musicbrainz";
+import { getMusicBrainzRepository, getAppleMusicTrackID } from "../utils/musicbrainz";
+import { MusicBrainzError, type MusicBrainzRepository } from "../utils/musicbrainzRepository";
 import { pickCanonicalRelease, pickReleaseForGroup } from "../utils/release";
 import { searchSoulseek, downloadFromSoulseek, foldDiacritics } from "../utils/soulseek";
 import { verifyRecordingMatch } from "../utils/fingerprint";
 import { tagAudioFile } from "../utils/audioTag";
 import { getRequestById, updateRequestStatus } from "./requests";
 import {
-    findMediaByMusicbrainzId,
+    findMediaByIdentity,
+    findOwnedMediaByIdentity,
     findAnyLibraryEntryForMedia,
-    findLibraryEntry,
     insertMedia,
     addLibraryEntry,
+    addMediaIdentifiers,
     shareMediaWithUser,
     libraryFilePath,
     updateMediaFileSize,
-    deleteOrphanMediaRow
+    deleteOrphanMediaRow,
+    type LibraryEntry,
+    type MediaRow
 } from "./library";
+import { buildIdentity, type RecordingIdentity } from "../utils/mediaIdentity";
 import { emitDownloadProgress, clearDownloadEmitter } from "../utils/downloadEvents";
 import { isReleased } from "../utils/releaseDate";
 import { notifyRequestFinished } from "./notifications";
@@ -63,8 +68,11 @@ const MAX_DURATION_DELTA_SECONDS = 5;
 // through - only exclude when the requested title itself isn't asking for that version
 const EXCLUDED_VERSION_KEYWORDS = ["instrumental", "acapella", "a cappella", "karaoke", "backing track", "no vocal", "no vocals"];
 
-interface TrackTarget {
+export interface TrackTarget {
     recordingId: string,
+    // other MBIDs naming this recording - the one a track request carried, when MusicBrainz redirected it
+    aliases: string[],
+    isrcs: string[],
     title: string,
     artistName: string,
     artistMbid: string,
@@ -86,10 +94,35 @@ function parseReleaseDate(date: string | undefined): Date | null {
     return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
-// step 2: resolve the request's MusicBrainz ID into one (track) or many (album) concrete recordings to fetch
-async function resolveTargets(client: MusicBrainzApi, musicbrainzId: string, type: "album" | "track"): Promise<TrackTarget[]> {
+export function targetIdentity(target: TrackTarget): RecordingIdentity {
+    return buildIdentity({
+        mbids: [target.recordingId, ...target.aliases],
+        isrcs: target.isrcs,
+        title: target.title,
+        artistMbid: target.artistMbid,
+        artistName: target.artistName,
+        duration: target.duration
+    });
+}
+
+// the repository throws on every error response: an unknown ID (404, or the 400 MusicBrainz gives a well-formed
+// UUID it rejects) is "nothing there" -> null, anything else (busy, circuit open, network) stays a throw
+async function lookupOrNull<T>(lookup: Promise<T>): Promise<T | null> {
+    try {
+        return await lookup;
+    } catch (error) {
+        if (error instanceof MusicBrainzError && (error.status === 404 || error.status === 400)) return null;
+        throw error;
+    }
+}
+
+// step 2: resolve the request's MusicBrainz ID into one (track) or many (album) concrete recordings to fetch.
+// Also what POST /api/v1/request checks against the caller's library before a request is even created.
+export async function resolveTargets(client: MusicBrainzRepository, musicbrainzId: string, type: "album" | "track"): Promise<TrackTarget[]> {
     if (type === "track") {
-        const recording = await client.lookup("recording", musicbrainzId, ["artist-credits", "releases", "release-groups", "media", "url-rels"]);
+        // `release-groups` is a valid recording include on MusicBrainz but missing from musicbrainz-api's types
+        const recording: IRecording | null = await lookupOrNull(client.lookup("recording", musicbrainzId, ["artist-credits", "releases", "release-groups", "media", "url-rels", "isrcs"] as RecordingIncludes[]));
+        if (!recording) return [];
         // same picker as GET /api/v1/track/{tid} (see utils/release.ts): the album/label/cover written into
         // the file's tags must be the one the user was looking at when they requested the track
         const release = pickCanonicalRelease(recording.releases);
@@ -103,6 +136,9 @@ async function resolveTargets(client: MusicBrainzApi, musicbrainzId: string, typ
         // "album" grouping links back to a valid /api/v1/album/{aid} target
         return [{
             recordingId: recording.id,
+            // a merged-away MBID resolves to the surviving recording, whose id differs from the one asked for
+            aliases: recording.id.toLowerCase() === musicbrainzId.toLowerCase() ? [] : [musicbrainzId],
+            isrcs: recording.isrcs ?? [],
             title: recording.title,
             artistName: credit?.name ?? "Unknown Artist",
             artistMbid: credit?.id ?? "unknown-artist",
@@ -119,8 +155,13 @@ async function resolveTargets(client: MusicBrainzApi, musicbrainzId: string, typ
         }];
     }
 
-    const releaseGroup: IReleaseGroup = await client.lookup("release-group", musicbrainzId, ["artist-credits"]);
-    const browsed = await client.browse("release", { "release-group": musicbrainzId }, ["recordings", "artist-credits", "labels", "media"]);
+    const releaseGroup: IReleaseGroup | null = await lookupOrNull(client.lookup("release-group", musicbrainzId, ["artist-credits"]));
+    if (!releaseGroup) return [];
+    // browsed by the id the lookup returned: a merged-away release-group MBID still resolves on lookup, but
+    // has no releases of its own to browse
+    const browsed = await client.browse("release", { "release-group": releaseGroup.id }, ["recordings", "artist-credits", "labels", "media", "isrcs"]);
+    const browseError = (browsed as { error?: unknown }).error;
+    if (typeof browseError === "string") throw new Error(`MusicBrainz: ${browseError}`);
     // same picker as GET /api/v1/album/{aid}, so the tracks downloaded here are exactly the tracks the
     // album page listed - the official standard edition, not a deluxe whose extra tracks nobody shares
     const release: IRelease | undefined = pickReleaseForGroup(releaseGroup, browsed.releases);
@@ -131,7 +172,7 @@ async function resolveTargets(client: MusicBrainzApi, musicbrainzId: string, typ
     const label = release["label-info"]?.[0]?.label?.name ?? null;
     const releaseArtist = releaseGroup["artist-credit"]?.[0]?.artist;
     const releaseDate = parseReleaseDate(releaseGroup["first-release-date"]);
-    const coverArt = `https://coverartarchive.org/release-group/${musicbrainzId}/front-250`;
+    const coverArt = `https://coverartarchive.org/release-group/${releaseGroup.id}/front-250`;
     const amId = getAppleMusicTrackID(undefined, release) ?? null;
 
     const targets: TrackTarget[] = [];
@@ -140,6 +181,8 @@ async function resolveTargets(client: MusicBrainzApi, musicbrainzId: string, typ
             const trackArtist = track["artist-credit"]?.[0]?.artist ?? releaseArtist;
             targets.push({
                 recordingId: track.recording.id,
+                aliases: [],
+                isrcs: track.recording.isrcs ?? [],
                 title: track.title,
                 artistName: trackArtist?.name ?? "Unknown Artist",
                 artistMbid: trackArtist?.id ?? "unknown-artist",
@@ -232,6 +275,29 @@ function pickBestAlbumUser(results: SlskSearchResult[], targets: TrackTarget[]):
     return best;
 }
 
+// true when the user already has this song in their library. A match by MBID/ISRC also records the target's
+// identifiers on that row, so the next lookup under this name is a direct hit.
+async function alreadyOwned(userId: string, identity: RecordingIdentity): Promise<boolean> {
+    const owned = await findOwnedMediaByIdentity(userId, identity);
+    if (!owned) return false;
+    // never from a title match: that would let a later *strong* lookup hand this file to other users as
+    // "the same recording", which is only a guess (and may be someone's manual upload)
+    if (owned.strength !== "metadata") await addMediaIdentifiers(owned.media.id, identity);
+    return true;
+}
+
+// grants the user another user's existing copy of this recording (matched by MBID or ISRC), if there is one
+async function shareExistingCopy(userId: string, identity: RecordingIdentity): Promise<boolean> {
+    for (const media of await findMediaByIdentity(identity)) {
+        const sourceEntry = await findAnyLibraryEntryForMedia(media.id);
+        if (!sourceEntry) continue;
+        await shareMediaWithUser(userId, media, sourceEntry.filePath);
+        await addMediaIdentifiers(media.id, identity);
+        return true;
+    }
+    return false;
+}
+
 // steps 3-7 for a single recording
 async function downloadTrack(
     requestId: string,
@@ -252,20 +318,16 @@ async function downloadTrack(
             ...(trackResult ? { stage: "processing" as const, trackResult } : {})
         });
     };
-    // step 3: already downloaded by someone else? copy instead of hitting Soulseek again
-    const existingMedia = await findMediaByMusicbrainzId(target.recordingId);
-    if (existingMedia) {
-        if (await findLibraryEntry(requestedBy, existingMedia.id)) {
-            progress({ stage: "completed", message: "Already in library" });
-            return true;
-        }
-
-        const sourceEntry = await findAnyLibraryEntryForMedia(existingMedia.id);
-        if (sourceEntry) {
-            await shareMediaWithUser(requestedBy, existingMedia, sourceEntry.filePath);
-            progress({ stage: "completed", message: "Granted access to existing library entry" });
-            return true;
-        }
+    // step 3: the requester already has this song - under this MBID or any other name for it (see
+    // utils/mediaIdentity.ts) - or someone else downloaded it already. Never a second copy either way.
+    const identity = targetIdentity(target);
+    if (await alreadyOwned(requestedBy, identity)) {
+        progress({ stage: "completed", message: "Already in library" });
+        return true;
+    }
+    if (await shareExistingCopy(requestedBy, identity)) {
+        progress({ stage: "completed", message: "Granted access to existing library entry" });
+        return true;
     }
 
     // step 4: search + download through Soulseek
@@ -358,22 +420,23 @@ async function downloadTrack(
 
             // step 6+7: tag with MusicBrainz metadata, move into the requesting user's library
             // re-check here (not just once before the candidate loop): an earlier candidate in this same
-            // loop, or a concurrent request for the same recording, may have inserted a row since we last checked
-            const reusableMedia = await findMediaByMusicbrainzId(target.recordingId);
-            if (reusableMedia) {
+            // loop, or a concurrent request for the same recording (this user's album request and track
+            // request overlapping, say), may have landed it since we last checked
+            if (await alreadyOwned(requestedBy, identity)) {
+                await rm(tempPath, { force: true });
+                progress({ stage: "completed", message: "Already in library" });
+                return true;
+            }
+            if (await shareExistingCopy(requestedBy, identity)) {
                 // someone beat us to it while we were downloading/verifying this candidate - share their
                 // existing file instead of tagging our own copy into a second physical file for the same track
-                const sourceEntry = await findAnyLibraryEntryForMedia(reusableMedia.id);
-                if (sourceEntry) {
-                    await rm(tempPath, { force: true });
-                    await shareMediaWithUser(requestedBy, reusableMedia, sourceEntry.filePath);
-                    progress({ stage: "completed", message: "Granted access to existing library entry" });
-                    return true;
-                }
-                // reusableMedia has no owner yet (the other in-flight attempt hasn't reached addLibraryEntry) -
-                // fall through and finish tagging this download against that already-inserted row instead of
-                // inserting a second one
+                await rm(tempPath, { force: true });
+                progress({ stage: "completed", message: "Granted access to existing library entry" });
+                return true;
             }
+            // a row with no owner yet (the other in-flight attempt hasn't reached addLibraryEntry) - finish
+            // tagging this download against that already-inserted row instead of inserting a second one
+            const reusableMedia: MediaRow | null = (await findMediaByIdentity(identity))[0] ?? null;
 
             const media = reusableMedia ?? await insertMedia({
                 musicbrainzId: target.recordingId,
@@ -393,6 +456,8 @@ async function downloadTrack(
                 trackNumber: target.trackNumber
             });
             if (!reusableMedia) insertedMediaId = media.id;
+            // right away, so a concurrent attempt under another MBID/ISRC for the same song finds this row too
+            await addMediaIdentifiers(media.id, identity);
 
             console.log(`[downloads] Musicbrainz'd "${target.title}"`);
 
@@ -409,7 +474,10 @@ async function downloadTrack(
             await rm(tempPath, { force: true });
 
             await updateMediaFileSize(media.id, statSync(destPath).size);
-            await addLibraryEntry(requestedBy, media.id, destPath);
+            const entry: LibraryEntry = await addLibraryEntry(requestedBy, media.id, destPath);
+            // the requester already held this row (a race the checks above can't fully close): keep their
+            // file, and drop ours rather than leave an unreferenced second copy in music/
+            if (entry.filePath !== destPath) await rm(destPath, { force: true });
             destPath = null;
 
             progress({ stage: "completed" });
@@ -471,7 +539,7 @@ async function runDownloadRequest(request: NafynRequest): Promise<void> {
         await updateRequestStatus(request.id, "searching");
         emitDownloadProgress({ requestId: request.id, stage: "searching", message: "Resolving MusicBrainz data" });
 
-        const client = getMusicBrainzClient();
+        const client = getMusicBrainzRepository();
         const targets = await resolveTargets(client, request.musicbrainzId, request.type);
 
         if (targets.length === 0) {
@@ -483,6 +551,29 @@ async function runDownloadRequest(request: NafynRequest): Promise<void> {
         // that check existed, or whose release date moved later since, must not go to Soulseek either
         if (!isReleased(targets[0]!.releaseDate)) {
             await finish("failed", "Not released yet");
+            return;
+        }
+
+        // `getRequestById` resolves `requestedBy` into a full NafynUser whenever that account still exists
+        // (so the MANAGE_REQUESTS approval path, which goes through processDownloadRequestId, hands us an
+        // object here while the auto-accept path hands us a bare UUID). Normalize before it is used as a
+        // user id, or the resulting library_entries row is granted to the string "[object Object]" - i.e.
+        // to nobody, leaving the file unreachable by the person who requested it.
+        const requestedById = typeof request.requestedBy === "string" ? request.requestedBy : request.requestedBy?.id;
+        if (!requestedById) {
+            await finish("failed", "Request has no valid requester");
+            return;
+        }
+
+        // tracks the requester already has (under any name, see utils/mediaIdentity.ts) are never searched for:
+        // a request for something fully owned completes without touching Soulseek, and the seller for an
+        // album is picked on the tracks actually missing
+        const missingTargets: TrackTarget[] = [];
+        for (const target of targets) {
+            if (!(await findOwnedMediaByIdentity(requestedById, targetIdentity(target)))) missingTargets.push(target);
+        }
+        if (missingTargets.length === 0) {
+            await finish("completed", "Already in library");
             return;
         }
 
@@ -501,27 +592,16 @@ async function runDownloadRequest(request: NafynRequest): Promise<void> {
             ]);
             poolResults = rawResults;
 
-            const bestUser = pickBestAlbumUser(rawResults, targets);
+            const bestUser = pickBestAlbumUser(rawResults, missingTargets);
             if (bestUser) {
                 primaryResults = bestUser.files;
-                console.log(`[downloads] Selected Soulseek user "${bestUser.user}" with ${bestUser.matchedTracks}/${targets.length} matching tracks (vs MusicBrainz)`);
+                console.log(`[downloads] Selected Soulseek user "${bestUser.user}" with ${bestUser.matchedTracks}/${missingTargets.length} missing tracks (vs MusicBrainz)`);
                 emitDownloadProgress({
                     requestId: request.id,
                     stage: "searching",
-                    message: `Selected seller with ${bestUser.matchedTracks}/${targets.length} tracks`
+                    message: `Selected seller with ${bestUser.matchedTracks}/${missingTargets.length} tracks`
                 });
             }
-        }
-
-        // `getRequestById` resolves `requestedBy` into a full NafynUser whenever that account still exists
-        // (so the MANAGE_REQUESTS approval path, which goes through processDownloadRequestId, hands us an
-        // object here while the auto-accept path hands us a bare UUID). Normalize before it is used as a
-        // user id, or the resulting library_entries row is granted to the string "[object Object]" - i.e.
-        // to nobody, leaving the file unreachable by the person who requested it.
-        const requestedById = typeof request.requestedBy === "string" ? request.requestedBy : request.requestedBy?.id;
-        if (!requestedById) {
-            await finish("failed", "Request has no valid requester");
-            return;
         }
 
         // strictly in track order, and a track that did not land gets one more go (fresh per-track search,
@@ -531,11 +611,11 @@ async function runDownloadRequest(request: NafynRequest): Promise<void> {
             if (!ok) ok = await downloadTrack(request.id, requestedById, target, i + 1, targets.length);
         }
 
-        // the request is only complete when the requester really owns every track of it
+        // the request is only complete when the requester really owns every track of it (by the same
+        // identity match that let a track be skipped as "already in library")
         const missing: string[] = [];
         for (const [i, target] of targets.entries()) {
-            const media = await findMediaByMusicbrainzId(target.recordingId);
-            if (!media || !(await findLibraryEntry(requestedById, media.id))) {
+            if (!(await findOwnedMediaByIdentity(requestedById, targetIdentity(target)))) {
                 missing.push(`${target.trackNumber ?? i + 1}. ${target.title}`);
             }
         }

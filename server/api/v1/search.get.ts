@@ -1,6 +1,9 @@
-import type { IArtist, IArtistCredit, IRecording, IReleaseGroup, MusicBrainzApi } from "musicbrainz-api";
-import { getMusicBrainzClient } from "../../utils/musicbrainz";
-import { isOfficialReleaseGroup } from "../../utils/release";
+import type { IArtist } from "musicbrainz-api";
+import { getMusicBrainzRepository } from "../../utils/musicbrainz";
+import { MusicBrainzError, escapeLucene } from "../../utils/musicbrainzRepository";
+import { getSearchDeps } from "../../utils/catalogSearch";
+import { searchAlbums, searchTracks, type SearchInput } from "../../utils/search/engine";
+import type { SearchResult } from "../../utils/search/types";
 import { getLastfmArtistInfo } from "../../utils/lastfm";
 import { requireAuthToken } from "../../utils/requireAuth";
 import { consumeRateLimit } from "../../utils/rateLimit";
@@ -19,7 +22,7 @@ type Filter = "album" | "track" | "artist" | "all";
 
 defineRouteMeta({
     openAPI: {
-        description: "Search MusicBrainz for albums, tracks, and/or artists",
+        description: "Search MusicBrainz for albums, tracks, and/or artists. Albums and tracks are normalized, filtered (Official digital releases only, no bootlegs/compilations/deluxe/remasters unless asked for) and ranked; results with a front cover come first. At most one result has `bestResult: true`.",
         tags: ["search"],
         operationId: "search",
         parameters: [
@@ -27,7 +30,35 @@ defineRouteMeta({
                 name: "q",
                 in: "query",
                 required: true,
-                description: "Search query",
+                description: "Free-text search query. Optional when `title` or `artist` is given. \"Artist - Title\" is tried in both orders.",
+                schema: { type: "string" }
+            },
+            {
+                name: "title",
+                in: "query",
+                required: false,
+                description: "Song or album title. Takes precedence over the title part of `q`.",
+                schema: { type: "string" }
+            },
+            {
+                name: "artist",
+                in: "query",
+                required: false,
+                description: "Artist name (any language: aliases are matched).",
+                schema: { type: "string" }
+            },
+            {
+                name: "upc",
+                in: "query",
+                required: false,
+                description: "UPC-A/EAN-13 barcode (12 or 13 digits, valid check digit) of the album. Strong identity evidence for `albums`; needs `title` and `artist` as fallback. An invalid code is ignored.",
+                schema: { type: "string" }
+            },
+            {
+                name: "isrc",
+                in: "query",
+                required: false,
+                description: "ISRC of the track (12 characters, hyphens allowed). Strong identity evidence for `tracks`; needs `title` and `artist` as fallback. An invalid code is ignored.",
                 schema: { type: "string" }
             },
             {
@@ -48,7 +79,7 @@ defineRouteMeta({
                 name: "offset",
                 in: "query",
                 required: false,
-                description: "Pagination offset, defaults to 0",
+                description: "Offset into the ranked list, defaults to 0",
                 schema: { type: "number" }
             }
         ],
@@ -79,7 +110,7 @@ defineRouteMeta({
                 }
             },
             "400": {
-                description: "Missing search query `q`",
+                description: "Nothing to search for (`q`, `title` or `artist`), or `upc`/`isrc` without both `title` and `artist`",
                 content: {
                     "application/json": {
                         schema: { $ref: "#/components/schemas/NuxtError" }
@@ -88,6 +119,14 @@ defineRouteMeta({
             },
             "401": {
                 description: "Not authenticated",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NuxtError" }
+                    }
+                }
+            },
+            "503": {
+                description: "MusicBrainz is unreachable or overloaded",
                 content: {
                     "application/json": {
                         schema: { $ref: "#/components/schemas/NuxtError" }
@@ -134,6 +173,28 @@ defineRouteMeta({
                                 properties: {
                                     amId: { type: "string", description: "Apple Music identifier" }
                                 }
+                            },
+                            bestResult: {
+                                type: "boolean",
+                                description: "Only on album/track search results. True on at most one result: the top-ranked one, when it clears the minimum score, has a front cover or an exact UPC/ISRC match, and clearly beats the runner-up. False everywhere when the top results are too close to call."
+                            },
+                            match: { $ref: "#/components/schemas/SearchMatch" }
+                        }
+                    },
+                    SearchMatch: {
+                        type: "object",
+                        description: "Score breakdown of an album/track search result",
+                        required: ["title", "artist", "relevance", "exactness", "sources", "flags", "hasFrontCover"],
+                        properties: {
+                            title: { type: "number", description: "Containment score of the title, 0..1 (1 when no title was given)" },
+                            artist: { type: "number", description: "Best artist similarity over name, aliases and sort names, 0..1 (1 when no artist was given)" },
+                            relevance: { type: "number", description: "Weighted title/artist score plus corroboration and UPC/ISRC bonuses, may exceed 1" },
+                            exactness: { type: "number", description: "Levenshtein ratio of the normalized titles, 0..1" },
+                            sources: { type: "number", description: "How many independent searches found this result" },
+                            hasFrontCover: { type: "boolean", description: "The best qualifying release has a front cover. Results with one rank first." },
+                            flags: {
+                                type: "array",
+                                items: { type: "string", enum: ["upc_match", "isrc_match", "code_contradiction", "artist_only", "swapped_order", "no_front_cover"] }
                             }
                         }
                     }
@@ -142,25 +203,6 @@ defineRouteMeta({
         }
     },
 });
-
-// MusicBrainz indexes both the artist's actual releases and every bootleg, promo, unofficial and
-// pseudo-release alongside them, which is how a search lands the user on an entry whose tracks are
-// unobtainable or plain wrong. `status:official` restricts the search to entries that have at least one
-// official release. The user's own query is a Lucene expression we don't control, so a query that can't be
-// parsed once wrapped falls back to the unrestricted search rather than failing the whole request.
-async function searchOfficial<T extends "release-group" | "recording">(
-    client: MusicBrainzApi,
-    entity: T,
-    q: string,
-    limit: number,
-    offset: number
-) {
-    try {
-        return await client.search(entity, { query: `(${q}) AND status:official`, limit, offset });
-    } catch {
-        return await client.search(entity, { query: q, limit, offset });
-    }
-}
 
 function toArtistInfo(artist: IArtist): ArtistInfo {
     return {
@@ -179,53 +221,66 @@ async function withLastfmImage(info: ArtistInfo): Promise<ArtistInfo> {
     return lastfm?.image ? { ...info, image: lastfm.image } : info;
 }
 
-function creditToArtistInfo(credit: IArtistCredit[] | undefined): ArtistInfo {
-    const artist = credit?.[0]?.artist;
-    return artist ? toArtistInfo(artist) : { name: "Unknown Artist", musicbrainzId: "", description: null, image: null };
-}
-
-function parseReleaseDate(date: string | undefined): Date | null {
+function parseReleaseDate(date: string | null): Date | null {
     if (!date) return null;
     const parsed = new Date(date);
     return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
-function releaseGroupToMediaInfo(releaseGroup: IReleaseGroup): MediaInfo {
-    const primaryType = releaseGroup["primary-type"]?.toLowerCase();
+function toArtist(result: SearchResult): ArtistInfo {
+    return { name: result.artist.name, musicbrainzId: result.artist.id ?? "", description: null, image: null };
+}
+
+function toMatch(result: SearchResult) {
+    return { ...result.match, hasFrontCover: result.hasFrontCover };
+}
+
+function albumToMediaInfo(result: SearchResult): SearchMediaInfo {
+    const primaryType = result.primaryType?.toLowerCase();
 
     return {
-        id: releaseGroup.id,
-        title: releaseGroup.title,
-        artist: creditToArtistInfo(releaseGroup["artist-credit"]),
+        id: result.id,
+        title: result.title,
+        artist: toArtist(result),
         album: null,
         type: primaryType === "album" || primaryType === "ep" ? primaryType : null,
-        coverArt: `https://coverartarchive.org/release-group/${releaseGroup.id}/front-250`,
-        releaseDate: parseReleaseDate(releaseGroup["first-release-date"]),
+        coverArt: `https://coverartarchive.org/release-group/${result.id}/front-250`,
+        releaseDate: parseReleaseDate(result.releaseDate),
         inLibrary: false,
         duration: 0,
-        label: null
+        label: null,
+        bestResult: result.bestResult,
+        match: toMatch(result)
     };
 }
 
-function recordingToMediaInfo(recording: IRecording): MediaInfo {
-    const release = recording.releases?.[0];
+function trackToMediaInfo(result: SearchResult): SearchMediaInfo {
+    const albumType = result.primaryType?.toLowerCase();
 
     return {
-        id: recording.id,
-        title: recording.title,
-        artist: creditToArtistInfo(recording["artist-credit"]),
+        id: result.id,
+        title: result.title,
+        artist: toArtist(result),
         album: {
-            title: release?.title ?? null,
-            id: release?.id ?? null,
-            type: null
+            title: result.releaseTitle,
+            id: result.albumId,
+            type: albumType === "album" || albumType === "ep" ? albumType : null
         },
         type: "track",
-        coverArt: release?.id ? `https://coverartarchive.org/release/${release.id}/front-250` : null,
-        releaseDate: parseReleaseDate(recording["first-release-date"]),
+        coverArt: result.releaseId ? `https://coverartarchive.org/release/${result.releaseId}/front-250` : null,
+        releaseDate: parseReleaseDate(result.releaseDate),
         inLibrary: false,
-        duration: recording.length ? Math.round(recording.length / 1000) : 0,
-        label: null
+        duration: result.length ? Math.round(result.length / 1000) : 0,
+        label: null,
+        bestResult: result.bestResult,
+        match: toMatch(result)
     };
+}
+
+type SearchMediaInfo = Omit<MediaInfo, "relations"> & { bestResult: boolean, match: ReturnType<typeof toMatch> };
+
+function param(value: unknown): string {
+    return (typeof value === "string" ? value.trim() : "").slice(0, 200);
 }
 
 export default defineEventHandler(async (event) => {
@@ -238,36 +293,51 @@ export default defineEventHandler(async (event) => {
     }
 
     const query = getQuery(event);
-    const q = (typeof query?.q === "string" ? query.q.trim() : "").slice(0, 200);
+    const input: SearchInput = {
+        q: param(query?.q),
+        title: param(query?.title),
+        artist: param(query?.artist),
+        upc: param(query?.upc),
+        isrc: param(query?.isrc)
+    };
     const filter: Filter = query?.filter === "album" || query?.filter === "track" || query?.filter === "artist" ? query.filter : "all";
 
-    if (!q) {
-        throw createError({ statusCode: 400, statusMessage: "Missing search query `q`" });
+    if (!input.q && !input.title && !input.artist) {
+        throw createError({ statusCode: 400, statusMessage: "Missing search query: give `q`, `title` or `artist`" });
+    }
+    // a code is evidence, not the whole request: when it fails to match, title + artist are what gets searched
+    if ((input.upc || input.isrc) && (!input.title || !input.artist)) {
+        throw createError({ statusCode: 400, statusMessage: "`upc` and `isrc` need `title` and `artist` as a fallback" });
     }
 
     // clamped on both ends: a negative or fractional limit went straight to MusicBrainz and came back a 500
     const limit = Math.min(Math.max(Math.trunc(Number(query?.limit)) || DEFAULT_LIMIT, 1), MAX_LIMIT);
     const offset = Math.min(Math.max(Math.trunc(Number(query?.offset)) || 0, 0), 10_000);
 
-    const client = getMusicBrainzClient();
+    const deps = getSearchDeps();
+    const artistText = input.artist || input.q || input.title || "";
 
-    const [albums, tracks, artists] = await Promise.all([
-        filter === "all" || filter === "album"
-            ? searchOfficial(client, "release-group", q, limit, offset)
-            : null,
-        filter === "all" || filter === "track"
-            ? searchOfficial(client, "recording", q, limit, offset)
-            : null,
-        filter === "all" || filter === "artist"
-            ? client.search("artist", { query: q, limit, offset })
-            : null
-    ]);
+    try {
+        const [albums, tracks, artists] = await Promise.all([
+            filter === "all" || filter === "album" ? searchAlbums(input, deps, limit, offset) : null,
+            filter === "all" || filter === "track" ? searchTracks(input, deps, limit, offset) : null,
+            filter === "all" || filter === "artist"
+                ? getMusicBrainzRepository().search("artist", { query: artistText.split(/\s+/).filter(Boolean).map(escapeLucene).join(" "), limit, offset })
+                : null
+        ]);
 
-    const artistInfos = artists ? await Promise.all(artists.artists.map(toArtistInfo).map(withLastfmImage)) : [];
+        const artistInfos = artists ? await Promise.all(artists.artists.map(toArtistInfo).map(withLastfmImage)) : [];
 
-    return {
-        albums: albums ? albums["release-groups"].filter(isOfficialReleaseGroup).map(releaseGroupToMediaInfo) : [],
-        tracks: tracks ? tracks.recordings.map(recordingToMediaInfo) : [],
-        artists: artistInfos
-    };
+        return {
+            albums: albums ? albums.results.map(albumToMediaInfo) : [],
+            tracks: tracks ? tracks.results.map(trackToMediaInfo) : [],
+            artists: artistInfos
+        };
+    } catch (error) {
+        if (error instanceof MusicBrainzError) {
+            setResponseHeader(event, "Retry-After", 30);
+            throw createError({ statusCode: 503, statusMessage: "MusicBrainz is unavailable, try again later" });
+        }
+        throw error;
+    }
 });

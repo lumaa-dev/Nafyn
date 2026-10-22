@@ -5,6 +5,7 @@ import { rm, rmdir } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { getLibrariesDb, withTransaction, sqlInt } from "./db";
 import { deleteMediaCover } from "../utils/mediaCover";
+import { isSameSongByMetadata, type RecordingIdentity } from "../utils/mediaIdentity";
 
 export interface MediaRow {
     id: string,
@@ -120,6 +121,9 @@ export async function insertMedia(media: Omit<MediaRow, "id" | "addedAt" | "sour
     return row;
 }
 
+// idempotent: a user holds a media row at most once (uq_library_user_media), so granting it again - two
+// requests racing for the same song - hands back the entry that already exists instead of failing. Callers
+// that wrote a file of their own compare `filePath` to know whether theirs is now unreferenced.
 export async function addLibraryEntry(userId: string, mediaId: string, filePath: string): Promise<LibraryEntry> {
     const entry: LibraryEntry = {
         id: randomUUID(),
@@ -129,12 +133,105 @@ export async function addLibraryEntry(userId: string, mediaId: string, filePath:
         addedAt: Date.now()
     };
 
+    // ON DUPLICATE KEY rather than INSERT IGNORE: IGNORE would also swallow a foreign-key violation. Read back
+    // instead of trusting affectedRows, which mysql2's default FOUND_ROWS flag makes 1 for a no-op update too.
     await getLibrariesDb().prepare(`
         INSERT INTO library_entries (id, userId, mediaId, filePath, addedAt)
         VALUES (:id, :userId, :mediaId, :filePath, :addedAt)
+        ON DUPLICATE KEY UPDATE id = id
     `).run(entry);
 
-    return entry;
+    return await findLibraryEntry(userId, mediaId) ?? entry;
+}
+
+// `?, ?, ?` for an IN (...) list - mysql2's execute() binds one value per placeholder, never an array
+function placeholders(count: number): string {
+    return Array.from({ length: count }, () => "?").join(", ");
+}
+
+// records every MBID / ISRC this media row is also known by (see utils/mediaIdentity.ts), so a later request
+// naming the song differently - a merged-away MBID, an unmerged duplicate recording - still finds it
+export async function addMediaIdentifiers(mediaId: string, identity: Pick<RecordingIdentity, "mbids" | "isrcs">): Promise<void> {
+    const db = getLibrariesDb();
+    const rows: [string, string][] = [
+        ...identity.mbids.map((value): [string, string] => ["mbid", value]),
+        ...identity.isrcs.map((value): [string, string] => ["isrc", value])
+    ];
+    for (const [kind, value] of rows) {
+        await db.prepare(`
+            INSERT INTO media_identifiers (mediaId, kind, value) VALUES (?, ?, ?)
+            ON DUPLICATE KEY UPDATE value = value
+        `).run(mediaId, kind, value);
+    }
+}
+
+// media rows that are this recording by a strong identifier: MBID first (the row's own or a recorded alias),
+// then ISRC. `userId` narrows it to rows in that user's library. Never matches by title - that is only ever
+// good enough for "you already have this", not for handing someone another user's file.
+async function findMediaByStrongIdentity(identity: RecordingIdentity, userId?: string): Promise<{ media: MediaRow, strength: "mbid" | "isrc" }[]> {
+    const db = getLibrariesDb();
+    const owner = userId ? `JOIN library_entries le ON le.mediaId = media.id AND le.userId = ?` : "";
+    const ownerParams = userId ? [userId] : [];
+    const found: { media: MediaRow, strength: "mbid" | "isrc" }[] = [];
+    const seen = new Set<string>();
+
+    if (identity.mbids.length > 0) {
+        const list = placeholders(identity.mbids.length);
+        const rows = await db.prepare(`
+            SELECT DISTINCT media.* FROM media ${owner}
+            WHERE media.musicbrainzId IN (${list})
+               OR media.id IN (SELECT mediaId FROM media_identifiers WHERE kind = 'mbid' AND value IN (${list}))
+        `).all(...ownerParams, ...identity.mbids, ...identity.mbids) as MediaRow[];
+        for (const media of rows) {
+            if (seen.has(media.id)) continue;
+            seen.add(media.id);
+            found.push({ media, strength: "mbid" });
+        }
+    }
+
+    if (identity.isrcs.length > 0) {
+        const rows = await db.prepare(`
+            SELECT DISTINCT media.* FROM media ${owner}
+            WHERE media.id IN (SELECT mediaId FROM media_identifiers WHERE kind = 'isrc' AND value IN (${placeholders(identity.isrcs.length)}))
+        `).all(...ownerParams, ...identity.isrcs) as MediaRow[];
+        for (const media of rows) {
+            if (seen.has(media.id)) continue;
+            seen.add(media.id);
+            found.push({ media, strength: "isrc" });
+        }
+    }
+
+    return found;
+}
+
+// every media row on the instance that is this recording by MBID or ISRC, whoever owns it - the download
+// pipeline's "already downloaded by someone, just share it" source
+export async function findMediaByIdentity(identity: RecordingIdentity): Promise<MediaRow[]> {
+    return (await findMediaByStrongIdentity(identity)).map(({ media }) => media);
+}
+
+/**
+ * The media row through which `userId` already has this song, or null. The one check behind "you can't
+ * request what you already have" - request creation, the download pipeline and the album/track pages all go
+ * through it, so they can never disagree.
+ *
+ * `strength` says how it matched: by MBID, by ISRC, or (the requester's own library only) by title + artist +
+ * duration, which is what catches a song whose every identifier changed and a manually imported file.
+ */
+export async function findOwnedMediaByIdentity(userId: string, identity: RecordingIdentity): Promise<{ media: MediaRow, strength: "mbid" | "isrc" | "metadata" } | null> {
+    const strong = await findMediaByStrongIdentity(identity, userId);
+    if (strong[0]) return strong[0];
+
+    // narrowed in SQL by artist or exact title (the collation already folds case and most accents), then
+    // compared properly in isSameSongByMetadata - punctuation, diacritics, artist MBID, duration
+    const candidates = await getLibrariesDb().prepare(`
+        SELECT media.* FROM library_entries le
+        JOIN media ON media.id = le.mediaId
+        WHERE le.userId = ? AND (media.artistMbid = ? OR media.artistName = ? OR media.title = ?)
+    `).all(userId, identity.artistMbid, identity.artistName, identity.title) as MediaRow[];
+
+    const media = candidates.find((row) => isSameSongByMetadata(identity, row));
+    return media ? { media, strength: "metadata" } : null;
 }
 
 // true if any of the user's library entries belong to this albumId (release-group MBID)

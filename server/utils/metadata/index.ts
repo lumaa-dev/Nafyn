@@ -3,8 +3,9 @@
 // and appending it to PROVIDERS. A provider whose key/token isn't configured reports enabled() === false and
 // is skipped silently, as is one that fails, times out or is cooling down after a rate limit (http.ts) - a
 // lookup never fails because one upstream did.
-import type { IRecording, IReleaseGroup } from "musicbrainz-api";
-import { getMusicBrainzClient } from "../musicbrainz";
+import { getSearchDeps } from "../catalogSearch";
+import { searchAlbums, searchTracks } from "../search/engine";
+import type { SearchResult } from "../search/types";
 import { deezerProvider } from "./providers/deezer";
 import { itunesProvider } from "./providers/itunes";
 import { reccobeatsProvider } from "./providers/reccobeats";
@@ -23,9 +24,6 @@ const PROVIDERS: MetadataProvider[] = [
     discogsProvider,
     geniusProvider
 ];
-
-// strict MusicBrainz fallback for records without an ISRC: anything below this is too loose to link
-const MIN_MUSICBRAINZ_SCORE = 90;
 
 export function listMetadataProviders() {
     return PROVIDERS.map((p) => ({
@@ -94,40 +92,34 @@ async function enrich(primary: SongMetadata[]): Promise<SongMetadata[]> {
     return [...primary, ...related];
 }
 
-function luceneEscape(value: string): string {
-    return value.replace(/[\\"]/g, "\\$&");
+// linking a provider record to a MusicBrainz entity is stricter than showing search results: the most relevant
+// hit that clears the engine's own `bestResultMinScore` (a lower-ranked result without a front cover can still be
+// the right song), never one that contradicts the record's ISRC
+function pickLinkable(results: SearchResult[], minScore: number): string | null {
+    const linkable = results
+        .filter((result) => result.match.relevance >= minScore && !result.match.flags.includes("code_contradiction"))
+        .sort((a, b) => b.match.relevance - a.match.relevance);
+    return linkable[0]?.id ?? null;
 }
 
 // resolves one record to the MusicBrainz entity it opens as in Nafyn: a recording for a track (`/t/{id}`),
-// a release-group for an album (`/a/{id}`, Discogs' native kind). ISRC first when there is one - far more
-// precise than a title+artist search - then a strict score-gated search as the fallback.
+// a release-group for an album (`/a/{id}`, Discogs' native kind). The search engine does the matching: ISRC as
+// strong evidence when there is one, title + artist as the fallback, and only Official digital releases count.
 async function resolveMusicBrainzFor(record: SongMetadata): Promise<string | null> {
     if (record.kind === "track" && record.musicbrainzId) return record.musicbrainzId;
     if (!record.artists[0]) return null;
 
-    const client = getMusicBrainzClient();
-    const artist = luceneEscape(record.artists[0]);
+    const deps = getSearchDeps();
+    const minScore = deps.config.bestResultMinScore;
 
     try {
         if (record.kind === "track") {
-            if (record.isrc) {
-                const byIsrc = await client.search("recording", { query: `isrc:${record.isrc}`, limit: 1 });
-                if (byIsrc.recordings?.[0]) return byIsrc.recordings[0].id;
-            }
-            const byName = await client.search("recording", {
-                query: `recording:"${luceneEscape(record.title)}" AND artist:"${artist}"`,
-                limit: 1
-            });
-            const best = byName.recordings?.[0] as (IRecording & { score?: number }) | undefined;
-            return best && (best.score ?? 0) >= MIN_MUSICBRAINZ_SCORE ? best.id : null;
+            const { results } = await searchTracks({ title: record.title, artist: record.artists[0], isrc: record.isrc ?? undefined }, deps, 10);
+            return pickLinkable(results, minScore);
         }
 
-        const byName = await client.search("release-group", {
-            query: `releasegroup:"${luceneEscape(bareTitle(record.title))}" AND artist:"${artist}"`,
-            limit: 1
-        });
-        const best = byName["release-groups"]?.[0] as (IReleaseGroup & { score?: number }) | undefined;
-        return best && (best.score ?? 0) >= MIN_MUSICBRAINZ_SCORE ? best.id : null;
+        const { results } = await searchAlbums({ title: bareTitle(record.title), artist: record.artists[0] }, deps, 10);
+        return pickLinkable(results, minScore);
     } catch {
         return null;
     }

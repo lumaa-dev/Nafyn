@@ -21,6 +21,8 @@ export interface AlbumDetail {
     subscribed: boolean,
     // whether the caller already has a waiting/in-progress request for this album
     requested: boolean,
+    // whether every track of the album is already in the caller's library - it can't be requested again then
+    inLibrary: boolean,
     description: string | null,
     label: string | null,
     tracks: TrackInfo[]

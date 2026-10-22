@@ -378,6 +378,31 @@ const MIGRATIONS: Migration[] = [
                 throw error;
             }
         }
+    },
+    {
+        // every other identifier a `media` row is known by, so "does this user already have this song?" holds
+        // when MusicBrainz names the same song differently:
+        //   kind 'mbid' - recording MBIDs besides media.musicbrainzId. MusicBrainz merges duplicate recordings
+        //                 and the merged-away MBID then resolves to another one, so the ID a file was
+        //                 downloaded under is not necessarily the one a later request carries.
+        //   kind 'isrc' - the recording's ISRCs; two MBIDs carrying the same ISRC are the same master.
+        // ON DELETE CASCADE so the identifiers go with the row when its last owner deletes it.
+        id: "2026-10-22-media-identifiers",
+        up: async (conn) => {
+            if (await tableExists(conn, "media_identifiers")) return;
+            // same collation caveat as media_lyrics above
+            const tableOptions = await resolveTableOptions(conn);
+            await conn.query(`
+                CREATE TABLE media_identifiers (
+                    mediaId VARCHAR(36) NOT NULL,
+                    kind VARCHAR(8) NOT NULL CHECK(kind IN ('mbid', 'isrc')),
+                    value VARCHAR(64) NOT NULL,
+                    PRIMARY KEY (mediaId, kind, value),
+                    INDEX idx_media_identifiers_value (kind, value),
+                    CONSTRAINT fk_media_identifiers_media FOREIGN KEY (mediaId) REFERENCES media(id) ON DELETE CASCADE
+                ) ${tableOptions}
+            `);
+        }
     }
 ];
 
