@@ -15,7 +15,7 @@
           <span v-else-if="album.releaseDate" class="value">{{ $t('upcoming.expected', { date: formatPartialDate(album.releaseDate, album.releaseDatePrecision) }) }}</span>
         </div>
         <span class="albumactions">
-          <button filled v-if="album.released" :disabled="album.requested" @click="requestAlbum">{{ album.requested ? $t('album.alreadyRequested') : $t('album.request') }}</button>
+          <button filled v-if="album.released" :disabled="album.requested || album.inLibrary" @click="requestAlbum">{{ album.inLibrary ? $t('album.inLibrary') : album.requested ? $t('album.alreadyRequested') : $t('album.request') }}</button>
           <button v-else :filled="album.subscribed ? 'hollow' : ''" :disabled="subscriptionPending" @click="toggleSubscription">
             {{ album.subscribed ? $t('upcoming.following') : $t('upcoming.notifyMe') }}
           </button>
@@ -170,14 +170,14 @@ const { request } = useMediaRequest();
 // it - the server reports `requested` as false for denied and failed requests.)
 async function requestAlbum() {
   const current = album.value;
-  if (!current || current.requested) return;
+  if (!current || current.requested || current.inLibrary) return;
 
   current.requested = true;
   if (!await request(current.id, "album", current.title)) current.requested = false;
 }
 
 async function requestTrack(track: TrackInfo) {
-  if (track.requested) return;
+  if (track.requested || track.inLibrary) return;
 
   track.requested = true;
   if (!await request(track.id, "track", track.title)) track.requested = false;

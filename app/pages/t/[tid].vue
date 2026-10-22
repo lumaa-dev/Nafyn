@@ -15,7 +15,7 @@
           <ReleaseCountdown v-if="track.releaseDate && track.releaseDatePrecision === 'day'" class="value" :date="track.releaseDate" @released="refreshNuxtData(`track-${tid}`)" />
           <span v-else-if="track.releaseDate" class="value">{{ $t('upcoming.expected', { date: formatPartialDate(track.releaseDate, track.releaseDatePrecision) }) }}</span>
         </div>
-        <button filled :disabled="track.requested" @click="requestTrack" v-if="track.released && !track.inLibrary">{{ track.requested ? $t('track.alreadyRequested') : $t('track.request') }}</button>
+        <button filled :disabled="track.requested || !!track.inLibrary" @click="requestTrack" v-if="track.released">{{ track.inLibrary ? $t('track.inLibrary') : track.requested ? $t('track.alreadyRequested') : $t('track.request') }}</button>
         <button v-else-if="!track.released" :filled="track.subscribed ? 'hollow' : ''" :disabled="subscriptionPending" @click="toggleSubscription">
           {{ track.subscribed ? $t('upcoming.following') : $t('upcoming.notifyMe') }}
         </button>
@@ -87,7 +87,7 @@ const { request } = useMediaRequest();
 // disabled before the request goes out, re-enabled only if it failed (see a/[aid].vue)
 async function requestTrack() {
   const current = track.value;
-  if (!current || current.requested) return;
+  if (!current || current.requested || current.inLibrary) return;
 
   current.requested = true;
   if (!await request(current.id, "track", current.title)) current.requested = false;

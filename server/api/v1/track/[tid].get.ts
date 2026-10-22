@@ -1,5 +1,5 @@
 // [tid].get.ts
-import { getMusicBrainzClient, parseReleaseDate } from "~~/server/utils/musicbrainz";
+import { getMusicBrainzRepository, parseReleaseDate } from "~~/server/utils/musicbrainz";
 import type { MediaInfo } from "~~/server/entity/media/MediaInfo";
 import type { ArtistInfo } from "~~/server/entity/media/ArtistInfo";
 import { IRecording } from "musicbrainz-api";
@@ -10,6 +10,8 @@ import { enforceUpstreamLookupLimit } from "~~/server/utils/rateLimit";
 import { isReleased, normalizeReleaseDate } from "~~/server/utils/releaseDate";
 import { isSubscribed } from "~~/server/core/releaseSubscriptions";
 import { hasActiveRequest } from "~~/server/core/requests";
+import { findOwnedMediaByIdentity } from "~~/server/core/library";
+import { buildIdentity } from "~~/server/utils/mediaIdentity";
 
 defineRouteMeta({
     openAPI: {
@@ -86,9 +88,9 @@ export default defineEventHandler(async (event) => {
     // extra path segments or a query string of the caller's choosing
     const tid = assertMbid(getRouterParam(event, "tid"), "track ID");
 
-    const client = getMusicBrainzClient();
+    const client = getMusicBrainzRepository();
 
-    const recording: IRecording = await client.lookup("recording", tid, ["artist-credits", "releases", "release-groups", "media"]).catch(() => {
+    const recording: IRecording = await client.lookup("recording", tid, ["artist-credits", "releases", "release-groups", "media", "isrcs"]).catch(() => {
         throw createError({ statusCode: 404, statusMessage: "No track with ID " + tid });
     });
 
@@ -115,7 +117,16 @@ export default defineEventHandler(async (event) => {
         imageColors,
         textColor,
         releaseDate: parseReleaseDate(recording["first-release-date"]),
-        inLibrary: null,
+        // same identity match as POST /api/v1/request: this MBID, the one it redirected from, an ISRC, or the
+        // same title + artist + duration - the page hides Request when it's true
+        inLibrary: await findOwnedMediaByIdentity(userId, buildIdentity({
+            mbids: [tid, recording.id],
+            isrcs: recording.isrcs,
+            title: recording.title,
+            artistMbid: credit?.id,
+            artistName: credit?.name ?? "Unknown Artist",
+            duration: recording.length ? recording.length / 1000 : 0
+        })) != null,
         duration: recording.length ? Math.round(recording.length / 1000) : 0,
         label: null,
         relations: {
@@ -130,7 +141,7 @@ export default defineEventHandler(async (event) => {
 
     const releaseDatePrecision = normalizeReleaseDate(recording["first-release-date"])?.precision ?? null;
 
-    const requested = await hasActiveRequest(userId, recording.id);
+    const requested = await hasActiveRequest(userId, [tid, recording.id]);
 
     return { ...media, albumMbid, releaseDatePrecision, released, subscribed, requested };
 });

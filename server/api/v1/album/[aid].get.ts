@@ -1,10 +1,11 @@
 import type { IRelease, IReleaseGroup } from "musicbrainz-api";
-import { getMusicBrainzClient, parseReleaseDate } from "~~/server/utils/musicbrainz";
+import { getMusicBrainzRepository, parseReleaseDate } from "~~/server/utils/musicbrainz";
 import { pickReleaseForGroup } from "~~/server/utils/release";
 import type { AlbumDetail } from "~~/server/entity/media/AlbumDetail";
 import type { TrackInfo } from "~~/server/entity/media/TrackInfo";
 import type { ArtistInfo } from "~~/server/entity/media/ArtistInfo";
-import { findLibraryEntry, findMediaByMusicbrainzId } from "~~/server/core/library";
+import { findMediaByIdentity, findOwnedMediaByIdentity } from "~~/server/core/library";
+import { buildIdentity } from "~~/server/utils/mediaIdentity";
 import { hasActiveRequest } from "~~/server/core/requests";
 import { isSubscribed } from "~~/server/core/releaseSubscriptions";
 import { isReleased, normalizeReleaseDate } from "~~/server/utils/releaseDate";
@@ -85,14 +86,14 @@ defineRouteMeta({
                             duration: { type: "number", description: "Seconds" },
                             releaseDate: { type: "string", format: "date-time", nullable: true },
                             released: { type: "boolean", description: "Whether the release date has already passed" },
-                            inLibrary: { type: "boolean", description: "Whether the requesting user already has this track" },
+                            inLibrary: { type: "boolean", description: "Whether the requesting user already has this track - under this MusicBrainz ID or another one for the same song (merged ID, same ISRC, or same title + artist + duration)" },
                             requested: { type: "boolean", description: "Whether the requesting user has a request for this track that is waiting or being processed" },
                             mediaId: { type: "string", nullable: true, description: "Nafyn's internal media ID, if this recording has been downloaded by anyone" }
                         }
                     },
                     AlbumDetail: {
                         type: "object",
-                        required: ["id", "releaseId", "title", "artist", "type", "coverArt", "imageColors", "textColor", "releaseDate", "releaseDatePrecision", "released", "subscribed", "requested", "description", "label", "tracks"],
+                        required: ["id", "releaseId", "title", "artist", "type", "coverArt", "imageColors", "textColor", "releaseDate", "releaseDatePrecision", "released", "subscribed", "requested", "inLibrary", "description", "label", "tracks"],
                         properties: {
                             id: { type: "string", description: "MusicBrainz release-group ID" },
                             releaseId: { type: "string", description: "MusicBrainz release ID for the selected release" },
@@ -113,6 +114,7 @@ defineRouteMeta({
                             released: { type: "boolean", description: "false while the release date hasn't started anywhere yet - unreleased albums can't be requested" },
                             subscribed: { type: "boolean", description: "Whether the caller follows this upcoming album (POST /api/v1/subscriptions)" },
                             requested: { type: "boolean", description: "Whether the caller has a request for this album that is waiting or being processed - false again once it completed, failed or was denied" },
+                            inLibrary: { type: "boolean", description: "Whether every track of the album is already in the caller's library, in which case it can't be requested (POST /api/v1/request returns 409)" },
                             description: { type: "string", nullable: true },
                             label: { type: "string", nullable: true },
                             tracks: {
@@ -134,13 +136,15 @@ export default defineEventHandler(async (event): Promise<AlbumDetail> => {
     // SECURITY: see the note in track/[tid].get.ts - this reaches an upstream MusicBrainz REST path
     const aid = assertMbid(getRouterParam(event, "aid"), "album ID");
 
-    const client = getMusicBrainzClient();
+    const client = getMusicBrainzRepository();
 
     const releaseGroup: IReleaseGroup = await client.lookup("release-group", aid, ["artist-credits"]).catch(() => {
         throw createError({ statusCode: 404, message: "No album with ID " + aid });
     });
 
-    const browsed = await client.browse("release", { "release-group": aid }, ["recordings", "artist-credits", "labels", "media", "url-rels"]).catch(() => {
+    // browsed by the id the lookup returned, not the one in the URL: a merged-away release-group MBID still
+    // resolves on lookup but has no releases of its own. `isrcs` feeds the per-track "already in library" match.
+    const browsed = await client.browse("release", { "release-group": releaseGroup.id }, ["recordings", "artist-credits", "labels", "media", "url-rels", "isrcs"]).catch(() => {
         throw createError({ statusCode: 404, message: "No release found for album " + aid });
     });
     // every Nafyn surface that resolves a release group into a concrete release goes through
@@ -166,8 +170,20 @@ export default defineEventHandler(async (event): Promise<AlbumDetail> => {
     for (const medium of release.media ?? []) {
         for (const track of medium.tracks ?? []) {
             const trackReleaseDate = parseReleaseDate(track.recording?.["first-release-date"]) ?? releaseDate;
-            const media = await findMediaByMusicbrainzId(track.recording.id);
-            const inLibrary = media ? await findLibraryEntry(userId, media.id) != null : false;
+            // same identity match as POST /api/v1/request and the download pipeline, so a track shown as
+            // missing here is exactly one a request would download
+            const trackArtist = track["artist-credit"]?.[0]?.artist ?? credit;
+            const identity = buildIdentity({
+                mbids: [track.recording.id],
+                isrcs: track.recording.isrcs,
+                title: track.title,
+                artistMbid: trackArtist?.id,
+                artistName: trackArtist?.name ?? "Unknown Artist",
+                duration: track.length ? track.length / 1000 : 0
+            });
+            const owned = await findOwnedMediaByIdentity(userId, identity);
+            const media = owned?.media ?? (await findMediaByIdentity(identity))[0] ?? null;
+            const inLibrary = owned != null;
             const requested = await hasActiveRequest(userId, track.recording.id);
 
             tracks.push({
@@ -200,7 +216,8 @@ export default defineEventHandler(async (event): Promise<AlbumDetail> => {
         releaseDatePrecision: normalizeReleaseDate(releaseGroup["first-release-date"])?.precision ?? null,
         released,
         subscribed: released ? false : await isSubscribed(userId, releaseGroup.id),
-        requested: await hasActiveRequest(userId, releaseGroup.id),
+        requested: await hasActiveRequest(userId, [aid, releaseGroup.id]),
+        inLibrary: tracks.length > 0 && tracks.every((track) => track.inLibrary),
         description: releaseGroup.disambiguation || null,
         label,
         tracks
