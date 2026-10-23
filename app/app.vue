@@ -21,9 +21,18 @@
 	src: url("./assets/fonts/InstrumentSerif-Italic.ttf");
 }
 
-@font-face {
-	font-family: "Discy";
-	src: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+/* "Discy" is the UI sans (inputs, numbers, small print): SF Pro where the device has it, then Arial, then
+   whatever sans-serif the system has. It used to be an @font-face with no url(), which browsers drop whole -
+   so it silently fell back to the default serif on devices that were meant to get a system font. Use the
+   variable; there is no "Discy" family to ask for. */
+:root {
+	--font-discy: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "SF Pro", Arial, "Helvetica Neue", sans-serif;
+}
+
+html {
+	/* the page scrollbar is always there (body is overflow-y: scroll); this stops the layout from shifting
+	   when a modal or panel briefly takes it away */
+	scrollbar-gutter: stable;
 }
 
 * {
@@ -60,7 +69,7 @@ input[type="text"], input[type="password"] {
 	border-radius: 250px;
 	outline: none;
 	border: none;
-	font-family: "Discy";
+	font-family: var(--font-discy);
 	font-size: 0.8em;
 	color: inherit;
 }
@@ -71,7 +80,7 @@ textarea {
 	border-radius: 20px;
 	outline: none;
 	border: none;
-	font-family: "Discy";
+	font-family: var(--font-discy);
 	font-size: 0.8em;
 	color: inherit;
 	resize: none !important;
@@ -83,7 +92,7 @@ select {
 	border-radius: 50vw;
 	outline: none;
 	padding: 0.6em 1em;
-	font-family: "Discy";
+	font-family: var(--font-discy);
 	font-size: 0.8em;
 	color: inherit;
 	cursor: pointer;
@@ -116,8 +125,15 @@ button[filled], a[filled], p[filled] {
 	font-family: "Instrument-Serif";
 	text-decoration: none;
 	font-size: inherit;
-	padding: 0.6em 3.0em;
+	/* a label is one line, always, and has to fit its frame: the side padding gives way first (down to
+	   0.9em, from 3em), so a button in a narrow column loses air, not text. If it still doesn't fit, the
+	   label is cut with an ellipsis rather than spilling out of the button. */
+	padding: 0.6em clamp(0.9em, 3vw, 3em);
 	white-space: nowrap;
+	max-width: 100%;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
 	transition: background 0.25s ease-out, opacity 0.15s ease-out, color 0.15s ease-out;
 }
 
@@ -135,15 +151,55 @@ button[filled="hollow"]:hover:not(:disabled), a[filled="hollow"]:hover:not(:disa
 	color: #000000;
 }
 
+/* destructive: white on this red is ~10:1 (AAA). The hover rule has to restate `color`: the hollow hover
+   above is more specific than a plain `.danger` and would turn the label black. */
 button[filled].danger, a[filled].danger {
-	background: #e06666ae;
-	border: #e06666ae 1px solid;
-	color: #ffffffae;
+	background: #b3261e;
+	border: #b3261e 1px solid;
+	color: #ffffff;
 }
 
-button[filled].danger:hover, a[filled].danger:hover {
-	background: #e06666d0;
-	border: #e06666d0 1px solid;
+button[filled].danger:hover:not(:disabled), a[filled].danger:hover:not(:disabled) {
+	background: #8c1d18;
+	border: #8c1d18 1px solid;
+	color: #ffffff;
+}
+
+/* icon-only buttons (a symbol instead of a label, where a row of text buttons would not fit): a 44px circle
+   (WCAG 2.5.5), the icon SVGs are black so they are inverted to white until the hover fills the button.
+   Always give one an aria-label - there is no text to name it. */
+button.icon-only {
+	width: 44px;
+	height: 44px;
+	padding: 0;
+	border-radius: 50%;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+button.icon-only img {
+	width: 1.1em;
+	height: 1.1em;
+	filter: invert(1);
+	transition: filter 0.15s ease-out;
+}
+
+button.icon-only:hover:not(:disabled) img,
+button.icon-only[filled]:not([filled="hollow"]) img {
+	filter: none;
+}
+
+/* keyboard focus is always visible (the resets above remove the browser's own ring) */
+:where(button, a, select, summary):focus-visible {
+	outline: 2px solid #ffffff;
+	outline-offset: 2px;
+}
+
+input:focus-visible, textarea:focus-visible {
+	outline: 2px solid #ffffff;
+	outline-offset: 2px;
 }
 
 *:disabled {
@@ -176,7 +232,7 @@ button[filled].danger:hover, a[filled].danger:hover {
 .toasts {
 	display: flex;
 	flex-direction: column;
-	width: 100vw;
+	width: 100%;
 	align-items: center;
 	position: fixed;
 	bottom: 100px;
@@ -274,14 +330,39 @@ watch(tokenCookie, async (val) => {
 // another device within that same window, since a revocation alone never touches this device's cookie
 const REVALIDATE_INTERVAL_MS = 30_000;
 if (import.meta.client) {
-	const revalidateInterval = setInterval(async () => {
+	const revalidate = async () => {
 		hasToken.value = await checkTokenValidity(tokenCookie.value ?? "");
 		redirectIfLoggedOut();
+	};
+	// a hidden tab has nothing to show for it and wakes the radio on a phone: skip the tick, and check once the
+	// moment the tab comes back instead
+	const revalidateInterval = setInterval(() => {
+		if (!document.hidden) revalidate();
 	}, REVALIDATE_INTERVAL_MS);
-	onUnmounted(() => clearInterval(revalidateInterval));
+	const onVisible = () => { if (!document.hidden) revalidate(); };
+	document.addEventListener("visibilitychange", onVisible);
+	onUnmounted(() => {
+		clearInterval(revalidateInterval);
+		document.removeEventListener("visibilitychange", onVisible);
+	});
 }
 
 const isMobileWidth = () => window.matchMedia("(max-width: 800px)").matches;
+
+// Logging in (or back in, after a revoked session) never remounts this component, so the one-time sync in
+// onMounted below doesn't run again - the desktop sidebar would stay hidden until a refresh. Follow the login
+// state itself: on desktop the sidebar is permanently on while logged in and gone otherwise.
+watch(hasToken, (loggedIn) => {
+	if (!import.meta.client) return;
+	if (isMobileWidth()) {
+		if (!loggedIn) {
+			showSidebar.value = false;
+			lockScroll(false);
+		}
+		return;
+	}
+	showSidebar.value = loggedIn;
+});
 
 function toggleSidebar() {
 	if (!hasToken.value) return;

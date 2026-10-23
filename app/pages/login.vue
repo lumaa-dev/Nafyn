@@ -88,7 +88,10 @@ async function logInWithPasskey() {
 .login {
   margin: 0 !important;
   width: 100%;
-  height: 100vh;
+  /* as tall as its content, centred; only as tall as the viewport when the content is shorter. It used to be
+     a fixed 100vh with 60px above and below each block, which made a two-field form a screen and a half. */
+  min-height: 100dvh;
+  padding: 24px 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -97,15 +100,23 @@ async function logInWithPasskey() {
 }
 
 .login > *:not(input) {
-  width: 350px;
+  width: min(350px, 90vw);
 }
 
 .login > input {
-  width: 352px;
+  width: min(352px, 90vw);
 }
 
-.login .header, .login button {
-  margin: 60px 0;
+.login .header {
+  margin: 0 0 14px;
+}
+
+.login button {
+  margin: 0;
+}
+
+.login button[filled] {
+  margin-top: 6px;
 }
 
 .login .register {
@@ -113,13 +124,13 @@ async function logInWithPasskey() {
 }
 
 .login .passkey-hint {
-  color: #666666;
+  color: #ffffff;
   font-size: 0.8em;
   text-align: center;
 }
 
 .login .header .description {
-  color: #666666;
+  color: #ffffff;
   font-family: "Instrument-Italic";
   font-size: 0.85em;
 }

@@ -16,9 +16,12 @@
 //   - peer-supplied filenames are never trusted for anything beyond a whitelisted extension; every file we
 //     write uses our own random/UUID-derived name, so a malicious peer can't path-traverse or spoof identity
 //     through its filename
-//   - a download is rejected if its AcoustID fingerprint doesn't match the requested MusicBrainz recording AND
-//     its duration is off by more than a few seconds; fingerprint alone is too unreliable (AcoustID frequently
-//     lacks a given recording ID) to gate on by itself, so duration backs it up as the stronger "wrong file" signal
+//   - a download is rejected when AcoustID confidently names a *different* song for its audio, or when it doesn't
+//     match the requested MusicBrainz recording AND its measured duration is off by more than a few seconds; a
+//     missing AcoustID entry alone (it frequently lacks a given recording) is not enough to gate on. The
+//     fingerprint and duration are always regenerated from the file itself, never read from anything stored.
+//   - a rejected or failed download leaves nothing behind: the temp copy, the file in slskd's downloads folder,
+//     its transfer record and the emptied folders are all removed (see utils/soulseek.ts)
 //   - true network-level anonymity (hiding your IP from Soulseek peers) isn't something the protocol supports;
 //     use a dedicated/throwaway Soulseek account and, if you need IP-level anonymity too, run slskd itself
 //     behind a VPN at the infrastructure level
@@ -34,6 +37,7 @@ import { MusicBrainzError, type MusicBrainzRepository } from "../utils/musicbrai
 import { pickCanonicalRelease, pickReleaseForGroup } from "../utils/release";
 import { searchSoulseek, downloadFromSoulseek, foldDiacritics } from "../utils/soulseek";
 import { verifyRecordingMatch } from "../utils/fingerprint";
+import { parseCoverArtUrl, warmCover } from "../utils/coverArtCache";
 import { tagAudioFile } from "../utils/audioTag";
 import { getRequestById, updateRequestStatus } from "./requests";
 import {
@@ -390,33 +394,49 @@ async function downloadTrack(
             await updateRequestStatus(requestId, "processing");
             progress({ stage: "processing", message: "Verifying fingerprint" });
 
-            // AcoustID often has no entry for this exact recording ID even when the audio is correct, so a
-            // "not matched" result alone isn't proof of a wrong file. Duration is a stronger signal of a
-            // genuinely wrong file, but it can't tell an instrumental/acapella/karaoke apart from the real thing
-            // since those commonly share the same runtime - that case is already filtered out of the candidate
-            // list before we ever get here (see isExcludedVersion), so trusting duration at this point is safe.
-            const check = await verifyRecordingMatch(tempPath, target.recordingId);
+            // The file is judged on what it *is*, never on anything stored: verifyRecordingMatch regenerates the
+            // fingerprint and measures the duration from this very file, asks AcoustID, and scores every
+            // candidate it returns (score threshold, duration tolerance, ranking, merged/alias MBIDs, same
+            // title + artist under another recording). AcoustID still lacks plenty of correct recordings, so "no
+            // candidate" alone is not proof of a wrong file - but a confident candidate that is a *different* song,
+            // or a measured length far from what MusicBrainz says, is. Instrumental/acapella/karaoke versions
+            // share the original's runtime, which is why they are filtered out of the candidate list before we
+            // get here (see isExcludedVersion).
+            const check = await verifyRecordingMatch(tempPath, {
+                recordingId: target.recordingId,
+                aliases: target.aliases,
+                title: target.title,
+                artistName: target.artistName,
+                duration: target.duration
+            });
 
-            // MusicBrainz has no duration for every recording; when it didn't give us one, the fpcalc-probed
-            // length of the actual downloaded audio is the only real source of truth left. Done before the
-            // delta check below so a missing MusicBrainz duration never masquerades as a mismatch.
-            if (target.duration <= 0 && check.duration > 0) target.duration = check.duration;
-
-            const durationDelta = Math.abs(check.duration - target.duration);
+            // the measured length against MusicBrainz's; null when MusicBrainz has none, which says nothing
+            // either way (and must never be papered over with the measured value, or every unmatched file
+            // would look like a perfect duration match)
+            const durationDelta = target.duration > 0 && check.duration > 0 ? Math.abs(check.duration - target.duration) : null;
+            const label = check.fingerprint.slice(0, 12);
 
             if (!check.verified) {
                 // AcoustID couldn't be reached at all (network/DNS) - that's not evidence the file is wrong,
                 // so don't fail the request over it, just accept the download unverified
-                console.log(`[downloads] ${check.fingerprint} could not be verified against AcoustID (unreachable), accepting anyway`);
-            } else if (!check.matched && durationDelta > MAX_DURATION_DELTA_SECONDS) {
+                console.log(`[downloads] ${label} could not be verified against AcoustID (unreachable), accepting anyway`);
+            } else if (check.matched) {
+                console.log(`[downloads] ${label} matched (${check.via}, score ${check.bestScore.toFixed(2)})`);
+            } else if (check.confidentOther) {
+                console.log(`[downloads] ${label} rejected: AcoustID is ${check.confidentOther.score.toFixed(2)} sure it is "${check.confidentOther.title}" by ${check.confidentOther.artist}`);
                 await rm(tempPath, { force: true });
-                console.log(`[downloads] ${check.fingerprint} rejected: not matched and duration off by ${durationDelta}s`);
                 continue;
-            } else if (!check.matched) {
-                console.log(`[downloads] ${check.fingerprint} not matched by AcoustID but duration within ${durationDelta}s, accepting`);
+            } else if (durationDelta !== null && durationDelta > MAX_DURATION_DELTA_SECONDS) {
+                console.log(`[downloads] ${label} rejected: not matched and duration off by ${durationDelta.toFixed(1)}s`);
+                await rm(tempPath, { force: true });
+                continue;
             } else {
-                console.log(`[downloads] ${check.fingerprint} matched`);
+                console.log(`[downloads] ${label} not matched by AcoustID, no contradicting candidate and duration ${durationDelta === null ? "unknown to MusicBrainz" : `within ${durationDelta.toFixed(1)}s`}, accepting`);
             }
+
+            // MusicBrainz has no duration for every recording; the length measured from the downloaded audio is
+            // then the only real one to store
+            if (target.duration <= 0 && check.duration > 0) target.duration = Math.round(check.duration);
 
             // step 6+7: tag with MusicBrainz metadata, move into the requesting user's library
             // re-check here (not just once before the candidate loop): an earlier candidate in this same
@@ -450,12 +470,19 @@ async function downloadTrack(
                 releaseDate: target.releaseDate ? Math.floor(target.releaseDate.getTime() / 1000) : null,
                 duration: target.duration,
                 label: target.label,
+                // informational only: never read back to verify anything (see utils/fingerprint.ts)
                 fingerprint: check.fingerprint,
                 amId: target.amId,
                 fileSize: null,
                 trackNumber: target.trackNumber
             });
             if (!reusableMedia) insertedMediaId = media.id;
+            // have the cover on disk before the first page that shows it asks (the archive is slow when cold)
+            const cover = target.coverArt ? parseCoverArtUrl(target.coverArt) : null;
+            if (cover) {
+                warmCover(cover.kind, cover.id, 250);
+                warmCover(cover.kind, cover.id, 500);
+            }
             // right away, so a concurrent attempt under another MBID/ISRC for the same song finds this row too
             await addMediaIdentifiers(media.id, identity);
 
@@ -484,7 +511,8 @@ async function downloadTrack(
             return true;
         } catch (error) {
             console.error(`[downloads] Error occured for candidates ${error}`);
-            await rm(tempPath, { force: true });
+            // never let cleanup throw out of the catch itself and fail the whole request over a leftover temp file
+            await rm(tempPath, { force: true }).catch(() => {});
             // nothing owns the reserved/partially written library file yet, so it would otherwise linger
             if (destPath) await rm(destPath, { force: true }).catch(() => {});
             if (insertedMediaId) {

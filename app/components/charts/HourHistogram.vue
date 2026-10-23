@@ -68,7 +68,7 @@ function heightOf(point: HourPoint): number {
   justify-content: space-between;
   list-style: none;
   padding: 0;
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 0.6em;
   color: #666666;
 }

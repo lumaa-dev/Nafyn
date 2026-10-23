@@ -1,0 +1,18 @@
+# nothing in here belongs in an image: secrets, local data, and what the build recreates
+.env
+.env.*
+!.env.example
+*.p8
+.data
+music
+.git
+.github
+node_modules
+.nuxt
+.output
+.dev
+vendor
+tests
+openapi
+*.log
+.DS_Store

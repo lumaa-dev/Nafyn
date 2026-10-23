@@ -8,7 +8,7 @@
         :to="hrefFor(entity)"
         class="row"
       >
-        <img v-if="showCover" :src="entity.cover ?? noCover" alt="" @error="onCoverError">
+        <CoverImage v-if="showCover" :src="entity.cover" />
         <span class="col">
           <span class="title">{{ entity.title ?? $t('insights.unknownEntity') }}</span>
           <span class="artist">{{ entity.subtitle ?? '' }}</span>
@@ -20,8 +20,6 @@
 </template>
 
 <script lang="ts" setup>
-import noCover from '~/assets/no-cover.png';
-
 // A ranked list with cover art, linking through to the existing detail pages where one exists.
 //
 // Entries whose underlying media has been deleted still appear - that is the point of the display snapshot
@@ -62,10 +60,6 @@ function metricFor(entity: RankedEntity): string {
     ? $t('insights.metric.minutes', { count: entity.minutes })
     : $t('insights.metric.plays', { count: entity.playCount });
 }
-
-function onCoverError(e: Event) {
-  (e.target as HTMLImageElement).src = noCover;
-}
 </script>
 
 <style>
@@ -85,7 +79,7 @@ function onCoverError(e: Event) {
 }
 
 .top-entities .rank {
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 0.7em;
   color: #666666;
   width: 22px;
@@ -133,7 +127,7 @@ function onCoverError(e: Event) {
 .top-entities .artist { font-size: 0.65em; color: #666666; }
 
 .top-entities .metric {
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 0.7em;
   color: #ffffffae;
   flex-shrink: 0;

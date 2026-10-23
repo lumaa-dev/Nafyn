@@ -78,13 +78,19 @@ function close() {
   margin: 0;
   padding: 0;
   overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
+.plist::-webkit-scrollbar {
+  display: none;
+}
+
 .picker-empty {
-  color: #666666;
+  color: #ffffff;
   font-size: 0.85em;
 }
 

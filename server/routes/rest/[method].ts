@@ -46,6 +46,7 @@ import { isHistoryEnabled } from "~~/server/core/insightsSettings";
 import { playlistImageFilePath, deletePlaylistImage } from "~~/server/utils/playlistImage";
 import { isUuid, escapeLike } from "~~/server/utils/ids";
 import { isAllowedCoverArtUrl, fetchCoverArt } from "~~/server/utils/coverArt";
+import { getCachedCover, parseCoverArtUrl } from "~~/server/utils/coverArtCache";
 import { mediaCoverFilePath } from "~~/server/utils/mediaCover";
 import { getLastfmArtistInfo } from "~~/server/utils/lastfm";
 import { authenticateSubsonic } from "~~/server/utils/subsonicAuth";
@@ -475,9 +476,11 @@ async function handleStream(event: H3Event, query: Record<string, unknown>, user
 
     // a suffix range longer than the file ("bytes=-999999999") means the whole file, not a negative offset
     const start = match[1] ? parseInt(match[1], 10) : Math.max(0, fileSize - parseInt(match[2]!, 10));
-    const end = match[1] && match[2] ? parseInt(match[2], 10) : fileSize - 1;
+    // an end past the last byte ("bytes=0-99999999" - what clients send when they don't know the size) is clamped
+    // to the file (RFC 9110 14.1.2), not refused
+    const end = match[1] && match[2] ? Math.min(parseInt(match[2], 10), fileSize - 1) : fileSize - 1;
 
-    if (start >= fileSize || end >= fileSize || start > end) {
+    if (start >= fileSize || start > end) {
         setResponseHeader(event, "Content-Range", `bytes */${fileSize}`);
         throw createError({ statusCode: 416, statusMessage: "Range not satisfiable" });
     }
@@ -534,6 +537,17 @@ async function handleCoverArt(event: H3Event, query: Record<string, unknown>, us
     }
 
     if (!sourceUrl || !isAllowedCoverArtUrl(sourceUrl)) throw new SubsonicApiError(SubsonicErrors.notFound);
+
+    // a Cover Art Archive cover comes from Nafyn's own disk cache (the archive itself is slow when cold)
+    const archived = parseCoverArtUrl(sourceUrl);
+    if (archived) {
+        const cached = await getCachedCover(archived.kind, archived.id, archived.size);
+        if (!cached || cached === "missing") throw new SubsonicApiError(SubsonicErrors.notFound);
+        setResponseHeader(event, "Content-Type", cached.contentType);
+        setResponseHeader(event, "Cache-Control", "public, max-age=86400");
+        await sendStream(event, cached.stream());
+        return;
+    }
 
     const upstream = await fetchCoverArt(sourceUrl);
     if (!upstream?.body) throw new SubsonicApiError(SubsonicErrors.notFound);

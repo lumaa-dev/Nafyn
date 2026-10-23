@@ -90,6 +90,7 @@ export class MusicLyricsRequest {
         headers: {
           Authorization: `Bearer ${devToken}`
         },
+        signal: AbortSignal.timeout(8_000),
       });      
       
       bodyText = await httpResponse.text();

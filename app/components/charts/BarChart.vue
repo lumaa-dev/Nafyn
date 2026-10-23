@@ -59,7 +59,7 @@ function widthOf(value: number): number {
 }
 
 .barchart .rank {
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 0.7em;
   color: #666666;
   width: 22px;
@@ -107,7 +107,7 @@ function widthOf(value: number): number {
 }
 
 .barchart .value {
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 0.7em;
   color: #ffffffae;
   flex-shrink: 0;

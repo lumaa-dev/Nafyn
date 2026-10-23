@@ -1,88 +1,85 @@
 <template>
-  <div v-if="currentTrack" class="now-playing" :style="{ '--np-text': textColor, '--np-scrim': scrimColor }">
-    <div class="np-bg" aria-hidden="true">
-      <span v-for="(color, i) in bgColors" :key="i" :ref="setBlobRef(i)" class="blob" :style="{ background: color }" />
-      <span class="scrim" />
-    </div>
-
-    <div class="track" @click="navigateTo('/now-playing')">
-      <img :src="coverSrc(currentTrack)" @error="($event.target as HTMLImageElement).src = noCover" draggable="false" loading="lazy" />
-      <span class="col">
-        <span class="title">{{ currentTrack.title }}</span>
-        <span class="artist">{{ currentTrack.artistName }}</span>
-        <span v-if="isRemoteControlled" class="unity-badge">{{ $t('player.unity.playingOn', { device: masterDeviceLabel }) }}</span>
-      </span>
-    </div>
-
-    <!-- <button v-if="isRemoteControlled" type="button" filled="hollow" class="unity-takeover" @click.stop="takeover()">{{ $t('player.unity.playHere') }}</button> -->
-
-    <div class="controls">
-      <div class="buttons">
-        <button filled="hollow" class="round" :disabled="!hasPrev && state.currentTime <= 3" @click="prev()"><img src="../assets/icons/prev.svg" draggable="false" /></button>
-        <button filled class="round" @click="togglePlay()">
-          <img v-if="state.isPlaying" src="../assets/icons/pause.svg" draggable="false" />
-          <img v-else src="../assets/icons/play.svg" draggable="false" />
-        </button>
-        <button filled="hollow" class="round" :disabled="!hasNext" @click="next()"><img src="../assets/icons/next.svg" draggable="false" /></button>
+  <Transition name="np-slide">
+    <div v-if="currentTrack" class="now-playing np-surface" :style="surfaceVars">
+      <div class="np-bg" aria-hidden="true">
+        <span v-for="(color, i) in bgColors" :key="i" :ref="setBlobRef(i)" class="blob" :style="{ background: color }" />
+        <span class="scrim" />
       </div>
 
-      <div class="seek big">
-        <span class="time">{{ formatDuration(state.currentTime) }}</span>
-        <input type="range" min="0" :max="state.duration || 0" step="1" :value="state.currentTime" @input="seek(($event.target as HTMLInputElement).valueAsNumber)" />
-        <span class="time">{{ formatDuration(state.duration) }}</span>
-      </div>
-    </div>
-
-    <div class="side big">
-      <button filled="hollow" class="round" @click="toggleQueue()"><span class="queue-count">{{ state.queue.length }}</span></button>
-
-      <button :filled="state.repeat != 'off' ? '' : 'hollow'" class="round" :title="repeatTitle" @click="cycleRepeat()">
-        <img v-if="state.repeat === 'track'" src="../assets/icons/repeat-one.svg" draggable="false" />
-        <img v-else src="../assets/icons/repeat.svg" draggable="false" />
-      </button>
-
-      <div class="volume">
-        <button filled="hollow" class="round" @click="toggleMute()">
-          <img v-if="state.muted || state.volume === 0" src="../assets/icons/volume-mute.svg" draggable="false" />
-          <img v-else src="../assets/icons/volume.svg" draggable="false" />
-        </button>
-        <input type="range" min="0" max="1" step="0.01" :value="state.muted ? 0 : state.volume" @input="setVolume(($event.target as HTMLInputElement).valueAsNumber)" />
-      </div>
-    </div>
-
-    <ol class="queue big" v-if="showQueue">
-      <li v-if="state.queue.length === 0" class="empty">{{ $t('player.queueEmpty') }}</li>
-      <li v-for="(track, index) in state.queue" :key="track.id" :class="{ active: index === state.currentIndex }" @click="playFromQueue(index)">
-        <span class="row">
-          <img :src="coverSrc(track)" @error="($event.target as HTMLImageElement).src = noCover" draggable="false" loading="lazy" />
-          <span class="col">
-            <span class="title">{{ track.title }}</span>
-            <span class="artist">{{ track.artistName }}</span>
-          </span>
+      <div class="track" @click="navigateTo('/now-playing')">
+        <CoverImage :src="coverSrc(currentTrack)" eager />
+        <span class="col">
+          <span class="title">{{ currentTrack.title }}</span>
+          <span class="artist">{{ currentTrack.artistName }}</span>
+          <span v-if="isRemoteControlled" class="unity-badge">{{ $t('player.unity.playingOn', { device: masterDeviceLabel }) }}</span>
         </span>
-        <button filled="hollow" class="round" @click.stop="removeFromQueue(index)">&times;</button>
-      </li>
-    </ol>
-  </div>
+      </div>
+
+      <div class="controls">
+        <div class="buttons">
+          <button filled="hollow" class="round" :disabled="prevDisabled" :aria-label="$t('player.previous')" @click="prev()"><img src="../assets/icons/prev.svg" alt="" draggable="false" /></button>
+          <button filled class="round" :aria-label="state.isPlaying ? $t('player.pause') : $t('player.play')" @click="togglePlay()">
+            <img v-if="state.isPlaying" src="../assets/icons/pause.svg" alt="" draggable="false" />
+            <img v-else src="../assets/icons/play.svg" alt="" draggable="false" />
+          </button>
+          <button filled="hollow" class="round" :disabled="!hasNext" :aria-label="$t('player.next')" @click="next()"><img src="../assets/icons/next.svg" alt="" draggable="false" /></button>
+        </div>
+
+        <PlayerSeek class="big" />
+      </div>
+
+      <div class="side big">
+        <button filled="hollow" class="round" :aria-label="`${$t('player.showQueue')} (${upcomingCount})`" :aria-expanded="showQueue" @click="toggleQueue()"><span class="queue-count">{{ upcomingCount }}</span></button>
+
+        <button :filled="state.repeat != 'off' ? '' : 'hollow'" class="round" :title="repeatTitle" :aria-label="repeatTitle" @click="cycleRepeat()">
+          <img v-if="state.repeat === 'track'" src="../assets/icons/repeat-one.svg" alt="" draggable="false" />
+          <img v-else src="../assets/icons/repeat.svg" alt="" draggable="false" />
+        </button>
+
+        <div class="volume">
+          <button filled="hollow" class="round" :aria-label="state.muted || state.volume === 0 ? $t('player.unmute') : $t('player.mute')" @click="toggleMute()">
+            <img v-if="state.muted || state.volume === 0" src="../assets/icons/volume-mute.svg" alt="" draggable="false" />
+            <img v-else src="../assets/icons/volume.svg" alt="" draggable="false" />
+          </button>
+          <input type="range" min="0" max="1" step="0.01" :value="state.muted ? 0 : state.volume" :aria-label="$t('player.volume')" @input="setVolume(($event.target as HTMLInputElement).valueAsNumber)" />
+        </div>
+      </div>
+
+      <!-- same panel as the Now Playing page: History above, the queue below -->
+      <div class="queue big" v-if="showQueue">
+        <QueuePanel />
+      </div>
+    </div>
+  </Transition>
 </template>
 
 <script lang="ts" setup>
-import noCover from '../assets/no-cover.png';
+import QueuePanel from '~/components/panels/QueuePanel.vue';
 
 const { t } = useI18n();
-const { state, currentTrack, hasNext, hasPrev, role, masterStatus, masterDeviceLabel, takeover, togglePlay, next, prev, seek, setVolume, toggleMute, removeFromQueue, playFromQueue, cycleRepeat } = useUnity();
+const { state, currentTrack, hasNext, hasPrev, role, masterStatus, masterDeviceLabel, togglePlay, next, prev, setVolume, toggleMute, cycleRepeat } = useUnity();
 
 // true while this device is remote-controlling another device's playback (Nafyn Unity) rather than playing
 // locally - transport controls above still work (they're relayed to the master), this just surfaces whose
-// audio it actually is and offers a way to pull playback onto this device instead
+// audio it actually is
 const isRemoteControlled = computed(() => role.value === "slave" && masterStatus.value === "active");
+
+// a computed boolean, not an inline `state.currentTime <= 3` in the template: reading the time there would
+// re-render this whole bar on every playback tick, a boolean only when it actually flips
+const prevDisabled = computed(() => !hasPrev.value && state.value.currentTime <= 3);
+
+// the queue is what comes after the current track
+const upcomingCount = computed(() => Math.max(0, state.value.queue.length - state.value.currentIndex - 1));
 
 const showQueue = ref(false);
 function toggleQueue() {
   showQueue.value = !showQueue.value;
 }
 
-const { bgColors, textColor, scrimColor, setBlobRef } = useCoverMeshGradient();
+// the bar leaves with the track (queue ran out, or it was stopped): don't reopen a stale dropdown next time
+watch(currentTrack, (track) => { if (!track) showQueue.value = false; });
+
+const { bgColors, surfaceVars, setBlobRef } = useCoverMeshGradient();
 
 const repeatTitle = computed(() => {
   switch (state.value.repeat) {
@@ -96,22 +93,11 @@ const repeatTitle = computed(() => {
       return t("player.repeatOff")
   }
 });
-
-function formatDuration(seconds: number): string {
-  if (!Number.isFinite(seconds) || seconds < 0) seconds = 0;
-  const minutes = Math.floor(seconds / 60);
-  const rest = Math.floor(seconds % 60);
-  return `${minutes}:${rest.toString().padStart(2, "0")}`;
-}
 </script>
 
 <style scoped>
 .small {
   display: none;
-}
-
-.big {
-  display: initial;
 }
 
 .now-playing {
@@ -134,6 +120,35 @@ function formatDuration(seconds: number): string {
   transition: color 0.6s ease;
 }
 
+/* The bar slides up from the bottom edge when a track starts and back down when the queue ends. Plain ease-out
+   in (decelerating into place) and ease-in out (accelerating away); the queue dropdown is a child, so it leaves
+   with it. */
+.np-slide-enter-active {
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+.np-slide-leave-active {
+  transition: transform 0.25s ease-in, opacity 0.25s ease-in;
+}
+
+.np-slide-enter-from,
+.np-slide-leave-to {
+  transform: translateY(100%);
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .np-slide-enter-active,
+  .np-slide-leave-active {
+    transition: opacity 0.15s linear;
+  }
+
+  .np-slide-enter-from,
+  .np-slide-leave-to {
+    transform: none;
+  }
+}
+
 /* dominant-color mesh gradient, driven by JS (usePlayer's audio analyser) - purely decorative, sits
    behind every control so it never gets in the way of the interface itself */
 .now-playing .np-bg {
@@ -146,12 +161,15 @@ function formatDuration(seconds: number): string {
 
 .now-playing .np-bg .blob {
   position: absolute;
+  left: 0;
+  top: 0;
   width: min(38vw, 340px);
   height: min(38vw, 340px);
   border-radius: 50%;
   filter: blur(70px) saturate(160%);
   opacity: 0.8;
-  will-change: left, top, transform, opacity;
+  /* moved by transform only (useCoverMeshGradient): its own layer, no layout or repaint per frame */
+  will-change: transform, opacity;
   transition: background 0.8s ease;
 }
 
@@ -164,15 +182,10 @@ function formatDuration(seconds: number): string {
   transition: background 0.6s ease;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .now-playing .np-bg .blob {
-    transition: left 0.8s ease, top 0.8s ease, background 0.8s ease;
-  }
-}
-
+/* icon-only buttons: at least 44px square (WCAG 2.5.5) whatever the bar's font size */
 .now-playing .round {
-  width: 2.4em;
-  height: 2.4em;
+  width: max(2.4em, 44px);
+  height: max(2.4em, 44px);
   border-radius: 50%;
   padding: 0 !important;
   display: flex;
@@ -184,15 +197,6 @@ function formatDuration(seconds: number): string {
 .now-playing .round img {
   width: 1.1em;
   height: 1.1em;
-  transition: filter 0.15s ease-out;
-}
-
-button[filled="hollow"].round img {
-  filter: invert();
-}
-
-button[filled="hollow"].round:not(:disabled):hover img {
-  filter: none;
 }
 
 .now-playing .track {
@@ -235,7 +239,7 @@ button[filled="hollow"].round:not(:disabled):hover img {
 
 .now-playing .artist {
   font-size: 0.85em;
-  color: color-mix(in srgb, var(--np-text, #ffffff) 80%, transparent);
+  color: color-mix(in srgb, var(--np-text, #ffffff) 90%, transparent);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -243,15 +247,10 @@ button[filled="hollow"].round:not(:disabled):hover img {
 
 .now-playing .unity-badge {
   font-size: 0.7em;
-  color: color-mix(in srgb, var(--np-text, #ffffff) 55%, transparent);
+  color: color-mix(in srgb, var(--np-text, #ffffff) 90%, transparent);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.now-playing .unity-takeover {
-  flex-shrink: 0;
-  font-size: 0.75em;
 }
 
 .now-playing .controls {
@@ -260,6 +259,7 @@ button[filled="hollow"].round:not(:disabled):hover img {
   align-items: center;
   gap: 8px;
   flex: 1;
+  min-width: 0;
   max-width: 600px;
 }
 
@@ -268,25 +268,6 @@ button[filled="hollow"].round:not(:disabled):hover img {
   flex-direction: row;
   align-items: center;
   gap: 15px;
-}
-
-.now-playing .seek {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-}
-
-.now-playing .seek input[type="range"] {
-  flex: 1;
-}
-
-.now-playing .time {
-  color: color-mix(in srgb, var(--np-text, #ffffff) 80%, transparent);
-  font-variant-numeric: tabular-nums;
-  font-family: "Discy";
-  width: 2.5em;
 }
 
 .now-playing .side {
@@ -312,83 +293,26 @@ button[filled="hollow"].round:not(:disabled):hover img {
   width: 90px;
 }
 
-.now-playing input[type="range"] {
-  appearance: none;
-  height: 4px;
-  border-radius: 250px;
-  background: #ffffff30;
-  outline: none;
-}
-
-.now-playing input[type="range"]::-webkit-slider-thumb {
-  appearance: none;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #ffffffae;
-  cursor: pointer;
-}
-
+/* The dropdown has its own solid near-black backdrop, independent of the gradient behind the bar, so it pins the
+   fixed white scheme (text, inverse, icon filters) instead of following the cover. */
 .now-playing .queue {
-  /* the dropdown has its own solid near-black backdrop, independent of the gradient behind the bar
-     itself, so it keeps a fixed white text scheme rather than inheriting the cover's textColor */
   --np-text: #ffffff;
+  --np-text-inverse: #000000;
+  --np-icon-fg: invert(1);
+  --np-icon-inv: none;
   position: absolute;
   bottom: 110%;
   right: 30px;
   width: 320px;
-  max-height: 50vh;
-  overflow-y: auto;
-  list-style: none;
+  /* a definite height, not max-height: QueuePanel opens scrolled past the History, which needs it */
+  height: min(50vh, 520px);
   padding: 10px;
   margin: 0;
+  color: #ffffff;
   background: #000000ee;
   backdrop-filter: blur(20px);
   border: 1px solid #ffffff20;
   border-radius: 10px;
-}
-
-.now-playing .queue li {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 8px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.now-playing .queue li:hover {
-  background: #ffffff10;
-}
-
-.now-playing .queue li.active {
-  background: #ffffff20;
-}
-
-.now-playing .queue li .row {
-  align-items: center;
-  gap: 15px;
-}
-
-.now-playing .queue li img {
-  width: 35px;
-  height: 35px;
-  aspect-ratio: 1 / 1;
-  border-radius: 5px;
-  background: #00000040;
-}
-
-.now-playing .queue li button {
-  font-size: 1em;
-  line-height: 1;
-}
-
-.now-playing .queue .empty {
-  color: color-mix(in srgb, var(--np-text, #ffffff) 60%, transparent);
-  cursor: default;
-  justify-content: center;
 }
 
 @media screen and (max-width: 800px) {

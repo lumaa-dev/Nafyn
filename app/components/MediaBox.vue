@@ -1,6 +1,6 @@
 <template>
   <div class="mbox" :mb-id="media.id">
-    <img :src="imgSrc" @error="imgSrc = noCover" draggable="false" loading="lazy" />
+    <CoverImage :src="media.coverArt" />
     <p class="title">{{ media.title }}</p>
     <p class="artist">{{ typeof media.artist == "string" ? media.artist : media.artist.name }}</p>
   </div>
@@ -8,12 +8,8 @@
 
 <script lang="ts" setup>
 import type { MediaInfo } from '~~/server/entity/media/MediaInfo';
-import noCover from '../assets/no-cover.png';
 
-const props = defineProps<{ media: MediaInfo }>()
-
-const imgSrc = ref(props.media.coverArt ?? noCover);
-watch(() => props.media.coverArt, (coverArt) => imgSrc.value = coverArt ?? noCover);
+defineProps<{ media: MediaInfo }>()
 </script>
 
 <style>

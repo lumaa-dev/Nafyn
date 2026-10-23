@@ -1,0 +1,110 @@
+/* Cover-driven surfaces (pages/now-playing.vue, components/NowPlaying.vue and the panels inside them).
+ *
+ * These paint a mesh gradient from the cover, and everything on top of it follows the black/white the server
+ * picked for contrast against the cover's dominant colour. Controls have to follow it too: the global
+ * button[filled] styles (white fill, black label) assume a dark backdrop, and on a light cover - where the scrim
+ * flips to white - a white button or white outline disappears.
+ *
+ * The root element carries `.np-surface` plus the variables from useCoverMeshGradient().surfaceVars:
+ *   --np-text / --np-text-inverse    black and white, picked by the background behind them
+ *   --np-icon-fg / --np-icon-inv     filters that turn the (black) icon SVGs into --np-text / --np-text-inverse
+ * A surface with its own solid backdrop (the queue dropdown) pins all five to the fixed white scheme.
+ */
+
+/* every button: a ring in the text colour at rest, so the control is findable by more than its fill */
+.np-surface button[filled] {
+  background: var(--np-text, #ffffff);
+  border-color: var(--np-text, #ffffff);
+  color: var(--np-text-inverse, #000000);
+}
+
+.np-surface button[filled="hollow"] {
+  background: transparent;
+  color: var(--np-text, #ffffff);
+}
+
+.np-surface button[filled]:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--np-text, #ffffff) 85%, var(--np-text-inverse, #000000));
+  border-color: color-mix(in srgb, var(--np-text, #ffffff) 85%, var(--np-text-inverse, #000000));
+  color: var(--np-text-inverse, #000000);
+}
+
+.np-surface button[filled="hollow"]:hover:not(:disabled) {
+  background: var(--np-text, #ffffff);
+  border-color: var(--np-text, #ffffff);
+  color: var(--np-text-inverse, #000000);
+}
+
+.np-surface button:disabled {
+  /* disabled controls are exempt from contrast, but stay recognisable */
+  opacity: 0.6;
+}
+
+/* icons: black SVGs. On a filled button they sit on a --np-text fill, so they take the inverse colour; hollow
+   buttons show them in --np-text and flip to the inverse once the hover fills the button. */
+.np-surface button img {
+  transition: filter 0.15s ease-out;
+}
+
+.np-surface button[filled] img {
+  filter: var(--np-icon-inv, none);
+}
+
+.np-surface button[filled="hollow"] img {
+  filter: var(--np-icon-fg, invert(1));
+}
+
+.np-surface button[filled="hollow"]:not(:disabled):hover img {
+  filter: var(--np-icon-inv, none);
+}
+
+/* keyboard focus in the text colour of the surface, so it is visible on any cover */
+.np-surface :where(button, a, input, select):focus-visible {
+  outline: 2px solid var(--np-text, #ffffff);
+  outline-offset: 2px;
+}
+
+/* range inputs: track and thumb in the text colour, not a hardcoded translucent white */
+.np-surface input[type="range"] {
+  appearance: none;
+  height: 4px;
+  border-radius: 250px;
+  background: color-mix(in srgb, var(--np-text, #ffffff) 35%, transparent);
+  outline: none;
+}
+
+.np-surface input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--np-text, #ffffff);
+  border: 0;
+  cursor: pointer;
+}
+
+.np-surface input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--np-text, #ffffff);
+  border: 0;
+  cursor: pointer;
+}
+
+.np-surface input[type="range"]::-moz-range-track {
+  height: 4px;
+  border-radius: 250px;
+  background: color-mix(in srgb, var(--np-text, #ffffff) 35%, transparent);
+}
+
+/* scrollable regions inside the surface: they scroll, they don't show a bar */
+.np-quiet-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.np-quiet-scroll::-webkit-scrollbar {
+  display: none;
+}

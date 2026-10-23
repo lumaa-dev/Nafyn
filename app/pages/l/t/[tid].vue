@@ -1,7 +1,7 @@
 <template>
   <div class="track" v-if="track">
     <div class="head">
-      <img class="cover" :src="coverSrc(track)" @error="($event.target as HTMLImageElement).src = noCover" draggable="false" />
+      <CoverImage class="cover" :src="coverSrc(track, 500)" eager />
       <div class="meta">
         <span class="header">
           <h1>{{ track.title }}</h1>
@@ -12,8 +12,10 @@
         </NuxtLink>
         <div class="actions">
           <button type="button" filled @click="playTrack">{{ $t('playlist.play') }}</button>
-          <button type="button" filled="hollow" @click="openPicker">{{ $t('playlist.addToPlaylist') }}</button>
-          <button type="button" filled="hollow" @click="showEdit = true">{{ $t('edit.title') }}</button>
+          <!-- two text buttons plus Play overflowed the row on narrow screens; the secondary actions are symbols,
+               named for assistive tech and on hover -->
+          <button type="button" filled="hollow" class="icon-only" :title="$t('playlist.addToPlaylist')" :aria-label="$t('playlist.addToPlaylist')" @click="openPicker"><img src="~/assets/icons/plus.svg" alt="" draggable="false" /></button>
+          <button type="button" filled="hollow" class="icon-only" :title="$t('edit.title')" :aria-label="$t('edit.title')" @click="showEdit = true"><img src="~/assets/icons/edit.svg" alt="" draggable="false" /></button>
         </div>
       </div>
     </div>
@@ -33,7 +35,6 @@
 
 <script lang="ts" setup>
 import type { MediaRow } from '~~/server/core/library';
-import noCover from '~/assets/no-cover.png';
 import PlaylistPickerModal from '~/components/PlaylistPickerModal.vue';
 import MediaEditModal from '~/components/MediaEditModal.vue';
 import { useAppearanceSettings } from '~/composables/useAppearanceSettings';
@@ -77,9 +78,9 @@ function formatDate(date: string | number | Date): string {
 </script>
 
 <style scoped>
+/* this element is `.view` (app.vue): its margin clears the Header and the sidebar, so only the size is set here */
 .track {
   max-width: 900px;
-  margin: calc(15vh - 10px) auto;
 }
 
 .track .head {
@@ -116,7 +117,7 @@ function formatDate(date: string | number | Date): string {
 
 .track .album-link {
   font-size: 0.85em;
-  color: #666666;
+  color: #ffffff;
   text-decoration: none;
   margin-top: 4px;
 }
@@ -127,21 +128,18 @@ function formatDate(date: string | number | Date): string {
 
 .track .actions {
   display: flex;
+  align-items: center;
   gap: 10px;
   margin: 1.2em 0;
 }
 
 .track .details {
   font-size: 0.85em;
-  color: #666666;
+  color: #ffffff;
   margin: 1em 0;
 }
 
 @media screen and (max-width: 800px) {
-  .track {
-    margin: calc(15vh - 10px) 1.2em;
-  }
-
   .track .head {
     flex-direction: column;
   }

@@ -68,6 +68,9 @@ header > span {
 
 header input[type="text"] {
   background: #ffffff20;
+  /* a small blur of whatever scrolls under the bar, so the field stays readable over busy covers */
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   z-index: 100;
 }
 
@@ -146,6 +149,8 @@ header .search-toggle {
     justify-content: center;
     padding: 0 !important;
     background: #ffffff20;
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
     border-radius: 50%;
     width: 40px;
     height: 40px;

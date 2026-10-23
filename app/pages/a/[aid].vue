@@ -1,7 +1,7 @@
 <template>
   <div class="album" v-if="album">
     <div class="head">
-      <img class="cover" :src="album.coverArt ?? noCover" @error="($event.target as HTMLImageElement).src = noCover" draggable="false" />
+      <CoverImage class="cover" :src="album.coverArt" eager />
       <div class="meta">
         <span class="header">
           <h1>{{ album.title }}</h1>
@@ -53,7 +53,6 @@
 import type { AlbumDetail } from '~~/server/entity/media/AlbumDetail';
 import type { TrackInfo } from '~~/server/entity/media/TrackInfo';
 import type { MediaRow } from '~~/server/core/library';
-import noCover from '~/assets/no-cover.png';
 import ContextMenu, { type ContextMenuItem } from '~/components/ContextMenu.vue';
 import PlaylistPickerModal from '~/components/PlaylistPickerModal.vue';
 import { useAuthToken } from '~/composables/useAuthToken';
@@ -74,7 +73,7 @@ useLoadErrorToast(error);
 
 const albumMediaIds = computed(() => album.value?.tracks.map((t) => t.mediaId).filter((id): id is string => id !== null) ?? []);
 
-const { currentTrack, play } = useUnity();
+const { currentTrack, play, addToQueue } = useUnity();
 
 // tracks aren't fetched as full MediaRow rows on the album page (only display fields), so build one client-side
 // from data already on hand - just enough to stream/queue/show the track, matching what the actual media row holds
@@ -124,7 +123,17 @@ const trackMenu = ref<InstanceType<typeof ContextMenu> | null>(null);
 const trackMenuItems = ref<ContextMenuItem[]>([]);
 
 function buildTrackMenu(mediaId: string) {
-  trackMenuItems.value = [{ label: $t('playlist.addToPlaylist'), action: () => openPicker([mediaId]) }];
+  const items: ContextMenuItem[] = [];
+  const media = album.value?.tracks.find((t) => t.mediaId === mediaId);
+  const row = media ? toMediaRow(media) : null;
+  if (row) {
+    items.push(
+      { label: $t('player.playNext'), action: () => addToQueue(row, "next") },
+      { label: $t('player.addToQueue'), action: () => addToQueue(row, "end") }
+    );
+  }
+  items.push({ label: $t('playlist.addToPlaylist'), action: () => openPicker([mediaId]) });
+  trackMenuItems.value = items;
 }
 
 function onTrackContextMenu(e: MouseEvent, mediaId: string) {
@@ -239,7 +248,7 @@ async function requestTrack(track: TrackInfo) {
 }
 
 .album .upcoming .value {
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 1.1em;
 }
 
@@ -332,7 +341,7 @@ async function requestTrack(track: TrackInfo) {
 .album .tracks .number {
   width: 1.5em;
   text-align: center;
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 0.85em;
 }
 
@@ -353,7 +362,7 @@ async function requestTrack(track: TrackInfo) {
 .album .tracks .duration {
   color: #666666;
   font-variant-numeric: tabular-nums;
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 0.7em;
 }
 

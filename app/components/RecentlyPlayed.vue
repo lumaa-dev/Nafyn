@@ -1,7 +1,7 @@
 <template>
   <div class="recent" :class="variant" v-if="recentlyPlayed.length > 0">
     <NuxtLink v-for="item in recentlyPlayed" :key="`${item.type}-${item.refId}`" :to="item.href" class="recent-card">
-      <img :src="entryCover(item)" @error="($event.target as HTMLImageElement).src = noCover" loading="lazy" draggable="false" />
+      <CoverImage :src="entryCover(item)" />
       <p class="title">{{ item.title }}</p>
       <p class="subtitle" v-if="item.subtitle">{{ item.subtitle }}</p>
     </NuxtLink>

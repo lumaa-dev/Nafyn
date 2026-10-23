@@ -9,6 +9,41 @@ import { getMediaId, findLibraryEntry, type MediaRow } from "~~/server/core/libr
 
 const lyricsService = new NafynLyrics();
 
+// What the providers said for a track, kept so replaying (or merely loading the page of) a track doesn't ask
+// Cider and LRCLIB again each time. "Nothing found" is cached too, for less. User-supplied lyrics are not
+// cached here: they are one cheap database read and an edit must show immediately. Capped, oldest first.
+const FOUND_TTL_MS = 60 * 60 * 1000;
+const MISSING_TTL_MS = 10 * 60 * 1000;
+const MAX_CACHED_TRACKS = 500;
+const providerCache = new Map<string, { result: { provider: Provider, paragraphs: LyricParagraphs } | null, expiresAtMs: number }>();
+const providerInFlight = new Map<string, Promise<{ provider: Provider, paragraphs: LyricParagraphs } | null>>();
+
+function lookupProviders(media: MediaRow): Promise<{ provider: Provider, paragraphs: LyricParagraphs } | null> {
+	const cached = providerCache.get(media.id);
+	if (cached && cached.expiresAtMs > Date.now()) return Promise.resolve(cached.result);
+
+	// two players asking for the same track at once share one round of provider calls
+	let running = providerInFlight.get(media.id);
+	if (!running) {
+		running = (async () => {
+			let result: { provider: Provider, paragraphs: LyricParagraphs } | null = null;
+			for (const { provider, fetch } of LYRICS_PROVIDERS) {
+				const paragraphs = await fetch(media);
+				if (paragraphs && paragraphs.length > 0) {
+					result = { provider, paragraphs };
+					break;
+				}
+			}
+
+			if (providerCache.size >= MAX_CACHED_TRACKS) providerCache.delete(providerCache.keys().next().value!);
+			providerCache.set(media.id, { result, expiresAtMs: Date.now() + (result ? FOUND_TTL_MS : MISSING_TTL_MS) });
+			return result;
+		})().finally(() => providerInFlight.delete(media.id));
+		providerInFlight.set(media.id, running);
+	}
+	return running;
+}
+
 defineRouteMeta({
 	openAPI: {
 		description: "Get synced lyrics for a library track: user-supplied lyrics first, then the fetched providers (Cider, LRCLIB) in order until one has a match. Pass `?source=1` to get the stored user-supplied lyrics verbatim instead.",
@@ -181,13 +216,8 @@ export default defineEventHandler(async (event) => {
 		}
 	}
 
-	for (const { provider, fetch } of LYRICS_PROVIDERS) {
-		const paragraphs = await fetch(media);
-
-		if (paragraphs && paragraphs.length > 0) {
-			return { provider, paragraphs };
-		}
-	}
+	const found = await lookupProviders(media);
+	if (found) return found;
 
 	throw createError({
 		statusCode: 404,

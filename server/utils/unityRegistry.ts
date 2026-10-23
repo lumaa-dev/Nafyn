@@ -46,11 +46,27 @@ function cleanupIfEmpty(userId: string, session: UnitySession): void {
     }
 }
 
+// one slave whose socket is half-dead must not stop the rest of them hearing about the change: a throwing send
+// used to abort the whole loop, and with it the broadcast for every device after the broken one
+function safeSend(peer: Peer, payload: string): void {
+    try {
+        peer.send(payload);
+    } catch {
+        // the close handler cleans the connection up
+    }
+}
+
 function broadcastToSlaves(session: UnitySession, message: unknown): void {
     const payload = JSON.stringify(message);
     for (const { peer } of session.slaves.values()) {
-        peer.send(payload);
+        safeSend(peer, payload);
     }
+}
+
+// how many sockets this account has open right now (master + slaves); the route caps it
+export function connectionCount(userId: string): number {
+    const session = sessions.get(userId);
+    return session ? session.slaves.size + (session.master ? 1 : 0) : 0;
 }
 
 export function getSnapshot(userId: string, forPeer: Peer): { role: "master" | "slave", state: unknown, masterDeviceLabel: string | null, masterStatus: UnityStatus } {
@@ -143,7 +159,7 @@ export function forwardCommand(userId: string, action: string, payload: unknown)
     // clears it, so this must not attempt to send down a socket that's already gone
     if (!session || !session.master || session.status !== "active") return false;
 
-    session.master.peer.send(JSON.stringify({ type: "command", action, payload }));
+    safeSend(session.master.peer, JSON.stringify({ type: "command", action, payload }));
     return true;
 }
 

@@ -23,6 +23,8 @@ function sweep(map: Map<string, ChallengeEntry>): void {
     for (const [key, entry] of map) {
         if (entry.expiresAt <= now) map.delete(key);
     }
+    // all of them still live (a flood of anonymous login-options calls): drop the oldest so the cap holds
+    while (map.size >= MAX_ENTRIES) map.delete(map.keys().next().value!);
 }
 
 export function putRegistrationChallenge(userId: string, challenge: string): void {

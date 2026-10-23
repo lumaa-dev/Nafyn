@@ -9,23 +9,31 @@
 // is currently master. Only the master's own browser can actually run usePlayer()'s mutators, because the
 // real <audio> engine is module-level state local to that one tab.
 import type { MediaRow } from "~~/server/core/library";
-import { usePlayer, type PlayerState, type PlayContext } from "./usePlayer";
+import { usePlayer, type PlayerState, type PlayContext, type QueuePosition } from "./usePlayer";
 import { useUnitySettings, useUnitySessionOverride } from "./useUnitySettings";
 import { useAuthToken } from "./useAuthToken";
 
 export type UnityRole = "master" | "slave";
 export type UnityMasterStatus = "active" | "grace" | "empty";
 
-const RECONNECT_DELAY_MS = 3000;
+// reconnecting: 3 s, doubling per failed attempt up to a minute, with jitter so a server restart doesn't bring every
+// open tab back in the same instant. Closes the server means as "don't": bad/revoked token (4001, 4003), Unity
+// switched off (4002) or account deleted (4004) are retried only every few minutes - a fixed 3 s loop on those
+// was every open tab hammering the handshake (and the token's session lookup) forever.
+const RECONNECT_BASE_MS = 3000;
+const RECONNECT_MAX_MS = 60_000;
+const RECONNECT_REFUSED_MS = 5 * 60_000;
+const REFUSED_CLOSE_CODES = new Set([4001, 4002, 4003, 4004]);
 const STATE_BROADCAST_INTERVAL_MS = 1000;
 
 let ws: WebSocket | null = null;
 let initialized = false;
 let pendingClaimResolve: ((granted: boolean) => void) | null = null;
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+let reconnectAttempts = 0;
 
 function defaultMirrorState(): PlayerState {
-    return { queue: [], currentIndex: -1, isPlaying: false, isLoading: false, currentTime: 0, duration: 0, volume: 1, muted: false, repeat: "off" };
+    return { queue: [], currentIndex: -1, history: [], isPlaying: false, isLoading: false, currentTime: 0, duration: 0, volume: 1, muted: false, repeat: "off" };
 }
 
 export const useUnity = () => {
@@ -92,6 +100,12 @@ export const useUnity = () => {
         };
     }
 
+    // not a wrapMutator: wiping the history must never claim master on a device that isn't playing anything
+    function clearHistory() {
+        realPlayer.clearHistory();
+        if (isRemoteControlled.value) send({ type: "command", action: "clearHistory", payload: [] });
+    }
+
     function takeover() {
         if (!unityActive.value) return;
         send({ type: "takeover" });
@@ -99,20 +113,17 @@ export const useUnity = () => {
 
     function applyIncomingCommand(action: string, payload: unknown[]) {
         const fn = (realPlayer as unknown as Record<string, (...a: unknown[]) => void>)[action];
-        if (typeof fn === "function") fn(...payload);
+        if (typeof fn !== "function") return;
+        fn(...payload);
+        // queue edits and the like don't wait for the next 1 s heartbeat to show up on the device that asked
+        sendState();
     }
 
     // called when this device just became master (its own claim, or someone else's "take over" naming it, or
     // a takeover it performed itself): if the mirrored state still shows something playing, pick that session
     // up locally rather than just sitting on a blank player
     function resumeFromMirror() {
-        const last = mirrorState.value;
-        const track = last.currentIndex >= 0 ? last.queue[last.currentIndex] : null;
-        if (!track) return;
-
-        realPlayer.play(track, last.queue);
-        realPlayer.seek(last.currentTime);
-        if (!last.isPlaying && realPlayer.state.value.isPlaying) realPlayer.togglePlay();
+        realPlayer.restoreSession(mirrorState.value);
     }
 
     function handleMessage(raw: string) {
@@ -179,24 +190,26 @@ export const useUnity = () => {
         const wsProtocol = location.protocol === "https:" ? "wss:" : "ws:";
         const socket = new WebSocket(`${wsProtocol}//${location.host}/ws/unity?token=${encodeURIComponent(token)}`);
 
-        socket.addEventListener("open", () => { connected.value = true; });
+        socket.addEventListener("open", () => { connected.value = true; reconnectAttempts = 0; });
         socket.addEventListener("message", (e) => handleMessage(e.data));
-        socket.addEventListener("close", () => {
+        socket.addEventListener("close", (e) => {
             connected.value = false;
             if (ws === socket) ws = null;
-            scheduleReconnect();
+            scheduleReconnect(REFUSED_CLOSE_CODES.has(e.code));
         });
         socket.addEventListener("error", () => {});
 
         ws = socket;
     }
 
-    function scheduleReconnect() {
+    function scheduleReconnect(refused: boolean) {
         if (reconnectTimer) return;
+        const backoff = Math.min(RECONNECT_BASE_MS * 2 ** reconnectAttempts++, RECONNECT_MAX_MS);
+        const delay = refused ? RECONNECT_REFUSED_MS : backoff * (0.75 + Math.random() * 0.5);
         reconnectTimer = setTimeout(() => {
             reconnectTimer = null;
             if (shouldBeConnected.value) connect();
-        }, RECONNECT_DELAY_MS);
+        }, delay);
     }
 
     function disconnect() {
@@ -250,9 +263,12 @@ export const useUnity = () => {
         seek: wrapMutator("seek", (time: number) => realPlayer.seek(time)),
         setVolume: wrapMutator("setVolume", (volume: number) => realPlayer.setVolume(volume)),
         toggleMute: wrapMutator("toggleMute", () => realPlayer.toggleMute()),
-        addToQueue: wrapMutator("addToQueue", (track: MediaRow) => realPlayer.addToQueue(track)),
-        removeFromQueue: wrapMutator("removeFromQueue", (index: number) => realPlayer.removeFromQueue(index)),
+        addToQueue: wrapMutator("addToQueue", (track: MediaRow, position?: QueuePosition) => realPlayer.addToQueue(track, position)),
+        removeFromQueue: wrapMutator("removeFromQueue", (index: number, trackId: string) => realPlayer.removeFromQueue(index, trackId)),
+        moveInQueue: wrapMutator("moveInQueue", (from: number, to: number, trackId: string) => realPlayer.moveInQueue(from, to, trackId)),
         playFromQueue: wrapMutator("playFromQueue", (index: number) => realPlayer.playFromQueue(index)),
+        playFromHistory: wrapMutator("playFromHistory", (index: number, trackId: string) => realPlayer.playFromHistory(index, trackId)),
+        clearHistory,
         cycleRepeat: wrapMutator("cycleRepeat", () => realPlayer.cycleRepeat()),
         setRepeat: wrapMutator("setRepeat", (mode: PlayerState["repeat"]) => realPlayer.setRepeat(mode))
     };

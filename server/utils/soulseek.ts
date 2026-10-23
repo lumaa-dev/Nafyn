@@ -10,7 +10,7 @@
 // into this app's own storage - can actually happen.
 
 import { randomUUID } from "node:crypto";
-import { copyFile, mkdir, rm } from "node:fs/promises";
+import { copyFile, mkdir, rm, rmdir } from "node:fs/promises";
 import { dirname, resolve, sep } from "node:path";
 
 export interface SlskSearchResult {
@@ -240,13 +240,99 @@ async function locateDownloadedFile(filename: string, size: number): Promise<str
     return null;
 }
 
-// enqueues a download through slskd, polls until it finishes, then copies the finished file off the shared
+// what a download has left behind in slskd so far, so that every way out of it - success, a failed or stalled
+// transfer, a failed copy - can clean up exactly that and nothing else
+interface DownloadTrace {
+    transferId?: string,
+    sourcePath?: string
+}
+
+// SECURITY: a path built from a listing slskd returned for a file whose name a remote Soulseek peer chose is
+// copied from *and then deleted*. Refuse anything that doesn't resolve to somewhere inside the downloads
+// directory (a `..` segment, an absolute fullName) rather than trust every link in that chain to have
+// sanitized it - otherwise the rm() is an arbitrary-file delete.
+function resolveInsideDownloads(downloadsPath: string, relativeSegments: string[]): string {
+    const downloadsRoot = resolve(downloadsPath);
+    const sourcePath = resolve(downloadsRoot, ...relativeSegments);
+    if (relativeSegments.some((segment) => segment === "..") || !sourcePath.startsWith(downloadsRoot + sep)) {
+        throw new Error("Soulseek reported a downloaded file outside the downloads directory, refusing to touch it");
+    }
+    return sourcePath;
+}
+
+// removes now-empty folders upwards from `dir`, stopping at the first one that still holds something and never
+// touching the downloads root itself: slskd saves into an `<Artist - Album>` folder per download, which would
+// otherwise pile up empty after every file we take out of it
+async function pruneEmptyDirs(dir: string, downloadsRoot: string): Promise<void> {
+    let current = resolve(dir);
+    while (current.startsWith(downloadsRoot + sep)) {
+        try {
+            await rmdir(current);
+        } catch {
+            return;
+        }
+        current = dirname(current);
+    }
+}
+
+async function removeTransferRecord(user: string, transferId: string): Promise<void> {
+    await slskdFetch(`/api/v0/transfers/downloads/${encodeURIComponent(user)}/${transferId}?remove=true`, { method: "DELETE" }).catch(() => {});
+}
+
+// takes everything this download put in slskd out again: its transfer record, the finished file when there is one
+// (a file that is wrong, unverifiable or merely failed to copy has no business staying on the Soulseek side),
+// and the folders that empties. Best effort and idempotent - cleanup must never hide the error that led to it.
+async function cleanUpSlskdDownload(file: SlskSearchResult, trace: DownloadTrace): Promise<void> {
+    try {
+        if (trace.transferId) await removeTransferRecord(file.user, trace.transferId);
+
+        const { downloadsPath } = getConfig();
+        if (!downloadsPath) return;
+        const downloadsRoot = resolve(downloadsPath);
+
+        let sourcePath = trace.sourcePath ?? null;
+        if (!sourcePath) {
+            // slskd keeps unfinished transfers in its own `incomplete` folder, so only a finished file (same
+            // name and exact size) can be in the downloads tree - never match on the name alone
+            const remoteBasename = file.file.replace(/\\/g, "/").split("/").pop() ?? file.file;
+            const segments = await locateDownloadedFile(remoteBasename, file.size).catch(() => null);
+            if (segments) sourcePath = resolveInsideDownloads(downloadsPath, segments);
+        }
+
+        if (sourcePath) {
+            await rm(sourcePath, { force: true });
+            await pruneEmptyDirs(dirname(sourcePath), downloadsRoot);
+        }
+    } catch (error) {
+        console.error(`[soulseek] couldn't fully clean up the download from ${file.user}: ${error}`);
+    }
+}
+
+// enqueues a download through slskd, polls until it finishes, then moves the finished file off the shared
 // downloads mount into `destPath`; the peer-supplied filename is never trusted for anything beyond locating
-// the file slskd itself already validated and saved
+// the file slskd itself already validated and saved. However it ends, nothing of it stays on the Soulseek side.
 export async function downloadFromSoulseek(
     file: SlskSearchResult,
     destPath: string,
     onProgress?: (progress: DownloadProgress) => void
+): Promise<void> {
+    const trace: DownloadTrace = {};
+    try {
+        await runDownload(file, destPath, onProgress, trace);
+    } catch (error) {
+        await cleanUpSlskdDownload(file, trace);
+        throw error;
+    }
+    // the copy landed: slskd's own downloads dir must end up empty again, so the source goes now
+    await cleanUpSlskdDownload(file, trace);
+    onProgress?.({ bytesDownloaded: file.size, totalBytes: file.size, speedBytesPerSec: 0, etaSeconds: 0 });
+}
+
+async function runDownload(
+    file: SlskSearchResult,
+    destPath: string,
+    onProgress: ((progress: DownloadProgress) => void) | undefined,
+    trace: DownloadTrace
 ): Promise<void> {
     const { downloadsPath } = getConfig();
     if (!downloadsPath) {
@@ -271,6 +357,8 @@ export async function downloadFromSoulseek(
         const reason = failed.find((f) => f.filename === file.file)?.message ?? "not enqueued";
         throw new Error(`Soulseek download rejected: ${reason}`);
     }
+
+    trace.transferId = transfer.id;
 
     let lastBytes = 0;
     let lastTick = Date.now();
@@ -353,22 +441,12 @@ export async function downloadFromSoulseek(
         throw new Error("Soulseek transfer succeeded but the file couldn't be located on the shared downloads mount");
     }
 
-    // SECURITY: this path is copied from *and then deleted*, and it's built from a listing slskd returned for
-    // a file whose name a remote Soulseek peer chose. Refuse anything that doesn't resolve to somewhere inside
-    // the downloads directory (a `..` segment, an absolute fullName) rather than trust every link in that
-    // chain to have sanitized it - otherwise the rm() below is an arbitrary-file delete.
-    const downloadsRoot = resolve(downloadsPath);
-    const sourcePath = resolve(downloadsRoot, ...relativeSegments);
-    if (relativeSegments.some((segment) => segment === "..") || !sourcePath.startsWith(downloadsRoot + sep)) {
-        throw new Error("Soulseek reported a downloaded file outside the downloads directory, refusing to touch it");
-    }
+    const sourcePath = resolveInsideDownloads(downloadsPath, relativeSegments);
+    trace.sourcePath = sourcePath;
 
     await mkdir(dirname(destPath), { recursive: true });
     // copy + unlink instead of rename: destPath and the slskd downloads mount may live on different
-    // filesystems (e.g. a remote SMB/NFS share), where a plain rename would fail across devices.
-    // slskd's own downloads dir must end up empty, so the source is removed once the copy lands.
+    // filesystems (e.g. a remote SMB/NFS share), where a plain rename would fail across devices. The unlink
+    // happens in downloadFromSoulseek once this returns.
     await copyFile(sourcePath, destPath);
-    await rm(sourcePath, { force: true });
-
-    onProgress?.({ bytesDownloaded: file.size, totalBytes: file.size, speedBytesPerSec: 0, etaSeconds: 0 });
 }

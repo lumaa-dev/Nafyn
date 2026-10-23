@@ -128,11 +128,26 @@ export async function authenticateSubsonic(event: H3Event, query: Record<string,
         verified.delete(cacheKey);
     }
 
+    const user = await getUserByUsername(username);
+
+    // An API token used directly as the password: a constant-time string compare against a handful of rows. It
+    // used to be tried only *after* a cost-12 bcrypt (~250 ms of libuv threadpool, shared with file streaming)
+    // and after an attempt had been spent, so a client configured with a token paid for bcrypt on every request
+    // and could lock itself out of its own account.
+    if (user) {
+        const tokens = await listApiTokenSecretsForUser(user.id);
+        const match = tokens.find((row) => secretEquals(row.token, password));
+        if (match) {
+            resetRateLimit(rateLimitKey);
+            touchApiToken(match.id).catch(() => {});
+            return user;
+        }
+    }
+
     // everything past here is a bcrypt comparison, so the attempt is spent *before* running it - counting only
     // failures would let a burst of parallel guesses all reach bcrypt before the first one was recorded
     rejectIfLimited((key, max) => consumeRateLimit(key, max, WINDOW_MS));
 
-    const user = await getUserByUsername(username);
     const passwordHash = user ? await getPasswordHash(username) : null;
 
     // always run bcrypt.compare, even for an unknown username, so early/late response timing can't leak account existence
@@ -142,17 +157,6 @@ export async function authenticateSubsonic(event: H3Event, query: Record<string,
         resetRateLimit(rateLimitKey);
         rememberVerified(cacheKey, passwordHash);
         return user;
-    }
-
-    // not the real account password - maybe it's an API token used directly as the password instead
-    if (user) {
-        const tokens = await listApiTokenSecretsForUser(user.id);
-        const match = tokens.find((row) => secretEquals(row.token, password));
-        if (match) {
-            resetRateLimit(rateLimitKey);
-            touchApiToken(match.id).catch(() => {});
-            return user;
-        }
     }
 
     throw new SubsonicApiError(SubsonicErrors.wrongCredentials);

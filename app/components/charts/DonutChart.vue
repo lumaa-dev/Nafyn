@@ -98,7 +98,7 @@ const gradient = computed(() => {
 }
 
 .donutchart .total {
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 1.1em;
 }
 
@@ -141,7 +141,7 @@ const gradient = computed(() => {
 }
 
 .donutchart .pct {
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 0.9em;
   color: #666666;
   flex-shrink: 0;

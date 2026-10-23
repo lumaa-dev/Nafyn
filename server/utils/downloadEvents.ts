@@ -32,8 +32,11 @@ function getEmitter(requestId: string): EventEmitter {
 }
 
 export function emitDownloadProgress(event: DownloadProgressEvent): void {
-    console.log(`[downloadEvents] ${event.stage} > ${event.message ?? "No message..."} (${event.bytesDownloaded ?? 0}/${event.totalBytes ?? 0})`);
-    
+    // byte-progress events arrive about once a second per download; only the stage changes are worth a log line
+    if (event.stage !== "downloading") {
+        console.log(`[downloadEvents] ${event.stage} > ${event.message ?? "No message..."} (${event.bytesDownloaded ?? 0}/${event.totalBytes ?? 0})`);
+    }
+
     getEmitter(event.requestId).emit("progress", event);
     for (const listener of globalListeners) {
         try {

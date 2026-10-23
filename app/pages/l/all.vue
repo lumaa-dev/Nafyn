@@ -3,7 +3,7 @@
     <h1>{{ $t('library.all.title') }}</h1>
     <ol class="tracks" v-if="tracks.length > 0">
       <li v-for="track in tracks" :key="track.id" @contextmenu.prevent="onContextMenu($event, track)">
-        <img :src="coverSrc(track)" @error="($event.target as HTMLImageElement).src = noCover" loading="lazy" draggable="false" />
+        <CoverImage :src="coverSrc(track)" />
         <span class="col">
           <span class="title">{{ track.title }}</span>
           <span class="artist">{{ track.artistName }}</span>
@@ -27,7 +27,6 @@
 </template>
 
 <script lang="ts" setup>
-import noCover from '~/assets/no-cover.png';
 import ContextMenu, { type ContextMenuItem } from '~/components/ContextMenu.vue';
 import PlaylistPickerModal from '~/components/PlaylistPickerModal.vue';
 import { useAppearanceSettings } from '~/composables/useAppearanceSettings';
@@ -195,14 +194,14 @@ async function deleteTrack(track: AllMediaRow, ownerId: string) {
 .libtracks .tracks .filesize {
   color: #666666;
   font-variant-numeric: tabular-nums;
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 0.7em;
 }
 
 .libtracks .tracks .duration {
   color: #666666;
   font-variant-numeric: tabular-nums;
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 0.7em;
 }
 

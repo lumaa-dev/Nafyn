@@ -40,13 +40,13 @@ defineProps<{
 }
 
 .stat-tile .value {
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 1.4em;
   line-height: 1.1;
 }
 
 .stat-tile .delta {
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 0.65em;
   color: #666666;
 }

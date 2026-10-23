@@ -2,7 +2,7 @@
 import type { MediaRow } from "~~/server/core/library";
 import type { RecentlyPlayedType } from "~~/server/core/recentlyPlayed";
 import type { Ref } from "vue";
-import { enqueuePlayEvent, bindPlayTracking, type PlaySource } from "./usePlayTracking";
+import { enqueuePlayEvent, bindPlayTracking, getHistoryState, isTrackingSuppressed, useHistoryEnabled, type PlaySource } from "./usePlayTracking";
 import { usePlaybackSettings, type PlaybackSettings } from "./usePlaybackSettings";
 import { useAuthToken } from "./useAuthToken";
 
@@ -121,9 +121,17 @@ function endSegment(reason: SegmentEnd) {
     });
 }
 
+export type QueuePosition = "next" | "end";
+
 export interface PlayerState {
+    /**
+     * the whole playback context (what Previous walks back through and repeat-queue loops over). The *queue*
+     * the user sees and edits is only what comes after `currentIndex` - see upcomingStart()
+     */
     queue: MediaRow[];
     currentIndex: number;
+    /** recently played tracks, oldest first, never the current one - see recordHistory() */
+    history: MediaRow[];
     isPlaying: boolean;
     isLoading: boolean;
     currentTime: number;
@@ -131,6 +139,61 @@ export interface PlayerState {
     volume: number;
     muted: boolean;
     repeat: RepeatMode;
+}
+
+// --- playback history ---------------------------------------------------------------------------------
+//
+// The queue panel's read-only "History": the last HISTORY_SIZE tracks played, oldest first. A track goes in
+// when playback *leaves* it for a different track (or stops), so the current track is never listed, a track
+// looped four times is listed once, and the same track is never listed twice in a row. Only recorded while
+// the account's "Listening history" setting isn't confirmed off, and never for the highlight reel's excerpts.
+//
+// It lives in PlayerState rather than its own store so Nafyn Unity carries it to every other device for free:
+// the master's history is the history.
+
+const HISTORY_SIZE = 50;
+
+// the track the active deck holds, i.e. the one recordHistory() files away when playback moves off it
+let loadedTrack: MediaRow | null = null;
+
+// set while the current track was started from the history: playing an entry of the history must leave the
+// history exactly as it was, so neither the track it interrupted nor the entry itself is recorded on leaving
+let loadedTrackExempt = false;
+
+function recordHistory(state: PlayerState, track: MediaRow) {
+    if (getHistoryState() === "disabled") {
+        if (state.history.length > 0) state.history = [];
+        return;
+    }
+    if (isTrackingSuppressed()) return;
+    if (state.history[state.history.length - 1]?.id === track.id) return;
+
+    state.history.push(track);
+    if (state.history.length > HISTORY_SIZE) state.history.splice(0, state.history.length - HISTORY_SIZE);
+}
+
+// called with the track that is about to become the loaded one (null when playback stops)
+function leaveLoadedTrack(state: PlayerState, next: MediaRow | null) {
+    if (loadedTrack && !loadedTrackExempt && loadedTrack.id !== next?.id) recordHistory(state, loadedTrack);
+    loadedTrack = next;
+    loadedTrackExempt = false;
+}
+
+// first index of the user-facing queue: everything after the current track
+function upcomingStart(state: PlayerState): number {
+    return state.currentIndex + 1;
+}
+
+// resolves a queue index sent by a UI - possibly a Unity slave rendering a state that is a second old, during
+// which the master may have moved on - to where that track actually is in the upcoming part of the queue now.
+// -1 when it's no longer there.
+function resolveUpcomingIndex(state: PlayerState, index: number, trackId: string): number {
+    const start = upcomingStart(state);
+    if (index >= start && state.queue[index]?.id === trackId) return index;
+    for (let i = start; i < state.queue.length; i++) {
+        if (state.queue[i]!.id === trackId) return i;
+    }
+    return -1;
 }
 
 // --- audio engine: two decks ----------------------------------------------------------------------------
@@ -468,6 +531,8 @@ function finishCrossfade() {
 
 // makes `deck` the active one and mirrors its element into `state`, which none of its events touched while idle
 function activateDeck(state: PlayerState, deck: Deck, track: MediaRow) {
+    // every track change - manual jump, automatic advance or crossfade - comes through here
+    leaveLoadedTrack(state, track);
     activeDeckIndex = getDecks(state).indexOf(deck);
     startSegment(track);
     state.currentTime = deck.el.currentTime;
@@ -488,7 +553,7 @@ function updateMediaSessionMetadata(track: MediaRow) {
         title: track.title,
         artist: track.artistName,
         album: track.album ?? "",
-        artwork: (track.coverArt || track.hasCustomCover) ? [{ src: coverSrc(track).replace("front-250", "front-1000"), sizes: "1000x1000", type: "image/jpeg" }] : [{ src: `../assets/no-cover.png`, sizes: "1000x1000", type: "image/png" }]
+        artwork: (track.coverArt || track.hasCustomCover) ? [{ src: coverSrc(track, 500), sizes: "500x500", type: "image/jpeg" }] : [{ src: `../assets/no-cover.png`, sizes: "1000x1000", type: "image/png" }]
     });
 }
 
@@ -580,6 +645,7 @@ function goToOffset(state: PlayerState, offset: 1 | -1): boolean {
 
 function stop(state: PlayerState) {
     endSegment("stopped");
+    leaveLoadedTrack(state, null);
     finishCrossfade();
     if (import.meta.client && decks) {
         for (const deck of decks) {
@@ -596,11 +662,16 @@ function stop(state: PlayerState) {
     state.queue = [];
     state.currentIndex = -1;
     state.isPlaying = false;
+    state.isLoading = false;
     state.currentTime = 0;
     state.duration = 0;
+    // back to what a fresh page load looks like: nothing is playing, so nothing is "where it came from" either
+    // (volume, mute and repeat are the listener's settings, not playback state, and stay)
+    currentContext = null;
 }
 
 let mediaSessionActionsBound = false;
+let historyWatchBound = false;
 
 // wires OS/lock-screen/hardware media keys (play, pause, previous, next, scrub) to the player; only needs to run once since every usePlayer() call shares the same underlying state
 function bindMediaSessionActions(actions: { togglePlay: () => void; next: () => void; prev: () => void; seek: (time: number) => void }) {
@@ -620,6 +691,7 @@ export const usePlayer = () => {
     const state = useState<PlayerState>("player", () => ({
         queue: [],
         currentIndex: -1,
+        history: [],
         isPlaying: false,
         isLoading: false,
         currentTime: 0,
@@ -630,6 +702,18 @@ export const usePlayer = () => {
     }));
     // client only: a module-level ref would otherwise leak one request's state into the next during SSR
     if (import.meta.client) playbackSettings ??= usePlaybackSettings();
+
+    // turning "Listening history" off drops the history already shown, not just what would come next
+    if (import.meta.client && !historyWatchBound) {
+        historyWatchBound = true;
+        const historyEnabled = useHistoryEnabled();
+        // detached: bound once for the app's lifetime, not torn down with whichever component got here first
+        effectScope(true).run(() => {
+            watch(historyEnabled, (enabled) => {
+                if (!enabled && getHistoryState() === "disabled") state.value.history = [];
+            });
+        });
+    }
 
     const currentTrack = computed(() => state.value.currentIndex >= 0 ? state.value.queue[state.value.currentIndex] ?? null : null);
 
@@ -734,22 +818,76 @@ export const usePlayer = () => {
         }
     }
 
-    function addToQueue(track: MediaRow) {
-        state.value.queue.push(track);
-        if (state.value.currentIndex === -1) skipToIndex(state.value, 0);
-    }
-
-    function removeFromQueue(index: number) {
-        if (index === state.value.currentIndex) {
-            stop(state.value);
+    // "next" puts the track at the very start of the queue (right after the current one), "end" after
+    // everything already queued. With nothing playing, it simply starts playing.
+    function addToQueue(track: MediaRow, position: QueuePosition = "end") {
+        const s = state.value;
+        if (s.currentIndex === -1) {
+            s.queue = [track];
+            skipToIndex(s, 0);
             return;
         }
-        state.value.queue.splice(index, 1);
-        if (index < state.value.currentIndex) state.value.currentIndex--;
+        if (position === "next") s.queue.splice(upcomingStart(s), 0, track);
+        else s.queue.push(track);
+    }
+
+    // `index` is an index into state.queue and `trackId` the track the caller saw there; only upcoming tracks
+    // can be removed (the current one is not part of the queue)
+    function removeFromQueue(index: number, trackId: string) {
+        const s = state.value;
+        const at = resolveUpcomingIndex(s, index, trackId);
+        if (at !== -1) s.queue.splice(at, 1);
+    }
+
+    // drag-and-drop reorder within the upcoming tracks; `to` is the index the track should end up at
+    function moveInQueue(from: number, to: number, trackId: string) {
+        const s = state.value;
+        const at = resolveUpcomingIndex(s, from, trackId);
+        if (at === -1) return;
+        const target = Math.min(Math.max(to, upcomingStart(s)), s.queue.length - 1);
+        if (target === at) return;
+        const [track] = s.queue.splice(at, 1);
+        s.queue.splice(target, 0, track!);
     }
 
     function playFromQueue(index: number) {
         skipToIndex(state.value, index);
+    }
+
+    // plays a history entry in place of the current track, leaving both the queue and the history untouched:
+    // the entry is slotted in right before the upcoming tracks, and nothing involved gets recorded
+    function playFromHistory(index: number, trackId: string) {
+        const s = state.value;
+        const track = s.history[index]?.id === trackId ? s.history[index] : s.history.findLast((t) => t.id === trackId);
+        if (!track) return;
+
+        const at = upcomingStart(s);
+        s.queue.splice(at, 0, track);
+        s.currentIndex = at;
+        loadedTrackExempt = true; // the track being interrupted
+        loadCurrent(s, true);
+        loadedTrackExempt = true; // the history entry itself, once it's left
+    }
+
+    function clearHistory() {
+        state.value.history = [];
+    }
+
+    // Nafyn Unity: picks up another device's session when this one becomes master. Nothing this device had
+    // loaded before is recorded - the history carried over is the one that counts.
+    function restoreSession(snapshot: PlayerState) {
+        const s = state.value;
+        const track = snapshot.queue[snapshot.currentIndex];
+        if (!track) return;
+
+        s.queue = [...snapshot.queue];
+        s.currentIndex = snapshot.currentIndex;
+        s.repeat = snapshot.repeat;
+        s.history = [...(snapshot.history ?? [])];
+        currentContext = null;
+        loadedTrackExempt = true;
+        loadCurrent(s, snapshot.isPlaying);
+        seek(snapshot.currentTime);
     }
 
     bindMediaSessionActions({ togglePlay, next, prev, seek });
@@ -770,7 +908,11 @@ export const usePlayer = () => {
         toggleMute,
         addToQueue,
         removeFromQueue,
+        moveInQueue,
         playFromQueue,
+        playFromHistory,
+        clearHistory,
+        restoreSession,
         cycleRepeat,
         setRepeat
     };

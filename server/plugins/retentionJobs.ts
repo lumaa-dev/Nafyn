@@ -16,6 +16,9 @@ import { pruneRecentlyPlayedOlderThan } from "~~/server/core/recentlyPlayed";
 import { getSetting } from "~~/server/core/appSettings";
 import { pruneNotifiedSubscriptions } from "~~/server/core/releaseSubscriptions";
 import { sweepApnTokens } from "~~/server/utils/apn";
+import { sweepCoverCache } from "~~/server/utils/coverArtCache";
+import { readdir, rm, stat } from "node:fs/promises";
+import { join } from "node:path";
 
 const TICK_INTERVAL_MS = 60 * 60 * 1000;
 
@@ -38,6 +41,38 @@ const APN_DEVICE_STALE_DAYS = 180;
 // a delivered release subscription stays listed (as "out now") in Settings -> Notifications for this long
 const NOTIFIED_SUBSCRIPTION_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 
+// the cached Cover Art Archive images (.data/art) are re-fetchable, so they are only ever capped, oldest first
+const COVER_CACHE_MAX_BYTES = 500 * 1024 * 1024;
+
+// downloads are staged in .data/tmp and removed on every exit of the pipeline; a crash or kill mid-download is
+// the one way a file is left there, and nothing else would ever look. Anything this old is not in use.
+const TMP_DIR = join(process.cwd(), ".data", "tmp");
+const TMP_MAX_AGE_MS = 60 * 60 * 1000;
+
+async function sweepTmp(): Promise<number> {
+    let names: string[];
+    try {
+        names = await readdir(TMP_DIR);
+    } catch {
+        return 0;
+    }
+
+    let removed = 0;
+    for (const name of names) {
+        const path = join(TMP_DIR, name);
+        try {
+            const info = await stat(path);
+            if (info.isFile() && Date.now() - info.mtimeMs > TMP_MAX_AGE_MS) {
+                await rm(path, { force: true });
+                removed++;
+            }
+        } catch {
+            // gone already
+        }
+    }
+    return removed;
+}
+
 async function tick(): Promise<void> {
     const removed = await pruneRecentlyPlayedOlderThan(await recentlyPlayedRetentionDays());
     if (removed > 0) console.info(`[retention] removed ${removed} stale recently-played rows`);
@@ -46,6 +81,11 @@ async function tick(): Promise<void> {
     await sweepApnTokens(APN_DEVICE_STALE_DAYS);
     const subscriptions = await pruneNotifiedSubscriptions(NOTIFIED_SUBSCRIPTION_RETENTION_MS);
     if (subscriptions > 0) console.info(`[retention] removed ${subscriptions} delivered release subscriptions`);
+
+    const tmpFiles = await sweepTmp();
+    if (tmpFiles > 0) console.info(`[retention] removed ${tmpFiles} abandoned download temp files`);
+    const covers = await sweepCoverCache(COVER_CACHE_MAX_BYTES);
+    if (covers > 0) console.info(`[retention] evicted ${covers} cached covers`);
 }
 
 export default defineNitroPlugin(() => {

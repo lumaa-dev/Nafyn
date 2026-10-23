@@ -82,6 +82,7 @@ export async function fetchAllLyrics(
 	const response = await fetch(url, {
 		method: "GET",
 		cache: "no-store",
+		signal: AbortSignal.timeout(8_000),
 	});
 
 	if (!response.ok) {

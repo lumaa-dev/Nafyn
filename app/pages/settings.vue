@@ -7,7 +7,8 @@
         :key="category.id"
         type="button"
         :class="{ active: activeCategory === category.id }"
-        @click="activeCategory = category.id"
+        :aria-current="activeCategory === category.id ? 'page' : undefined"
+        @click="selectCategory(category.id)"
       >
         {{ category.label }}
       </button>
@@ -81,40 +82,6 @@
         </section>
       </div>
 
-      <div v-else-if="activeCategory === 'sessions'" class="panel">
-        <h1>{{ $t('settings.sessions.title') }}</h1>
-
-        <section class="subsection">
-          <h2>{{ $t('settings.sessions.unityTitle') }}</h2>
-          <label class="switch-row">
-            <input type="checkbox" :checked="unitySettings.enabled" @change="toggleUnity">
-            {{ $t('settings.sessions.unityToggleLabel') }}
-          </label>
-          <p class="subsonic-note">{{ $t('settings.sessions.unityToggleHint') }}</p>
-
-          <label class="switch-row">
-            <input type="checkbox" :checked="unitySessionOverride" @change="toggleUnitySessionOverride">
-            {{ $t('settings.sessions.sessionOverrideLabel') }}
-          </label>
-        </section>
-
-        <section class="subsection">
-          <h2>{{ $t('settings.sessions.listTitle') }}</h2>
-          <p class="subsonic-intro">{{ $t('settings.sessions.intro') }}</p>
-
-          <ul v-if="sessions.length > 0" class="api-token-list">
-            <li v-for="s in sessions" :key="s.id">
-              <span class="col">
-                <span class="title">{{ s.deviceLabel }}{{ s.isCurrent ? ` ${$t('settings.sessions.thisDevice')}` : '' }}</span>
-                <span class="artist">{{ $t('settings.sessions.signedIn', { date: formatDate(s.createdAt) }) }} &middot; {{ $t('settings.sessions.lastActive', { date: formatDate(s.lastSeenAt) }) }}</span>
-              </span>
-              <button v-if="!s.isCurrent" class="danger" type="button" filled="hollow" :disabled="revokingSessionId === s.id" @click="revokeSession(s.id)">{{ $t('settings.sessions.revoke') }}</button>
-            </li>
-          </ul>
-          <p v-else class="subsonic-note">{{ $t('settings.sessions.empty') }}</p>
-        </section>
-      </div>
-
       <div v-else-if="activeCategory === 'accounts'" class="panel">
         <h1>{{ $t('settings.accounts.title') }}</h1>
 
@@ -146,25 +113,25 @@
                   <span class="title">{{ u.displayName ?? u.username }}</span>
                   <span class="artist">@{{ u.username }}</span>
                 </span>
-                <button type="button" filled="hollow" :disabled="!canManage(u)" @click="toggleEdit(u)">{{ editingId === u.id ? $t('settings.accounts.users.cancel') : $t('settings.accounts.users.edit') }}</button>
+                <button type="button" filled="hollow" :disabled="!canManage(u) || isSelf(u)" @click="toggleEdit(u)">{{ editingId === u.id ? $t('settings.accounts.users.cancel') : $t('settings.accounts.users.edit') }}</button>
               </div>
 
               <div v-if="editingId === u.id" class="edit-form">
                 <label>{{ $t('settings.profile.displayName') }}</label>
-                <input v-model="editDraft.displayName" type="text" maxlength="20">
+                <input v-model="editDraft.displayName" type="text" maxlength="20" :disabled="isSelf(u)">
                 <label>{{ $t('settings.accounts.users.username') }}</label>
-                <input v-model="editDraft.username" type="text">
+                <input v-model="editDraft.username" type="text" :disabled="isSelf(u)">
                 <label>{{ $t('settings.profile.lastFm') }}</label>
-                <input v-model="editDraft.lastFm" type="text">
+                <input v-model="editDraft.lastFm" type="text" :disabled="isSelf(u)">
                 <label>{{ $t('settings.profile.discogs') }}</label>
-                <input v-model="editDraft.discogs" type="text">
+                <input v-model="editDraft.discogs" type="text" :disabled="isSelf(u)">
 
                 <label>{{ $t('settings.accounts.users.permissions') }}</label>
                 <div class="perm-grid">
                   <label v-for="p in permOptions" :key="p" class="perm-option">
                     <input
                       type="checkbox"
-                      :disabled="isRestrictedBit(p) && !isAdmin"
+                      :disabled="isSelf(u) || (isRestrictedBit(p) && !isAdmin)"
                       :checked="!!(editDraft.permissions & p)"
                       @change="togglePermBit(p, ($event.target as HTMLInputElement).checked)"
                     >
@@ -173,8 +140,8 @@
                 </div>
 
                 <div class="edit-actions">
-                  <button type="button" filled :disabled="savingUser" @click="saveUser(u)">{{ $t('settings.accounts.users.save') }}</button>
-                  <button class="danger" type="button" filled="hollow" :disabled="savingUser" @click="removeUser(u)">{{ $t('settings.accounts.users.delete') }}</button>
+                  <button type="button" filled :disabled="savingUser || isSelf(u)" @click="saveUser(u)">{{ $t('settings.accounts.users.save') }}</button>
+                  <button class="danger" type="button" filled="hollow" :disabled="savingUser || isSelf(u)" @click="removeUser(u)">{{ $t('settings.accounts.users.delete') }}</button>
                 </div>
               </div>
             </li>
@@ -268,6 +235,36 @@
       </div>
       <div v-else-if="activeCategory === 'privacy'" class="panel">
         <h1>{{ $t('settings.privacy.title') }}</h1>
+
+        <section class="subsection">
+          <h2>{{ $t('settings.sessions.unityTitle') }}</h2>
+          <label class="switch-row">
+            <input type="checkbox" :checked="unitySettings.enabled" @change="toggleUnity">
+            {{ $t('settings.sessions.unityToggleLabel') }}
+          </label>
+          <p class="subsonic-note">{{ $t('settings.sessions.unityToggleHint') }}</p>
+
+          <label class="switch-row">
+            <input type="checkbox" :checked="unitySessionOverride" @change="toggleUnitySessionOverride">
+            {{ $t('settings.sessions.sessionOverrideLabel') }}
+          </label>
+        </section>
+
+        <section class="subsection">
+          <h2>{{ $t('settings.sessions.listTitle') }}</h2>
+          <p class="subsonic-intro">{{ $t('settings.sessions.intro') }}</p>
+
+          <ul v-if="sessions.length > 0" class="api-token-list">
+            <li v-for="s in sessions" :key="s.id">
+              <span class="col">
+                <span class="title">{{ s.deviceLabel }}{{ s.isCurrent ? ` ${$t('settings.sessions.thisDevice')}` : '' }}</span>
+                <span class="artist">{{ $t('settings.sessions.signedIn', { date: formatDate(s.createdAt) }) }} &middot; {{ $t('settings.sessions.lastActive', { date: formatDate(s.lastSeenAt) }) }}</span>
+              </span>
+              <button v-if="!s.isCurrent" class="danger" type="button" filled="hollow" :disabled="revokingSessionId === s.id" @click="revokeSession(s.id)">{{ $t('settings.sessions.revoke') }}</button>
+            </li>
+          </ul>
+          <p v-else class="subsonic-note">{{ $t('settings.sessions.empty') }}</p>
+        </section>
 
         <section class="subsection">
           <h2>{{ $t('settings.privacy.notice.title') }}</h2>
@@ -383,7 +380,7 @@ const { token: tokenRef, rawCookie: tokenCookie } = useAuthToken();
 const token = tokenRef.value ?? "";
 
 interface Category {
-  id: "profile" | "accounts" | "storage" | "subsonic" | "privacy" | "appearance" | "playback" | "sessions" | "notifications" | "webhooks" | "developer",
+  id: "profile" | "accounts" | "storage" | "subsonic" | "privacy" | "appearance" | "playback" | "notifications" | "webhooks" | "developer",
   label: string
 }
 
@@ -409,7 +406,6 @@ const categories = computed(() => {
   const cats: Category[] = [{ id: 'profile', label: $t('settings.categories.profile') }];
   cats.push({ id: 'appearance', label: $t('settings.categories.appearance') });
   cats.push({ id: 'playback', label: $t('settings.categories.playback') });
-  cats.push({ id: 'sessions', label: $t('settings.categories.sessions') });
   cats.push({ id: 'notifications', label: $t('settings.categories.notifications') });
   cats.push({ id: 'privacy', label: $t('settings.categories.privacy') });
   if (canManageAccounts.value) cats.push({ id: 'accounts', label: $t('settings.categories.accounts') });
@@ -422,7 +418,7 @@ const categories = computed(() => {
   return cats;
 });
 
-// Subsonic-compatible clients (Navidrome apps, Sound Room, DSub, ...) want the bare server origin here -
+// Subsonic-compatible clients want the bare server origin here -
 // they append /rest/{method}.view themselves (server/routes/rest/[method].ts), so handing out a URL that
 // already ends in /rest doubles up into /rest/rest/... and 404s (this bit a real user - keep it bare)
 const subsonicUrl = computed(() => (import.meta.client ? location.origin : ""));
@@ -628,6 +624,12 @@ function isRestrictedBit(p: Permission): boolean {
 
 // the same rule the server enforces (server/entity/Permission.ts): ADMIN edits anyone; MANAGE_ACCOUNTS only
 // accounts below it - not another MANAGE_ACCOUNTS holder, not an ADMIN, not itself
+// your own row is read-only here (server/entity/Permission.ts refuses it too): your profile is under Profile,
+// and nobody - an ADMIN included - gets to change their own permissions through the accounts list
+function isSelf(u: NafynUser): boolean {
+  return u.id === user.value?.id;
+}
+
 function canManage(u: NafynUser): boolean {
   return canManageUser(user.value?.id ?? "", perms.value, u.id, typeof u.permissions === "number" ? u.permissions : 0);
 }
@@ -857,6 +859,8 @@ async function saveCrossfadeLength() {
 
 const insights = useInsights();
 const historyEnabled = useHistoryEnabled();
+// the queue panel's History follows this setting too
+const { clearHistory: clearPlaybackHistory } = useUnity();
 const exporting = ref(false);
 const deletingHistory = ref(false);
 const exportingAccount = ref(false);
@@ -885,6 +889,7 @@ async function toggleHistory() {
     // update the capture flag immediately, so the very next track played counts - without this, turning
     // history on here wouldn't take effect until something else happened to re-sync it
     setHistoryEnabledState(wanted);
+    if (!wanted) clearPlaybackHistory();
     sendToast($t('settings.privacy.title'), wanted ? $t('settings.privacy.history.on') : $t('settings.privacy.history.off'));
   } catch (e) {
     // put the switch back where it was rather than leaving it showing a state the server never accepted
@@ -970,6 +975,7 @@ async function deleteHistory() {
   deletingHistory.value = true;
   try {
     await insights.deleteHistory();
+    clearPlaybackHistory();
     sendToast($t('settings.privacy.title'), $t('settings.privacy.delete.done'));
   } catch (e) {
     sendToast($t('settings.privacy.title'), apiErrorMessage(e, $t('settings.profile.error')), false);
@@ -1108,14 +1114,20 @@ async function toggleSampleData() {
   }
 }
 
+// switching sub-tabs starts the new one at the top: the page scrolls as a whole, so the previous tab's scroll
+// position would otherwise carry over and land the new tab half-way down (or past its end)
+function selectCategory(id: Category["id"]) {
+  activeCategory.value = id;
+  if (import.meta.client) window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+}
+
 watch(activeCategory, async (cat) => {
   if (cat === 'accounts' && users.value.length === 0) await loadAccountsPanel();
   if (cat === 'storage' && !storage.value) await loadStoragePanel();
   if (cat === 'subsonic' && apiTokens.value.length === 0) await loadApiTokens();
-  if (cat === 'privacy') await loadPrivacyPanel();
+  if (cat === 'privacy') await Promise.all([loadPrivacyPanel(), loadSessionsPanel()]);
   if (cat === 'appearance') await loadAppearancePanel();
   if (cat === 'playback') await syncPlaybackSettings();
-  if (cat === 'sessions' && sessions.value.length === 0) await loadSessionsPanel();
   if (cat === 'developer') await loadDeveloperPanel();
 });
 </script>
@@ -1179,7 +1191,7 @@ watch(activeCategory, async (cat) => {
 
 .panel label {
   font-size: 0.7em;
-  color: #666666;
+  color: #ffffff;
   margin-bottom: -8px;
 }
 
@@ -1272,7 +1284,7 @@ watch(activeCategory, async (cat) => {
 }
 
 .range-row .range-value {
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-variant-numeric: tabular-nums;
   font-size: 0.75em;
   width: 3.5em;
@@ -1305,7 +1317,7 @@ watch(activeCategory, async (cat) => {
 
 .token-list .expires {
   font-size: 0.65em;
-  color: #666666;
+  color: #ffffff;
 }
 
 .user-list {
@@ -1322,7 +1334,7 @@ watch(activeCategory, async (cat) => {
 
 .loading-more {
   text-align: center;
-  color: #666666;
+  color: #ffffff;
   font-size: 0.8em;
   padding: 10px 0;
 }
@@ -1364,7 +1376,7 @@ watch(activeCategory, async (cat) => {
 
 .user-summary .artist {
   font-size: 0.7em;
-  color: #666666;
+  color: #ffffff;
 }
 
 .edit-form {
@@ -1381,7 +1393,7 @@ watch(activeCategory, async (cat) => {
 }
 
 .perm-option {
-  font-family: "Discy";
+  font-family: var(--font-discy);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -1420,7 +1432,7 @@ watch(activeCategory, async (cat) => {
 
 .storage-stats {
   font-size: 0.75em;
-  color: #666666;
+  color: #ffffff;
 }
 
 .pie-wrap {
@@ -1475,7 +1487,7 @@ watch(activeCategory, async (cat) => {
 
 .subsonic-intro {
   font-size: 0.85em;
-  color: #999999;
+  color: #ffffff;
 }
 
 .copy-field {
@@ -1495,7 +1507,7 @@ watch(activeCategory, async (cat) => {
 
 .subsonic-note {
   font-size: 0.7em;
-  color: #666666;
+  color: #ffffff;
 }
 
 .new-token-reveal {
@@ -1546,7 +1558,7 @@ watch(activeCategory, async (cat) => {
 
 .api-token-list .artist {
   font-size: 0.65em;
-  color: #666666;
+  color: #ffffff;
 }
 
 @media screen and (max-width: 800px) {

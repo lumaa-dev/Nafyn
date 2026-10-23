@@ -14,18 +14,39 @@ interface CoverSource {
     coverMediaId?: string | null
 }
 
-export function coverSrc(media: CoverSource | null | undefined): string {
+// `https://coverartarchive.org/release[-group]/<uuid>/front-250`, the form the download pipeline stores
+const CAA_FRONT = /^https:\/\/coverartarchive\.org\/(release|release-group)\/([0-9a-f-]{36})\/front-\d+$/i;
+
+export type CoverSize = 250 | 500 | 1000;
+
+// A Cover Art Archive cover goes through Nafyn's own cache (GET /api/v1/art/..), never straight to the archive:
+// cold, the archive takes 10-20 s and the <img> would sit blank for all of it. `size` only matters for those -
+// ask for the biggest only where it is shown big. Everything else (uploaded covers, other services' artwork)
+// is returned as it is.
+export function coverSrc(media: CoverSource | null | undefined, size?: CoverSize): string {
     if (!media) return noCover;
 
     if (media.hasCustomCover && media.id) return `/api/v1/library/${media.id}/cover`;
     if (media.coverMediaId) return `/api/v1/library/${media.coverMediaId}/cover`;
 
-    return media.coverArt ?? noCover;
+    return coverArtUrl(media.coverArt, size);
+}
+
+// for the places that hold a bare stored URL instead of a track (album listings, metadata cards). Without an
+// explicit `size` the URL's own is kept (the album endpoint stores front-500), snapped to a size the cache serves.
+export function coverArtUrl(url: string | null | undefined, size?: CoverSize): string {
+    if (!url) return noCover;
+    const caa = CAA_FRONT.exec(url);
+    if (!caa) return url;
+
+    const own = Number(/front-(\d+)$/.exec(url)?.[1]);
+    const wanted: CoverSize = size ?? (own === 500 || own === 1000 ? own : 250);
+    return `/api/v1/art/${caa[1]!.toLowerCase()}/${caa[2]!.toLowerCase()}/${wanted}`;
 }
 
 // cache-busted variant, for right after a cover has been replaced
-export function coverSrcFresh(media: CoverSource | null | undefined, version: number | string): string {
-    const src = coverSrc(media);
+export function coverSrcFresh(media: CoverSource | null | undefined, version: number | string, size?: CoverSize): string {
+    const src = coverSrc(media, size);
     return src.startsWith("/api/") ? `${src}?v=${version}` : src;
 }
 

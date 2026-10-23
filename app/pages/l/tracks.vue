@@ -8,7 +8,7 @@
     </div>
     <ol class="tracks" v-if="tracks.length > 0">
       <li v-for="track in tracks" :key="track.id" :class="{ playing: currentTrack?.id === track.id }" @click="play(track, tracks, { type: 'track', refId: track.id })" @contextmenu.prevent="onContextMenu($event, track)">
-        <img :src="coverSrc(track)" @error="($event.target as HTMLImageElement).src = noCover" loading="lazy" draggable="false" />
+        <CoverImage :src="coverSrc(track)" />
         <span class="col">
           <span class="title">{{ track.title }}</span>
           <span class="artist">{{ track.artistName }}</span>
@@ -33,7 +33,6 @@
 
 <script lang="ts" setup>
 import type { MediaRow } from '~~/server/core/library';
-import noCover from '~/assets/no-cover.png';
 import ContextMenu, { type ContextMenuItem } from '~/components/ContextMenu.vue';
 import PlaylistPickerModal from '~/components/PlaylistPickerModal.vue';
 import MediaEditModal from '~/components/MediaEditModal.vue';
@@ -50,7 +49,7 @@ const { items: tracks, initialLoading, loadingMore, sentinel, loadMore, reset } 
 });
 await loadMore();
 
-const { currentTrack, play } = useUnity();
+const { currentTrack, play, addToQueue } = useUnity();
 const { sendError } = useToast();
 
 const showPicker = ref(false);
@@ -71,6 +70,12 @@ const trackMenuItems = ref<ContextMenuItem[]>([]);
 
 function buildTrackMenu(track: MediaRow) {
   trackMenuItems.value = [{
+    label: $t('player.playNext'),
+    action: () => addToQueue(track, "next")
+  }, {
+    label: $t('player.addToQueue'),
+    action: () => addToQueue(track, "end")
+  }, {
     label: $t('track.viewDetails'),
     action: () => navigateTo(`/l/t/${track.id}`)
   }, {
@@ -226,14 +231,14 @@ async function deleteTrack(track: MediaRow) {
 .libtracks .tracks .filesize {
   color: #666666;
   font-variant-numeric: tabular-nums;
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 0.7em;
 }
 
 .libtracks .tracks .duration {
   color: #666666;
   font-variant-numeric: tabular-nums;
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 0.7em;
 }
 

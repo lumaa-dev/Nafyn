@@ -64,10 +64,12 @@ async function register() {
 </script>
 
 <style>
+/* same block as login.vue (both pages share the `.login` markup; the rules are global, so they have to agree) */
 .login {
   margin: 0 !important;
   width: 100%;
-  height: 100vh;
+  min-height: 100dvh;
+  padding: 24px 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -76,15 +78,23 @@ async function register() {
 }
 
 .login > *:not(input) {
-  width: 350px;
+  width: min(350px, 90vw);
 }
 
 .login > input {
-  width: 352px;
+  width: min(352px, 90vw);
 }
 
-.login .header, .login button {
-  margin: 60px 0;
+.login .header {
+  margin: 0 0 14px;
+}
+
+.login button {
+  margin: 0;
+}
+
+.login button[filled] {
+  margin-top: 6px;
 }
 
 .login .register {
@@ -92,7 +102,7 @@ async function register() {
 }
 
 .login .header .description {
-  color: #666666;
+  color: #ffffff;
   font-family: "Instrument-Italic";
   font-size: 0.85em;
 }

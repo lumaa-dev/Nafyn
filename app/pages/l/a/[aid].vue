@@ -1,7 +1,7 @@
 <template>
   <div class="libalbum" v-if="detail">
     <div class="head">
-      <img class="cover" :src="coverSrc(detail.album)" @error="($event.target as HTMLImageElement).src = noCover" draggable="false" />
+      <CoverImage class="cover" :src="coverSrc(detail.album)" eager />
       <div class="meta">
         <h1>{{ detail.album.title }}</h1>
         <p class="artist">{{ detail.album.artistName }}</p>
@@ -14,7 +14,7 @@
 
     <ol class="tracks" v-if="tracks.length > 0">
       <li v-for="track in tracks" :key="track.id" :class="{ playing: currentTrack?.id === track.id }" @click="playFrom(track)" @contextmenu.prevent="onContextMenu($event, track)">
-        <img :src="coverSrc(track)" @error="($event.target as HTMLImageElement).src = noCover" loading="lazy" draggable="false" />
+        <CoverImage :src="coverSrc(track)" />
         <span class="col">
           <span class="title">{{ track.title }}</span>
           <span class="artist">{{ track.artistName }}</span>
@@ -34,7 +34,6 @@
 
 <script lang="ts" setup>
 import type { MediaRow, AlbumRow } from '~~/server/core/library';
-import noCover from '~/assets/no-cover.png';
 import ContextMenu, { type ContextMenuItem } from '~/components/ContextMenu.vue';
 import PlaylistPickerModal from '~/components/PlaylistPickerModal.vue';
 import { useAppearanceSettings } from '~/composables/useAppearanceSettings';
@@ -58,7 +57,7 @@ useLoadErrorToast(error);
 
 const tracks = computed<MediaRow[]>(() => detail.value?.tracks ?? []);
 
-const { currentTrack, play } = useUnity();
+const { currentTrack, play, addToQueue } = useUnity();
 
 function playAll() {
   if (tracks.value.length === 0) return;
@@ -83,6 +82,12 @@ const trackMenuItems = ref<ContextMenuItem[]>([]);
 
 function buildTrackMenu(track: MediaRow) {
   trackMenuItems.value = [{
+    label: $t('player.playNext'),
+    action: () => addToQueue(track, "next")
+  }, {
+    label: $t('player.addToQueue'),
+    action: () => addToQueue(track, "end")
+  }, {
     label: $t('track.viewDetails'),
     action: () => navigateTo(`/l/t/${track.id}`)
   }, {
@@ -197,14 +202,14 @@ function onEllipsis(e: MouseEvent, track: MediaRow) {
 .libalbum .tracks .filesize {
   color: #666666;
   font-variant-numeric: tabular-nums;
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 0.7em;
 }
 
 .libalbum .tracks .duration {
   color: #666666;
   font-variant-numeric: tabular-nums;
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 0.7em;
 }
 

@@ -232,7 +232,7 @@ defineExpose({ start, close });
 }
 
 .reel .big {
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 3em;
   line-height: 1.05;
 }

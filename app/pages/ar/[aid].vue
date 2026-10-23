@@ -1,7 +1,7 @@
 <template>
   <div class="artist" v-if="artist">
     <div class="head">
-      <img class="cover" :src="artist.image ?? noCover" @error="($event.target as HTMLImageElement).src = noCover" draggable="false" />
+      <CoverImage class="cover" :src="artist.image" eager />
       <div class="meta">
         <h1>{{ artist.name }}</h1>
         <p class="listeners" v-if="artist.listeners">{{ $t('artist.listeners', { count: artist.listeners.toLocaleString() }) }}</p>
@@ -26,7 +26,6 @@
 
 <script lang="ts" setup>
 import type { ArtistDetail } from '~~/server/entity/media/ArtistDetail';
-import noCover from '~/assets/no-cover.png';
 import MediaBox from '~/components/MediaBox.vue';
 import { useAuthToken } from '~/composables/useAuthToken';
 

@@ -1,7 +1,7 @@
 <template>
   <div class="track" v-if="track">
     <div class="head">
-      <img class="cover" :src="track.coverArt ?? noCover" @error="($event.target as HTMLImageElement).src = noCover" draggable="false" />
+      <CoverImage class="cover" :src="track.coverArt" eager />
       <div class="meta">
         <span class="header">
           <h1>{{ track.title }}</h1>
@@ -33,7 +33,6 @@
 
 <script lang="ts" setup>
 import type { MediaInfo } from '~~/server/entity/media/MediaInfo';
-import noCover from '~/assets/no-cover.png';
 import { useAuthToken } from '~/composables/useAuthToken';
 import ReleaseCountdown from '~/components/ReleaseCountdown.vue';
 
@@ -148,7 +147,7 @@ async function requestTrack() {
 }
 
 .track .upcoming .value {
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 1.1em;
 }
 

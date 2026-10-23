@@ -2,7 +2,7 @@
   <div class="reqrow" v-if="props.request.info != null">
     <div class="reqrow-main">
       <div class="colssm" style="gap: 25px">
-        <img :src="props.request.info.coverArt" v-if="props.request.info.coverArt" loading="lazy" draggable="false" />
+        <CoverImage v-if="props.request.info.coverArt" :src="props.request.info.coverArt" />
         <span class="info small">
           <p class="title">{{ props.request.info.title }}</p>
           <p class="artist">{{ props.request.info.artist }}</p>
@@ -207,7 +207,12 @@ function connect() {
 
   socket = new WebSocket(url);
   socket.addEventListener("message", (e) => {
-    const event = JSON.parse(e.data) as DownloadProgressEvent;
+    let event: DownloadProgressEvent;
+    try {
+      event = JSON.parse(e.data) as DownloadProgressEvent;
+    } catch {
+      return;
+    }
     progress.value = event;
     liveStatus.value = event.stage;
 
@@ -279,7 +284,7 @@ onUnmounted(disconnect);
 }
 
 .reqrow .data {
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 0.6em;
   padding: 20px 0 0 0;
   font-style: italic;
@@ -394,7 +399,7 @@ onUnmounted(disconnect);
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 0.6em;
   color: #666666;
 }

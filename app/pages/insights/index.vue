@@ -396,7 +396,7 @@ onUnmounted(() => {
 }
 
 .insights .period {
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 0.75em;
   color: #666666;
   margin-top: -12px;
@@ -436,7 +436,7 @@ onUnmounted(() => {
   background: none;
   border: 1px solid #ffffff1a;
   color: #ffffffae;
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 0.7em;
   padding: 4px 12px;
   border-radius: 250px;

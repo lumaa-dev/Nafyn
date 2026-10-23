@@ -47,6 +47,8 @@ async function lrclibFetch(
 		method: "GET",
 		headers: { "User-Agent": USER_AGENT },
 		cache: "no-store",
+		// a stalled provider must not pin the request (and the player waiting on lyrics) open
+		signal: AbortSignal.timeout(8_000),
 	});
 }
 

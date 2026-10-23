@@ -25,7 +25,7 @@ Multi-user: separate libraries, separate permissions per user. Users request son
 1. User requests a track/album via MusicBrainz search (title, artist, etc).
 2. Nafyn finds match on Soulseek network through [slskd](https://github.com/slskd/slskd) (self-hosted Soulseek client with HTTP API).
 3. Download queued and tracked, with progress streamed to the browser over a WebSocket (`/ws/downloads`).
-4. Finished file verified against requested MusicBrainz recording via audio fingerprint (`fpcalc` + AcoustID API) — makes sure download actually matches, not a mislabeled file.
+4. Finished file verified against the requested MusicBrainz recording — makes sure the download actually matches, not a mislabeled file. Verification never trusts anything stored or supplied: any existing AcoustID UUID, tag or reported length is ignored. Nafyn always regenerates a Chromaprint fingerprint (`fpcalc`) and measures the duration from the audio itself, queries the AcoustID API with exactly those two values, then filters and scores *all* the returned candidates — score threshold, duration tolerance against the measured length, ranking, and recording-ID comparison that understands merged MusicBrainz IDs and the same song entered twice — instead of looking for one ID. A file is refused when AcoustID confidently names a different song, or when it doesn't match and its measured length is off from MusicBrainz'. A refused or failed download is removed everywhere: the temp copy, the file in slskd's downloads folder, its transfer record and the folders that empties.
 5. Track added to that user's library, tagged with metadata (`music-metadata`), transcodable/playable through built-in web player or Nafyn API endpoints.
 
 Auth: JWT-based (`jsonwebtoken`), passwords hashed with `bcrypt`, or [passkeys](#passkeys) instead of a password entirely. Each user has own library + permission set ([`server/entity/Permission.ts`](server/entity/Permission.ts)).
@@ -82,6 +82,9 @@ Configured via environment variables (see `.env.example`):
 | `SOULSEEK_USERNAME` / `SOULSEEK_PASSWORD` | Login for slskd web UI — use dedicated/throwaway account, never personal Soulseek login. |
 | `SOULSEEK_DOWNLOADS_PATH` | Local, readable path to slskd's downloads directory. |
 | `ACOUSTID_API_KEY` | Verifies downloaded audio matches requested MusicBrainz recording. |
+| `NAFYN_ACOUSTID_MIN_SCORE` | Minimum AcoustID score (0–1) for a candidate to count. Default `0.7`. |
+| `NAFYN_ACOUSTID_DURATION_TOLERANCE` | Seconds a candidate's length may differ from the measured audio. Default `5`. |
+| `NAFYN_ACOUSTID_MAX_ALIAS_LOOKUPS` | Merged-away MusicBrainz IDs looked up per file. Default `3`. |
 | `LASTFM_API_KEY` | Artist bios/images on the artist page, search results, and Subsonic's `getArtistInfo2`. Optional — those surfaces just show less without it. |
 | `DISCOGS_TOKEN` | Discogs personal access token (free, [discogs.com/settings/developers](https://www.discogs.com/settings/developers)). Optional — Discogs is skipped when empty. See [Song metadata providers](#song-metadata-providers). |
 | `THEAUDIODB_API_KEY` | TheAudioDB API key — `123` is the free public test key. Optional — skipped when empty. |
@@ -128,7 +131,7 @@ Leave a key empty and that provider is skipped silently — the keyless ones (De
 - Every album/track result carries a `match` score breakdown and a `bestResult` flag. `bestResult` is true on **at most one** result: the top one, when it scores high enough, has a front cover (or an exact UPC/ISRC match) and clearly beats the runner-up. If the top results are too close, nobody is flagged and the consumer decides.
 - Optional query parameters: `title`, `artist`, `upc` (UPC-A/EAN-13 of the album) and `isrc` (of the track). A valid code is strong evidence and boosts its result; an invalid one is ignored, and a code that finds nothing usable falls back to `title` + `artist`, which must accompany it. Tunables: see `NAFYN_SEARCH_*` in [`.env.example`](.env.example).
 
-`bun run test` runs the unit tests and a regression set replayed from recorded MusicBrainz responses (no network); `bun run search:record [case]` re-records those fixtures.
+`bun run test` runs the unit tests and a regression set replayed from recorded MusicBrainz responses (no network), plus the AcoustID candidate scoring tests (`tests/acoustid/`); `bun run search:record [case]` re-records the search fixtures.
 
 To add a provider, write one file under [`server/utils/metadata/providers/`](server/utils/metadata/providers/) implementing `MetadataProvider` ([`types.ts`](server/utils/metadata/types.ts)) and add it to `PROVIDERS` in [`server/utils/metadata/index.ts`](server/utils/metadata/index.ts).
 
@@ -178,14 +181,14 @@ Nafyn is self-hosted, so **you** are the data controller — Nafyn's job is to m
 
 ## Nafyn Unity
 
-Unity lets the devices on your account control each other's playback, like Spotify Connect. One device plays the music (the **master**); any other device logged into the same account (a browser or a third-party app) becomes a **slave** and can change the track, queue, volume, seek position, and see the lyrics in sync.
+Unity lets the devices on your account control each other's playback. One device plays the music (the **master**); any other device logged into the same account (a browser or a third-party app) becomes a **slave** and can change the track, queue, volume, seek position, and see the lyrics in sync.
 
 **For users**
 
-- It is on by default. Turn it off account-wide in **Settings → Sessions**, or only for the current browser session with the "this device" option there.
+- It is on by default. Turn it off account-wide in **Settings → Privacy & Security**, or only for the current browser session with the "this device" option there.
 - The first device to press play becomes the master. Any device can press **Play here** to take control.
 - If the master drops off, other devices are told straight away and it has 30 seconds to reconnect before playback is released.
-- **Settings → Sessions** also lists every login on your account. Revoke any device there to sign it out immediately.
+- **Settings → Privacy & Security** also lists every login on your account. Revoke any device there to sign it out immediately.
 
 **For developers**
 
@@ -211,7 +214,7 @@ Both password-based login (`p=`) and token-based login (`t=`/`s=`) work, but not
 - Last.fm API — artist bios/images (optional, `LASTFM_API_KEY`)
 - Deezer, iTunes, ReccoBeats, TheAudioDB, Discogs, Genius — song metadata (plain HTTP, keyed ones optional)
 - `slskd` (external, self-hosted) — Soulseek network access
-- `fpcalc` + AcoustID — audio fingerprint verification
+- `fpcalc` + AcoustID — audio fingerprint verification (fingerprint and duration always regenerated from the file, candidates scored — see [How it works](#how-it-works))
 - `music-metadata` — tag reading/writing
 - `fluent-ffmpeg` / `ffmpeg-static` — audio processing
 - `jsonwebtoken` + `bcrypt` — auth

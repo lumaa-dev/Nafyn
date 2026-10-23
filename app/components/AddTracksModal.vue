@@ -3,7 +3,7 @@
     <p v-if="availableTracks.length === 0" class="picker-empty">{{ $t('playlist.addTracks.empty') }}</p>
     <ul v-else class="plist">
       <li v-for="track in availableTracks" :key="track.id" @click="addTrack(track.id)">
-        <img :src="coverSrc(track)" @error="($event.target as HTMLImageElement).src = noCover" loading="lazy" draggable="false" />
+        <CoverImage :src="coverSrc(track)" />
         <span class="col">
           <span class="title">{{ track.title }}</span>
           <span class="artist">{{ track.artistName }}</span>
@@ -17,7 +17,6 @@
 
 <script lang="ts" setup>
 import type { MediaRow } from '~~/server/core/library';
-import noCover from '~/assets/no-cover.png';
 import Modal from '~/components/Modal.vue';
 import { useAuthToken } from '~/composables/useAuthToken';
 

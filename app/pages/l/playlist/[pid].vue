@@ -72,7 +72,7 @@
           <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><circle cx="9" cy="6" r="1.5" /><circle cx="15" cy="6" r="1.5" /><circle cx="9" cy="12" r="1.5" /><circle cx="15" cy="12" r="1.5" /><circle cx="9" cy="18" r="1.5" /><circle cx="15" cy="18" r="1.5" /></svg>
         </button>
 
-        <img :src="coverSrc(entry.media)" @error="($event.target as HTMLImageElement).src = noCover" loading="lazy" draggable="false" @click="playFrom(i)" />
+        <CoverImage :src="coverSrc(entry.media)" @click="playFrom(i)" />
         <span class="col" @click="playFrom(i)">
           <span class="title">{{ entry.media.title }}</span>
           <span class="artist">{{ entry.media.artistName }}</span>
@@ -272,7 +272,7 @@ const coverUrl = computed(() => {
   return img ? `/api/v1/playlist/${pid}/image?token=${encodeURIComponent(token)}&v=${img}` : noCover;
 });
 
-const { currentTrack, play } = useUnity();
+const { currentTrack, play, addToQueue } = useUnity();
 
 function playAll() {
   const ordered = displayEntries.value.map((e) => e.media);
@@ -305,7 +305,10 @@ function canRemove(entry: PlaylistEntry): boolean {
 }
 
 function buildRowMenu(entry: PlaylistEntry) {
-  const items: ContextMenuItem[] = [];
+  const items: ContextMenuItem[] = [
+    { label: $t('player.playNext'), action: () => addToQueue(entry.media, "next") },
+    { label: $t('player.addToQueue'), action: () => addToQueue(entry.media, "end") }
+  ];
   if (canRemove(entry)) {
     items.push({ label: $t('playlist.removeTrack'), danger: true, action: () => removeEntry(entry.entryId) });
   }

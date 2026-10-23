@@ -832,27 +832,40 @@ interface CiderTokenResponse {
 	expires_at: string;
 }
 
-let cachedPrivilegedToken: string | null = null;
+let cachedPrivilegedToken: { token: string; expiresAtMs: number } | null = null;
+let privilegedTokenInFlight: Promise<string> | null = null;
+// refreshed this long before it actually expires, so a request never carries a token that dies mid-flight
+const TOKEN_EXPIRY_MARGIN_MS = 60_000;
 
 /** Ports Swift's fetchPrivilegedToken(): grab + cache Apple Music dev token from Cider's relay. */
 async function fetchPrivilegedToken(): Promise<string> {
-	if (cachedPrivilegedToken !== null) {
-		return cachedPrivilegedToken;
+	if (cachedPrivilegedToken && cachedPrivilegedToken.expiresAtMs - TOKEN_EXPIRY_MARGIN_MS > Date.now()) {
+		return cachedPrivilegedToken.token;
 	}
 
-	const res = await fetch("https://rise.cider.sh/api/v1/token/current");
-	if (!res.ok) {
-		throw new Error(`Failed to fetch privileged token: HTTP ${res.status}`);
-	}
+	// concurrent callers share one fetch instead of each asking the relay
+	privilegedTokenInFlight ??= (async () => {
+		try {
+			const res = await fetch("https://rise.cider.sh/api/v1/token/current", { signal: AbortSignal.timeout(8_000) });
+			if (!res.ok) {
+				throw new Error(`Failed to fetch privileged token: HTTP ${res.status}`);
+			}
 
-	const token = (await res.json()) as CiderTokenResponse;
-	
-	if (new Date(token.expires_at) > new Date()) {
-		cachedPrivilegedToken = token.token;
-		return token.token;
-	} else {
-		throw new Error("Privileged token fetched expired");
-	}
+			const token = (await res.json()) as CiderTokenResponse;
+			const expiresAtMs = new Date(token.expires_at).getTime();
+			if (!(expiresAtMs > Date.now())) {
+				throw new Error("Privileged token fetched expired");
+			}
+
+			// the token used to be kept for the life of the process: once it expired, every Apple Music lookup
+			// failed until a restart
+			cachedPrivilegedToken = { token: token.token, expiresAtMs };
+			return token.token;
+		} finally {
+			privilegedTokenInFlight = null;
+		}
+	})();
+	return privilegedTokenInFlight;
 }
 
 export class NafynLyrics {

@@ -101,7 +101,7 @@ function pointsOf(values: number[]): string {
   justify-content: space-between;
   list-style: none;
   padding: 0 8px;
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 0.6em;
   color: #666666;
 }

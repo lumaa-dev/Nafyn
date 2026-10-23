@@ -30,21 +30,55 @@ export function assertSafeImageDimensions(width: number | undefined, height: num
     }
 }
 
-export function squareCropImage(inputPath: string, outputPath: string, size: number, type: string): Promise<void> {
+// Each upload spawns an ffmpeg process. Any account can upload, so concurrency is capped (a burst waits in line
+// instead of forking a dozen decoders at once) and a stuck process is killed rather than kept forever.
+const MAX_CONCURRENT_CROPS = 2;
+const CROP_TIMEOUT_MS = 15_000;
+let runningCrops = 0;
+const waitingCrops: (() => void)[] = [];
+
+async function acquireCropSlot(): Promise<() => void> {
+    if (runningCrops >= MAX_CONCURRENT_CROPS) {
+        await new Promise<void>((resolve) => waitingCrops.push(resolve));
+    } else {
+        runningCrops++;
+    }
+    // a waiter inherits the slot of whoever released it, so the count only drops when nobody is waiting
+    let released = false;
+    return () => {
+        if (released) return;
+        released = true;
+        const next = waitingCrops.shift();
+        if (next) next();
+        else runningCrops--;
+    };
+}
+
+export async function squareCropImage(inputPath: string, outputPath: string, size: number, type: string): Promise<void> {
     const demuxer = DEMUXER_BY_TYPE[type];
     if (!demuxer) {
         return Promise.reject(createError({ statusCode: 400, statusMessage: "Image must be a PNG, JPEG or WebP image" }));
     }
 
-    return new Promise((resolve, reject) => {
-        ffmpeg(inputPath)
-            .inputFormat(demuxer)
-            .outputOptions(
-                "-vf", `scale=${size}:${size}:force_original_aspect_ratio=increase,crop=${size}:${size}`,
-                "-frames:v", "1"
-            )
-            .on("error", reject)
-            .on("end", () => resolve())
-            .save(outputPath);
-    });
+    const release = await acquireCropSlot();
+    try {
+        await new Promise<void>((resolve, reject) => {
+            const command = ffmpeg(inputPath)
+                .inputFormat(demuxer)
+                .outputOptions(
+                    "-vf", `scale=${size}:${size}:force_original_aspect_ratio=increase,crop=${size}:${size}`,
+                    "-frames:v", "1"
+                );
+            const timer = setTimeout(() => {
+                command.kill("SIGKILL");
+                reject(createError({ statusCode: 422, statusMessage: "The image took too long to process" }));
+            }, CROP_TIMEOUT_MS);
+            command
+                .on("error", (error) => { clearTimeout(timer); reject(error); })
+                .on("end", () => { clearTimeout(timer); resolve(); })
+                .save(outputPath);
+        });
+    } finally {
+        release();
+    }
 }

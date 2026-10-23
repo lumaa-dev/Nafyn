@@ -18,7 +18,9 @@ let lastSweep = 0;
 const SWEEP_INTERVAL_MS = 60_000;
 
 function sweep(now: number): void {
-    if (now - lastSweep < SWEEP_INTERVAL_MS && cache.size < MAX_ENTRIES) return;
+    // at most once an interval: with the old `|| size >= MAX` clause a full cache of live entries re-scanned
+    // everything on every single authenticated request. The cap itself is enforced where entries are added.
+    if (now - lastSweep < SWEEP_INTERVAL_MS) return;
     lastSweep = now;
 
     for (const [key, entry] of cache) {
@@ -43,6 +45,8 @@ export async function isSessionRevoked(jti: string): Promise<boolean> {
     if (hit && hit.expiresAt > now) return hit.revoked;
 
     const revoked = await isSessionRevokedInDb(jti);
+    // evicting the oldest entry only costs that session one extra DB read; it never changes an answer
+    if (cache.size >= MAX_ENTRIES) cache.delete(cache.keys().next().value!);
     cache.set(jti, { revoked, expiresAt: now + CACHE_TTL_MS });
     return revoked;
 }

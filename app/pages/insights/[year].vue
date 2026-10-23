@@ -306,7 +306,7 @@ onUnmounted(() => {
 }
 
 .year-package h1 {
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 3.5em;
   line-height: 1;
 }
@@ -355,7 +355,7 @@ onUnmounted(() => {
 }
 
 .year-package .compare-rows .y {
-  font-family: "Discy";
+  font-family: var(--font-discy);
   color: #ffffffae;
   width: 50px;
 }

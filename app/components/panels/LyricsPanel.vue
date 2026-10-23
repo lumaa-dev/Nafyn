@@ -1,5 +1,5 @@
 <template>
-  <div ref="scrollContainer" class="lyrics-panel">
+  <div ref="scrollContainer" class="lyrics-panel np-quiet-scroll">
     <p v-if="loading" class="status">{{ $t('player.lyricsLoading') }}</p>
     <p v-else-if="!paragraphs || !kind" class="status">{{ $t('player.lyricsUnavailable') }}</p>
 
@@ -64,11 +64,24 @@ function syncTimeAnchor() {
   displayedTime.value = anchorAudioTime;
 }
 
+// Only runs while audio is actually playing: a paused (or hidden - the browser stops rAF there anyway) panel
+// has nothing to interpolate, and a loop that re-renders the lyrics 60 times a second for nothing is exactly the
+// kind of idle cost that adds up on a phone.
 function tick() {
-  if (state.value.isPlaying) {
-    displayedTime.value = anchorAudioTime + (performance.now() - anchorPerfTime) / 1000;
-  }
+  displayedTime.value = anchorAudioTime + (performance.now() - anchorPerfTime) / 1000;
   rafId = requestAnimationFrame(tick);
+}
+
+function startLoop() {
+  if (rafId !== null) return;
+  syncTimeAnchor();
+  rafId = requestAnimationFrame(tick);
+}
+
+function stopLoop() {
+  if (rafId !== null) cancelAnimationFrame(rafId);
+  rafId = null;
+  syncTimeAnchor();
 }
 
 function clickLyric(line: LyricLine) {
@@ -100,11 +113,14 @@ const staticText = computed(() =>
 
 // main + background lines can be simultaneously active (they overlap in time), so
 // this tracks every active line rather than a single index
-const activeIndices = computed(() => {
+//
+// Returns the previous array when nothing changed: a fresh array every frame would count as a change and
+// re-render the whole lyric list 60 times a second, where it only needs to when a line starts or ends.
+const activeIndices = computed<number[]>((previous) => {
   const time = displayedTime.value;
   const out: number[] = [];
   lines.value.forEach((line, i) => { if (time >= line.startTime && time < line.endTime) out.push(i); });
-  return out;
+  return previous && previous.length === out.length && previous.every((value, i) => value === out[i]) ? previous : out;
 });
 
 // the line auto-scroll/observer follow: the main line if active, else whichever line is
@@ -184,14 +200,17 @@ async function loadLyrics(id: string | null) {
 
 watch(() => currentTrack.value?.id ?? null, (id) => loadLyrics(id), { immediate: true });
 
+watch(() => state.value.isPlaying, (playing) => { if (playing) startLoop(); else stopLoop(); });
+
 onMounted(() => {
   syncTimeAnchor();
-  rafId = requestAnimationFrame(tick);
+  if (state.value.isPlaying) startLoop();
 });
 
 onUnmounted(() => {
   observer?.disconnect();
   if (rafId !== null) cancelAnimationFrame(rafId);
+  rafId = null;
 });
 </script>
 
@@ -203,7 +222,7 @@ onUnmounted(() => {
 }
 
 .lyrics-panel .status {
-  color: color-mix(in srgb, var(--np-text, #ffffff) 70%, transparent);
+  color: color-mix(in srgb, var(--np-text, #ffffff) 90%, transparent);
   text-align: center;
   margin-top: 20px;
 }
@@ -226,15 +245,20 @@ onUnmounted(() => {
 }
 
 .lyrics-panel .lines li {
+  /* the active line grows by transform, not font-size: no reflow, no re-wrapping of the lines around it, and it
+     stays on the compositor. It scales from its left edge so the text doesn't drift sideways. */
+  transform: scale(1);
+  transform-origin: left center;
   /* --np-text is set by now-playing.vue from the cover (black on a light one, white on a dark one), so the
      lyrics follow the same WCAG-picked colour as the rest of the page instead of a hardcoded white */
-  color: color-mix(in srgb, var(--np-text, #ffffff) 65%, transparent);
+  color: color-mix(in srgb, var(--np-text, #ffffff) 80%, transparent);
   font-size: 1.3em;
   font-weight: 600;
   line-height: 1.4;
-  transition: color 0.35s ease;
+  transition: color 0.35s ease, transform 0.35s ease;
   cursor: pointer;
   width: fit-content;
+  max-width: 92%;
 }
 
 .lyrics-panel .lines li:hover {
@@ -252,6 +276,23 @@ onUnmounted(() => {
 
 .lyrics-panel .lines li.active {
   color: var(--np-text, #ffffff);
+  transform: scale(1.08);
+  will-change: transform;
+}
+
+.lyrics-panel .lines li.bg.active {
+  transform: scale(1.04);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lyrics-panel .lines li {
+    transition: color 0.35s ease;
+  }
+
+  .lyrics-panel .lines li.active,
+  .lyrics-panel .lines li.bg.active {
+    transform: none;
+  }
 }
 
 .lyrics-panel .segment {

@@ -38,7 +38,7 @@
           :class="{ playing: currentTrack?.id === entry.trackId, unavailable: !entry.available }"
         >
           <span class="pos">{{ entry.position + 1 }}</span>
-          <img :src="entry.cover ?? noCover" alt="" @error="onCoverError">
+          <CoverImage :src="entry.cover" />
           <span class="col">
             <span class="title">{{ entry.title ?? $t('insights.unknownEntity') }}</span>
             <span class="artist">{{ entry.subtitle ?? '' }}</span>
@@ -61,7 +61,6 @@
 </template>
 
 <script lang="ts" setup>
-import noCover from '~/assets/no-cover.png';
 import type { MediaRow } from '~~/server/core/library';
 import type { ReplayEntry } from '~/composables/useInsights';
 
@@ -108,10 +107,6 @@ function shuffle() {
   if (first) play(first, shuffled);
 }
 
-function onCoverError(e: Event) {
-  (e.target as HTMLImageElement).src = noCover;
-}
-
 async function load() {
   const param = String(route.params.year);
   // "current" is the friendly URL the sidebar and hub link to, so nobody has to know the year
@@ -153,7 +148,7 @@ watch(() => route.params.year, load);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 2em;
   color: #ffffff66;
 }
@@ -190,7 +185,7 @@ watch(() => route.params.year, load);
 }
 
 .replay .archive a {
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 0.7em;
   padding: 4px 12px;
   border-radius: 250px;
@@ -226,7 +221,7 @@ watch(() => route.params.year, load);
 .replay .tracks li.unavailable { opacity: 0.45; }
 
 .replay .pos {
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 0.7em;
   color: #666666;
   width: 26px;
@@ -261,7 +256,7 @@ watch(() => route.params.year, load);
 .replay .tracks .artist { font-size: 0.65em; color: #666666; }
 
 .replay .plays {
-  font-family: "Discy";
+  font-family: var(--font-discy);
   font-size: 0.7em;
   color: #666666;
   flex-shrink: 0;

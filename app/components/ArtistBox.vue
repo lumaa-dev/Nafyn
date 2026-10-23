@@ -1,6 +1,6 @@
 <template>
   <div class="abox" :mb-id="artist.musicbrainzId">
-    <img :src="imgSrc" @error="imgSrc = noCover" draggable="false" loading="lazy" />
+    <CoverImage :src="artist.image" />
     <p class="title">{{ artist.name }}</p>
     <p class="description">{{ artist.description }}</p>
   </div>
@@ -8,12 +8,8 @@
 
 <script lang="ts" setup>
 import type { ArtistInfo } from '~~/server/entity/media/ArtistInfo';
-import noCover from '../assets/no-cover.png';
 
-const props = defineProps<{ artist: ArtistInfo }>()
-
-const imgSrc = ref(props.artist.image ?? noCover);
-watch(() => props.artist.image, (coverArt) => imgSrc.value = coverArt ?? noCover);
+defineProps<{ artist: ArtistInfo }>()
 </script>
 
 <style>
