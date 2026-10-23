@@ -2,7 +2,6 @@
 // Core data model
 // ---------------------------------------------------------------------------
 
-import { fetchAppleMusicTTML } from "./am";
 import { fetchAllLyrics, type StudioLyricResponse } from "./cider";
 
 export interface LyricSegment {

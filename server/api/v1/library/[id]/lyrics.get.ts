@@ -161,10 +161,6 @@ function fetchLrclibByMedia(media: MediaRow): Promise<LyricParagraphs | null> {
 }
 
 const LYRICS_PROVIDERS: LyricsProvider[] = [
-	// {
-	// 	provider: Provider.AppleMusic,
-	// 	fetch: (media) => media.amId ? lyricsService.fetchAppleMusicParagraphs(media.amId) : Promise.resolve(null),
-	// },
 	{
 		provider: Provider.Cider,
 		fetch: (media) => media.amId ? lyricsService.fetchCiderParagraphs(media.amId) : Promise.resolve(null),
