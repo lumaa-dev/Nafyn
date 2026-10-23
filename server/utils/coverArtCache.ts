@@ -13,11 +13,11 @@ import { open, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fetchCoverArtResult } from "./coverArt";
 import { isUuid } from "./ids";
+import { coverArchiveUrl, type CoverKind, type CoverSize } from "./coverUrl";
 import { ensureDir } from "./ensureDir";
 
-export type CoverKind = "release" | "release-group";
-export const COVER_SIZES = [250, 500, 1000] as const;
-export type CoverSize = typeof COVER_SIZES[number];
+export { COVER_SIZES, isCoverKind, isCoverSize, parseCoverArtUrl } from "./coverUrl";
+export type { CoverKind, CoverSize } from "./coverUrl";
 
 const CACHE_DIR = join(process.cwd(), ".data", "art");
 const MAX_COVER_BYTES = 8 * 1024 * 1024;
@@ -35,25 +35,6 @@ export interface CachedCover {
     contentType: string,
     // ready-to-pipe stream
     stream: () => ReturnType<typeof createReadStream>
-}
-
-export function isCoverKind(value: unknown): value is CoverKind {
-    return value === "release" || value === "release-group";
-}
-
-export function isCoverSize(value: unknown): value is CoverSize {
-    return typeof value === "number" && (COVER_SIZES as readonly number[]).includes(value);
-}
-
-// the stored form of a Cover Art Archive URL, `https://coverartarchive.org/release/<id>/front-250`, or null for
-// anything else (Deezer artwork, uploaded covers, ...)
-export function parseCoverArtUrl(rawUrl: string): { kind: CoverKind, id: string, size: CoverSize } | null {
-    const match = /^https:\/\/coverartarchive\.org\/(release|release-group)\/([0-9a-f-]{36})\/front-(\d+)$/i.exec(rawUrl);
-    if (!match) return null;
-    const kind = match[1]!.toLowerCase() as CoverKind;
-    const id = match[2]!.toLowerCase();
-    const size = Number(match[3]);
-    return isUuid(id) && isCoverSize(size) ? { kind, id, size } : null;
 }
 
 function key(kind: CoverKind, id: string, size: CoverSize): string {
@@ -95,7 +76,7 @@ function rememberMissing(cacheKey: string): void {
 }
 
 async function fetchIntoCache(kind: CoverKind, id: string, size: CoverSize, cacheKey: string): Promise<boolean> {
-    const result = await fetchCoverArtResult(`https://coverartarchive.org/${kind}/${id}/front-${size}`);
+    const result = await fetchCoverArtResult(coverArchiveUrl(kind, id, size));
     if (result.kind === "missing") {
         rememberMissing(cacheKey);
         return false;

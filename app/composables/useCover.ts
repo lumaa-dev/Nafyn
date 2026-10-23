@@ -14,8 +14,10 @@ interface CoverSource {
     coverMediaId?: string | null
 }
 
-// `https://coverartarchive.org/release[-group]/<uuid>/front-250`, the form the download pipeline stores
-const CAA_FRONT = /^https:\/\/coverartarchive\.org\/(release|release-group)\/([0-9a-f-]{36})\/front-\d+$/i;
+// What a cover URL looks like when it reaches the app: Nafyn's own `/api/v1/art/<release|release-group>/<uuid>/<size>`
+// (every /api/v1 response is rewritten to it), or - from a source that bypassed the API - the stored
+// `https://coverartarchive.org/release[-group]/<uuid>/front-<size>`.
+const CAA_FRONT = /^(?:https:\/\/coverartarchive\.org|\/api\/v1\/art)\/(release|release-group)\/([0-9a-f-]{36})\/(?:front-)?\d+$/i;
 
 export type CoverSize = 250 | 500 | 1000;
 
@@ -33,13 +35,13 @@ export function coverSrc(media: CoverSource | null | undefined, size?: CoverSize
 }
 
 // for the places that hold a bare stored URL instead of a track (album listings, metadata cards). Without an
-// explicit `size` the URL's own is kept (the album endpoint stores front-500), snapped to a size the cache serves.
+// explicit `size` the URL's own is kept (the album endpoint answers 500), snapped to a size the cache serves.
 export function coverArtUrl(url: string | null | undefined, size?: CoverSize): string {
     if (!url) return noCover;
     const caa = CAA_FRONT.exec(url);
     if (!caa) return url;
 
-    const own = Number(/front-(\d+)$/.exec(url)?.[1]);
+    const own = Number(/(\d+)$/.exec(url)?.[1]);
     const wanted: CoverSize = size ?? (own === 500 || own === 1000 ? own : 250);
     return `/api/v1/art/${caa[1]!.toLowerCase()}/${caa[2]!.toLowerCase()}/${wanted}`;
 }

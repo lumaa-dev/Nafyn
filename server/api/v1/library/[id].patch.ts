@@ -6,6 +6,7 @@ import { requireAuthToken } from "~~/server/utils/requireAuth";
 import { requireEditableMedia } from "~~/server/utils/mediaAccess";
 import { applyMediaEdit, type MediaEdit } from "~~/server/core/mediaEdit";
 import { isAllowedCoverArtUrl } from "~~/server/utils/coverArt";
+import { toArchiveCoverUrl } from "~~/server/utils/coverUrl";
 
 defineRouteMeta({
     openAPI: {
@@ -30,7 +31,7 @@ defineRouteMeta({
                             duration: { type: "number", description: "Seconds" },
                             label: { type: "string", nullable: true },
                             trackNumber: { type: "number", nullable: true },
-                            coverArt: { type: "string", nullable: true, description: "Cover Art Archive URL; uploaded covers go through PUT /library/{id}/cover" }
+                            coverArt: { type: "string", nullable: true, description: "Cover Art Archive URL (or the `/api/v1/art/..` form the API returns); uploaded covers go through PUT /library/{id}/cover" }
                         }
                     }
                 }
@@ -112,7 +113,8 @@ export default defineEventHandler(async (event) => {
         if (body.coverArt === null) {
             edit.coverArt = null;
         } else {
-            const url = text(body.coverArt, "coverArt", 2000);
+            // a client sends back what GET gave it (`/api/v1/art/..`); stored, it is always the archive form
+            const url = toArchiveCoverUrl(text(body.coverArt, "coverArt", 2000));
             if (!isAllowedCoverArtUrl(url)) {
                 throw createError({ statusCode: 400, statusMessage: "`coverArt` must be a Cover Art Archive URL - upload your own cover instead" });
             }

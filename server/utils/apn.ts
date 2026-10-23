@@ -29,6 +29,7 @@ import { getUsersDb } from "../core/db";
 import { getUnitySettings } from "../core/unitySettings";
 import type { NotificationEvent } from "../entity/Notification";
 import type { DownloadProgressEvent } from "./downloadEvents";
+import { toArchiveCoverUrl } from "./coverUrl";
 
 const DEFAULT_APP_BUNDLE = "fr.lumaa.Nafyn";
 
@@ -828,10 +829,17 @@ function buildAttributes(session: NowPlayingSession, state: UnityPlayerState): N
             artist: track.artistName ?? "",
             album: track.album ?? null,
             duration: track.duration ?? state.duration ?? 0,
-            // only an absolute, publicly fetchable cover - a custom upload sits behind Nafyn's auth
-            artworkURL: track.coverArt && /^https:\/\//.test(track.coverArt) ? track.coverArt : null
+            artworkURL: publicCoverUrl(track.coverArt)
         } : undefined
     };
+}
+
+// only an absolute, publicly fetchable cover goes to Apple: the client holds the `/api/v1/art/..` spelling
+// (behind Nafyn's auth), which maps back to the archive URL it came from. A custom upload has no public form.
+function publicCoverUrl(coverArt: string | null | undefined): string | null {
+    if (!coverArt) return null;
+    const url = toArchiveCoverUrl(coverArt);
+    return /^https:\/\//.test(url) ? url : null;
 }
 
 function nowPlayingNotification(event: "start" | "update" | "end", attributes: NowPlayingAttributes): Notification {

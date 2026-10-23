@@ -13,6 +13,7 @@
 import type { RecentlyPlayedEntry } from '~~/server/core/recentlyPlayed';
 import noCover from '~/assets/no-cover.png';
 import { useAuthToken } from '~/composables/useAuthToken';
+import { coverArtUrl } from '~/composables/useCover';
 
 defineProps<{ variant: "grid" | "scroll" }>();
 
@@ -29,7 +30,7 @@ function entryCover(item: RecentlyPlayedEntry): string {
   if (item.type === "playlist") {
     return item.playlistImage ? `/api/v1/playlist/${item.refId}/image?token=${encodeURIComponent(token ?? "")}&v=${item.playlistImage}` : noCover;
   }
-  return item.coverArt ?? noCover;
+  return coverArtUrl(item.coverArt);
 }
 </script>
 
