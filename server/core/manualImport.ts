@@ -6,7 +6,7 @@
 // track: the same music/{album}/{title}.ext layout, the same ffmpeg retag, the same library_entries grant -
 // so imported tracks play, queue, scrobble, appear over Subsonic and count towards insights like any other.
 import { createHash, randomUUID } from "node:crypto";
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { rm, writeFile } from "node:fs/promises";
 import { statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { tagAudioFile } from "../utils/audioTag";
@@ -22,6 +22,7 @@ import {
     setMediaCustomCover,
     type MediaRow
 } from "./library";
+import { ensureDir } from "../utils/ensureDir";
 
 const TMP_DIR = join(process.cwd(), ".data", "tmp");
 
@@ -115,8 +116,8 @@ export async function importManualTrack(
         // reserves the file name (see libraryFilePath), so it's inside the try: the media row above must be
         // rolled back if even that fails
         destPath = libraryFilePath(album, artistName, title, extension);
-        await mkdir(TMP_DIR, { recursive: true });
-        await mkdir(dirname(destPath), { recursive: true });
+        await ensureDir(TMP_DIR);
+        await ensureDir(dirname(destPath));
         await writeFile(tempPath, file.data);
 
         // same remux-and-retag step the download pipeline ends on, so the file on disk carries the metadata

@@ -1,10 +1,11 @@
 // playlist cover image storage: validates + crops uploads to a fixed 500x500 webp on disk under .data/playlists/<playlistId>.webp
 import { randomUUID } from "node:crypto";
 import { join, resolve, sep } from "node:path";
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { rm, writeFile } from "node:fs/promises";
 import { imageSize } from "image-size";
 import { assertUuid } from "./ids";
 import { assertSafeImageDimensions, squareCropImage } from "./imageUpload";
+import { ensureDir } from "./ensureDir";
 
 const PLAYLIST_IMAGE_DIR = join(process.cwd(), ".data", "playlists");
 const TMP_DIR = join(process.cwd(), ".data", "tmp");
@@ -47,8 +48,8 @@ export async function savePlaylistImage(playlistId: string, buffer: Buffer): Pro
         throw createError({ statusCode: 400, statusMessage: `Playlist image must be at least ${PLAYLIST_IMAGE_SIZE}x${PLAYLIST_IMAGE_SIZE}px` });
     }
 
-    await mkdir(TMP_DIR, { recursive: true });
-    await mkdir(PLAYLIST_IMAGE_DIR, { recursive: true });
+    await ensureDir(TMP_DIR);
+    await ensureDir(PLAYLIST_IMAGE_DIR);
 
     const tempPath = join(TMP_DIR, `${randomUUID()}.${dimensions.type}`);
     await writeFile(tempPath, buffer);

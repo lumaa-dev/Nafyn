@@ -9,10 +9,11 @@
 // triple, and still goes through fetchCoverArt's host allowlist and per-hop redirect check, so this adds no
 // SSRF surface.
 import { createReadStream } from "node:fs";
-import { mkdir, open, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
+import { open, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fetchCoverArtResult } from "./coverArt";
 import { isUuid } from "./ids";
+import { ensureDir } from "./ensureDir";
 
 export type CoverKind = "release" | "release-group";
 export const COVER_SIZES = [250, 500, 1000] as const;
@@ -118,7 +119,7 @@ async function fetchIntoCache(kind: CoverKind, id: string, size: CoverSize, cach
         return false;
     }
 
-    await mkdir(CACHE_DIR, { recursive: true });
+    await ensureDir(CACHE_DIR);
     const destination = filePath(cacheKey);
     // written beside the destination and renamed in, so a reader never sees a half-written file
     const partial = `${destination}.${process.pid}.${Date.now()}.part`;

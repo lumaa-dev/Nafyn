@@ -28,7 +28,7 @@
 
 import { randomUUID, UUID } from "node:crypto";
 import { basename, dirname, extname, join } from "node:path";
-import { mkdir, rm } from "node:fs/promises";
+import { rm } from "node:fs/promises";
 import { statSync } from "node:fs";
 import type { IRecording, IRelease, IReleaseGroup, RecordingIncludes } from "musicbrainz-api";
 import type { SlskSearchResult } from "../utils/soulseek";
@@ -60,6 +60,7 @@ import { isReleased } from "../utils/releaseDate";
 import { notifyRequestFinished } from "./notifications";
 import { acquireDownloadSlot } from "./downloadQueue";
 import { NafynRequest } from "../entity/NafynRequest";
+import { ensureDir } from "../utils/ensureDir";
 
 const TMP_DIR = join(process.cwd(), ".data", "tmp");
 const ALLOWED_EXTENSIONS = [".mp3", ".flac", ".ogg", ".wav"];
@@ -489,7 +490,7 @@ async function downloadTrack(
             console.log(`[downloads] Musicbrainz'd "${target.title}"`);
 
             destPath = libraryFilePath(target.album, target.artistName, target.title, extension);
-            await mkdir(dirname(destPath), { recursive: true });
+            await ensureDir(dirname(destPath));
             await tagAudioFile(tempPath, destPath, {
                 title: target.title,
                 artist: target.artistName,

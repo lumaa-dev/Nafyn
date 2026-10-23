@@ -13,13 +13,14 @@
 // box, and a December stampede of parallel ffmpeg jobs would make the whole app unusable.
 import { randomUUID } from "node:crypto";
 import { join, resolve, sep } from "node:path";
-import { mkdir, rm, writeFile, access } from "node:fs/promises";
+import { rm, writeFile, access } from "node:fs/promises";
 import { constants } from "node:fs";
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegPath from "ffmpeg-static";
 import { getLibrariesDb } from "./db";
 import { getYearSnapshot, type ReelStatus } from "./insightsSnapshot";
 import { assertUuid } from "~~/server/utils/ids";
+import { ensureDir } from "../utils/ensureDir";
 
 if (ffmpegPath) {
     ffmpeg.setFfmpegPath(ffmpegPath);
@@ -311,8 +312,8 @@ export async function renderReel(userId: string, year: number): Promise<string> 
     await setReelStatus(userId, year, "rendering", { error: null });
 
     const workDir = join(TMP_DIR, `reel-${randomUUID()}`);
-    await mkdir(workDir, { recursive: true });
-    await mkdir(REEL_DIR, { recursive: true });
+    await ensureDir(workDir);
+    await ensureDir(REEL_DIR);
 
     try {
         const slides = await collectSlides(userId, year);

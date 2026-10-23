@@ -6,10 +6,11 @@
 // the local file. That keeps user input out of the one field that becomes a server-side fetch (SSRF).
 import { randomUUID } from "node:crypto";
 import { join, resolve, sep } from "node:path";
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { rm, writeFile } from "node:fs/promises";
 import { imageSize } from "image-size";
 import { assertUuid } from "./ids";
 import { assertSafeImageDimensions, squareCropImage } from "./imageUpload";
+import { ensureDir } from "./ensureDir";
 
 const COVER_DIR = join(process.cwd(), ".data", "covers");
 const TMP_DIR = join(process.cwd(), ".data", "tmp");
@@ -49,8 +50,8 @@ export async function saveMediaCover(mediaId: string, buffer: Buffer): Promise<v
 
     assertSafeImageDimensions(dimensions.width, dimensions.height);
 
-    await mkdir(TMP_DIR, { recursive: true });
-    await mkdir(COVER_DIR, { recursive: true });
+    await ensureDir(TMP_DIR);
+    await ensureDir(COVER_DIR);
 
     const tempPath = join(TMP_DIR, `${randomUUID()}.${dimensions.type}`);
     await writeFile(tempPath, buffer);

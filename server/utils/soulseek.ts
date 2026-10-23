@@ -10,8 +10,9 @@
 // into this app's own storage - can actually happen.
 
 import { randomUUID } from "node:crypto";
-import { copyFile, mkdir, rm, rmdir } from "node:fs/promises";
+import { copyFile, rm, rmdir } from "node:fs/promises";
 import { dirname, resolve, sep } from "node:path";
+import { ensureDir } from "./ensureDir";
 
 export interface SlskSearchResult {
     user: string,
@@ -444,7 +445,7 @@ async function runDownload(
     const sourcePath = resolveInsideDownloads(downloadsPath, relativeSegments);
     trace.sourcePath = sourcePath;
 
-    await mkdir(dirname(destPath), { recursive: true });
+    await ensureDir(dirname(destPath));
     // copy + unlink instead of rename: destPath and the slskd downloads mount may live on different
     // filesystems (e.g. a remote SMB/NFS share), where a plain rename would fail across devices. The unlink
     // happens in downloadFromSoulseek once this returns.

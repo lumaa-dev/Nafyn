@@ -5,7 +5,7 @@
 // surface reads from, and the tags embedded in the file on disk, which is what a third-party player sees
 // when the library is browsed directly or shared back out.
 import { randomUUID } from "node:crypto";
-import { mkdir, rename, rm } from "node:fs/promises";
+import { rename, rm } from "node:fs/promises";
 import { existsSync, statSync } from "node:fs";
 import { extname, join } from "node:path";
 import { tagAudioFile } from "../utils/audioTag";
@@ -18,6 +18,7 @@ import {
     type MediaMetadataPatch,
     type MediaRow
 } from "./library";
+import { ensureDir } from "../utils/ensureDir";
 
 const TMP_DIR = join(process.cwd(), ".data", "tmp");
 
@@ -42,7 +43,7 @@ async function retagFile(filePath: string, media: MediaRow): Promise<void> {
     const extension = extname(filePath);
     const tempPath = join(TMP_DIR, `${randomUUID()}${extension}`);
 
-    await mkdir(TMP_DIR, { recursive: true });
+    await ensureDir(TMP_DIR);
     try {
         // ffmpeg can't write its output over its own input, so remux to a temp file and swap it in
         await tagAudioFile(filePath, tempPath, {

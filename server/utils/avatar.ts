@@ -1,10 +1,11 @@
 // avatar image storage: validates + crops uploads to a fixed 250x250 webp on disk under .data/avatars/<userId>.webp
 import { randomUUID } from "node:crypto";
 import { join, resolve, sep } from "node:path";
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { rm, writeFile } from "node:fs/promises";
 import { imageSize } from "image-size";
 import { assertUuid } from "./ids";
 import { assertSafeImageDimensions, squareCropImage } from "./imageUpload";
+import { ensureDir } from "./ensureDir";
 
 const AVATAR_DIR = join(process.cwd(), ".data", "avatars");
 const TMP_DIR = join(process.cwd(), ".data", "tmp");
@@ -49,8 +50,8 @@ export async function saveAvatar(userId: string, buffer: Buffer): Promise<void> 
         throw createError({ statusCode: 400, statusMessage: `Avatar must be at least ${AVATAR_SIZE}x${AVATAR_SIZE}px` });
     }
 
-    await mkdir(TMP_DIR, { recursive: true });
-    await mkdir(AVATAR_DIR, { recursive: true });
+    await ensureDir(TMP_DIR);
+    await ensureDir(AVATAR_DIR);
 
     const tempPath = join(TMP_DIR, `${randomUUID()}.${dimensions.type}`);
     await writeFile(tempPath, buffer);
