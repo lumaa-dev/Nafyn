@@ -11,7 +11,7 @@
 import { createReadStream } from "node:fs";
 import { mkdir, open, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { fetchCoverArt } from "./coverArt";
+import { fetchCoverArtResult } from "./coverArt";
 import { isUuid } from "./ids";
 
 export type CoverKind = "release" | "release-group";
@@ -88,19 +88,35 @@ async function cachedFileType(path: string): Promise<string | null> {
     }
 }
 
+function rememberMissing(cacheKey: string): void {
+    if (missing.size >= MAX_NEGATIVE_ENTRIES) missing.delete(missing.keys().next().value!);
+    missing.set(cacheKey, Date.now() + NEGATIVE_TTL_MS);
+}
+
 async function fetchIntoCache(kind: CoverKind, id: string, size: CoverSize, cacheKey: string): Promise<boolean> {
-    const response = await fetchCoverArt(`https://coverartarchive.org/${kind}/${id}/front-${size}`);
-    if (!response) {
-        if (missing.size >= MAX_NEGATIVE_ENTRIES) missing.delete(missing.keys().next().value!);
-        missing.set(cacheKey, Date.now() + NEGATIVE_TTL_MS);
+    const result = await fetchCoverArtResult(`https://coverartarchive.org/${kind}/${id}/front-${size}`);
+    if (result.kind === "missing") {
+        rememberMissing(cacheKey);
+        return false;
+    }
+    if (result.kind === "error") {
+        // not remembered: a timeout or a 5xx says nothing about whether the cover exists
+        console.error(`[cover-art] couldn't fetch ${cacheKey}: ${result.reason}`);
+        return false;
+    }
+    const response = result.response;
+
+    const declared = Number(response.headers.get("content-length") ?? 0);
+    if (declared > MAX_COVER_BYTES) {
+        console.error(`[cover-art] ${cacheKey} is ${declared} bytes, over the ${MAX_COVER_BYTES} cap`);
         return false;
     }
 
-    const declared = Number(response.headers.get("content-length") ?? 0);
-    if (declared > MAX_COVER_BYTES) return false;
-
     const bytes = new Uint8Array(await response.arrayBuffer());
-    if (bytes.byteLength === 0 || bytes.byteLength > MAX_COVER_BYTES || !sniffContentType(bytes)) return false;
+    if (bytes.byteLength === 0 || bytes.byteLength > MAX_COVER_BYTES || !sniffContentType(bytes)) {
+        console.error(`[cover-art] ${cacheKey}: upstream sent ${bytes.byteLength} bytes that aren't a usable image`);
+        return false;
+    }
 
     await mkdir(CACHE_DIR, { recursive: true });
     const destination = filePath(cacheKey);
