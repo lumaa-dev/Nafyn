@@ -1,0 +1,726 @@
+{
+ "requests": {
+  "https://musicbrainz.org/ws/2/recording?fmt=json&limit=40&query=recording%3A%22hatashi%20no%20koi%22%20AND%20status%3Aofficial": {
+   "created": "2026-10-25T16:55:19.691Z",
+   "offset": 0,
+   "recordings": []
+  },
+  "https://musicbrainz.org/ws/2/recording?fmt=json&limit=40&query=recording%3A(hatashi%20AND%20no%20AND%20koi)%20AND%20status%3Aofficial": {
+   "created": "2026-10-25T16:55:20.810Z",
+   "offset": 0,
+   "recordings": []
+  },
+  "https://musicbrainz.org/ws/2/recording?fmt=json&limit=40&query=alias%3A%22hatashi%20no%20koi%22%20AND%20status%3Aofficial": {
+   "created": "2026-10-25T16:55:21.877Z",
+   "offset": 0,
+   "recordings": []
+  },
+  "https://musicbrainz.org/ws/2/recording?fmt=json&limit=40&query=(recording%3A(hatashi~%20AND%20no%20AND%20koi)%20OR%20alias%3A(hatashi~%20AND%20no%20AND%20koi))%20AND%20status%3Aofficial": {
+   "created": "2026-10-25T16:55:23.145Z",
+   "offset": 0,
+   "recordings": [
+    {
+     "id": "6bd62fd0-a171-4b17-845d-fc701fe537e1",
+     "score": 100,
+     "title": "Koi no Arashi",
+     "length": 247000,
+     "artist-credit": [
+      {
+       "name": "Lisa Loeb",
+       "artist": {
+        "id": "22c5cef9-80e8-48d2-acd3-6d16f6c8a16d",
+        "name": "Lisa Loeb",
+        "sort-name": "Loeb, Lisa",
+        "aliases": [
+         {
+          "sort-name": "Lisa Loeb & Nine Stories",
+          "name": "Lisa Loeb & Nine Stories"
+         },
+         {
+          "sort-name": "lisa lobe",
+          "name": "lisa lobe"
+         },
+         {
+          "sort-name": "Loeb Lisa & Nine Stories",
+          "name": "Loeb Lisa & Nine Stories"
+         },
+         {
+          "sort-name": "Lisa Loeb and Nine Stories",
+          "name": "Lisa Loeb and Nine Stories"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2005-04-26",
+     "releases": [
+      {
+       "id": "4f77767d-bc85-4334-b61e-069e6392e321",
+       "title": "The Very Best of Lisa Loeb",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Lisa Loeb",
+         "artist": {
+          "id": "22c5cef9-80e8-48d2-acd3-6d16f6c8a16d",
+          "name": "Lisa Loeb",
+          "sort-name": "Loeb, Lisa"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "804e68bc-33e1-334d-8401-f06d7b1be4af",
+        "title": "The Very Best of Lisa Loeb",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2005-04-26",
+       "track-count": 20,
+       "media": [
+        {
+         "id": "d0e9081b-3ded-30b9-bc6a-6c2925077fd6",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "620bbd9f-960b-473a-beb1-5f2e5c5c9450",
+           "number": "20",
+           "title": "Koi No Arashi",
+           "length": 247000
+          }
+         ],
+         "track-count": 20
+        }
+       ]
+      },
+      {
+       "id": "7fbd8726-8a0e-46b7-9663-2a11e58c97d2",
+       "title": "The Very Best of",
+       "artist-credit": [
+        {
+         "name": "Lisa Loeb",
+         "artist": {
+          "id": "22c5cef9-80e8-48d2-acd3-6d16f6c8a16d",
+          "name": "Lisa Loeb",
+          "sort-name": "Loeb, Lisa"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "804e68bc-33e1-334d-8401-f06d7b1be4af",
+        "title": "The Very Best of Lisa Loeb",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "track-count": 20,
+       "media": [
+        {
+         "id": "172e32ee-6c64-3183-93f3-429c241def09",
+         "position": 1,
+         "track": [
+          {
+           "id": "c3048a7a-df55-378b-b62c-18f692a3faa5",
+           "number": "20",
+           "title": "Koi No Arashi",
+           "length": 247000
+          }
+         ],
+         "track-count": 20
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "9f512719-6ae8-4910-bc8c-3830b4a84948",
+     "score": 99,
+     "title": "恋の嵐",
+     "length": 276000,
+     "artist-credit": [
+      {
+       "name": "竹内まりや",
+       "artist": {
+        "id": "02bdc7ec-d102-4698-85e2-789a42d40b9c",
+        "name": "竹内まりや",
+        "sort-name": "Takeuchi, Mariya",
+        "aliases": [
+         {
+          "sort-name": "竹內瑪莉亞",
+          "name": "竹內瑪莉亞"
+         },
+         {
+          "sort-name": "竹内玛丽亚",
+          "name": "竹内玛丽亚"
+         },
+         {
+          "sort-name": "竹内まりや",
+          "name": "竹内まりや"
+         },
+         {
+          "sort-name": "Takeuchi, Mariya",
+          "name": "Mariya Takeuchi"
+         },
+         {
+          "sort-name": "Takeuchi, Mariya",
+          "name": "竹内マリヤ"
+         },
+         {
+          "sort-name": "Miyabi",
+          "name": "Miyabi"
+         },
+         {
+          "sort-name": "たけうち まりや",
+          "name": "たけうち まりや"
+         },
+         {
+          "sort-name": "竹内 まりや",
+          "name": "竹内 まりや"
+         },
+         {
+          "sort-name": "Maria Takeuchi",
+          "name": "Maria Takeuchi"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2008-05-21",
+     "releases": [
+      {
+       "id": "7e6264b6-4a52-4be5-8934-2ccfae5920fc",
+       "title": "Expressions",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Mariya Takeuchi",
+         "artist": {
+          "id": "02bdc7ec-d102-4698-85e2-789a42d40b9c",
+          "name": "竹内まりや",
+          "sort-name": "Takeuchi, Mariya"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "7aece591-a551-48fd-9650-e077d1c9d69a",
+        "title": "Expressions",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2008-10-01",
+       "track-count": 32,
+       "media": [
+        {
+         "id": "3725fa51-b00b-4666-8453-bd78ac419d99",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "9172a31c-c6ed-4e7a-bc05-6b45efcd5e1c",
+           "number": "10",
+           "title": "Koi No Arashi",
+           "length": 276000
+          }
+         ],
+         "track-count": 32
+        }
+       ]
+      },
+      {
+       "id": "0eefb09a-3f8f-4a83-aa50-5b4fdc1a8251",
+       "title": "Expressions",
+       "status": "Pseudo-Release",
+       "artist-credit": [
+        {
+         "name": "Mariya Takeuchi",
+         "artist": {
+          "id": "02bdc7ec-d102-4698-85e2-789a42d40b9c",
+          "name": "竹内まりや",
+          "sort-name": "Takeuchi, Mariya"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "7aece591-a551-48fd-9650-e077d1c9d69a",
+        "title": "Expressions",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "track-count": 42,
+       "media": [
+        {
+         "id": "ccb20491-a586-3603-ae75-070f039ae480",
+         "position": 2,
+         "format": "CD",
+         "track": [
+          {
+           "id": "ee34cdad-0608-4a8f-9fa7-bf930b83f3c6",
+           "number": "6",
+           "title": "Koi No Arashi",
+           "length": 278680
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "dbe19abf-a91e-440f-8ded-f8e7de4b3ee7",
+       "title": "Expressions",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Mariya Takeuchi",
+         "artist": {
+          "id": "02bdc7ec-d102-4698-85e2-789a42d40b9c",
+          "name": "竹内まりや",
+          "sort-name": "Takeuchi, Mariya"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "7aece591-a551-48fd-9650-e077d1c9d69a",
+        "title": "Expressions",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "track-count": 32,
+       "media": [
+        {
+         "id": "c81e2213-d9d5-3aa9-ad23-701ef214c439",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "aebb7f41-1211-4be9-8b3f-06795f8df58b",
+           "number": "10",
+           "title": "Koi No Arashi",
+           "length": 276000
+          }
+         ],
+         "track-count": 32
+        }
+       ]
+      },
+      {
+       "id": "0a83fd7a-3f30-4469-a042-e9be5545eb81",
+       "title": "Expressions",
+       "status": "Official",
+       "disambiguation": "moon version",
+       "artist-credit": [
+        {
+         "name": "竹内まりや",
+         "artist": {
+          "id": "02bdc7ec-d102-4698-85e2-789a42d40b9c",
+          "name": "竹内まりや",
+          "sort-name": "Takeuchi, Mariya"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "7aece591-a551-48fd-9650-e077d1c9d69a",
+        "title": "Expressions",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "track-count": 32,
+       "media": [
+        {
+         "id": "903e7088-ec04-3c75-82b6-3227777d2542",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "2d81d9f7-46bc-4fbf-a530-a461ef4bb395",
+           "number": "10",
+           "title": "恋の嵐",
+           "length": 276000
+          }
+         ],
+         "track-count": 32
+        }
+       ]
+      },
+      {
+       "id": "97a2092a-8b7d-4c49-a19c-e5759432de64",
+       "title": "Expressions",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "竹内まりや",
+         "artist": {
+          "id": "02bdc7ec-d102-4698-85e2-789a42d40b9c",
+          "name": "竹内まりや",
+          "sort-name": "Takeuchi, Mariya"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "7aece591-a551-48fd-9650-e077d1c9d69a",
+        "title": "Expressions",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2008-05-25",
+       "track-count": 32,
+       "media": [
+        {
+         "id": "fb681c86-223e-3b92-83dc-423ce0c00df9",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "3a507705-48aa-49ec-b88e-2b17e6b74359",
+           "number": "10",
+           "title": "Koi No Arashi",
+           "length": 276000
+          }
+         ],
+         "track-count": 32
+        }
+       ]
+      },
+      {
+       "id": "8589a6b0-259c-49f3-9b46-a7fa816b2035",
+       "title": "Expressions",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "竹内まりや",
+         "artist": {
+          "id": "02bdc7ec-d102-4698-85e2-789a42d40b9c",
+          "name": "竹内まりや",
+          "sort-name": "Takeuchi, Mariya"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "7aece591-a551-48fd-9650-e077d1c9d69a",
+        "title": "Expressions",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2008-10-01",
+       "track-count": 52,
+       "media": [
+        {
+         "id": "fb4753e4-75da-3efb-905e-fd8feacaebd8",
+         "position": 2,
+         "format": "CD",
+         "track": [
+          {
+           "id": "e94cde83-8282-4c9c-8735-88821cff62c9",
+           "number": "6",
+           "title": "恋の嵐",
+           "length": 278680
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "f8383a6a-83cc-4244-808c-29a6f2a8ff32",
+       "title": "Expressions",
+       "status": "Official",
+       "disambiguation": "通常盤",
+       "artist-credit": [
+        {
+         "name": "竹内まりや",
+         "artist": {
+          "id": "02bdc7ec-d102-4698-85e2-789a42d40b9c",
+          "name": "竹内まりや",
+          "sort-name": "Takeuchi, Mariya"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "7aece591-a551-48fd-9650-e077d1c9d69a",
+        "title": "Expressions",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2008-10-01",
+       "track-count": 42,
+       "media": [
+        {
+         "id": "965874fc-058c-3295-8bc4-a95220ab651f",
+         "position": 2,
+         "format": "CD",
+         "track": [
+          {
+           "id": "ec623a01-669e-30fb-b937-e27b630b063e",
+           "number": "6",
+           "title": "恋の嵐",
+           "length": 278680
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPWP01801550",
+      "JPWP02000927",
+      "JPWP00800499"
+     ]
+    },
+    {
+     "id": "c6795475-06d3-4483-aa8a-4f19b607fdb3",
+     "score": 93,
+     "title": "二十歳の恋",
+     "length": 193466,
+     "artist-credit": [
+      {
+       "name": "Lamp",
+       "artist": {
+        "id": "8bff8d1d-2e87-4b97-9909-2bd3404e92b9",
+        "name": "Lamp",
+        "sort-name": "Lamp",
+        "disambiguation": "Japanese group"
+       }
+      }
+     ],
+     "first-release-date": "2008-12-03",
+     "releases": [
+      {
+       "id": "b1163a92-e883-4411-af73-0c41c8d340bd",
+       "title": "ランプ幻想",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "date": "2008-12-03",
+       "track-count": 11,
+       "media": [
+        {
+         "id": "e6412eef-c5d8-4950-98f8-eee72c33b82f",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "7f61eb53-f04a-4f76-9713-4f0e17e82e5d",
+           "number": "8",
+           "title": "二十歳の恋",
+           "length": 193467
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "ef7676db-1e5a-47f9-9505-e9cd7fc97a9b",
+       "title": "Lamp Genso",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "track-count": 11,
+       "media": [
+        {
+         "id": "ca9aceea-f2b8-33ce-8112-4831b05d6d88",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "ab294f05-ea1a-4851-bc51-419d4c7f607a",
+           "number": "8",
+           "title": "Hatachi No Koi",
+           "length": 193467
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "cc60e794-3156-4203-a8ee-38aa0ffc06c2",
+       "title": "ランプ幻想",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "date": "2008-12-03",
+       "track-count": 11,
+       "media": [
+        {
+         "id": "c2917b93-54d2-378e-a12f-e54f41f5015a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "062e5851-e9b7-34f2-815a-df13781c4920",
+           "number": "8",
+           "title": "二十歳の恋",
+           "length": 193466
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "60e902a2-2341-4cb1-b7e8-c23c84170717",
+       "title": "Phantasma",
+       "status": "Pseudo-Release",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "track-count": 11,
+       "media": [
+        {
+         "id": "a4ae7df3-8d18-3ebd-8492-5095fc17f159",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "4831c6e4-3bbe-44f5-b73f-07685d121761",
+           "number": "8",
+           "title": "Cherry Blossom Love",
+           "length": 193000
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPG100800133"
+     ]
+    },
+    {
+     "id": "203e4e21-6bb4-43aa-b181-d2bdf1f8ad8c",
+     "score": 91,
+     "title": "私の恋はナミダでできている",
+     "length": 225366,
+     "artist-credit": [
+      {
+       "name": "CHIHIRO",
+       "artist": {
+        "id": "6df189ad-8278-4b98-ae78-ed5e7ca428d6",
+        "name": "CHIHIRO",
+        "sort-name": "CHIHIRO",
+        "disambiguation": "R&B"
+       }
+      }
+     ],
+     "first-release-date": "2019-02-20",
+     "releases": [
+      {
+       "id": "be89ca51-cd50-4e9e-946e-9ac71afe7191",
+       "title": "私の恋はナミダでできている",
+       "status": "Official",
+       "release-group": {
+        "id": "fc965655-171c-4c25-a00f-59c11d6c48d2",
+        "title": "私の恋はナミダでできている",
+        "primary-type": "Album"
+       },
+       "date": "2019-02-20",
+       "track-count": 10,
+       "media": [
+        {
+         "id": "6499060b-1e52-3dbd-b587-0e25bff7e9ce",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "28ef2c36-f81f-4b74-9b7e-d5fb322d6589",
+           "number": "1",
+           "title": "私の恋はナミダでできている",
+           "length": 225366
+          }
+         ],
+         "track-count": 10
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPTE01810900"
+     ]
+    },
+    {
+     "id": "70764ea0-13c4-4421-ac0b-7eff4d551313",
+     "score": 61,
+     "title": "K-ON! - Watashi no Koi wa Hocchikisu Mix",
+     "artist-credit": [
+      {
+       "name": "Orchestr/a/",
+       "artist": {
+        "id": "eef17fbb-7fad-4561-8a10-1d437f0b8f70",
+        "name": "Orchestr/a/",
+        "sort-name": "Orchestra",
+        "disambiguation": "4chan Orchestra"
+       }
+      }
+     ],
+     "first-release-date": "2022-06-30",
+     "releases": [
+      {
+       "id": "703f02a5-7d74-44fb-9ab6-ca9b4d2473b4",
+       "title": "Endless Eight",
+       "status": "Official",
+       "release-group": {
+        "id": "a3ad56f7-4adf-434b-84e6-21da997ab43d",
+        "title": "Endless Eight",
+        "primary-type": "Album"
+       },
+       "track-count": 40,
+       "media": [
+        {
+         "id": "359c0abc-fd85-30b5-ad85-a886d7f5fcdf",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "ace32bfd-3b93-4f6b-ad3f-d81b93ab610b",
+           "number": "17",
+           "title": "K-ON! - Watashi no Koi wa Hocchikisu Mix"
+          }
+         ],
+         "track-count": 40
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "https://musicbrainz.org/ws/2/recording?fmt=json&limit=40&query=recording%3A%22%E3%81%AF%E3%81%9F%E3%81%97%E3%81%AE%E3%81%93%E3%81%84%22%20AND%20status%3Aofficial": {
+   "created": "2026-10-25T16:55:24.076Z",
+   "offset": 0,
+   "recordings": []
+  }
+ },
+ "covers": {
+  "https://coverartarchive.org/release/b1163a92-e883-4411-af73-0c41c8d340bd/front": 307
+ }
+}

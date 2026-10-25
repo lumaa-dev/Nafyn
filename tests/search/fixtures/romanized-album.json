@@ -1,0 +1,1652 @@
+{
+ "requests": {
+  "https://musicbrainz.org/ws/2/release-group?fmt=json&limit=40&query=releasegroup%3A%22lamp%20genso%22%20AND%20artist%3A%22lamp%22%20AND%20status%3Aofficial": {
+   "created": "2026-10-25T16:54:22.195Z",
+   "offset": 0,
+   "release-groups": []
+  },
+  "https://musicbrainz.org/ws/2/release-group?fmt=json&limit=40&query=releasegroup%3A(lamp%20AND%20genso)%20AND%20artist%3A(lamp)%20AND%20status%3Aofficial": {
+   "created": "2026-10-25T16:54:29.813Z",
+   "offset": 0,
+   "release-groups": []
+  },
+  "https://musicbrainz.org/ws/2/artist?fmt=json&limit=5&query=alias%3A%22lamp%22%20OR%20artist%3A%22lamp%22%20OR%20sortname%3A%22lamp%22": {
+   "created": "2026-10-25T16:54:07.236Z",
+   "offset": 0,
+   "artists": [
+    {
+     "id": "f04f6cf7-312b-465a-a5e7-0e0cfd99ea03",
+     "score": 100,
+     "name": "Lamp DX",
+     "sort-name": "Lamp DX",
+     "aliases": [
+      {
+       "sort-name": "Shady, Lamp",
+       "name": "Lamp Shady"
+      }
+     ]
+    },
+    {
+     "id": "8bff8d1d-2e87-4b97-9909-2bd3404e92b9",
+     "score": 94,
+     "name": "Lamp",
+     "sort-name": "Lamp",
+     "disambiguation": "Japanese group"
+    },
+    {
+     "id": "57e297f8-4d21-4a63-ac15-2b160b705fa3",
+     "score": 88,
+     "name": "Lamp & Lazerus",
+     "sort-name": "Lamp & Lazerus",
+     "disambiguation": "Belgian 1970's duo, sometimes joined by Kris De Bruyne",
+     "aliases": [
+      {
+       "sort-name": "Lamp Lazarus & Kris",
+       "name": "Lamp Lazarus & Kris"
+      }
+     ]
+    },
+    {
+     "id": "81a14494-aab7-4ca7-9d69-ce7317374566",
+     "score": 85,
+     "name": "LaMP",
+     "sort-name": "Lamp",
+     "disambiguation": "Burlington VT supergroup"
+    },
+    {
+     "id": "6ef23a7e-4b08-4a8c-9fc5-3af8588e3763",
+     "score": 84,
+     "name": "L.A.M.P.",
+     "sort-name": "L.A.M.P.",
+     "disambiguation": "IDM producer based in Seattle, WA"
+    }
+   ]
+  },
+  "https://musicbrainz.org/ws/2/release-group?fmt=json&limit=40&query=arid%3A(f04f6cf7-312b-465a-a5e7-0e0cfd99ea03%20OR%208bff8d1d-2e87-4b97-9909-2bd3404e92b9%20OR%2057e297f8-4d21-4a63-ac15-2b160b705fa3)%20AND%20releasegroup%3A(lamp%20AND%20genso)%20AND%20status%3Aofficial": {
+   "created": "2026-10-25T16:54:35.763Z",
+   "offset": 0,
+   "release-groups": []
+  },
+  "https://musicbrainz.org/ws/2/recording?fmt=json&limit=40&query=release%3A%22lamp%20genso%22%20AND%20artist%3A%22lamp%22%20AND%20status%3Aofficial": {
+   "created": "2026-10-25T16:54:35.845Z",
+   "offset": 0,
+   "recordings": [
+    {
+     "id": "331f8cef-e4d7-4544-96c8-20e648d9dcfd",
+     "score": 100,
+     "title": "ゆめうつつ",
+     "length": 315640,
+     "artist-credit": [
+      {
+       "name": "Lamp",
+       "artist": {
+        "id": "8bff8d1d-2e87-4b97-9909-2bd3404e92b9",
+        "name": "Lamp",
+        "sort-name": "Lamp",
+        "disambiguation": "Japanese group"
+       }
+      }
+     ],
+     "first-release-date": "2008-12-03",
+     "releases": [
+      {
+       "id": "b1163a92-e883-4411-af73-0c41c8d340bd",
+       "title": "ランプ幻想",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "date": "2008-12-03",
+       "track-count": 11,
+       "media": [
+        {
+         "id": "e6412eef-c5d8-4950-98f8-eee72c33b82f",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "36db713c-6545-4a62-b242-453dd41b8741",
+           "number": "5",
+           "title": "ゆめうつつ",
+           "length": 315640
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "ef7676db-1e5a-47f9-9505-e9cd7fc97a9b",
+       "title": "Lamp Genso",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "track-count": 11,
+       "media": [
+        {
+         "id": "ca9aceea-f2b8-33ce-8112-4831b05d6d88",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "0bb58528-d90c-4c2a-9197-082eb4f60272",
+           "number": "5",
+           "title": "Yume Utsutsu",
+           "length": 315640
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "cc60e794-3156-4203-a8ee-38aa0ffc06c2",
+       "title": "ランプ幻想",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "date": "2008-12-03",
+       "track-count": 11,
+       "media": [
+        {
+         "id": "c2917b93-54d2-378e-a12f-e54f41f5015a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "e1ce480a-d566-3aeb-bb32-57196e0ff91c",
+           "number": "5",
+           "title": "ゆめうつつ",
+           "length": 315640
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "60e902a2-2341-4cb1-b7e8-c23c84170717",
+       "title": "Phantasma",
+       "status": "Pseudo-Release",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "track-count": 11,
+       "media": [
+        {
+         "id": "a4ae7df3-8d18-3ebd-8492-5095fc17f159",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "5ac96536-c51c-4e47-8e88-2437dd53d899",
+           "number": "5",
+           "title": "Half Asleep",
+           "length": 315000
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPG100800130"
+     ]
+    },
+    {
+     "id": "a24fb1f3-267f-40af-ac9f-af052c8241e1",
+     "score": 100,
+     "title": "ヱンド・オブ・ア・ホリデヰ",
+     "length": 292053,
+     "artist-credit": [
+      {
+       "name": "Lamp",
+       "artist": {
+        "id": "8bff8d1d-2e87-4b97-9909-2bd3404e92b9",
+        "name": "Lamp",
+        "sort-name": "Lamp",
+        "disambiguation": "Japanese group"
+       }
+      }
+     ],
+     "first-release-date": "2008-12-03",
+     "releases": [
+      {
+       "id": "b1163a92-e883-4411-af73-0c41c8d340bd",
+       "title": "ランプ幻想",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "date": "2008-12-03",
+       "track-count": 11,
+       "media": [
+        {
+         "id": "e6412eef-c5d8-4950-98f8-eee72c33b82f",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "ae673aab-1f49-4ca1-97f9-8d098b1dd8c3",
+           "number": "10",
+           "title": "ヱンド・オブ・ア・ホリデヰ",
+           "length": 292053
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "ef7676db-1e5a-47f9-9505-e9cd7fc97a9b",
+       "title": "Lamp Genso",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "track-count": 11,
+       "media": [
+        {
+         "id": "ca9aceea-f2b8-33ce-8112-4831b05d6d88",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "598e7836-2315-4ca4-9a9c-50c7d33ef801",
+           "number": "10",
+           "title": "End of a Holiday",
+           "length": 292053
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "cc60e794-3156-4203-a8ee-38aa0ffc06c2",
+       "title": "ランプ幻想",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "date": "2008-12-03",
+       "track-count": 11,
+       "media": [
+        {
+         "id": "c2917b93-54d2-378e-a12f-e54f41f5015a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "ec2084f0-06ee-3012-aadc-00ff890dbf63",
+           "number": "10",
+           "title": "ヱンド・オブ・ア・ホリデヰ",
+           "length": 292053
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "60e902a2-2341-4cb1-b7e8-c23c84170717",
+       "title": "Phantasma",
+       "status": "Pseudo-Release",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "track-count": 11,
+       "media": [
+        {
+         "id": "a4ae7df3-8d18-3ebd-8492-5095fc17f159",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "4a8b4b7a-6930-42a0-8f50-6084cc5b3b06",
+           "number": "10",
+           "title": "End of a Holiday",
+           "length": 292000
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPG100800135"
+     ]
+    },
+    {
+     "id": "b6e11866-d16d-4e19-9934-b964fd23b2ad",
+     "score": 100,
+     "title": "日本少年の夏",
+     "length": 356360,
+     "artist-credit": [
+      {
+       "name": "Lamp",
+       "artist": {
+        "id": "8bff8d1d-2e87-4b97-9909-2bd3404e92b9",
+        "name": "Lamp",
+        "sort-name": "Lamp",
+        "disambiguation": "Japanese group"
+       }
+      }
+     ],
+     "first-release-date": "2008-12-03",
+     "releases": [
+      {
+       "id": "b1163a92-e883-4411-af73-0c41c8d340bd",
+       "title": "ランプ幻想",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "date": "2008-12-03",
+       "track-count": 11,
+       "media": [
+        {
+         "id": "e6412eef-c5d8-4950-98f8-eee72c33b82f",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "f9110486-06ab-4bea-abf7-1d5a0bfee229",
+           "number": "7",
+           "title": "日本少年の夏",
+           "length": 356360
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "ef7676db-1e5a-47f9-9505-e9cd7fc97a9b",
+       "title": "Lamp Genso",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "track-count": 11,
+       "media": [
+        {
+         "id": "ca9aceea-f2b8-33ce-8112-4831b05d6d88",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "1ac7e1b6-3c31-4734-a574-f15a4b77f5a7",
+           "number": "7",
+           "title": "Nihon Syonen No Natsu",
+           "length": 356360
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "cc60e794-3156-4203-a8ee-38aa0ffc06c2",
+       "title": "ランプ幻想",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "date": "2008-12-03",
+       "track-count": 11,
+       "media": [
+        {
+         "id": "c2917b93-54d2-378e-a12f-e54f41f5015a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "f834cda5-d909-3d36-a8f0-4cebfe37e9d0",
+           "number": "7",
+           "title": "日本少年の夏",
+           "length": 356360
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "60e902a2-2341-4cb1-b7e8-c23c84170717",
+       "title": "Phantasma",
+       "status": "Pseudo-Release",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "track-count": 11,
+       "media": [
+        {
+         "id": "a4ae7df3-8d18-3ebd-8492-5095fc17f159",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "91c430ad-263a-472a-847f-8ace7cffd721",
+           "number": "7",
+           "title": "The Summer of a Japanese Boy",
+           "length": 356000
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPG100800132"
+     ]
+    },
+    {
+     "id": "b949e942-c430-4cc4-8591-50fa2fec7a66",
+     "score": 100,
+     "title": "儚き春の一幕",
+     "length": 326786,
+     "artist-credit": [
+      {
+       "name": "Lamp",
+       "artist": {
+        "id": "8bff8d1d-2e87-4b97-9909-2bd3404e92b9",
+        "name": "Lamp",
+        "sort-name": "Lamp",
+        "disambiguation": "Japanese group"
+       }
+      }
+     ],
+     "first-release-date": "2008-12-03",
+     "releases": [
+      {
+       "id": "b1163a92-e883-4411-af73-0c41c8d340bd",
+       "title": "ランプ幻想",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "date": "2008-12-03",
+       "track-count": 11,
+       "media": [
+        {
+         "id": "e6412eef-c5d8-4950-98f8-eee72c33b82f",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "cee34b8e-2a25-4148-972d-990920e14644",
+           "number": "1",
+           "title": "儚き春の一幕",
+           "length": 326787
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "ef7676db-1e5a-47f9-9505-e9cd7fc97a9b",
+       "title": "Lamp Genso",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "track-count": 11,
+       "media": [
+        {
+         "id": "ca9aceea-f2b8-33ce-8112-4831b05d6d88",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "2ad31e8c-f1c9-4c68-90d4-e3c8f82341ac",
+           "number": "1",
+           "title": "Hakanaki Haru No Hitomaku",
+           "length": 326787
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "cc60e794-3156-4203-a8ee-38aa0ffc06c2",
+       "title": "ランプ幻想",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "date": "2008-12-03",
+       "track-count": 11,
+       "media": [
+        {
+         "id": "c2917b93-54d2-378e-a12f-e54f41f5015a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "f5586090-13c3-385d-848d-917ea3deac12",
+           "number": "1",
+           "title": "儚き春の一幕",
+           "length": 326786
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "60e902a2-2341-4cb1-b7e8-c23c84170717",
+       "title": "Phantasma",
+       "status": "Pseudo-Release",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "track-count": 11,
+       "media": [
+        {
+         "id": "a4ae7df3-8d18-3ebd-8492-5095fc17f159",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "c85ea168-4811-47aa-bc69-6be12ebbdde5",
+           "number": "1",
+           "title": "Act One of a Fleeting Spring",
+           "length": 326000
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPG100800126"
+     ]
+    },
+    {
+     "id": "c6795475-06d3-4483-aa8a-4f19b607fdb3",
+     "score": 100,
+     "title": "二十歳の恋",
+     "length": 193466,
+     "artist-credit": [
+      {
+       "name": "Lamp",
+       "artist": {
+        "id": "8bff8d1d-2e87-4b97-9909-2bd3404e92b9",
+        "name": "Lamp",
+        "sort-name": "Lamp",
+        "disambiguation": "Japanese group"
+       }
+      }
+     ],
+     "first-release-date": "2008-12-03",
+     "releases": [
+      {
+       "id": "b1163a92-e883-4411-af73-0c41c8d340bd",
+       "title": "ランプ幻想",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "date": "2008-12-03",
+       "track-count": 11,
+       "media": [
+        {
+         "id": "e6412eef-c5d8-4950-98f8-eee72c33b82f",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "7f61eb53-f04a-4f76-9713-4f0e17e82e5d",
+           "number": "8",
+           "title": "二十歳の恋",
+           "length": 193467
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "ef7676db-1e5a-47f9-9505-e9cd7fc97a9b",
+       "title": "Lamp Genso",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "track-count": 11,
+       "media": [
+        {
+         "id": "ca9aceea-f2b8-33ce-8112-4831b05d6d88",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "ab294f05-ea1a-4851-bc51-419d4c7f607a",
+           "number": "8",
+           "title": "Hatachi No Koi",
+           "length": 193467
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "cc60e794-3156-4203-a8ee-38aa0ffc06c2",
+       "title": "ランプ幻想",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "date": "2008-12-03",
+       "track-count": 11,
+       "media": [
+        {
+         "id": "c2917b93-54d2-378e-a12f-e54f41f5015a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "062e5851-e9b7-34f2-815a-df13781c4920",
+           "number": "8",
+           "title": "二十歳の恋",
+           "length": 193466
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "60e902a2-2341-4cb1-b7e8-c23c84170717",
+       "title": "Phantasma",
+       "status": "Pseudo-Release",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "track-count": 11,
+       "media": [
+        {
+         "id": "a4ae7df3-8d18-3ebd-8492-5095fc17f159",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "4831c6e4-3bbe-44f5-b73f-07685d121761",
+           "number": "8",
+           "title": "Cherry Blossom Love",
+           "length": 193000
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPG100800133"
+     ]
+    },
+    {
+     "id": "dac856b4-3913-4abe-96cf-306df004d671",
+     "score": 100,
+     "title": "ア・サマア・バケイション",
+     "length": 263413,
+     "artist-credit": [
+      {
+       "name": "Lamp",
+       "artist": {
+        "id": "8bff8d1d-2e87-4b97-9909-2bd3404e92b9",
+        "name": "Lamp",
+        "sort-name": "Lamp",
+        "disambiguation": "Japanese group"
+       }
+      }
+     ],
+     "first-release-date": "2008-12-03",
+     "releases": [
+      {
+       "id": "b1163a92-e883-4411-af73-0c41c8d340bd",
+       "title": "ランプ幻想",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "date": "2008-12-03",
+       "track-count": 11,
+       "media": [
+        {
+         "id": "e6412eef-c5d8-4950-98f8-eee72c33b82f",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "63c21ff7-3e56-4c0d-823e-6cffa03c3927",
+           "number": "11",
+           "title": "ア・サマア・バケイション",
+           "length": 263413
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "ef7676db-1e5a-47f9-9505-e9cd7fc97a9b",
+       "title": "Lamp Genso",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "track-count": 11,
+       "media": [
+        {
+         "id": "ca9aceea-f2b8-33ce-8112-4831b05d6d88",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "30c30a03-68d1-409c-aea1-51baef3d7940",
+           "number": "11",
+           "title": "A Summer Vacation",
+           "length": 263413
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "cc60e794-3156-4203-a8ee-38aa0ffc06c2",
+       "title": "ランプ幻想",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "date": "2008-12-03",
+       "track-count": 11,
+       "media": [
+        {
+         "id": "c2917b93-54d2-378e-a12f-e54f41f5015a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "2f14259b-f8aa-3a01-9ad7-c00ecb7f1ec8",
+           "number": "11",
+           "title": "ア・サマア・バケイション",
+           "length": 263413
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "60e902a2-2341-4cb1-b7e8-c23c84170717",
+       "title": "Phantasma",
+       "status": "Pseudo-Release",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "track-count": 11,
+       "media": [
+        {
+         "id": "a4ae7df3-8d18-3ebd-8492-5095fc17f159",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "79337fe1-835e-4b00-8f27-d48beb0b9edb",
+           "number": "11",
+           "title": "A Summer Vacation",
+           "length": 263000
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPG100800136"
+     ]
+    },
+    {
+     "id": "2661a753-959d-459c-95c8-02a7ec0d3c1e",
+     "score": 100,
+     "title": "白昼夢",
+     "length": 242453,
+     "artist-credit": [
+      {
+       "name": "Lamp",
+       "artist": {
+        "id": "8bff8d1d-2e87-4b97-9909-2bd3404e92b9",
+        "name": "Lamp",
+        "sort-name": "Lamp",
+        "disambiguation": "Japanese group"
+       }
+      }
+     ],
+     "first-release-date": "2008-12-03",
+     "releases": [
+      {
+       "id": "b1163a92-e883-4411-af73-0c41c8d340bd",
+       "title": "ランプ幻想",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "date": "2008-12-03",
+       "track-count": 11,
+       "media": [
+        {
+         "id": "e6412eef-c5d8-4950-98f8-eee72c33b82f",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "7d637cb8-908b-48b3-80a4-5c0de058c298",
+           "number": "6",
+           "title": "白昼夢",
+           "length": 242453
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "ef7676db-1e5a-47f9-9505-e9cd7fc97a9b",
+       "title": "Lamp Genso",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "track-count": 11,
+       "media": [
+        {
+         "id": "ca9aceea-f2b8-33ce-8112-4831b05d6d88",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "c71f1a29-f708-47e4-92a5-ea7be614c566",
+           "number": "6",
+           "title": "Hakucyumu",
+           "length": 242453
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "cc60e794-3156-4203-a8ee-38aa0ffc06c2",
+       "title": "ランプ幻想",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "date": "2008-12-03",
+       "track-count": 11,
+       "media": [
+        {
+         "id": "c2917b93-54d2-378e-a12f-e54f41f5015a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "bdcb4700-6844-3da1-8cf7-d6f5a3d0415c",
+           "number": "6",
+           "title": "白昼夢",
+           "length": 242453
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "60e902a2-2341-4cb1-b7e8-c23c84170717",
+       "title": "Phantasma",
+       "status": "Pseudo-Release",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "track-count": 11,
+       "media": [
+        {
+         "id": "a4ae7df3-8d18-3ebd-8492-5095fc17f159",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "a88469bf-d613-4c47-9801-dabaffaf57dc",
+           "number": "6",
+           "title": "Daydream",
+           "length": 242000
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPG100800131"
+     ]
+    },
+    {
+     "id": "f496aa93-1048-4574-a714-3b9a87600d1f",
+     "score": 100,
+     "title": "冬の影は哀しみ",
+     "length": 192693,
+     "artist-credit": [
+      {
+       "name": "Lamp",
+       "artist": {
+        "id": "8bff8d1d-2e87-4b97-9909-2bd3404e92b9",
+        "name": "Lamp",
+        "sort-name": "Lamp",
+        "disambiguation": "Japanese group"
+       }
+      }
+     ],
+     "first-release-date": "2008-12-03",
+     "releases": [
+      {
+       "id": "b1163a92-e883-4411-af73-0c41c8d340bd",
+       "title": "ランプ幻想",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "date": "2008-12-03",
+       "track-count": 11,
+       "media": [
+        {
+         "id": "e6412eef-c5d8-4950-98f8-eee72c33b82f",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "a7c3f9c4-fe43-4102-9971-d99e43c16567",
+           "number": "9",
+           "title": "冬の影は哀しみ",
+           "length": 192693
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "ef7676db-1e5a-47f9-9505-e9cd7fc97a9b",
+       "title": "Lamp Genso",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "track-count": 11,
+       "media": [
+        {
+         "id": "ca9aceea-f2b8-33ce-8112-4831b05d6d88",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "24746266-c52d-43b7-b170-3d1bfc74f5e0",
+           "number": "9",
+           "title": "Fuyu No Kage Ha Kanashimi",
+           "length": 192693
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "cc60e794-3156-4203-a8ee-38aa0ffc06c2",
+       "title": "ランプ幻想",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "date": "2008-12-03",
+       "track-count": 11,
+       "media": [
+        {
+         "id": "c2917b93-54d2-378e-a12f-e54f41f5015a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "df387574-3f72-37e9-b313-21478ea8fdb9",
+           "number": "9",
+           "title": "冬の影は哀しみ",
+           "length": 192693
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "60e902a2-2341-4cb1-b7e8-c23c84170717",
+       "title": "Phantasma",
+       "status": "Pseudo-Release",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "track-count": 11,
+       "media": [
+        {
+         "id": "a4ae7df3-8d18-3ebd-8492-5095fc17f159",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "da9cd219-e180-4a62-a68e-62cda08d4f07",
+           "number": "9",
+           "title": "Sorrow of Winter",
+           "length": 192000
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPG100800134"
+     ]
+    },
+    {
+     "id": "5e481e6a-3987-4c58-b528-6cd6f76b2bc5",
+     "score": 100,
+     "title": "密やかに",
+     "length": 173880,
+     "artist-credit": [
+      {
+       "name": "Lamp",
+       "artist": {
+        "id": "8bff8d1d-2e87-4b97-9909-2bd3404e92b9",
+        "name": "Lamp",
+        "sort-name": "Lamp",
+        "disambiguation": "Japanese group"
+       }
+      }
+     ],
+     "first-release-date": "2008-12-03",
+     "releases": [
+      {
+       "id": "b1163a92-e883-4411-af73-0c41c8d340bd",
+       "title": "ランプ幻想",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "date": "2008-12-03",
+       "track-count": 11,
+       "media": [
+        {
+         "id": "e6412eef-c5d8-4950-98f8-eee72c33b82f",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "f7859a6c-ecee-4de9-a8cc-479e5c5bbca0",
+           "number": "2",
+           "title": "密やかに",
+           "length": 173880
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "ef7676db-1e5a-47f9-9505-e9cd7fc97a9b",
+       "title": "Lamp Genso",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "track-count": 11,
+       "media": [
+        {
+         "id": "ca9aceea-f2b8-33ce-8112-4831b05d6d88",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "517ca47c-879d-48ca-a67d-2e327e715560",
+           "number": "2",
+           "title": "Hisoyakani",
+           "length": 173880
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "cc60e794-3156-4203-a8ee-38aa0ffc06c2",
+       "title": "ランプ幻想",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "date": "2008-12-03",
+       "track-count": 11,
+       "media": [
+        {
+         "id": "c2917b93-54d2-378e-a12f-e54f41f5015a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "497e185f-f24d-32b4-bb76-055f9e7cc0a6",
+           "number": "2",
+           "title": "密やかに",
+           "length": 173880
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "60e902a2-2341-4cb1-b7e8-c23c84170717",
+       "title": "Phantasma",
+       "status": "Pseudo-Release",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "track-count": 11,
+       "media": [
+        {
+         "id": "a4ae7df3-8d18-3ebd-8492-5095fc17f159",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "ba569472-706b-483b-b826-0d3d9cc3989c",
+           "number": "2",
+           "title": "In Stillness",
+           "length": 173000
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPG100800127"
+     ]
+    },
+    {
+     "id": "dc0032ed-370f-4acb-a66c-6e6aa5f24c35",
+     "score": 100,
+     "title": "夕暮れ",
+     "length": 331546,
+     "artist-credit": [
+      {
+       "name": "Lamp",
+       "artist": {
+        "id": "8bff8d1d-2e87-4b97-9909-2bd3404e92b9",
+        "name": "Lamp",
+        "sort-name": "Lamp",
+        "disambiguation": "Japanese group"
+       }
+      }
+     ],
+     "first-release-date": "2008-12-03",
+     "releases": [
+      {
+       "id": "b1163a92-e883-4411-af73-0c41c8d340bd",
+       "title": "ランプ幻想",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "date": "2008-12-03",
+       "track-count": 11,
+       "media": [
+        {
+         "id": "e6412eef-c5d8-4950-98f8-eee72c33b82f",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "79b9e044-7299-42e8-8849-7c6d5317c70d",
+           "number": "3",
+           "title": "夕暮れ",
+           "length": 331547
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "ef7676db-1e5a-47f9-9505-e9cd7fc97a9b",
+       "title": "Lamp Genso",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "track-count": 11,
+       "media": [
+        {
+         "id": "ca9aceea-f2b8-33ce-8112-4831b05d6d88",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "31ac054d-868a-4916-b6b4-b92e973c373f",
+           "number": "3",
+           "title": "Yugure",
+           "length": 331547
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "cc60e794-3156-4203-a8ee-38aa0ffc06c2",
+       "title": "ランプ幻想",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "date": "2008-12-03",
+       "track-count": 11,
+       "media": [
+        {
+         "id": "c2917b93-54d2-378e-a12f-e54f41f5015a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "b7e406c5-a2e0-3839-91ea-09cb9456ad7b",
+           "number": "3",
+           "title": "夕暮れ",
+           "length": 331546
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "60e902a2-2341-4cb1-b7e8-c23c84170717",
+       "title": "Phantasma",
+       "status": "Pseudo-Release",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "track-count": 11,
+       "media": [
+        {
+         "id": "a4ae7df3-8d18-3ebd-8492-5095fc17f159",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "26d8741a-f77c-4814-ae18-68dde34d5f33",
+           "number": "3",
+           "title": "Twilight",
+           "length": 331000
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPG100800128"
+     ]
+    },
+    {
+     "id": "c6e1fdfb-b333-43c7-9e9b-caf52f996e00",
+     "score": 80,
+     "title": "雨降る夜の向こう",
+     "length": 311920,
+     "artist-credit": [
+      {
+       "name": "Lamp",
+       "artist": {
+        "id": "8bff8d1d-2e87-4b97-9909-2bd3404e92b9",
+        "name": "Lamp",
+        "sort-name": "Lamp",
+        "disambiguation": "Japanese group"
+       }
+      }
+     ],
+     "first-release-date": "2008-12-03",
+     "releases": [
+      {
+       "id": "6fcdb522-d6f5-49f2-a7b4-d84f83c36949",
+       "title": "Ten Years After: Pastel Music 10th Anniversary",
+       "artist-credit": [
+        {
+         "name": "Various Artists",
+         "artist": {
+          "id": "89ad4ac3-39f7-470e-963a-56509c546377",
+          "name": "Various Artists",
+          "sort-name": "Various Artists",
+          "disambiguation": "add compilations to this artist"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "c73d372f-fa0b-4a82-bdd8-ee8bb56c4f27",
+        "title": "Ten Years After: Pastel Music 10th Anniversary",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2013-01-09",
+       "track-count": 100,
+       "media": [
+        {
+         "id": "d3547927-a0e9-343f-81d3-9e9ce9fe8f68",
+         "position": 4,
+         "format": "CD",
+         "track": [
+          {
+           "id": "bf72fdc1-b57b-4746-8d43-d7cc558d9447",
+           "number": "4",
+           "title": "雨降る夜の向こう",
+           "length": 311000
+          }
+         ],
+         "track-count": 10
+        }
+       ]
+      },
+      {
+       "id": "b1163a92-e883-4411-af73-0c41c8d340bd",
+       "title": "ランプ幻想",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "date": "2008-12-03",
+       "track-count": 11,
+       "media": [
+        {
+         "id": "e6412eef-c5d8-4950-98f8-eee72c33b82f",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "c836d902-1a88-48d5-87f0-e80909869f26",
+           "number": "4",
+           "title": "雨降る夜の向こう",
+           "length": 311920
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "ef7676db-1e5a-47f9-9505-e9cd7fc97a9b",
+       "title": "Lamp Genso",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "track-count": 11,
+       "media": [
+        {
+         "id": "ca9aceea-f2b8-33ce-8112-4831b05d6d88",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "57e18021-a731-4f5b-ab03-ec89c0d42bf3",
+           "number": "4",
+           "title": "Ame Furu Yoru No Mukou",
+           "length": 311920
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "cc60e794-3156-4203-a8ee-38aa0ffc06c2",
+       "title": "ランプ幻想",
+       "status": "Official",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "date": "2008-12-03",
+       "track-count": 11,
+       "media": [
+        {
+         "id": "c2917b93-54d2-378e-a12f-e54f41f5015a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "ebb875b8-c633-3633-831d-2ffb9cf3c195",
+           "number": "4",
+           "title": "雨降る夜の向こう",
+           "length": 311920
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      },
+      {
+       "id": "60e902a2-2341-4cb1-b7e8-c23c84170717",
+       "title": "Phantasma",
+       "status": "Pseudo-Release",
+       "release-group": {
+        "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+        "title": "ランプ幻想",
+        "primary-type": "Album"
+       },
+       "track-count": 11,
+       "media": [
+        {
+         "id": "a4ae7df3-8d18-3ebd-8492-5095fc17f159",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "1895b931-c7c1-4eb9-807f-3b8ae19d49e0",
+           "number": "4",
+           "title": "The Other Side of a Rainy Night",
+           "length": 311000
+          }
+         ],
+         "track-count": 11
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPG100800129"
+     ]
+    }
+   ]
+  },
+  "https://musicbrainz.org/ws/2/release?fmt=json&limit=100&query=rgid%3A(22e24512-bb0c-4c93-b2b1-dbf6868b9965)%20AND%20status%3Aofficial%20AND%20format%3A%22Digital%20Media%22": {
+   "created": "2026-10-25T16:54:36.934Z",
+   "offset": 0,
+   "releases": [
+    {
+     "id": "ef7676db-1e5a-47f9-9505-e9cd7fc97a9b",
+     "score": 100,
+     "title": "Lamp Genso",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "Lamp",
+       "artist": {
+        "id": "8bff8d1d-2e87-4b97-9909-2bd3404e92b9",
+        "name": "Lamp",
+        "sort-name": "Lamp",
+        "disambiguation": "Japanese group"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+      "title": "ランプ幻想",
+      "primary-type": "Album"
+     },
+     "track-count": 11,
+     "media": [
+      {
+       "id": "ca9aceea-f2b8-33ce-8112-4831b05d6d88",
+       "format": "Digital Media",
+       "track-count": 11
+      }
+     ]
+    },
+    {
+     "id": "b1163a92-e883-4411-af73-0c41c8d340bd",
+     "score": 100,
+     "title": "ランプ幻想",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "Lamp",
+       "artist": {
+        "id": "8bff8d1d-2e87-4b97-9909-2bd3404e92b9",
+        "name": "Lamp",
+        "sort-name": "Lamp",
+        "disambiguation": "Japanese group"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "22e24512-bb0c-4c93-b2b1-dbf6868b9965",
+      "title": "ランプ幻想",
+      "primary-type": "Album"
+     },
+     "date": "2008-12-03",
+     "barcode": "4525853001272",
+     "track-count": 11,
+     "media": [
+      {
+       "id": "e6412eef-c5d8-4950-98f8-eee72c33b82f",
+       "format": "Digital Media",
+       "track-count": 11
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "covers": {
+  "https://coverartarchive.org/release/b1163a92-e883-4411-af73-0c41c8d340bd/front": 307
+ }
+}

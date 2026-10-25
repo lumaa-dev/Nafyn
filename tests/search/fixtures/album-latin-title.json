@@ -1,0 +1,4059 @@
+{
+ "requests": {
+  "https://musicbrainz.org/ws/2/release-group?fmt=json&limit=40&query=releasegroup%3A%22ahoy%20you're%20all%20pirates%22%20AND%20status%3Aofficial": {
+   "created": "2026-10-25T18:27:49.030Z",
+   "offset": 0,
+   "release-groups": []
+  },
+  "https://musicbrainz.org/ws/2/release-group?fmt=json&limit=40&query=artist%3A%22ahoy%20you're%20all%20pirates%22%20AND%20status%3Aofficial": {
+   "created": "2026-10-25T18:27:49.841Z",
+   "offset": 0,
+   "release-groups": []
+  },
+  "https://musicbrainz.org/ws/2/release-group?fmt=json&limit=40&query=releasegroup%3A(ahoy%20AND%20you're%20AND%20all%20AND%20pirates)%20AND%20status%3Aofficial": {
+   "created": "2026-10-25T18:27:52.663Z",
+   "offset": 0,
+   "release-groups": []
+  },
+  "https://musicbrainz.org/ws/2/release-group?fmt=json&limit=40&query=artist%3A(ahoy%20AND%20you're%20AND%20all%20AND%20pirates)%20AND%20status%3Aofficial": {
+   "created": "2026-10-25T18:27:54.430Z",
+   "offset": 0,
+   "release-groups": []
+  },
+  "https://musicbrainz.org/ws/2/artist?fmt=json&limit=5&query=alias%3A%22ahoy%20you're%20all%20pirates%22%20OR%20artist%3A%22ahoy%20you're%20all%20pirates%22%20OR%20sortname%3A%22ahoy%20you're%20all%20pirates%22": {
+   "created": "2026-10-25T18:27:57.875Z",
+   "offset": 0,
+   "artists": []
+  },
+  "https://musicbrainz.org/ws/2/recording?fmt=json&limit=40&query=release%3A%22ahoy%20you're%20all%20pirates%22%20AND%20status%3Aofficial": {
+   "created": "2026-10-25T18:27:25.265Z",
+   "offset": 0,
+   "recordings": [
+    {
+     "id": "991dc5b7-8964-4cc3-bd64-2269441e1b20",
+     "score": 100,
+     "title": "スキスキDieスキ超Ayeシテル",
+     "length": 274531,
+     "artist-credit": [
+      {
+       "name": "宝鐘マリン",
+       "artist": {
+        "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+        "name": "宝鐘マリン",
+        "sort-name": "Houshou, Marine",
+        "aliases": [
+         {
+          "sort-name": "Housho Marine",
+          "name": "Housho Marine"
+         },
+         {
+          "sort-name": "Senchou",
+          "name": "Senchou"
+         },
+         {
+          "sort-name": "Houshou Marine",
+          "name": "Houshou Marine"
+         },
+         {
+          "sort-name": "Hōshō Marin",
+          "name": "Hōshō Marin"
+         },
+         {
+          "sort-name": "Hōshō, Marine",
+          "name": "Marine Hōshō"
+         },
+         {
+          "sort-name": "Houshou Marin",
+          "name": "Houshou Marin"
+         },
+         {
+          "sort-name": "ほうしょうまりん",
+          "name": "ほうしょうまりん"
+         },
+         {
+          "sort-name": "ほうしょう まりん",
+          "name": "ほうしょう まりん"
+         },
+         {
+          "sort-name": "Houshou, Marine",
+          "name": "Marine Houshou"
+         },
+         {
+          "sort-name": "ホウショウマリン",
+          "name": "宝鐘マリン"
+         },
+         {
+          "sort-name": "宝钟玛琳",
+          "name": "宝钟玛琳"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2024-10-16",
+     "releases": [
+      {
+       "id": "167cf2e9-2da7-4ee9-a980-c9bb8f936043",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "通常盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "85ee4ec2-9a00-3ba2-8da3-900328f7004a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "79c7e8c8-d17e-4ff2-96d3-646a672fea3b",
+           "number": "4",
+           "title": "スキスキDieスキ超Ayeシテル",
+           "length": 274533
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "685ee7c2-2bf8-4b17-861b-8285eeb00312",
+       "title": "Ahoy!! You're All Pirates♡",
+       "status": "Pseudo-Release",
+       "disambiguation": "English Titles",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "fd92ca35-8538-3897-b566-db2caea16e61",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "9e11ce66-cba1-4850-9613-d98d56cef943",
+           "number": "4",
+           "title": "Suki-Suki Diesuki Cho Ayeiteru",
+           "length": 274531
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "c31e7e8c-6628-49be-ab7d-c67764c5a34e",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "数量限定盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 24,
+       "media": [
+        {
+         "id": "2ee1aa73-e8b0-34b8-bede-b74c66fb8914",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "cd42f0cc-b793-496f-9499-52bf5860f1ab",
+           "number": "4",
+           "title": "スキスキDieスキ超Ayeシテル",
+           "length": 274531
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "8f4d1769-5cde-4e83-a432-7aad43eff7f4",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "910eb27b-e527-374a-90b7-849c38218060",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "50cbe83b-6d87-4e0d-849e-3369f6cadb67",
+           "number": "4",
+           "title": "スキスキDieスキ超Ayeシテル",
+           "length": 274531
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPV752409083"
+     ]
+    },
+    {
+     "id": "1a454293-f035-48a8-9220-aa26b65d813d",
+     "score": 100,
+     "title": "コンプレックス♡プリンセス",
+     "length": 199184,
+     "artist-credit": [
+      {
+       "name": "宝鐘マリン",
+       "artist": {
+        "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+        "name": "宝鐘マリン",
+        "sort-name": "Houshou, Marine",
+        "aliases": [
+         {
+          "sort-name": "Housho Marine",
+          "name": "Housho Marine"
+         },
+         {
+          "sort-name": "Senchou",
+          "name": "Senchou"
+         },
+         {
+          "sort-name": "Houshou Marine",
+          "name": "Houshou Marine"
+         },
+         {
+          "sort-name": "Hōshō Marin",
+          "name": "Hōshō Marin"
+         },
+         {
+          "sort-name": "Hōshō, Marine",
+          "name": "Marine Hōshō"
+         },
+         {
+          "sort-name": "Houshou Marin",
+          "name": "Houshou Marin"
+         },
+         {
+          "sort-name": "ほうしょうまりん",
+          "name": "ほうしょうまりん"
+         },
+         {
+          "sort-name": "ほうしょう まりん",
+          "name": "ほうしょう まりん"
+         },
+         {
+          "sort-name": "Houshou, Marine",
+          "name": "Marine Houshou"
+         },
+         {
+          "sort-name": "ホウショウマリン",
+          "name": "宝鐘マリン"
+         },
+         {
+          "sort-name": "宝钟玛琳",
+          "name": "宝钟玛琳"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2024-10-16",
+     "releases": [
+      {
+       "id": "167cf2e9-2da7-4ee9-a980-c9bb8f936043",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "通常盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "85ee4ec2-9a00-3ba2-8da3-900328f7004a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "d38046df-5fbe-4688-90b1-73d865526f8a",
+           "number": "6",
+           "title": "コンプレックス♡プリンセス",
+           "length": 199186
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "685ee7c2-2bf8-4b17-861b-8285eeb00312",
+       "title": "Ahoy!! You're All Pirates♡",
+       "status": "Pseudo-Release",
+       "disambiguation": "English Titles",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "fd92ca35-8538-3897-b566-db2caea16e61",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "141140d2-42df-4663-a826-cfd596d5dedb",
+           "number": "6",
+           "title": "Complex♡Princess",
+           "length": 199184
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "c31e7e8c-6628-49be-ab7d-c67764c5a34e",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "数量限定盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 24,
+       "media": [
+        {
+         "id": "2ee1aa73-e8b0-34b8-bede-b74c66fb8914",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "1f8e0db7-1d25-42fe-9bb1-6b1ca19527ed",
+           "number": "6",
+           "title": "コンプレックス♡プリンセス",
+           "length": 199184
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "8f4d1769-5cde-4e83-a432-7aad43eff7f4",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "910eb27b-e527-374a-90b7-849c38218060",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "428b8999-0b1d-49a2-9d5b-09189a51b0e0",
+           "number": "6",
+           "title": "コンプレックス♡プリンセス",
+           "length": 199184
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPV752409084"
+     ]
+    },
+    {
+     "id": "29a809e8-46d0-407a-83f4-93a97474ae23",
+     "score": 100,
+     "title": "A Horny Money World ～伝説の夜～",
+     "length": 196889,
+     "artist-credit": [
+      {
+       "name": "宝鐘マリン",
+       "artist": {
+        "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+        "name": "宝鐘マリン",
+        "sort-name": "Houshou, Marine",
+        "aliases": [
+         {
+          "sort-name": "Housho Marine",
+          "name": "Housho Marine"
+         },
+         {
+          "sort-name": "Senchou",
+          "name": "Senchou"
+         },
+         {
+          "sort-name": "Houshou Marine",
+          "name": "Houshou Marine"
+         },
+         {
+          "sort-name": "Hōshō Marin",
+          "name": "Hōshō Marin"
+         },
+         {
+          "sort-name": "Hōshō, Marine",
+          "name": "Marine Hōshō"
+         },
+         {
+          "sort-name": "Houshou Marin",
+          "name": "Houshou Marin"
+         },
+         {
+          "sort-name": "ほうしょうまりん",
+          "name": "ほうしょうまりん"
+         },
+         {
+          "sort-name": "ほうしょう まりん",
+          "name": "ほうしょう まりん"
+         },
+         {
+          "sort-name": "Houshou, Marine",
+          "name": "Marine Houshou"
+         },
+         {
+          "sort-name": "ホウショウマリン",
+          "name": "宝鐘マリン"
+         },
+         {
+          "sort-name": "宝钟玛琳",
+          "name": "宝钟玛琳"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2024-10-16",
+     "releases": [
+      {
+       "id": "167cf2e9-2da7-4ee9-a980-c9bb8f936043",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "通常盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "85ee4ec2-9a00-3ba2-8da3-900328f7004a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "599db0b9-3303-4df9-954a-3779beaef6dd",
+           "number": "8",
+           "title": "A Horny Money World ～伝説の夜～",
+           "length": 196880
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "685ee7c2-2bf8-4b17-861b-8285eeb00312",
+       "title": "Ahoy!! You're All Pirates♡",
+       "status": "Pseudo-Release",
+       "disambiguation": "English Titles",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "fd92ca35-8538-3897-b566-db2caea16e61",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "dbc800fd-a761-40aa-b3fb-a30bb5fbba5d",
+           "number": "8",
+           "title": "A Horny Money World 〜legendary night〜",
+           "length": 196889
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "c31e7e8c-6628-49be-ab7d-c67764c5a34e",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "数量限定盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 24,
+       "media": [
+        {
+         "id": "2ee1aa73-e8b0-34b8-bede-b74c66fb8914",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "3a41d15e-0e5e-484e-9127-f8f662b0daba",
+           "number": "8",
+           "title": "A Horny Money World ～伝説の夜～",
+           "length": 196889
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "8f4d1769-5cde-4e83-a432-7aad43eff7f4",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "910eb27b-e527-374a-90b7-849c38218060",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "0d4578cb-0041-4288-896b-a9b187b29946",
+           "number": "8",
+           "title": "A Horny Money World ～伝説の夜～",
+           "length": 196889
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPV752409085"
+     ]
+    },
+    {
+     "id": "aa9739d9-9fb4-49f2-b48d-c317c415841b",
+     "score": 93,
+     "title": "SHINKIRO",
+     "length": 275789,
+     "artist-credit": [
+      {
+       "joinphrase": "(",
+       "name": "GuraMarine",
+       "artist": {
+        "id": "b0219c8a-6a09-4f3a-bcc4-9f9d4cf1697e",
+        "name": "GuraMarine",
+        "sort-name": "GuraMarine"
+       }
+      },
+      {
+       "joinphrase": " & ",
+       "name": "宝鐘マリン",
+       "artist": {
+        "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+        "name": "宝鐘マリン",
+        "sort-name": "Houshou, Marine",
+        "aliases": [
+         {
+          "sort-name": "Housho Marine",
+          "name": "Housho Marine"
+         },
+         {
+          "sort-name": "Senchou",
+          "name": "Senchou"
+         },
+         {
+          "sort-name": "Houshou Marine",
+          "name": "Houshou Marine"
+         },
+         {
+          "sort-name": "Hōshō Marin",
+          "name": "Hōshō Marin"
+         },
+         {
+          "sort-name": "Hōshō, Marine",
+          "name": "Marine Hōshō"
+         },
+         {
+          "sort-name": "Houshou Marin",
+          "name": "Houshou Marin"
+         },
+         {
+          "sort-name": "ほうしょうまりん",
+          "name": "ほうしょうまりん"
+         },
+         {
+          "sort-name": "ほうしょう まりん",
+          "name": "ほうしょう まりん"
+         },
+         {
+          "sort-name": "Houshou, Marine",
+          "name": "Marine Houshou"
+         },
+         {
+          "sort-name": "ホウショウマリン",
+          "name": "宝鐘マリン"
+         },
+         {
+          "sort-name": "宝钟玛琳",
+          "name": "宝钟玛琳"
+         }
+        ]
+       }
+      },
+      {
+       "joinphrase": ")",
+       "name": "Gawr Gura",
+       "artist": {
+        "id": "d9eee634-11fa-41f8-bfd9-4040a14a7fa5",
+        "name": "Gawr Gura",
+        "sort-name": "Gawr, Gura",
+        "disambiguation": "virtual YouTuber, hololive EN",
+        "aliases": [
+         {
+          "sort-name": "がうる・ぐら",
+          "name": "がうる・ぐら"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2023-11-13",
+     "releases": [
+      {
+       "id": "f97e3a26-4d4e-4b6c-9423-d293e1f0b3f9",
+       "title": "SHINKIRO",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "joinphrase": "(",
+         "name": "GuraMarine",
+         "artist": {
+          "id": "b0219c8a-6a09-4f3a-bcc4-9f9d4cf1697e",
+          "name": "GuraMarine",
+          "sort-name": "GuraMarine"
+         }
+        },
+        {
+         "joinphrase": " & ",
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        },
+        {
+         "joinphrase": ")",
+         "name": "Gawr Gura",
+         "artist": {
+          "id": "d9eee634-11fa-41f8-bfd9-4040a14a7fa5",
+          "name": "Gawr Gura",
+          "sort-name": "Gawr, Gura",
+          "disambiguation": "virtual YouTuber, hololive EN"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "915a4662-b3c4-4d4c-afbf-568107ee1cbb",
+        "title": "SHINKIRO",
+        "primary-type": "Single"
+       },
+       "track-count": 2,
+       "media": [
+        {
+         "id": "7d8ea03a-4e2b-3361-ad7d-580cb3a3a02d",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "f96022ef-b604-4979-8ffb-b91f640afc54",
+           "number": "1",
+           "title": "SHINKIRO",
+           "length": 273000
+          }
+         ],
+         "track-count": 2
+        }
+       ]
+      },
+      {
+       "id": "167cf2e9-2da7-4ee9-a980-c9bb8f936043",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "通常盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "85ee4ec2-9a00-3ba2-8da3-900328f7004a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "74a93aae-8487-42a3-a02b-c047d37a6d9d",
+           "number": "13",
+           "title": "SHINKIRO",
+           "length": 275800
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "685ee7c2-2bf8-4b17-861b-8285eeb00312",
+       "title": "Ahoy!! You're All Pirates♡",
+       "status": "Pseudo-Release",
+       "disambiguation": "English Titles",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "fd92ca35-8538-3897-b566-db2caea16e61",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "37bce18b-7f90-4162-89c3-53b06f72c8ea",
+           "number": "13",
+           "title": "SHINKIRO",
+           "length": 275789
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "c31e7e8c-6628-49be-ab7d-c67764c5a34e",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "数量限定盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 24,
+       "media": [
+        {
+         "id": "2ee1aa73-e8b0-34b8-bede-b74c66fb8914",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "98f1996c-1b68-4a94-8246-9fb11c137c0e",
+           "number": "13",
+           "title": "SHINKIRO",
+           "length": 275789
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "8f4d1769-5cde-4e83-a432-7aad43eff7f4",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "910eb27b-e527-374a-90b7-849c38218060",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "fdeaefc7-1e30-41f3-adef-5b4f68243f32",
+           "number": "13",
+           "title": "SHINKIRO",
+           "length": 275789
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPV752307914"
+     ]
+    },
+    {
+     "id": "7b85c376-2845-4c57-8224-716d991071d6",
+     "score": 93,
+     "title": "Unison",
+     "length": 246971,
+     "artist-credit": [
+      {
+       "joinphrase": ", ",
+       "name": "宝鐘マリン",
+       "artist": {
+        "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+        "name": "宝鐘マリン",
+        "sort-name": "Houshou, Marine",
+        "aliases": [
+         {
+          "sort-name": "Housho Marine",
+          "name": "Housho Marine"
+         },
+         {
+          "sort-name": "Senchou",
+          "name": "Senchou"
+         },
+         {
+          "sort-name": "Houshou Marine",
+          "name": "Houshou Marine"
+         },
+         {
+          "sort-name": "Hōshō Marin",
+          "name": "Hōshō Marin"
+         },
+         {
+          "sort-name": "Hōshō, Marine",
+          "name": "Marine Hōshō"
+         },
+         {
+          "sort-name": "Houshou Marin",
+          "name": "Houshou Marin"
+         },
+         {
+          "sort-name": "ほうしょうまりん",
+          "name": "ほうしょうまりん"
+         },
+         {
+          "sort-name": "ほうしょう まりん",
+          "name": "ほうしょう まりん"
+         },
+         {
+          "sort-name": "Houshou, Marine",
+          "name": "Marine Houshou"
+         },
+         {
+          "sort-name": "ホウショウマリン",
+          "name": "宝鐘マリン"
+         },
+         {
+          "sort-name": "宝钟玛琳",
+          "name": "宝钟玛琳"
+         }
+        ]
+       }
+      },
+      {
+       "name": "Yunomi",
+       "artist": {
+        "id": "582beb32-3cfe-4ba7-9f69-846fac7e7ec7",
+        "name": "Yunomi",
+        "sort-name": "Yunomi",
+        "disambiguation": "Japanese electropop/future bass producer",
+        "aliases": [
+         {
+          "sort-name": "Yunomi",
+          "name": "Yunomi"
+         },
+         {
+          "sort-name": "ゆのみ",
+          "name": "ゆのみ"
+         },
+         {
+          "sort-name": "ゆのみ",
+          "name": "Yunomi"
+         },
+         {
+          "sort-name": "Ishiyama, Takurō",
+          "name": "Takurō Ishiyama"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2021-08-12",
+     "releases": [
+      {
+       "id": "167cf2e9-2da7-4ee9-a980-c9bb8f936043",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "通常盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "85ee4ec2-9a00-3ba2-8da3-900328f7004a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "fef75fba-cfdc-45ed-a6e1-ec62cca3f17d",
+           "number": "12",
+           "title": "Unison",
+           "length": 246960
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "685ee7c2-2bf8-4b17-861b-8285eeb00312",
+       "title": "Ahoy!! You're All Pirates♡",
+       "status": "Pseudo-Release",
+       "disambiguation": "English Titles",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "fd92ca35-8538-3897-b566-db2caea16e61",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "e66686d1-d8a5-407d-8be7-8487b62a5c43",
+           "number": "12",
+           "title": "Unison",
+           "length": 246971
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "c31e7e8c-6628-49be-ab7d-c67764c5a34e",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "数量限定盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 24,
+       "media": [
+        {
+         "id": "2ee1aa73-e8b0-34b8-bede-b74c66fb8914",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "56f95f7a-ec74-427b-a3f8-49e178172200",
+           "number": "12",
+           "title": "Unison",
+           "length": 246971
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "8f4d1769-5cde-4e83-a432-7aad43eff7f4",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "910eb27b-e527-374a-90b7-849c38218060",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "c63655b3-f3ca-4a01-a1cc-62768a2c36ad",
+           "number": "12",
+           "title": "Unison",
+           "length": 246971
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "d7a4593a-ec14-437f-abf4-244f9e52c48d",
+       "title": "Unison",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "joinphrase": " & ",
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        },
+        {
+         "name": "Yunomi",
+         "artist": {
+          "id": "582beb32-3cfe-4ba7-9f69-846fac7e7ec7",
+          "name": "Yunomi",
+          "sort-name": "Yunomi",
+          "disambiguation": "Japanese electropop/future bass producer"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "8421cde4-f537-4b3f-a3b2-2f66cfeb42c9",
+        "title": "Unison",
+        "primary-type": "Single"
+       },
+       "date": "2021-08-12",
+       "track-count": 2,
+       "media": [
+        {
+         "id": "918133ac-935f-3be6-ab87-a4f9258332ad",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "b95c7a59-830f-438d-9e62-159282de8816",
+           "number": "1",
+           "title": "Unison",
+           "length": 246750
+          }
+         ],
+         "track-count": 2
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPV752104876"
+     ]
+    },
+    {
+     "id": "7acaa09a-e990-42df-ac10-59e779e50da6",
+     "score": 87,
+     "title": "Happiness World",
+     "length": 283500,
+     "artist-credit": [
+      {
+       "joinphrase": "(",
+       "name": "BABACORN",
+       "artist": {
+        "id": "21403b84-1ee8-458f-8cd8-b3cd3ecb98ff",
+        "name": "BABACORN",
+        "sort-name": "BABACORN"
+       }
+      },
+      {
+       "joinphrase": " & ",
+       "name": "宝鐘マリン",
+       "artist": {
+        "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+        "name": "宝鐘マリン",
+        "sort-name": "Houshou, Marine",
+        "aliases": [
+         {
+          "sort-name": "Housho Marine",
+          "name": "Housho Marine"
+         },
+         {
+          "sort-name": "Senchou",
+          "name": "Senchou"
+         },
+         {
+          "sort-name": "Houshou Marine",
+          "name": "Houshou Marine"
+         },
+         {
+          "sort-name": "Hōshō Marin",
+          "name": "Hōshō Marin"
+         },
+         {
+          "sort-name": "Hōshō, Marine",
+          "name": "Marine Hōshō"
+         },
+         {
+          "sort-name": "Houshou Marin",
+          "name": "Houshou Marin"
+         },
+         {
+          "sort-name": "ほうしょうまりん",
+          "name": "ほうしょうまりん"
+         },
+         {
+          "sort-name": "ほうしょう まりん",
+          "name": "ほうしょう まりん"
+         },
+         {
+          "sort-name": "Houshou, Marine",
+          "name": "Marine Houshou"
+         },
+         {
+          "sort-name": "ホウショウマリン",
+          "name": "宝鐘マリン"
+         },
+         {
+          "sort-name": "宝钟玛琳",
+          "name": "宝钟玛琳"
+         }
+        ]
+       }
+      },
+      {
+       "joinphrase": ")",
+       "name": "白上フブキ",
+       "artist": {
+        "id": "5c4c9810-caf6-4828-8a5d-15264832f277",
+        "name": "白上フブキ",
+        "sort-name": "Shirakami, Fubuki",
+        "aliases": [
+         {
+          "sort-name": "Shirakami, Fubuki",
+          "name": "Shirakami Fubuki"
+         },
+         {
+          "sort-name": "Fubuking",
+          "name": "Fubuking"
+         },
+         {
+          "sort-name": "フブキング",
+          "name": "フブキング"
+         },
+         {
+          "sort-name": "✞白狐のFUBUKI✞",
+          "name": "✞白狐のFUBUKI✞"
+         },
+         {
+          "sort-name": "白上吹雪",
+          "name": "白上吹雪"
+         },
+         {
+          "sort-name": "しらかみふぶき",
+          "name": "しらかみふぶき"
+         },
+         {
+          "sort-name": "しらかみ ふぶき",
+          "name": "しらかみ ふぶき"
+         },
+         {
+          "sort-name": "シラカミフブキ",
+          "name": "白上フブキ"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2022-02-25",
+     "releases": [
+      {
+       "id": "167cf2e9-2da7-4ee9-a980-c9bb8f936043",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "通常盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "85ee4ec2-9a00-3ba2-8da3-900328f7004a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "63eea0be-6db4-4383-a05f-c3ea6ec783db",
+           "number": "11",
+           "title": "Happiness World",
+           "length": 283506
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "685ee7c2-2bf8-4b17-861b-8285eeb00312",
+       "title": "Ahoy!! You're All Pirates♡",
+       "status": "Pseudo-Release",
+       "disambiguation": "English Titles",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "fd92ca35-8538-3897-b566-db2caea16e61",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "8ab6c0e4-71ce-4fcc-9668-2270bbd4daf7",
+           "number": "11",
+           "title": "Happiness World",
+           "length": 283500
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "c31e7e8c-6628-49be-ab7d-c67764c5a34e",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "数量限定盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 24,
+       "media": [
+        {
+         "id": "2ee1aa73-e8b0-34b8-bede-b74c66fb8914",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "c8526936-0a2f-49fe-b78a-4a149ab859d2",
+           "number": "11",
+           "title": "Happiness World",
+           "length": 283500
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "8f4d1769-5cde-4e83-a432-7aad43eff7f4",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "910eb27b-e527-374a-90b7-849c38218060",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "ff9ad65c-153f-498a-9c82-e5886e60eb4c",
+           "number": "11",
+           "title": "Happiness World",
+           "length": 283500
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "13edc748-af61-45e6-a077-2b0579936c3e",
+       "title": "Happiness World",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "joinphrase": "(",
+         "name": "BABACORN",
+         "artist": {
+          "id": "21403b84-1ee8-458f-8cd8-b3cd3ecb98ff",
+          "name": "BABACORN",
+          "sort-name": "BABACORN"
+         }
+        },
+        {
+         "joinphrase": "/",
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        },
+        {
+         "joinphrase": ")",
+         "name": "白上フブキ",
+         "artist": {
+          "id": "5c4c9810-caf6-4828-8a5d-15264832f277",
+          "name": "白上フブキ",
+          "sort-name": "Shirakami, Fubuki"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "00e26348-3d49-49a4-b9f3-7850a1ef6830",
+        "title": "Happiness World",
+        "primary-type": "Single"
+       },
+       "date": "2022-02-25",
+       "track-count": 2,
+       "media": [
+        {
+         "id": "5beac944-32a4-3f50-9354-419439b66a95",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "59a9c17f-bf59-4a06-9155-888777af3400",
+           "number": "1",
+           "title": "Happiness World",
+           "length": 286464
+          }
+         ],
+         "track-count": 2
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPV752205588"
+     ]
+    },
+    {
+     "id": "895b3fc0-5fb7-4e8d-8aaa-2367e34d2491",
+     "score": 87,
+     "title": "ピパポ☆ピピプ",
+     "length": 185003,
+     "artist-credit": [
+      {
+       "joinphrase": "(",
+       "name": "BABACORN",
+       "artist": {
+        "id": "21403b84-1ee8-458f-8cd8-b3cd3ecb98ff",
+        "name": "BABACORN",
+        "sort-name": "BABACORN"
+       }
+      },
+      {
+       "joinphrase": " & ",
+       "name": "宝鐘マリン",
+       "artist": {
+        "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+        "name": "宝鐘マリン",
+        "sort-name": "Houshou, Marine",
+        "aliases": [
+         {
+          "sort-name": "Housho Marine",
+          "name": "Housho Marine"
+         },
+         {
+          "sort-name": "Senchou",
+          "name": "Senchou"
+         },
+         {
+          "sort-name": "Houshou Marine",
+          "name": "Houshou Marine"
+         },
+         {
+          "sort-name": "Hōshō Marin",
+          "name": "Hōshō Marin"
+         },
+         {
+          "sort-name": "Hōshō, Marine",
+          "name": "Marine Hōshō"
+         },
+         {
+          "sort-name": "Houshou Marin",
+          "name": "Houshou Marin"
+         },
+         {
+          "sort-name": "ほうしょうまりん",
+          "name": "ほうしょうまりん"
+         },
+         {
+          "sort-name": "ほうしょう まりん",
+          "name": "ほうしょう まりん"
+         },
+         {
+          "sort-name": "Houshou, Marine",
+          "name": "Marine Houshou"
+         },
+         {
+          "sort-name": "ホウショウマリン",
+          "name": "宝鐘マリン"
+         },
+         {
+          "sort-name": "宝钟玛琳",
+          "name": "宝钟玛琳"
+         }
+        ]
+       }
+      },
+      {
+       "joinphrase": ")",
+       "name": "白上フブキ",
+       "artist": {
+        "id": "5c4c9810-caf6-4828-8a5d-15264832f277",
+        "name": "白上フブキ",
+        "sort-name": "Shirakami, Fubuki",
+        "aliases": [
+         {
+          "sort-name": "Shirakami, Fubuki",
+          "name": "Shirakami Fubuki"
+         },
+         {
+          "sort-name": "Fubuking",
+          "name": "Fubuking"
+         },
+         {
+          "sort-name": "フブキング",
+          "name": "フブキング"
+         },
+         {
+          "sort-name": "✞白狐のFUBUKI✞",
+          "name": "✞白狐のFUBUKI✞"
+         },
+         {
+          "sort-name": "白上吹雪",
+          "name": "白上吹雪"
+         },
+         {
+          "sort-name": "しらかみふぶき",
+          "name": "しらかみふぶき"
+         },
+         {
+          "sort-name": "しらかみ ふぶき",
+          "name": "しらかみ ふぶき"
+         },
+         {
+          "sort-name": "シラカミフブキ",
+          "name": "白上フブキ"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2024-03-21",
+     "releases": [
+      {
+       "id": "167cf2e9-2da7-4ee9-a980-c9bb8f936043",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "通常盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "85ee4ec2-9a00-3ba2-8da3-900328f7004a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "f3d986ec-70a0-49ec-93f1-d7bcdd606a1a",
+           "number": "7",
+           "title": "ピパポ☆ピピプ",
+           "length": 185000
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "685ee7c2-2bf8-4b17-861b-8285eeb00312",
+       "title": "Ahoy!! You're All Pirates♡",
+       "status": "Pseudo-Release",
+       "disambiguation": "English Titles",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "fd92ca35-8538-3897-b566-db2caea16e61",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "a496c422-a15c-4f88-b29d-d3f3efdee185",
+           "number": "7",
+           "title": "pipapo☆pipipu",
+           "length": 185003
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "c31e7e8c-6628-49be-ab7d-c67764c5a34e",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "数量限定盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 24,
+       "media": [
+        {
+         "id": "2ee1aa73-e8b0-34b8-bede-b74c66fb8914",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "665fdaee-bc7a-4de3-8d18-bbe0e1f7e967",
+           "number": "7",
+           "title": "ピパポ☆ピピプ",
+           "length": 185003
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "8f4d1769-5cde-4e83-a432-7aad43eff7f4",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "910eb27b-e527-374a-90b7-849c38218060",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "fcabf425-4924-4622-9199-dc09fcfb21b5",
+           "number": "7",
+           "title": "ピパポ☆ピピプ",
+           "length": 185003
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "a4563e2a-d864-489c-8e5f-7874c2f6af58",
+       "title": "ピパポ☆ピピプ",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "joinphrase": "(",
+         "name": "BABACORN",
+         "artist": {
+          "id": "21403b84-1ee8-458f-8cd8-b3cd3ecb98ff",
+          "name": "BABACORN",
+          "sort-name": "BABACORN"
+         }
+        },
+        {
+         "joinphrase": "/",
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        },
+        {
+         "joinphrase": ")",
+         "name": "白上フブキ",
+         "artist": {
+          "id": "5c4c9810-caf6-4828-8a5d-15264832f277",
+          "name": "白上フブキ",
+          "sort-name": "Shirakami, Fubuki"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "2f93ccfe-4410-4af3-88b4-463e5d5bddaa",
+        "title": "ピパポ☆ピピプ",
+        "primary-type": "Single"
+       },
+       "date": "2024-03-21",
+       "track-count": 2,
+       "media": [
+        {
+         "id": "b707c78b-cdca-358c-bb92-ccb8fd2fc55b",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "a98c7435-c0d9-4651-816d-bbf8a398bd08",
+           "number": "1",
+           "title": "ピパポ☆ピピプ",
+           "length": 183799
+          }
+         ],
+         "track-count": 2
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPV752408406"
+     ]
+    },
+    {
+     "id": "286ef74e-4884-4f46-a211-99b319bbfa49",
+     "score": 82,
+     "title": "I I I",
+     "length": 187823,
+     "artist-credit": [
+      {
+       "joinphrase": " & ",
+       "name": "宝鐘マリン",
+       "artist": {
+        "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+        "name": "宝鐘マリン",
+        "sort-name": "Houshou, Marine",
+        "aliases": [
+         {
+          "sort-name": "Housho Marine",
+          "name": "Housho Marine"
+         },
+         {
+          "sort-name": "Senchou",
+          "name": "Senchou"
+         },
+         {
+          "sort-name": "Houshou Marine",
+          "name": "Houshou Marine"
+         },
+         {
+          "sort-name": "Hōshō Marin",
+          "name": "Hōshō Marin"
+         },
+         {
+          "sort-name": "Hōshō, Marine",
+          "name": "Marine Hōshō"
+         },
+         {
+          "sort-name": "Houshou Marin",
+          "name": "Houshou Marin"
+         },
+         {
+          "sort-name": "ほうしょうまりん",
+          "name": "ほうしょうまりん"
+         },
+         {
+          "sort-name": "ほうしょう まりん",
+          "name": "ほうしょう まりん"
+         },
+         {
+          "sort-name": "Houshou, Marine",
+          "name": "Marine Houshou"
+         },
+         {
+          "sort-name": "ホウショウマリン",
+          "name": "宝鐘マリン"
+         },
+         {
+          "sort-name": "宝钟玛琳",
+          "name": "宝钟玛琳"
+         }
+        ]
+       }
+      },
+      {
+       "name": "Kobo Kanaeru",
+       "artist": {
+        "id": "baf4eff0-f0f1-475b-9100-6517ae137873",
+        "name": "Kobo Kanaeru",
+        "sort-name": "Kobo Kanaeru",
+        "aliases": [
+         {
+          "sort-name": "こぼ・かなえる",
+          "name": "こぼ・かなえる"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2024-05-04",
+     "releases": [
+      {
+       "id": "167cf2e9-2da7-4ee9-a980-c9bb8f936043",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "通常盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "85ee4ec2-9a00-3ba2-8da3-900328f7004a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "b2ae523d-063e-4d33-ae2d-e8d75606703c",
+           "number": "9",
+           "title": "I I I",
+           "length": 187826
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "685ee7c2-2bf8-4b17-861b-8285eeb00312",
+       "title": "Ahoy!! You're All Pirates♡",
+       "status": "Pseudo-Release",
+       "disambiguation": "English Titles",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "fd92ca35-8538-3897-b566-db2caea16e61",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "ae0e17bb-b2a0-4a7f-83e0-6eb98491345b",
+           "number": "9",
+           "title": "I I I",
+           "length": 187823
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "c31e7e8c-6628-49be-ab7d-c67764c5a34e",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "数量限定盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 24,
+       "media": [
+        {
+         "id": "2ee1aa73-e8b0-34b8-bede-b74c66fb8914",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "c3fed432-a8f8-4dd0-9fa8-bd4528e979b4",
+           "number": "9",
+           "title": "I I I",
+           "length": 187823
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "8f4d1769-5cde-4e83-a432-7aad43eff7f4",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "910eb27b-e527-374a-90b7-849c38218060",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "ed0f2ffa-09d2-46b4-adc9-9a72517b1a53",
+           "number": "9",
+           "title": "I I I",
+           "length": 187823
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "518ba191-4b80-46da-afce-e244aea7e58f",
+       "title": "I I I",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "joinphrase": " & ",
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        },
+        {
+         "name": "Kobo Kanaeru",
+         "artist": {
+          "id": "baf4eff0-f0f1-475b-9100-6517ae137873",
+          "name": "Kobo Kanaeru",
+          "sort-name": "Kobo Kanaeru"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "a9692dd4-11d1-4d91-8d60-d04e764cf8c4",
+        "title": "I I I",
+        "primary-type": "Single"
+       },
+       "date": "2024-05-04",
+       "track-count": 2,
+       "media": [
+        {
+         "id": "c72df791-87a2-3deb-b885-231ca198d57d",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "3caeac62-460d-42e9-98a3-3ba6abc2f6d2",
+           "number": "1",
+           "title": "I I I",
+           "length": 185876
+          }
+         ],
+         "track-count": 2
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPV752408570"
+     ]
+    },
+    {
+     "id": "4637a2df-c313-475e-bafa-759e30a28cbc",
+     "score": 77,
+     "title": "パイパイ仮面でどうかしらん？",
+     "length": 292611,
+     "artist-credit": [
+      {
+       "name": "宝鐘マリン",
+       "artist": {
+        "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+        "name": "宝鐘マリン",
+        "sort-name": "Houshou, Marine",
+        "aliases": [
+         {
+          "sort-name": "Housho Marine",
+          "name": "Housho Marine"
+         },
+         {
+          "sort-name": "Senchou",
+          "name": "Senchou"
+         },
+         {
+          "sort-name": "Houshou Marine",
+          "name": "Houshou Marine"
+         },
+         {
+          "sort-name": "Hōshō Marin",
+          "name": "Hōshō Marin"
+         },
+         {
+          "sort-name": "Hōshō, Marine",
+          "name": "Marine Hōshō"
+         },
+         {
+          "sort-name": "Houshou Marin",
+          "name": "Houshou Marin"
+         },
+         {
+          "sort-name": "ほうしょうまりん",
+          "name": "ほうしょうまりん"
+         },
+         {
+          "sort-name": "ほうしょう まりん",
+          "name": "ほうしょう まりん"
+         },
+         {
+          "sort-name": "Houshou, Marine",
+          "name": "Marine Houshou"
+         },
+         {
+          "sort-name": "ホウショウマリン",
+          "name": "宝鐘マリン"
+         },
+         {
+          "sort-name": "宝钟玛琳",
+          "name": "宝钟玛琳"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2024-09-16",
+     "releases": [
+      {
+       "id": "167cf2e9-2da7-4ee9-a980-c9bb8f936043",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "通常盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "85ee4ec2-9a00-3ba2-8da3-900328f7004a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "f28b9881-9a52-4e86-814a-afef9e677d1f",
+           "number": "10",
+           "title": "パイパイ仮面でどうかしらん？",
+           "length": 292613
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "685ee7c2-2bf8-4b17-861b-8285eeb00312",
+       "title": "Ahoy!! You're All Pirates♡",
+       "status": "Pseudo-Release",
+       "disambiguation": "English Titles",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "fd92ca35-8538-3897-b566-db2caea16e61",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "64c1a128-cff0-4c45-aa44-0204f08e165f",
+           "number": "10",
+           "title": "How about Paipai Mask?",
+           "length": 292611
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "c31e7e8c-6628-49be-ab7d-c67764c5a34e",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "数量限定盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 24,
+       "media": [
+        {
+         "id": "2ee1aa73-e8b0-34b8-bede-b74c66fb8914",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "45a9c1ed-9e2b-4ba3-b7a0-5bb9b6854aa9",
+           "number": "10",
+           "title": "パイパイ仮面でどうかしらん？",
+           "length": 292611
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "8f4d1769-5cde-4e83-a432-7aad43eff7f4",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "910eb27b-e527-374a-90b7-849c38218060",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "c9e4720c-1533-41f3-97eb-84593313c569",
+           "number": "10",
+           "title": "パイパイ仮面でどうかしらん？",
+           "length": 292611
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "b6f78528-c54f-4142-aee7-42e987e98b52",
+       "title": "パイパイ仮面でどうかしらん?",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "36b1bd5e-fa3f-4981-92fc-d89b29658fc8",
+        "title": "パイパイ仮面でどうかしらん?",
+        "primary-type": "Single"
+       },
+       "date": "2024-09-16",
+       "track-count": 2,
+       "media": [
+        {
+         "id": "0bba9eaa-336a-31ca-a3cb-1a6fc8637286",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "11c46ff9-22ff-4f41-99e0-2ebb6c75b250",
+           "number": "1",
+           "title": "パイパイ仮面でどうかしらん？",
+           "length": 291111
+          }
+         ],
+         "track-count": 2
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPV752409086"
+     ]
+    },
+    {
+     "id": "7267567f-b4cc-46e1-b1e5-de2fcd99d85e",
+     "score": 77,
+     "title": "マリン出航！！",
+     "length": 271947,
+     "artist-credit": [
+      {
+       "name": "宝鐘マリン",
+       "artist": {
+        "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+        "name": "宝鐘マリン",
+        "sort-name": "Houshou, Marine",
+        "aliases": [
+         {
+          "sort-name": "Housho Marine",
+          "name": "Housho Marine"
+         },
+         {
+          "sort-name": "Senchou",
+          "name": "Senchou"
+         },
+         {
+          "sort-name": "Houshou Marine",
+          "name": "Houshou Marine"
+         },
+         {
+          "sort-name": "Hōshō Marin",
+          "name": "Hōshō Marin"
+         },
+         {
+          "sort-name": "Hōshō, Marine",
+          "name": "Marine Hōshō"
+         },
+         {
+          "sort-name": "Houshou Marin",
+          "name": "Houshou Marin"
+         },
+         {
+          "sort-name": "ほうしょうまりん",
+          "name": "ほうしょうまりん"
+         },
+         {
+          "sort-name": "ほうしょう まりん",
+          "name": "ほうしょう まりん"
+         },
+         {
+          "sort-name": "Houshou, Marine",
+          "name": "Marine Houshou"
+         },
+         {
+          "sort-name": "ホウショウマリン",
+          "name": "宝鐘マリン"
+         },
+         {
+          "sort-name": "宝钟玛琳",
+          "name": "宝钟玛琳"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2022-04-28",
+     "releases": [
+      {
+       "id": "167cf2e9-2da7-4ee9-a980-c9bb8f936043",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "通常盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "85ee4ec2-9a00-3ba2-8da3-900328f7004a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "f0179e8a-4706-436b-8eaf-8b02d9a8cff2",
+           "number": "14",
+           "title": "マリン出航！！",
+           "length": 271946
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "685ee7c2-2bf8-4b17-861b-8285eeb00312",
+       "title": "Ahoy!! You're All Pirates♡",
+       "status": "Pseudo-Release",
+       "disambiguation": "English Titles",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "fd92ca35-8538-3897-b566-db2caea16e61",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "1f0aac95-9d68-4b18-aa61-98b399c89d29",
+           "number": "14",
+           "title": "Marine Set Sail!!",
+           "length": 271947
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "c31e7e8c-6628-49be-ab7d-c67764c5a34e",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "数量限定盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 24,
+       "media": [
+        {
+         "id": "2ee1aa73-e8b0-34b8-bede-b74c66fb8914",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "131246c0-83c5-4edc-af60-93c51966150a",
+           "number": "14",
+           "title": "マリン出航！！",
+           "length": 271947
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "8f4d1769-5cde-4e83-a432-7aad43eff7f4",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "910eb27b-e527-374a-90b7-849c38218060",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "ace13398-e286-4e31-bd8b-a884df79559b",
+           "number": "14",
+           "title": "マリン出航！！",
+           "length": 271947
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "0b38a435-1d61-4d2e-ba59-415624ce0fae",
+       "title": "マリン出航!!",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "fe49f901-858a-44fc-88bc-d1969f60d20c",
+        "title": "マリン出航!!",
+        "primary-type": "Single"
+       },
+       "date": "2022-04-28",
+       "track-count": 2,
+       "media": [
+        {
+         "id": "f0f9ab5c-98eb-3358-9417-0d099e971d76",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "f1732a1a-dc56-4bd2-a80f-e435b0b5a9bd",
+           "number": "1",
+           "title": "マリン出航!!",
+           "length": 273134
+          }
+         ],
+         "track-count": 2
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPV752205907"
+     ]
+    },
+    {
+     "id": "896b1e2c-0eb2-443e-b5f1-61f3b64e3512",
+     "score": 66,
+     "title": "幽霊船戦",
+     "length": 263711,
+     "artist-credit": [
+      {
+       "name": "宝鐘マリン",
+       "artist": {
+        "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+        "name": "宝鐘マリン",
+        "sort-name": "Houshou, Marine",
+        "aliases": [
+         {
+          "sort-name": "Housho Marine",
+          "name": "Housho Marine"
+         },
+         {
+          "sort-name": "Senchou",
+          "name": "Senchou"
+         },
+         {
+          "sort-name": "Houshou Marine",
+          "name": "Houshou Marine"
+         },
+         {
+          "sort-name": "Hōshō Marin",
+          "name": "Hōshō Marin"
+         },
+         {
+          "sort-name": "Hōshō, Marine",
+          "name": "Marine Hōshō"
+         },
+         {
+          "sort-name": "Houshou Marin",
+          "name": "Houshou Marin"
+         },
+         {
+          "sort-name": "ほうしょうまりん",
+          "name": "ほうしょうまりん"
+         },
+         {
+          "sort-name": "ほうしょう まりん",
+          "name": "ほうしょう まりん"
+         },
+         {
+          "sort-name": "Houshou, Marine",
+          "name": "Marine Houshou"
+         },
+         {
+          "sort-name": "ホウショウマリン",
+          "name": "宝鐘マリン"
+         },
+         {
+          "sort-name": "宝钟玛琳",
+          "name": "宝钟玛琳"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2024-07-31",
+     "releases": [
+      {
+       "id": "167cf2e9-2da7-4ee9-a980-c9bb8f936043",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "通常盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "85ee4ec2-9a00-3ba2-8da3-900328f7004a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "e2fe7984-33e7-4be7-adc9-32d2845dfee6",
+           "number": "3",
+           "title": "幽霊船戦",
+           "length": 263720
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "685ee7c2-2bf8-4b17-861b-8285eeb00312",
+       "title": "Ahoy!! You're All Pirates♡",
+       "status": "Pseudo-Release",
+       "disambiguation": "English Titles",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "fd92ca35-8538-3897-b566-db2caea16e61",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "a85eafa1-11e3-4289-868e-ad5127070f77",
+           "number": "3",
+           "title": "Dead Ma’am’s Chest",
+           "length": 263711
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "c31e7e8c-6628-49be-ab7d-c67764c5a34e",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "数量限定盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 24,
+       "media": [
+        {
+         "id": "2ee1aa73-e8b0-34b8-bede-b74c66fb8914",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "d766339e-166c-4d91-a3ab-dd4bf37b690b",
+           "number": "3",
+           "title": "幽霊船戦",
+           "length": 263711
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "8f4d1769-5cde-4e83-a432-7aad43eff7f4",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "910eb27b-e527-374a-90b7-849c38218060",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "f28793fd-b5f9-4210-a30d-b6998651a53a",
+           "number": "3",
+           "title": "幽霊船戦",
+           "length": 263711
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "d265cf77-c829-4ad6-8002-0dd6a5dfc567",
+       "title": "Dead Ma’am’s Chest",
+       "status": "Pseudo-Release",
+       "artist-credit": [
+        {
+         "name": "Houshou Marine",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "7465ca81-017f-4ee7-be6f-6c694dd277fe",
+        "title": "幽霊船戦",
+        "primary-type": "Single"
+       },
+       "track-count": 2,
+       "media": [
+        {
+         "id": "51573c73-17b3-38f6-b14c-9758f32b211e",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "9d9d6e87-c5fd-4521-a98c-084ba0a3a325",
+           "number": "1",
+           "title": "Dead Ma’am’s Chest",
+           "length": 264000
+          }
+         ],
+         "track-count": 2
+        }
+       ]
+      },
+      {
+       "id": "3fb6fefb-546c-411c-a60d-270a833c8552",
+       "title": "幽霊船戦",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "7465ca81-017f-4ee7-be6f-6c694dd277fe",
+        "title": "幽霊船戦",
+        "primary-type": "Single"
+       },
+       "date": "2024-07-31",
+       "track-count": 2,
+       "media": [
+        {
+         "id": "b18075a1-ec43-3b84-9218-c8c205606690",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "47f9fa24-a59a-4537-8ced-2905167d9d3e",
+           "number": "1",
+           "title": "幽霊船戦",
+           "length": 264000
+          }
+         ],
+         "track-count": 2
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPV752408878"
+     ]
+    },
+    {
+     "id": "0a841813-45f1-4046-a9df-24ce1b7d025c",
+     "score": 60,
+     "title": "美少女無罪♡パイレーツ",
+     "length": 220440,
+     "artist-credit": [
+      {
+       "name": "宝鐘マリン",
+       "artist": {
+        "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+        "name": "宝鐘マリン",
+        "sort-name": "Houshou, Marine",
+        "aliases": [
+         {
+          "sort-name": "Housho Marine",
+          "name": "Housho Marine"
+         },
+         {
+          "sort-name": "Senchou",
+          "name": "Senchou"
+         },
+         {
+          "sort-name": "Houshou Marine",
+          "name": "Houshou Marine"
+         },
+         {
+          "sort-name": "Hōshō Marin",
+          "name": "Hōshō Marin"
+         },
+         {
+          "sort-name": "Hōshō, Marine",
+          "name": "Marine Hōshō"
+         },
+         {
+          "sort-name": "Houshou Marin",
+          "name": "Houshou Marin"
+         },
+         {
+          "sort-name": "ほうしょうまりん",
+          "name": "ほうしょうまりん"
+         },
+         {
+          "sort-name": "ほうしょう まりん",
+          "name": "ほうしょう まりん"
+         },
+         {
+          "sort-name": "Houshou, Marine",
+          "name": "Marine Houshou"
+         },
+         {
+          "sort-name": "ホウショウマリン",
+          "name": "宝鐘マリン"
+         },
+         {
+          "sort-name": "宝钟玛琳",
+          "name": "宝钟玛琳"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2023-07-31",
+     "releases": [
+      {
+       "id": "167cf2e9-2da7-4ee9-a980-c9bb8f936043",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "通常盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "85ee4ec2-9a00-3ba2-8da3-900328f7004a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "20332325-bb04-48e1-98bc-08a475d94df6",
+           "number": "5",
+           "title": "美少女無罪♡パイレーツ",
+           "length": 220440
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "685ee7c2-2bf8-4b17-861b-8285eeb00312",
+       "title": "Ahoy!! You're All Pirates♡",
+       "status": "Pseudo-Release",
+       "disambiguation": "English Titles",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "fd92ca35-8538-3897-b566-db2caea16e61",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "1bc9e042-8f05-460d-a083-5262d23478c4",
+           "number": "5",
+           "title": "Bishoujyo Muzai♡Pirates",
+           "length": 220441
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "c31e7e8c-6628-49be-ab7d-c67764c5a34e",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "数量限定盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 24,
+       "media": [
+        {
+         "id": "2ee1aa73-e8b0-34b8-bede-b74c66fb8914",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "41f4f683-80df-4705-873f-b8f1db9d4be5",
+           "number": "5",
+           "title": "美少女無罪♡パイレーツ",
+           "length": 220441
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "8f4d1769-5cde-4e83-a432-7aad43eff7f4",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "910eb27b-e527-374a-90b7-849c38218060",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "24c50c0a-5fd6-4dc7-a950-de79035c9ed9",
+           "number": "5",
+           "title": "美少女無罪♡パイレーツ",
+           "length": 220441
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "29da6ebb-6242-4f07-af42-d47473328c5b",
+       "title": "Bishoujyo Muzai♡Pirates",
+       "status": "Pseudo-Release",
+       "artist-credit": [
+        {
+         "name": "Houshou Marine",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "f19c70ce-858f-48bd-ab86-7827835791dd",
+        "title": "美少女無罪♡パイレーツ",
+        "primary-type": "Single"
+       },
+       "track-count": 2,
+       "media": [
+        {
+         "id": "2ac3819a-4bd9-3750-9031-394063b869d7",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "deca8e99-4664-4810-85d8-9cd1059dc666",
+           "number": "1",
+           "title": "Bishoujyo Muzai♡Pirates",
+           "length": 219000
+          }
+         ],
+         "track-count": 2
+        }
+       ]
+      },
+      {
+       "id": "5c6e93d4-e2c4-4916-adf3-b50245300595",
+       "title": "美少女無罪♡パイレーツ",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "f19c70ce-858f-48bd-ab86-7827835791dd",
+        "title": "美少女無罪♡パイレーツ",
+        "primary-type": "Single"
+       },
+       "date": "2023-07-31",
+       "track-count": 2,
+       "media": [
+        {
+         "id": "718e94e2-eeef-312e-81ac-71a22514bdd0",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "5968629c-3e40-4cbc-b2c6-19ae5590bb49",
+           "number": "1",
+           "title": "美少女無罪♡パイレーツ",
+           "length": 219000
+          }
+         ],
+         "track-count": 2
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPV752307388"
+     ]
+    },
+    {
+     "id": "33a66538-482e-4102-890b-15dec29ef615",
+     "score": 47,
+     "title": "Ahoy!! 我ら宝鐘海賊団☆",
+     "length": 307999,
+     "artist-credit": [
+      {
+       "name": "宝鐘マリン",
+       "artist": {
+        "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+        "name": "宝鐘マリン",
+        "sort-name": "Houshou, Marine",
+        "aliases": [
+         {
+          "sort-name": "Housho Marine",
+          "name": "Housho Marine"
+         },
+         {
+          "sort-name": "Senchou",
+          "name": "Senchou"
+         },
+         {
+          "sort-name": "Houshou Marine",
+          "name": "Houshou Marine"
+         },
+         {
+          "sort-name": "Hōshō Marin",
+          "name": "Hōshō Marin"
+         },
+         {
+          "sort-name": "Hōshō, Marine",
+          "name": "Marine Hōshō"
+         },
+         {
+          "sort-name": "Houshou Marin",
+          "name": "Houshou Marin"
+         },
+         {
+          "sort-name": "ほうしょうまりん",
+          "name": "ほうしょうまりん"
+         },
+         {
+          "sort-name": "ほうしょう まりん",
+          "name": "ほうしょう まりん"
+         },
+         {
+          "sort-name": "Houshou, Marine",
+          "name": "Marine Houshou"
+         },
+         {
+          "sort-name": "ホウショウマリン",
+          "name": "宝鐘マリン"
+         },
+         {
+          "sort-name": "宝钟玛琳",
+          "name": "宝钟玛琳"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2020-08-12",
+     "releases": [
+      {
+       "id": "685ee7c2-2bf8-4b17-861b-8285eeb00312",
+       "title": "Ahoy!! You're All Pirates♡",
+       "status": "Pseudo-Release",
+       "disambiguation": "English Titles",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "fd92ca35-8538-3897-b566-db2caea16e61",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "bce39e87-706b-496b-8142-dd37e48a1df1",
+           "number": "1",
+           "title": "Ahoy!! We are Houshou Pirates",
+           "length": 307999
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "167cf2e9-2da7-4ee9-a980-c9bb8f936043",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "通常盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "85ee4ec2-9a00-3ba2-8da3-900328f7004a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "927e6d11-97c4-44b4-b43f-6cd50b96ca07",
+           "number": "1",
+           "title": "Ahoy!! 我ら宝鐘海賊団☆",
+           "length": 307986
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "c31e7e8c-6628-49be-ab7d-c67764c5a34e",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "数量限定盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 24,
+       "media": [
+        {
+         "id": "2ee1aa73-e8b0-34b8-bede-b74c66fb8914",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "909cd4c5-cfce-44f7-8131-2778d691dc76",
+           "number": "1",
+           "title": "Ahoy!! 我ら宝鐘海賊団☆",
+           "length": 307999
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "8f4d1769-5cde-4e83-a432-7aad43eff7f4",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "910eb27b-e527-374a-90b7-849c38218060",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "7686a3bc-a28c-43da-a661-db6a2c9910d3",
+           "number": "1",
+           "title": "Ahoy!! 我ら宝鐘海賊団☆",
+           "length": 307999
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "0f32bb43-8773-41c5-9015-cd7acaed823f",
+       "title": "hololive IDOL PROJECT 1st Live.『Bloom,』",
+       "artist-credit": [
+        {
+         "name": "hololive IDOL PROJECT",
+         "artist": {
+          "id": "28c97051-750d-4a1f-a723-8a0089fcf38c",
+          "name": "hololive IDOL PROJECT",
+          "sort-name": "hololive IDOL PROJECT"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "831d1920-d568-48d4-a29b-a03574739970",
+        "title": "hololive IDOL PROJECT 1st Live.『Bloom,』",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2021-02-25",
+       "track-count": 21,
+       "media": [
+        {
+         "id": "2dd15706-95a9-3e68-ba23-6bec6e351a43",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "88e01ad8-8a2a-4f11-a2a2-575d3a1ca23a",
+           "number": "15",
+           "title": "Ahoy!! 我ら宝鐘海賊団☆",
+           "length": 307000
+          }
+         ],
+         "track-count": 21
+        }
+       ]
+      },
+      {
+       "id": "184239ed-9c74-4878-91f3-effb24fd11ec",
+       "title": "Ahoy!! 我ら宝鐘海賊団☆",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "7c68de90-0fd5-4989-bede-4a939f214ad9",
+        "title": "Ahoy!! 我ら宝鐘海賊団☆",
+        "primary-type": "Single"
+       },
+       "date": "2020-08-12",
+       "track-count": 2,
+       "media": [
+        {
+         "id": "da59aa58-2d93-38aa-89fb-f8b8636b992e",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "a8f0291e-95d3-43b0-b432-a013276a69b9",
+           "number": "1",
+           "title": "Ahoy!! 我ら宝鐘海賊団☆",
+           "length": 308000
+          }
+         ],
+         "track-count": 2
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPV752002667"
+     ]
+    },
+    {
+     "id": "9071ab93-c4cb-45fa-b755-16442c75839b",
+     "score": 35,
+     "title": "I’m Your Treasure Box *あなたは マリンせんちょうを たからばこからみつけた。",
+     "length": 255067,
+     "artist-credit": [
+      {
+       "name": "宝鐘マリン",
+       "artist": {
+        "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+        "name": "宝鐘マリン",
+        "sort-name": "Houshou, Marine",
+        "aliases": [
+         {
+          "sort-name": "Housho Marine",
+          "name": "Housho Marine"
+         },
+         {
+          "sort-name": "Senchou",
+          "name": "Senchou"
+         },
+         {
+          "sort-name": "Houshou Marine",
+          "name": "Houshou Marine"
+         },
+         {
+          "sort-name": "Hōshō Marin",
+          "name": "Hōshō Marin"
+         },
+         {
+          "sort-name": "Hōshō, Marine",
+          "name": "Marine Hōshō"
+         },
+         {
+          "sort-name": "Houshou Marin",
+          "name": "Houshou Marin"
+         },
+         {
+          "sort-name": "ほうしょうまりん",
+          "name": "ほうしょうまりん"
+         },
+         {
+          "sort-name": "ほうしょう まりん",
+          "name": "ほうしょう まりん"
+         },
+         {
+          "sort-name": "Houshou, Marine",
+          "name": "Marine Houshou"
+         },
+         {
+          "sort-name": "ホウショウマリン",
+          "name": "宝鐘マリン"
+         },
+         {
+          "sort-name": "宝钟玛琳",
+          "name": "宝钟玛琳"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2022-07-31",
+     "releases": [
+      {
+       "id": "861585de-9549-4452-b39a-9a451fb58cfb",
+       "title": "hololive RECORDS HISTORY COLLECTION",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "hololive",
+         "artist": {
+          "id": "a612a1bd-9dc0-45d1-8607-ffd95c3e81be",
+          "name": "hololive",
+          "sort-name": "hololive",
+          "disambiguation": "Japanese branch of hololive"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "1aa7e39f-d7f1-4a77-bd43-e447d8c0a7a9",
+        "title": "hololive RECORDS HISTORY COLLECTION",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2026-10-09",
+       "track-count": 67,
+       "media": [
+        {
+         "id": "46fec14c-bec3-45b2-902f-473ec07dc73a",
+         "position": 5,
+         "format": "CD",
+         "track": [
+          {
+           "id": "75345c5f-6126-4e87-a459-dff3984bc3de",
+           "number": "4",
+           "title": "I’m Your Treasure Box *あなたは マリンせんちょうを たからばこからみつけた。",
+           "length": 256000
+          }
+         ],
+         "track-count": 4
+        }
+       ]
+      },
+      {
+       "id": "167cf2e9-2da7-4ee9-a980-c9bb8f936043",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "通常盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "85ee4ec2-9a00-3ba2-8da3-900328f7004a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "b95ce0ad-4bb3-437b-8705-c4ab35f55f8d",
+           "number": "2",
+           "title": "I’m Your Treasure Box *あなたは マリンせんちょうを たからばこからみつけた。",
+           "length": 255066
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "685ee7c2-2bf8-4b17-861b-8285eeb00312",
+       "title": "Ahoy!! You're All Pirates♡",
+       "status": "Pseudo-Release",
+       "disambiguation": "English Titles",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "fd92ca35-8538-3897-b566-db2caea16e61",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "52ac541b-1ada-47b8-b4d7-fdf5afaefe13",
+           "number": "2",
+           "title": "I’m Your Treasure Box * You have found captain Marine in a treasure chest",
+           "length": 255067
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "c31e7e8c-6628-49be-ab7d-c67764c5a34e",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "数量限定盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 24,
+       "media": [
+        {
+         "id": "2ee1aa73-e8b0-34b8-bede-b74c66fb8914",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "03ef917f-8ba7-4391-a977-ce8ed5604edf",
+           "number": "2",
+           "title": "I’m Your Treasure Box *あなたは マリンせんちょうを たからばこからみつけた。",
+           "length": 255067
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "8f4d1769-5cde-4e83-a432-7aad43eff7f4",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "910eb27b-e527-374a-90b7-849c38218060",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "eea0d9e9-1442-410d-97ad-fd940427bfb0",
+           "number": "2",
+           "title": "I’m Your Treasure Box ＊あなたは マリンせんちょうを たからばこからみつけた。",
+           "length": 255067
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "a05ac5b2-4962-46a0-9f83-688fb80f35c5",
+       "title": "I’m Your Treasure Box * You have found captain Marine in a treasure chest",
+       "status": "Pseudo-Release",
+       "artist-credit": [
+        {
+         "name": "Houshou Marine",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "39da1c0f-ee1b-49cc-a4ce-edb0363430d3",
+        "title": "I’m Your Treasure Box *あなたは マリンせんちょうを たからばこからみつけた。",
+        "primary-type": "Single"
+       },
+       "track-count": 2,
+       "media": [
+        {
+         "id": "cea2252b-520b-3f99-811f-c0a8417da1b3",
+         "position": 1,
+         "track": [
+          {
+           "id": "4ea39364-5985-4501-af51-c42529e36ea8",
+           "number": "1",
+           "title": "I’m Your Treasure Box * You have found captain Marine in a treasure chest",
+           "length": 260000
+          }
+         ],
+         "track-count": 2
+        }
+       ]
+      },
+      {
+       "id": "0aba8028-7869-444e-957d-1284bf9298c4",
+       "title": "I’m Your Treasure Box *あなたは マリンせんちょうを たからばこからみつけた。",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "39da1c0f-ee1b-49cc-a4ce-edb0363430d3",
+        "title": "I’m Your Treasure Box *あなたは マリンせんちょうを たからばこからみつけた。",
+        "primary-type": "Single"
+       },
+       "date": "2022-07-31",
+       "track-count": 2,
+       "media": [
+        {
+         "id": "1e516377-cb20-3b3b-8e84-dbb3fa7dd4f9",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "9e4397b3-db85-4077-9456-e1905c6af94a",
+           "number": "1",
+           "title": "I’m Your Treasure Box *あなたは マリンせんちょうを たからばこからみつけた。",
+           "length": 260304
+          }
+         ],
+         "track-count": 2
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPV752206187"
+     ]
+    }
+   ]
+  },
+  "https://musicbrainz.org/ws/2/release?fmt=json&limit=100&query=rgid%3A(0d77e1cd-3762-480a-b912-7b13f1b72135)%20AND%20status%3Aofficial%20AND%20format%3A%22Digital%20Media%22": {
+   "created": "2026-10-25T18:30:23.935Z",
+   "offset": 0,
+   "releases": [
+    {
+     "id": "8f4d1769-5cde-4e83-a432-7aad43eff7f4",
+     "score": 100,
+     "title": "Ahoy!! キミたちみんなパイレーツ♡",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "宝鐘マリン",
+       "artist": {
+        "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+        "name": "宝鐘マリン",
+        "sort-name": "Houshou, Marine"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+      "title": "Ahoy!! キミたちみんなパイレーツ♡",
+      "primary-type": "Album"
+     },
+     "date": "2024-10-16",
+     "barcode": "4571646502044",
+     "asin": "B0DJLKJFNZ",
+     "track-count": 14,
+     "media": [
+      {
+       "id": "910eb27b-e527-374a-90b7-849c38218060",
+       "format": "Digital Media",
+       "track-count": 14
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "covers": {
+  "https://coverartarchive.org/release/8f4d1769-5cde-4e83-a432-7aad43eff7f4/front": 307
+ }
+}

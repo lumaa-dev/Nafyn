@@ -1,0 +1,498 @@
+{
+ "requests": {
+  "https://musicbrainz.org/ws/2/recording?fmt=json&limit=40&query=recording%3A%22%E3%82%B9%E3%82%AD%E3%82%B9%E3%82%ADdie%E3%82%B9%E3%82%AD%E8%B6%85aye%E3%82%B7%E3%83%86%E3%83%AB%22%20AND%20status%3Aofficial": {
+   "created": "2026-10-25T18:17:34.482Z",
+   "offset": 0,
+   "recordings": [
+    {
+     "id": "991dc5b7-8964-4cc3-bd64-2269441e1b20",
+     "score": 100,
+     "title": "スキスキDieスキ超Ayeシテル",
+     "length": 274531,
+     "artist-credit": [
+      {
+       "name": "宝鐘マリン",
+       "artist": {
+        "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+        "name": "宝鐘マリン",
+        "sort-name": "Houshou, Marine",
+        "aliases": [
+         {
+          "sort-name": "Housho Marine",
+          "name": "Housho Marine"
+         },
+         {
+          "sort-name": "Senchou",
+          "name": "Senchou"
+         },
+         {
+          "sort-name": "Houshou Marine",
+          "name": "Houshou Marine"
+         },
+         {
+          "sort-name": "Hōshō Marin",
+          "name": "Hōshō Marin"
+         },
+         {
+          "sort-name": "Hōshō, Marine",
+          "name": "Marine Hōshō"
+         },
+         {
+          "sort-name": "Houshou Marin",
+          "name": "Houshou Marin"
+         },
+         {
+          "sort-name": "ほうしょうまりん",
+          "name": "ほうしょうまりん"
+         },
+         {
+          "sort-name": "ほうしょう まりん",
+          "name": "ほうしょう まりん"
+         },
+         {
+          "sort-name": "Houshou, Marine",
+          "name": "Marine Houshou"
+         },
+         {
+          "sort-name": "ホウショウマリン",
+          "name": "宝鐘マリン"
+         },
+         {
+          "sort-name": "宝钟玛琳",
+          "name": "宝钟玛琳"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2024-10-16",
+     "releases": [
+      {
+       "id": "167cf2e9-2da7-4ee9-a980-c9bb8f936043",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "通常盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "85ee4ec2-9a00-3ba2-8da3-900328f7004a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "79c7e8c8-d17e-4ff2-96d3-646a672fea3b",
+           "number": "4",
+           "title": "スキスキDieスキ超Ayeシテル",
+           "length": 274533
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "685ee7c2-2bf8-4b17-861b-8285eeb00312",
+       "title": "Ahoy!! You're All Pirates♡",
+       "status": "Pseudo-Release",
+       "disambiguation": "English Titles",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "fd92ca35-8538-3897-b566-db2caea16e61",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "9e11ce66-cba1-4850-9613-d98d56cef943",
+           "number": "4",
+           "title": "Suki-Suki Diesuki Cho Ayeiteru",
+           "length": 274531
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "c31e7e8c-6628-49be-ab7d-c67764c5a34e",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "disambiguation": "数量限定盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 24,
+       "media": [
+        {
+         "id": "2ee1aa73-e8b0-34b8-bede-b74c66fb8914",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "cd42f0cc-b793-496f-9499-52bf5860f1ab",
+           "number": "4",
+           "title": "スキスキDieスキ超Ayeシテル",
+           "length": 274531
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      },
+      {
+       "id": "8f4d1769-5cde-4e83-a432-7aad43eff7f4",
+       "title": "Ahoy!! キミたちみんなパイレーツ♡",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "0d77e1cd-3762-480a-b912-7b13f1b72135",
+        "title": "Ahoy!! キミたちみんなパイレーツ♡",
+        "primary-type": "Album"
+       },
+       "date": "2024-10-16",
+       "track-count": 14,
+       "media": [
+        {
+         "id": "910eb27b-e527-374a-90b7-849c38218060",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "50cbe83b-6d87-4e0d-849e-3369f6cadb67",
+           "number": "4",
+           "title": "スキスキDieスキ超Ayeシテル",
+           "length": 274531
+          }
+         ],
+         "track-count": 14
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPV752409083"
+     ]
+    },
+    {
+     "id": "8b9909a5-238b-4ab0-b168-01f6eb75c48f",
+     "score": 67,
+     "title": "スキスキDieスキ超Ayeシテル (TeddyLoid Neon Noir remix)",
+     "length": 228586,
+     "artist-credit": [
+      {
+       "name": "宝鐘マリン",
+       "artist": {
+        "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+        "name": "宝鐘マリン",
+        "sort-name": "Houshou, Marine",
+        "aliases": [
+         {
+          "sort-name": "Housho Marine",
+          "name": "Housho Marine"
+         },
+         {
+          "sort-name": "Senchou",
+          "name": "Senchou"
+         },
+         {
+          "sort-name": "Houshou Marine",
+          "name": "Houshou Marine"
+         },
+         {
+          "sort-name": "Hōshō Marin",
+          "name": "Hōshō Marin"
+         },
+         {
+          "sort-name": "Hōshō, Marine",
+          "name": "Marine Hōshō"
+         },
+         {
+          "sort-name": "Houshou Marin",
+          "name": "Houshou Marin"
+         },
+         {
+          "sort-name": "ほうしょうまりん",
+          "name": "ほうしょうまりん"
+         },
+         {
+          "sort-name": "ほうしょう まりん",
+          "name": "ほうしょう まりん"
+         },
+         {
+          "sort-name": "Houshou, Marine",
+          "name": "Marine Houshou"
+         },
+         {
+          "sort-name": "ホウショウマリン",
+          "name": "宝鐘マリン"
+         },
+         {
+          "sort-name": "宝钟玛琳",
+          "name": "宝钟玛琳"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2026-09-30",
+     "releases": [
+      {
+       "id": "3882165c-e67a-4839-bfe2-80077c6fb40e",
+       "title": "New World Carnival ～いざ魅惑の大海原へ～",
+       "status": "Official",
+       "disambiguation": "通常盤",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "e4216db6-51f0-4806-ac6a-f9f95efcd21e",
+        "title": "New World Carnival ～いざ魅惑の大海原へ～",
+        "primary-type": "EP"
+       },
+       "date": "2026-09-30",
+       "track-count": 4,
+       "media": [
+        {
+         "id": "014607ae-4168-4632-8b0c-5982245504f9",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "d7de86e1-8d00-4322-951d-04f49b336624",
+           "number": "4",
+           "title": "スキスキDieスキ超Ayeシテル - TeddyLoid Neon Noir Remix",
+           "length": 228000
+          }
+         ],
+         "track-count": 4
+        }
+       ]
+      },
+      {
+       "id": "06b1e499-d836-4baa-9ff1-e6633e0dfb68",
+       "title": "New World Carnival ～いざ魅惑の大海原へ～",
+       "status": "Official",
+       "disambiguation": "初回限定盤B",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "e4216db6-51f0-4806-ac6a-f9f95efcd21e",
+        "title": "New World Carnival ～いざ魅惑の大海原へ～",
+        "primary-type": "EP"
+       },
+       "date": "2026-09-30",
+       "track-count": 4,
+       "media": [
+        {
+         "id": "497caba1-4910-4e52-8c18-b1dd4bcdc831",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "dc1c95a6-c658-4123-ab4e-239e6b103f0e",
+           "number": "4",
+           "title": "スキスキDieスキ超Ayeシテル - TeddyLoid Neon Noir Remix",
+           "length": 228586
+          }
+         ],
+         "track-count": 4
+        }
+       ]
+      },
+      {
+       "id": "734f73d7-3dfa-4a42-8e5f-9ee4ab48da58",
+       "title": "New World Carnival ～いざ魅惑の大海原へ～",
+       "status": "Official",
+       "disambiguation": "初回限定盤A",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "e4216db6-51f0-4806-ac6a-f9f95efcd21e",
+        "title": "New World Carnival ～いざ魅惑の大海原へ～",
+        "primary-type": "EP"
+       },
+       "date": "2026-09-30",
+       "track-count": 6,
+       "media": [
+        {
+         "id": "a605b7fd-b6a4-41e0-adce-62d13d1b8efa",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "56acc4bb-4162-4897-8ace-51a26ed2393c",
+           "number": "4",
+           "title": "スキスキDieスキ超Ayeシテル -TeddyLoid Neon Noir Remix-",
+           "length": 228586
+          }
+         ],
+         "track-count": 4
+        }
+       ]
+      },
+      {
+       "id": "eaca219a-1b0e-40cc-86c5-15b759c21d3f",
+       "title": "New World Carnival 〜いざ魅惑の大海原へ♡〜",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "e4216db6-51f0-4806-ac6a-f9f95efcd21e",
+        "title": "New World Carnival ～いざ魅惑の大海原へ～",
+        "primary-type": "EP"
+       },
+       "date": "2026-09-30",
+       "track-count": 4,
+       "media": [
+        {
+         "id": "a25be8c2-0466-48aa-8ea2-233b76a73d79",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "2b3cf9e5-6ed0-40b8-b598-49c8351584e4",
+           "number": "4",
+           "title": "スキスキDieスキ超Ayeシテル (TeddyLoid Neon Noir remix)",
+           "length": 228000
+          }
+         ],
+         "track-count": 4
+        }
+       ]
+      },
+      {
+       "id": "b95652ab-6804-4fde-8394-2dde0eb34a04",
+       "title": "New World Carnival 〜いざ魅惑の大海原へ♡〜",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "宝鐘マリン",
+         "artist": {
+          "id": "b1409908-c5ef-4833-b202-e7109fc4eec4",
+          "name": "宝鐘マリン",
+          "sort-name": "Houshou, Marine"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "e4216db6-51f0-4806-ac6a-f9f95efcd21e",
+        "title": "New World Carnival ～いざ魅惑の大海原へ～",
+        "primary-type": "EP"
+       },
+       "date": "2026-09-30",
+       "track-count": 4,
+       "media": [
+        {
+         "id": "4a59f6e0-31ce-49f0-a65c-70b1b3caf044",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "b90945e1-7d48-4033-ae8e-84a24f10f396",
+           "number": "4",
+           "title": "スキスキDieスキ超Ayeシテル (TeddyLoid Neon Noir remix)",
+           "length": 228587
+          }
+         ],
+         "track-count": 4
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "JPPO02603742"
+     ]
+    }
+   ]
+  }
+ },
+ "covers": {
+  "https://coverartarchive.org/release/8f4d1769-5cde-4e83-a432-7aad43eff7f4/front": 307,
+  "https://coverartarchive.org/release/eaca219a-1b0e-40cc-86c5-15b759c21d3f/front": 307
+ }
+}
