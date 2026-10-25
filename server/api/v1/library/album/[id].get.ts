@@ -1,5 +1,5 @@
 import { getAlbumOfUser, getAlbumSongsOfUser } from "~~/server/core/library";
-import { getImageColors } from "~~/server/utils/imageColors";
+import { getFirstImageColors } from "~~/server/utils/imageColors";
 
 defineRouteMeta({
     openAPI: {
@@ -74,10 +74,13 @@ export default defineEventHandler(async (event) => {
 
     const tracks = await getAlbumSongsOfUser(userId, albumId);
 
-    const { imageColors, textColor } = await getImageColors({
-        coverArtUrl: album.coverArt,
-        customCoverMediaId: album.coverMediaId
-    });
+    // the album's own cover first, then whichever of its tracks carries one: the aggregate above picks a single
+    // value per column, which can be a cover that does not exist when the tracks came from different releases
+    const { imageColors, textColor } = await getFirstImageColors([
+        { coverArtUrl: album.coverArt, customCoverMediaId: album.coverMediaId },
+        ...tracks.filter((track) => track.hasCustomCover).map((track) => ({ customCoverMediaId: track.id })),
+        ...[...new Set(tracks.map((track) => track.coverArt).filter((url): url is string => !!url))].map((coverArtUrl) => ({ coverArtUrl }))
+    ]);
 
     // filePath is an internal disk path, not for the client
     return { album: { ...album, imageColors, textColor }, tracks: tracks.map(({ filePath: _filePath, ...track }) => track) };

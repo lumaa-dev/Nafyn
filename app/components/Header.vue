@@ -26,8 +26,6 @@ const props = defineProps({
   sidebarActive: { type: Boolean, default: false }
 })
 
-// title/artist, ISRCs, platform IDs (`deezer:track:123`) and pasted links all go through the same search page,
-// which tells them apart (server/utils/metadata/query.ts)
 function search() {
   const q = searchText.value.trim();
   if (q) navigateTo(`/search?q=${encodeURIComponent(q)}`);

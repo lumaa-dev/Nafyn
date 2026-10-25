@@ -23,7 +23,9 @@ export interface RawArtistCredit {
 }
 
 export interface RawMedium {
-    format?: string | null
+    format?: string | null,
+    /** In a recording search: this recording's track on the release, with the title *that release* gives it. */
+    track?: Array<{ title?: string }>
 }
 
 export interface RawReleaseGroupRef {
@@ -88,6 +90,7 @@ export type MatchFlag =
     | "code_contradiction"
     | "artist_only"
     | "swapped_order"
+    | "transliterated"
     | "no_front_cover";
 
 export interface MatchBreakdown {

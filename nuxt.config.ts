@@ -39,11 +39,6 @@ export default defineNuxtConfig({
     acoustidApiKey: process.env.ACOUSTID_API_KEY || '',
     lastfmApiKey: process.env.LASTFM_API_KEY || '',
 
-    // song metadata providers (server/utils/metadata) - each is skipped when its key is empty
-    discogsToken: process.env.DISCOGS_TOKEN || '',
-    theaudiodbApiKey: process.env.THEAUDIODB_API_KEY || '',
-    geniusAccessToken: process.env.GENIUS_ACCESS_TOKEN || '',
-
     public: {
       // GDPR art. 13: the person running the instance is the data controller, and a privacy notice has to
       // name them and say how to reach them. Nafyn ships the rest of the notice (/privacy) because what it

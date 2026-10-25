@@ -121,11 +121,11 @@ historique d'écoute.
 - **MusicBrainz**, pour identifier enregistrements, sorties et artistes.
 - **AcoustID**, qui reçoit l'empreinte audio d'un fichier téléchargé pour confirmer qu'il s'agit du bon
   enregistrement.
-- **Les fournisseurs de métadonnées**, quand une recherche en a besoin : Deezer, iTunes et ReccoBeats
-  systématiquement, ainsi que TheAudioDB, Discogs, Genius et Last.fm si l'opérateur a configuré leurs clés.
-- **Cover Art Archive** et les serveurs d'images des fournisseurs ci-dessus, pour récupérer les pochettes.
+- **Last.fm**, pour les biographies d'artistes, si l'opérateur a configuré une clé.
+- **Cover Art Archive**, pour récupérer les pochettes.
 
-Une recherche textuelle que vous saisissez est transmise telle quelle à ces fournisseurs. C'est la seule
+Une recherche textuelle que vous saisissez est transmise telle quelle à MusicBrainz et, quand vous demandez
+un titre, au réseau Soulseek. C'est la seule
 donnée de cette liste sur laquelle vous avez la main directement.
 
 **Les notifications font exception** au « jamais votre nom d'utilisateur », puisque prévenir quelqu'un d'une

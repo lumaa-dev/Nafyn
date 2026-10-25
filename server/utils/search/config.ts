@@ -37,6 +37,12 @@ export interface SearchConfig {
     codeContradictionBelow: number,
     /** Multiplier for an interpretation of a free-text query as "just an artist" (so a title match outranks it). */
     artistOnlyFactor: number,
+    /**
+     * Multiplier when a title matched only through another script (a transliterated title on a Latin-script
+     * release, a machine romanization, a romaji query read as kana). Small: it only has to put the same work in
+     * its own script ahead of a transliterated guess.
+     */
+    transliterationFactor: number,
 
     // ---- ranking ----
     /** Preference order when everything else ties; earlier wins. */
@@ -127,6 +133,7 @@ export const DEFAULT_SEARCH_CONFIG: SearchConfig = {
     codeContradictionFactor: 0.5,
     codeContradictionBelow: 0.5,
     artistOnlyFactor: 0.9,
+    transliterationFactor: 0.97,
 
     primaryTypeOrder: ["album", "ep", "single", "broadcast", "other"],
 

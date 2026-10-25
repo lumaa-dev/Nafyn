@@ -11,8 +11,9 @@
 
 import { randomUUID } from "node:crypto";
 import { copyFile, rm, rmdir } from "node:fs/promises";
-import { dirname, resolve, sep } from "node:path";
+import { dirname, extname, resolve, sep } from "node:path";
 import { ensureDir } from "./ensureDir";
+import { soulseekQueryText } from "./soulseekText";
 
 export interface SlskSearchResult {
     user: string,
@@ -20,6 +21,8 @@ export interface SlskSearchResult {
     size: number,
     slots: boolean,
     bitrate?: number,
+    // seconds, as the peer reports it - what downloads.ts ranks the candidates by
+    length?: number,
     speed?: number
 }
 
@@ -112,7 +115,8 @@ async function slskdFetch(path: string, init: RequestInit = {}, retry = true): P
 interface SlskdFile {
     filename: string,
     size: number,
-    bitRate?: number
+    bitRate?: number,
+    length?: number
 }
 
 interface SlskdResponse {
@@ -147,16 +151,13 @@ async function fetchSearchResponses(id: string, attempts = 6): Promise<SlskdResp
 // Soulseek peers match search text against their shared filenames with plain substring/token matching,
 // case-folded but not diacritic-folded - a query with accents ("Bénabar", "Dîner") simply never matches a
 // peer's filename tagged/ripped without them (by far the common case), so a fully correct, high-result-count
-// search can come back with zero hits every single time. Fold to the closest ASCII form before searching;
-// downloads.ts's local candidate filtering (normalize(), which calls this same function) folds the same way,
-// so this doesn't cause false matches downstream.
-export function foldDiacritics(text: string): string {
-    return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-}
-
+// search can come back with zero hits every single time. `soulseekQueryText` folds Latin accents - and only
+// those: hangul, kana and hanzi are kept whole (an NFD fold took 한 apart into jamo and が into か + a combining
+// mark, which no filename contains) - and drops what is not valid in a request (see soulseekText.ts).
 export async function searchSoulseek(query: string, timeoutMs = 20000): Promise<SlskSearchResult[]> {
     const id = randomUUID();
-    const searchText = foldDiacritics(query);
+    const searchText = soulseekQueryText(query);
+    if (!searchText) return [];
 
     const startRes = await slskdFetch("/api/v0/searches", {
         method: "POST",
@@ -190,6 +191,7 @@ export async function searchSoulseek(query: string, timeoutMs = 20000): Promise<
             size: file.size,
             slots: response.hasFreeUploadSlot,
             bitrate: file.bitRate,
+            length: file.length,
             speed: response.uploadSpeed
         }))
     );
@@ -215,16 +217,35 @@ interface SlskdFilesystemEntry {
     files?: SlskdFilesystemEntry[]
 }
 
+// the same filename can reach us spelled two ways - composed or decomposed Unicode (a macOS peer, an SMB share
+// that stores NFD), or in a different case - and the share is only as case/normalization-insensitive as the
+// filesystem behind it
+function comparableName(name: string): string {
+    return name.normalize("NFC").toLowerCase();
+}
+
+function pathSegments(file: SlskdFilesystemEntry): string[] {
+    return file.fullName.replace(/\\/g, "/").split("/").filter(Boolean);
+}
+
 // slskd's recursive listing flattens everything into the *root* entry's `files` array - each file's
 // `fullName` already carries its path relative to the downloads root (subdirectory entries in `directories`
-// are not populated), so a plain scan of `files` + splitting `fullName` is all that's needed
+// are not populated), so a plain scan of `files` + splitting `fullName` is all that's needed.
+//
+// The name is matched as sent, then normalized (NFC, case). A name slskd had to alter to put it on disk
+// (characters a filesystem refuses, a name a peer sent in a legacy code page) matches neither way, so as a last
+// resort the one file of exactly this size and extension is taken - never when two files qualify.
 function findInTree(entry: SlskdFilesystemEntry, name: string, size: number): string[] | null {
+    const wanted = comparableName(name);
+    const sameSize: SlskdFilesystemEntry[] = [];
     for (const file of entry.files ?? []) {
-        if (file.name === name && file.length === size) {
-            return file.fullName.replace(/\\/g, "/").split("/").filter(Boolean);
-        }
+        if (Number(file.length) !== size) continue;
+        if (file.name === name || comparableName(file.name) === wanted) return pathSegments(file);
+        sameSize.push(file);
     }
-    return null;
+    const extension = extname(name).toLowerCase();
+    const candidates = sameSize.filter((file) => extname(file.name).toLowerCase() === extension);
+    return candidates.length === 1 ? pathSegments(candidates[0]!) : null;
 }
 
 async function locateDownloadedFile(filename: string, size: number): Promise<string[] | null> {
@@ -352,10 +373,13 @@ async function runDownload(
     }
 
     const { enqueued, failed } = await enqueueRes.json() as SlskdEnqueueResponse;
-    const transfer = enqueued.find((t) => t.filename === file.file);
+    // slskd echoes the name back, but a normalization difference must not turn a queued download into "rejected":
+    // one file was sent, so one queued transfer is that file
+    const sameFile = (name: string) => name === file.file || comparableName(name) === comparableName(file.file);
+    const transfer = enqueued.find((t) => sameFile(t.filename)) ?? (enqueued.length === 1 && failed.length === 0 ? enqueued[0] : undefined);
 
     if (!transfer) {
-        const reason = failed.find((f) => f.filename === file.file)?.message ?? "not enqueued";
+        const reason = failed.find((f) => sameFile(f.filename))?.message ?? "not enqueued";
         throw new Error(`Soulseek download rejected: ${reason}`);
     }
 

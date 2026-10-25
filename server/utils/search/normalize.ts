@@ -55,7 +55,7 @@ export function casefold(text: string): string {
 }
 
 // Latin only: accent-folds é -> e, ø -> o, but leaves everything else (Cyrillic, kana, hangul...) untouched
-function foldLatin(text: string): string {
+export function foldLatin(text: string): string {
     let out = "";
     for (const char of text.normalize("NFC")) {
         if (!LATIN_CHAR.test(char)) { out += char; continue; }

@@ -12,13 +12,14 @@
 // the repository; the engine has no HTTP of its own.
 
 import type { MusicBrainzRepository } from "../musicbrainzRepository";
-import { luceneQuote, luceneTerms } from "../musicbrainzRepository";
+import { luceneFuzzyTerms, luceneQuote, luceneTerms } from "../musicbrainzRepository";
 import { barcodeForms, parseIsrc, parseUpc, sameBarcode } from "./codes";
 import type { SearchConfig } from "./config";
 import type { CoverArtChecker } from "./coverArt";
 import { detectIntent, hasDeluxeKeyword, hasRemasterKeyword, releaseQualifies, sortableDate, workPasses, type QueryIntent } from "./filters";
 import { normalizeText, type NormalizedText } from "./normalize";
-import { compareNormalized, exactness, nameSimilarity, titleScore } from "./similarity";
+import { latinize, needsLatinForm, phoneticKey, romajiToKanaVariants } from "./script";
+import { compareNormalized, exactness, levenshteinRatio, nameSimilarity, titleScore, type Comparison } from "./similarity";
 import type {
     ArtistSearch, MatchFlag, RawArtistCredit, RawRecording, RawRelease, RawReleaseGroup, RecordingSearch,
     ReleaseGroupSearch, ReleaseSearch, SearchResult
@@ -53,7 +54,12 @@ interface Interpretation {
     artist: NormalizedText | null,
     /** Multiplier on the relevance (an "artist only" reading of free text is a weaker guess). */
     factor: number,
-    flags: MatchFlag[]
+    flags: MatchFlag[],
+    /**
+     * A reading of the same words in another script (romaji -> kana). Never searched in the first wave, only by
+     * its own angle and in scoring, so an ordinary Latin search costs no extra request.
+     */
+    variant?: boolean
 }
 
 // breaks the tie between editions of one work in favour of the one the query named; far below any real score gap
@@ -66,6 +72,22 @@ function emptyToNull(text: NormalizedText | null): NormalizedText | null {
 }
 
 function buildInterpretations(input: SearchInput, config: SearchConfig): Interpretation[] {
+    const base = baseInterpretations(input, config);
+    const variants: Interpretation[] = [];
+    for (const interpretation of base) {
+        const title = interpretation.title;
+        // romaji typed for a title that MusicBrainz holds in kana ("Yume Utsutsu" -> ゆめうつつ)
+        if (!title || title.cjk.length > 0 || needsLatinForm(title.original)) continue;
+        for (const kana of romajiToKanaVariants(title.cleaned).slice(0, 2)) {
+            if (Array.from(kana).length < 2) continue;
+            const normalized = emptyToNull(normalizeText(kana, config));
+            if (normalized) variants.push({ ...interpretation, title: normalized, flags: [...interpretation.flags, "transliterated"], variant: true });
+        }
+    }
+    return [...base, ...variants];
+}
+
+function baseInterpretations(input: SearchInput, config: SearchConfig): Interpretation[] {
     const norm = (value: string | undefined) => (value?.trim() ? emptyToNull(normalizeText(value, config)) : null);
     const title = norm(input.title);
     const artist = norm(input.artist);
@@ -96,6 +118,9 @@ function buildInterpretations(input: SearchInput, config: SearchConfig): Interpr
     ];
 }
 
+/** The most an artist-catalogue recall asks for: MusicBrainz' own maximum page. */
+const CATALOGUE_LIMIT = 100;
+
 // ---------------------------------------------------------------- candidates
 
 interface Candidate {
@@ -110,6 +135,11 @@ interface Candidate {
     firstReleaseDate: string | null,
     length: number | null,
     releases: RawRelease[],
+    /**
+     * The same work under other names: the title a Latin-script release gives a recording ("Hatachi No Koi" for
+     * 二十歳の恋), or the titles of an album's releases. Compared like the title itself.
+     */
+    altTitles: string[],
     /** Set by a UPC/ISRC lookup. */
     code: { kind: "upc" | "isrc", value: string } | null,
     sources: Set<string>,
@@ -145,6 +175,19 @@ function scoringTitle(candidate: Candidate): string {
     return label ? `${candidate.title} (${label})` : candidate.title;
 }
 
+const MAX_ALT_TITLES = 12;
+
+function distinctTitles(main: string, others: Array<string | undefined>): string[] {
+    const seen = new Set<string>([main]);
+    for (const other of others) {
+        const title = other?.trim();
+        if (title) seen.add(title);
+        if (seen.size > MAX_ALT_TITLES) break;
+    }
+    seen.delete(main);
+    return [...seen];
+}
+
 function limitTo(config: SearchConfig): number {
     return Math.min(Math.max(config.candidatePool, 5), 100);
 }
@@ -158,6 +201,8 @@ function creditNames(credits: RawArtistCredit[]): string[] {
             if (alias["sort-name"]) names.add(alias["sort-name"]);
         }
     }
+    // a name in kana / hangul / Cyrillic also as the Latin letters somebody would type for it
+    for (const name of [...names]) if (needsLatinForm(name)) names.add(latinize(name));
     // a multi-artist credit as one string: "A & B"
     if (credits.length > 1) {
         names.add(credits.map((credit) => `${credit.name ?? credit.artist.name}${credit.joinphrase ?? " "}`).join("").trim());
@@ -244,6 +289,7 @@ class Pipeline {
             firstReleaseDate: group["first-release-date"] ?? null,
             length: null,
             releases: group.releases ?? [],
+            altTitles: distinctTitles(group.title, (group.releases ?? []).map((release) => release.title)),
             code: null,
             sources: new Set([source]),
             qualifying: [],
@@ -263,6 +309,7 @@ class Pipeline {
             firstReleaseDate: recording["first-release-date"] ?? null,
             length: recording.length ?? null,
             releases: recording.releases ?? [],
+            altTitles: distinctTitles(recording.title, (recording.releases ?? []).flatMap((release) => (release.media ?? []).flatMap((medium) => (medium.track ?? []).map((track) => track.title)))),
             code: null,
             sources: new Set([source]),
             qualifying: [],
@@ -279,26 +326,28 @@ class Pipeline {
         for (const source of candidate.sources) existing.sources.add(source);
         if (candidate.code && !existing.code) existing.code = candidate.code;
         if (existing.releases.length === 0) existing.releases = candidate.releases;
+        if (candidate.altTitles.length > 0) existing.altTitles = distinctTitles(existing.title, [...existing.altTitles, ...candidate.altTitles]);
         if (existing.credits.length === 0) existing.credits = candidate.credits;
     }
 
     /** One search angle over every interpretation. */
-    private async angle(pool: Map<string, Candidate>, source: string, build: (interpretation: Interpretation) => string | null): Promise<number> {
+    private async angle(pool: Map<string, Candidate>, source: string, build: (interpretation: Interpretation) => string | null, variants = false, limit = limitTo(this.config)): Promise<number> {
         const seen = new Set<string>();
         let found = 0;
         for (const interpretation of this.interpretations) {
+            if (Boolean(interpretation.variant) !== variants) continue;
             const query = build(interpretation);
             if (!query || seen.has(query)) continue;
             seen.add(query);
 
             if (this.kind === "album" && source !== "recording-release") {
-                const response = await this.request<ReleaseGroupSearch>("/release-group", query);
+                const response = await this.request<ReleaseGroupSearch>("/release-group", query, limit);
                 for (const group of response?.["release-groups"] ?? []) {
                     this.add(pool, this.candidateFromGroup(group, source));
                     found++;
                 }
             } else {
-                const response = await this.request<RecordingSearch>("/recording", query);
+                const response = await this.request<RecordingSearch>("/recording", query, limit);
                 for (const recording of response?.recordings ?? []) {
                     if (this.kind === "track") {
                         this.add(pool, this.candidateFromRecording(recording, source));
@@ -331,7 +380,14 @@ class Pipeline {
     }
 
     /** Artist MBIDs for a requested artist name, found through MusicBrainz' alias-aware artist search. */
-    private async artistIds(): Promise<string[]> {
+    private artistIdsMemo: Promise<string[]> | null = null;
+
+    private artistIds(): Promise<string[]> {
+        this.artistIdsMemo ??= this.lookupArtistIds();
+        return this.artistIdsMemo;
+    }
+
+    private async lookupArtistIds(): Promise<string[]> {
         const ids = new Set<string>();
         const names = new Set<string>();
         for (const interpretation of this.interpretations) {
@@ -368,6 +424,37 @@ class Pipeline {
                 await this.angle(pool, "recording-release", (i) => (i.title ? this.join([this.fieldClause("release", i.title, "phrase"), this.fieldClause("artist", i.artist, "phrase")], official) : null));
             }
         }
+
+        // wave 3: the title in another script or spelling. MusicBrainz indexes the transliterated title a
+        // Latin-script release gives a recording (and an alias of a release-group) under `alias`, which is
+        // where "Hatachi no Koi" lives for 二十歳の恋; a typo gets one fuzzy try; romaji is also read as kana.
+        if (!this.convincing(pool)) {
+            await this.angle(pool, "title-alias", (i) => (i.title ? this.join([this.aliasClause(i.title, "phrase"), this.fieldClause("artist", i.artist, "phrase")], official) : null));
+        }
+        if (!this.convincing(pool)) {
+            await this.angle(pool, "title-fuzzy", (i) => (i.title ? this.join([this.aliasClause(i.title, "fuzzy", entity), this.fieldClause("artist", i.artist, "terms")], official) : null));
+            await this.angle(pool, "title-kana", (i) => (i.title ? this.join([this.fieldClause(entity, i.title, "phrase"), this.fieldClause("artist", i.artist, "phrase")], official) : null), true);
+        }
+
+        // wave 4: the artist is known (a Latin spelling finds the artist through its aliases) but no title matched:
+        // MusicBrainz holds nothing searchable under the Latin title (a pseudo-release's track title is not indexed),
+        // so take the artist's catalogue and let the scoring compare the title through its romanization
+        if (!this.convincing(pool) && this.interpretations.some((i) => i.artist && i.title)) {
+            const ids = await this.artistIds();
+            if (ids.length > 0) {
+                const arid = `arid:(${ids.join(" OR ")})`;
+                await this.angle(pool, "artist-catalogue", (i) => (i.artist && i.title ? this.join([arid], official) : null), false, CATALOGUE_LIMIT);
+            }
+        }
+    }
+
+    /** `alias:"x"`, or for the fuzzy mode `(entity:(x~) OR alias:(x~))`. */
+    private aliasClause(norm: NormalizedText, mode: "phrase" | "fuzzy", entity?: string): string | null {
+        const text = this.queryText(norm);
+        if (!text) return null;
+        if (mode === "phrase") return `alias:${luceneQuote(text)}`;
+        const terms = luceneFuzzyTerms(text);
+        return `(${entity}:(${terms}) OR alias:(${terms}))`;
     }
 
     // is there already a near-perfect, plausible candidate? then the slower angles are skipped
@@ -440,12 +527,13 @@ class Pipeline {
         // works that can never qualify are dropped before they cost a request
         if (candidate.kind === "album" && !workPasses({ title: candidate.title, secondaryTypes: candidate.secondaryTypes }, this.intent, this.config)) return null;
 
-        const titleNorm = this.norm(scoringTitle(candidate));
+        const forms = this.titleForms(candidate);
         const names = creditNames(candidate.credits).map((name) => this.norm(name));
         let best: Evaluated | null = null;
 
         for (const interpretation of this.interpretations) {
-            const title = interpretation.title ? titleScore(interpretation.title, titleNorm, this.config) : null;
+            const matched = interpretation.title ? this.bestTitle(interpretation.title, forms) : null;
+            const title = matched?.score ?? null;
             const artist = interpretation.artist
                 ? names.reduce((top, name) => Math.max(top, nameSimilarity(interpretation.artist!, name, this.config)), 0)
                 : null;
@@ -477,6 +565,13 @@ class Pipeline {
             let relevance = (weights.reduce((sum, [score, weight]) => sum + score * weight, 0) / weightSum) * interpretation.factor;
 
             const flags: MatchFlag[] = [...interpretation.flags];
+            // found through another script: a transliterated title, a romanization, romaji read as kana
+            if (matched && matched.via !== "native") {
+                relevance *= this.config.transliterationFactor;
+                if (!flags.includes("transliterated")) flags.push("transliterated");
+            } else if (interpretation.variant) {
+                relevance *= this.config.transliterationFactor;
+            }
             if (candidate.code) {
                 if (contradicting) {
                     relevance *= this.config.codeContradictionFactor;
@@ -491,7 +586,7 @@ class Pipeline {
                     candidate,
                     title: title?.score ?? 1,
                     artist: artist ?? 1,
-                    exactness: interpretation.title ? exactness(interpretation.title, titleNorm) : 1,
+                    exactness: interpretation.title && matched ? exactness(interpretation.title, matched.norm) : 1,
                     relevance,
                     flags
                 };
@@ -505,6 +600,48 @@ class Pipeline {
         best.relevance += Math.max(0, extraSources);
         if (best.flags.includes("upc_match") || best.flags.includes("isrc_match")) best.relevance += this.config.codeMatchBonus;
         return best;
+    }
+
+    private readonly formsCache = new WeakMap<Candidate, { signature: string, forms: TitleForm[] }>();
+
+    /** Every way the candidate's title can be written: as MusicBrainz has it, as another release spells it, romanized. */
+    private titleForms(candidate: Candidate): TitleForm[] {
+        const signature = `${candidate.title}|${candidate.disambiguation}|${candidate.altTitles.join("|")}`;
+        const cached = this.formsCache.get(candidate);
+        if (cached?.signature === signature) return cached.forms;
+
+        const label = candidate.kind === "track" ? versionLabel(candidate.disambiguation) : "";
+        const withLabel = (title: string) => (label ? `${title} (${label})` : title);
+
+        const forms: TitleForm[] = [{ norm: this.norm(scoringTitle(candidate)), via: "native", key: null }];
+        for (const alt of candidate.altTitles) forms.push({ norm: this.norm(withLabel(alt)), via: "alt", key: null });
+        if (needsLatinForm(candidate.title)) {
+            forms.push({ norm: this.norm(withLabel(latinize(candidate.title))), via: "roman", key: phoneticKey(candidate.title) });
+        }
+        this.formsCache.set(candidate, { signature, forms });
+        return forms;
+    }
+
+    /** The best score of the requested title against any form of the candidate's; a tie goes to the title itself. */
+    private bestTitle(requested: NormalizedText, forms: TitleForm[]): { score: { score: number, comparison: Comparison }, via: TitleForm["via"], norm: NormalizedText } {
+        let best: { score: { score: number, comparison: Comparison }, via: TitleForm["via"], norm: NormalizedText } | null = null;
+        for (const form of forms) {
+            const score = titleScore(requested, form.norm, this.config);
+            if (!best || score.score > best.score.score + 1e-9) best = { score, via: form.via, norm: form.norm };
+        }
+
+        // a romanization has no word boundaries for kana and hangul ("yumeutsutsu"), so a spaced request is also
+        // compared as one phonetic string. Only between a script that needs a Latin form and the Latin request
+        // (or the reverse), never between two ordinary Latin titles.
+        const romanForm = forms.find((form) => form.key !== null);
+        if (romanForm && best!.score.score < 0.95) {
+            const score = phoneticScore(phoneticKey(requested.cleaned), romanForm.key!);
+            if (score > best!.score.score) {
+                const comparison: Comparison = { coverage: score, candidateCoverage: score, extraWords: [], extraChars: 0, missingWords: [], dice: score };
+                best = { score: { score, comparison }, via: "roman", norm: romanForm.norm };
+            }
+        }
+        return best!;
     }
 
     private artistPresent(interpretation: Interpretation, artistScore: number | null, names: NormalizedText[]): boolean {
@@ -731,6 +868,25 @@ class Pipeline {
             bestResult: false
         };
     }
+}
+
+interface TitleForm {
+    norm: NormalizedText,
+    via: "native" | "alt" | "roman",
+    /** `phoneticKey` of the native title, set on the romanized form only. */
+    key: string | null
+}
+
+/**
+ * How alike two phonetic keys are: 0 below a close match. A key that merely contains the request scores by the
+ * share of it, which charges for what the request did not ask for.
+ */
+function phoneticScore(requestedKey: string, candidateKey: string): number {
+    if (requestedKey.length < 4 || candidateKey.length < 4) return 0;
+    const ratio = levenshteinRatio(requestedKey, candidateKey);
+    if (ratio >= 0.85) return ratio;
+    if (requestedKey.length >= 6 && candidateKey.includes(requestedKey)) return Math.min(0.9, requestedKey.length / candidateKey.length);
+    return 0;
 }
 
 function round(value: number): number {

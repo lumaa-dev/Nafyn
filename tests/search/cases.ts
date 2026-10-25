@@ -25,6 +25,22 @@ export const CASES: RegressionCase[] = [
     { name: "japanese-latin-artist", kind: "album", input: { title: "First Love", artist: "Utada Hikaru" } },
     { name: "cyrillic", kind: "album", input: { title: "Группа крови", artist: "Кино" } },
     { name: "cyrillic-latin-artist", kind: "album", input: { title: "Вендетта", artist: "Zemfira" } },
+    // a non-Latin work typed in Latin letters: MusicBrainz holds the romanization as the track title on a
+    // Latin-script release (二十歳の恋 = "Hatachi No Koi"), found through `alias`
+    { name: "romanized-track", kind: "track", input: { title: "Hatachi no Koi" } },
+    { name: "romanized-track-typo", kind: "track", input: { title: "Hatashi no Koi" } },
+    { name: "romanized-album", kind: "album", input: { title: "Lamp Genso", artist: "Lamp" } },
+    // romaji for a title MusicBrainz only has in kana (ゆめうつつ)
+    { name: "romaji-as-kana", kind: "track", input: { title: "Yume Utsutsu", artist: "Lamp" } },
+    // a track whose title mixes kana, kanji and Latin words (スキスキDieスキ超Ayeシテル), by an artist (宝鐘マリン) whose
+    // Latin spelling is only an alias; MusicBrainz holds no searchable Latin title for it, so the artist's
+    // catalogue is scored through its romanization
+    { name: "japanese-mixed-track", kind: "track", input: { title: "スキスキDieスキ超Ayeシテル" } },
+    { name: "japanese-artist", kind: "track", input: { q: "宝鐘マリン" } },
+    { name: "romanized-track-latin-artist", kind: "track", input: { title: "Suki Suki Die Suki Cho Aye Shiteru", artist: "Houshou Marine" } },
+    // one album, searched under its Latin and its Japanese title: both must land on the same release-group
+    { name: "album-latin-title", kind: "album", input: { q: "Ahoy!! You're All Pirates♡" } },
+    { name: "album-japanese-title", kind: "album", input: { q: "Ahoy!! キミたちみんなパイレーツ♡" } },
     // accents
     { name: "accented", kind: "album", input: { title: "Dr. Feelgood", artist: "Mötley Crüe" } },
     { name: "unaccented", kind: "album", input: { title: "Dr. Feelgood", artist: "Motley Crue" } },

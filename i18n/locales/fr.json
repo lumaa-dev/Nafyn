@@ -94,9 +94,7 @@
     "best": "Meilleur résultat",
     "loading": "Recherche en cours…",
     "empty": "Aucun résultat.",
-    "metadata": "Depuis d'autres services",
-    "hint": "Rechercher par titre, « Artiste - Titre », ISRC ou lien Deezer/Apple Music/Spotify/Discogs/Genius",
-    "notFound": "Aucun titre correspondant trouvé."
+    "hint": "Rechercher par titre ou « Artiste - Titre » - dans n'importe quelle écriture, ou en lettres latines pour un titre japonais, coréen ou chinois"
   },
   "requests": {
     "title": "Demandes",

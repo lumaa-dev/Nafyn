@@ -194,7 +194,7 @@ defineRouteMeta({
                             hasFrontCover: { type: "boolean", description: "The best qualifying release has a front cover. Results with one rank first." },
                             flags: {
                                 type: "array",
-                                items: { type: "string", enum: ["upc_match", "isrc_match", "code_contradiction", "artist_only", "swapped_order", "no_front_cover"] }
+                                items: { type: "string", enum: ["upc_match", "isrc_match", "code_contradiction", "artist_only", "swapped_order", "transliterated", "no_front_cover"] }
                             }
                         }
                     }

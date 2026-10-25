@@ -113,11 +113,11 @@ downloaded - never your username, your account id, or your listening history.
 - **MusicBrainz**, to resolve recordings, releases and artists.
 - **AcoustID**, which receives an audio fingerprint of a downloaded file to confirm it is the right
   recording.
-- **Metadata providers**, when a search needs them: Deezer, iTunes and ReccoBeats always, plus TheAudioDB,
-  Discogs, Genius and Last.fm if the operator configured keys for them.
-- **Cover Art Archive** and the artwork hosts of the providers above, to fetch artwork.
+- **Last.fm**, for artist biographies, if the operator configured a key for it.
+- **Cover Art Archive**, to fetch artwork.
 
-A text search you type is sent to those providers as the search term. If that matters to you, note that
+A text search you type is sent to MusicBrainz and, when you request something, to the Soulseek network as the
+search term. If that matters to you, note that
 search terms are the one thing here you control directly.
 
 **Notifications are the exception** to "never your username", because telling someone about a request is

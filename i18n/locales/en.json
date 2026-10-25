@@ -94,9 +94,7 @@
     "best": "Best match",
     "loading": "Searching…",
     "empty": "No results.",
-    "metadata": "From other services",
-    "hint": "Search by title, \"Artist - Title\", ISRC or a Deezer/Apple Music/Spotify/Discogs/Genius link",
-    "notFound": "No matching song found."
+    "hint": "Search by title or \"Artist - Title\" - in any script, or in Latin letters for a Japanese, Korean or Chinese song"
   },
   "requests": {
     "title": "Requests",

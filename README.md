@@ -12,7 +12,7 @@ Multi-user: separate libraries, separate permissions per user. Users request son
 - [How it works](#how-it-works)
 - [How to setup](#how-to-setup)
 - [Settings](#settings)
-- [Song metadata providers](#song-metadata-providers)
+- [Search](#search)
 - [Passkeys](#passkeys)
 - [Privacy & GDPR](#privacy--gdpr)
 - [Nafyn Unity](#nafyn-unity)
@@ -86,9 +86,6 @@ Configured via environment variables (see `.env.example`):
 | `NAFYN_ACOUSTID_DURATION_TOLERANCE` | Seconds a candidate's length may differ from the measured audio. Default `5`. |
 | `NAFYN_ACOUSTID_MAX_ALIAS_LOOKUPS` | Merged-away MusicBrainz IDs looked up per file. Default `3`. |
 | `LASTFM_API_KEY` | Artist bios/images on the artist page, search results, and Subsonic's `getArtistInfo2`. Optional — those surfaces just show less without it. |
-| `DISCOGS_TOKEN` | Discogs personal access token (free, [discogs.com/settings/developers](https://www.discogs.com/settings/developers)). Optional — Discogs is skipped when empty. See [Song metadata providers](#song-metadata-providers). |
-| `THEAUDIODB_API_KEY` | TheAudioDB API key — `123` is the free public test key. Optional — skipped when empty. |
-| `GENIUS_ACCESS_TOKEN` | Genius client access token (free, [genius.com/api-clients](https://genius.com/api-clients)). Optional — skipped when empty. |
 | `DOMAINS_WHITELIST` | Comma-separated hostnames exempt from the login/register rate limits. Leave empty unless you specifically need it — every entry is an IP that can brute-force passwords freely. |
 | `TRUST_PROXY` | Number of reverse proxies in front of Nafyn (nginx/Caddy/Traefik/Cloudflare). `0` (default) when Nafyn is directly exposed. Gates whether `X-Forwarded-For` is trusted at all — wrong in either direction breaks or defeats rate limiting, see [`server/utils/clientIp.ts`](server/utils/clientIp.ts). |
 | `NAFYN_PUBLIC_OPENAPI` | Set `true` to publish the auto-generated OpenAPI spec + Scalar docs UI in production. Off by default — the spec enumerates every endpoint, parameter and auth requirement to anonymous visitors. |
@@ -101,27 +98,7 @@ Configured via environment variables (see `.env.example`):
 
 Some behaviour is tuned per install from the `app_settings` table instead of the environment, so it can change without a redeploy. Relevant to data retention: `insights.rawEventRetentionDays` (default `1095` — three years of raw play events; `0` keeps them forever) and `retention.recentlyPlayedDays` (default `180`). The listening-insights ranking weights live there too — see [`server/core/insightsConfig.ts`](server/core/insightsConfig.ts).
 
-## Song metadata providers
-
-Besides MusicBrainz (which stays the source of truth for requests), the search bar also queries free music metadata services for richer song data — artwork, 30-second previews, genres, ISRCs, BPM/audio features, credits, descriptions:
-
-| Provider | Key | Text search | ISRC | Platform ID / link | Notable data |
-|---|---|---|---|---|---|
-| Deezer | none | ✓ | ✓ | `deezer:track:<id>`, `deezer:album:<id>`, deezer.com links | ISRC, previews, BPM, gain, genres |
-| iTunes | none | ✓ | | `itunes:<id>`, music.apple.com / itunes.apple.com links | artwork up to 1000px, previews, genre |
-| ReccoBeats | none | | | `spotify:track:<id>`, `reccobeats:<id>`, open.spotify.com links | ISRC, audio features (tempo, energy, valence...) |
-| TheAudioDB | `THEAUDIODB_API_KEY` | `Artist - Title` only | | `theaudiodb:track:<id>` | MusicBrainz IDs, mood, theme, description |
-| Discogs | `DISCOGS_TOKEN` | ✓ | | `discogs:release:<id>`, `discogs:master:<id>`, discogs.com links | genres/styles, labels, tracklist, credits (release-level) |
-| Genius | `GENIUS_ACCESS_TOKEN` | ✓ | | `genius:song:<id>`, genius.com/songs/<id> links | producers/writers, description, media links (never lyrics) |
-
-What can go in the search bar:
-
-- **Free text** — ranked MusicBrainz results (see below), plus a "From other services" row. Write it as `Artist - Title` to let providers that need separate fields (TheAudioDB) join in; Nafyn tries both orders.
-- **An ISRC** (`GBAYE0601498`, dashes allowed) — or **a platform ID / pasted link** from the table above. These skip the MusicBrainz text search: the record is fetched from its provider, matched against MusicBrainz (by ISRC, else a strict title + artist search), and enriched with the other providers' best match. The first card then opens the MusicBrainz track in Nafyn, ready to request.
-
-Leave a key empty and that provider is skipped silently — the keyless ones (Deezer, iTunes, ReccoBeats) are always on. Each provider is called with a Nafyn `User-Agent`, results are cached in memory for 10 minutes, and a provider that answers with a rate limit (`429`, iTunes' `403`, Deezer's quota error, or a `Retry-After` / `X-RateLimit-Remaining: 0` / `X-Discogs-Ratelimit-Remaining: 0` header) is backed off until its window resets. Also available directly over the API: `GET /api/v1/metadata/search?q=` and `GET /api/v1/metadata/providers`.
-
-### How album and track search works
+## Search
 
 `GET /api/v1/search` ([`server/utils/search/`](server/utils/search/)) normalizes the query (accents, full-width forms, `feat.` credits, edition words like *Deluxe* / *Remastered 2011*, track numbers, YouTube noise; CJK is never transliterated), recalls candidates from several MusicBrainz searches (phrase, loose terms, artist aliases), then filters and ranks them:
 
@@ -132,8 +109,6 @@ Leave a key empty and that provider is skipped silently — the keyless ones (De
 - Optional query parameters: `title`, `artist`, `upc` (UPC-A/EAN-13 of the album) and `isrc` (of the track). A valid code is strong evidence and boosts its result; an invalid one is ignored, and a code that finds nothing usable falls back to `title` + `artist`, which must accompany it. Tunables: see `NAFYN_SEARCH_*` in [`.env.example`](.env.example).
 
 `bun run test` runs the unit tests and a regression set replayed from recorded MusicBrainz responses (no network), plus the AcoustID candidate scoring tests (`tests/acoustid/`); `bun run search:record [case]` re-records the search fixtures.
-
-To add a provider, write one file under [`server/utils/metadata/providers/`](server/utils/metadata/providers/) implementing `MetadataProvider` ([`types.ts`](server/utils/metadata/types.ts)) and add it to `PROVIDERS` in [`server/utils/metadata/index.ts`](server/utils/metadata/index.ts).
 
 ## Passkeys
 
@@ -173,7 +148,7 @@ Nafyn is self-hosted, so **you** are the data controller — Nafyn's job is to m
 
 **Retention**: sessions (with their IP + user agent) go when they expire after 7 days, or a minute after being revoked. The recently-played shelf is pruned after 180 days. Raw play events are pruned after 3 years — the statistics built from them are not, so no screen changes at that boundary. All three are tunable, see [Settings](#settings).
 
-**What leaves your server**: MusicBrainz, AcoustID (an audio fingerprint), the configured metadata providers, Cover Art Archive, and your own slskd instance. These carry what is being searched for or downloaded — never a username, account id or listening history.
+**What leaves your server**: MusicBrainz, AcoustID (an audio fingerprint), Cover Art Archive, and your own slskd instance. These carry what is being searched for or downloaded — never a username, account id or listening history.
 
 **One accepted weak point, worth knowing before you deploy**: Subsonic API tokens are stored in readable form, because the Subsonic protocol's token challenge requires a secret the server can re-hash. Account passwords are bcrypt-hashed as normal. This is disclosed in the notice rather than hidden, but it means your database dump contains working app passwords — treat it accordingly.
 
@@ -212,7 +187,6 @@ Both password-based login (`p=`) and token-based login (`t=`/`s=`) work, but not
 - `mysql2` — database
 - `musicbrainz-api` — TypeScript types for MusicBrainz payloads only; all requests go through Nafyn's own rate-limited [`MusicBrainzRepository`](server/utils/musicbrainzRepository.ts)
 - Last.fm API — artist bios/images (optional, `LASTFM_API_KEY`)
-- Deezer, iTunes, ReccoBeats, TheAudioDB, Discogs, Genius — song metadata (plain HTTP, keyed ones optional)
 - `slskd` (external, self-hosted) — Soulseek network access
 - `fpcalc` + AcoustID — audio fingerprint verification (fingerprint and duration always regenerated from the file, candidates scored — see [How it works](#how-it-works))
 - `music-metadata` — tag reading/writing

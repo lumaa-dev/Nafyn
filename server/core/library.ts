@@ -6,6 +6,7 @@ import { dirname, join, resolve } from "node:path";
 import { getLibrariesDb, withTransaction, sqlInt } from "./db";
 import { deleteMediaCover } from "../utils/mediaCover";
 import { isSameSongByMetadata, type RecordingIdentity } from "../utils/mediaIdentity";
+import { sanitizePathSegment } from "../utils/pathSegment";
 
 export interface MediaRow {
     id: string,
@@ -630,18 +631,6 @@ export async function getMediaId(mediaId: string): Promise<MediaRow | undefined>
 // grants `userId` access to an already-downloaded song, no file copy needed since all users share the one file on disk
 export async function shareMediaWithUser(userId: string, media: MediaRow, sharedFilePath: string): Promise<LibraryEntry> {
     return addLibraryEntry(userId, media.id, sharedFilePath);
-}
-
-// filesystem-illegal / awkward characters stripped from an album or track name before it becomes a path segment
-function sanitizePathSegment(name: string): string {
-    // eslint-disable-next-line no-control-regex -- deliberately strips control characters too, not just visible punctuation
-    const cleaned = name.replace(/[/\\:*?"<>|\x00-\x1f]/g, "").replace(/\s+/g, " ").trim()
-        // SECURITY: stripping separators isn't enough on its own - an album literally named ".." (which a
-        // manual import lets any user type) survives the filter above as a whole path segment, and
-        // join("music", "..") lands the file in the app's working directory, outside the library. Leading dots
-        // go too, so nothing becomes "." / ".." or a hidden dotfile.
-        .replace(/^\.+/, "").trim();
-    return cleaned.slice(0, 200) || "Unknown";
 }
 
 // music/{album}/{track title}.ext - so the library reads as a normal folder-of-albums when browsed directly

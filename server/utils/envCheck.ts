@@ -38,9 +38,6 @@ export interface EnvConfig {
     soulseekDownloadsPath: string,
     acoustidApiKey: string,
     lastfmApiKey: string,
-    discogsToken: string,
-    theaudiodbApiKey: string,
-    geniusAccessToken: string,
     domainsWhitelist: string
 }
 
@@ -64,9 +61,6 @@ export function configFromEnv(env: NodeJS.ProcessEnv = process.env): EnvConfig {
         soulseekDownloadsPath: env.SOULSEEK_DOWNLOADS_PATH || DEFAULT_SOULSEEK_DOWNLOADS_PATH,
         acoustidApiKey: env.ACOUSTID_API_KEY || "",
         lastfmApiKey: env.LASTFM_API_KEY || "",
-        discogsToken: env.DISCOGS_TOKEN || "",
-        theaudiodbApiKey: env.THEAUDIODB_API_KEY || "",
-        geniusAccessToken: env.GENIUS_ACCESS_TOKEN || "",
         domainsWhitelist: env.DOMAINS_WHITELIST || ""
     };
 }
@@ -75,7 +69,7 @@ export function configFromEnv(env: NodeJS.ProcessEnv = process.env): EnvConfig {
 const STRING_VARIABLES = [
     "JWT_SECRET", "MYSQL_HOST", "MYSQL_PORT", "MYSQL_USER", "MYSQL_PASSWORD", "MYSQL_DATABASE",
     "SOULSEEK_HOST", "SOULSEEK_USERNAME", "SOULSEEK_PASSWORD", "SOULSEEK_DOWNLOADS_PATH",
-    "ACOUSTID_API_KEY", "LASTFM_API_KEY", "DISCOGS_TOKEN", "THEAUDIODB_API_KEY", "GENIUS_ACCESS_TOKEN",
+    "ACOUSTID_API_KEY", "LASTFM_API_KEY",
     "DOMAINS_WHITELIST", "TRUST_PROXY", "NAFYN_PUBLIC_URL", "FPCALC_PATH",
     "APN_KEY_ID", "APN_TEAM_ID", "APN_BUNDLE_ID", "APN_KEY_DIR"
 ];
@@ -188,10 +182,7 @@ export async function checkEnvironment(config: EnvConfig = configFromEnv(), env:
 
     // -- optional integrations ----------------------------------------------------------------------------------
     const optionalOff = [
-        ["LASTFM_API_KEY", config.lastfmApiKey, "artist bios"],
-        ["DISCOGS_TOKEN", config.discogsToken, "Discogs metadata"],
-        ["THEAUDIODB_API_KEY", config.theaudiodbApiKey, "TheAudioDB metadata"],
-        ["GENIUS_ACCESS_TOKEN", config.geniusAccessToken, "Genius credits"]
+        ["LASTFM_API_KEY", config.lastfmApiKey, "artist bios"]
     ].filter(([, value]) => !value);
     for (const [name, , what] of optionalOff) {
         add("info", "integrations", name!, `is not set - ${what} stay off.`);

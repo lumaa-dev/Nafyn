@@ -35,7 +35,9 @@ import type { SlskSearchResult } from "../utils/soulseek";
 import { getMusicBrainzRepository, getAppleMusicTrackID } from "../utils/musicbrainz";
 import { MusicBrainzError, type MusicBrainzRepository } from "../utils/musicbrainzRepository";
 import { pickCanonicalRelease, pickReleaseForGroup } from "../utils/release";
-import { searchSoulseek, downloadFromSoulseek, foldDiacritics } from "../utils/soulseek";
+import { searchSoulseek, downloadFromSoulseek } from "../utils/soulseek";
+import { buildSearchQueries, matchKey, nameMatchesAnyTitle } from "../utils/soulseekText";
+import { rankByDuration } from "../utils/soulseekRank";
 import { verifyRecordingMatch } from "../utils/fingerprint";
 import { parseCoverArtUrl, warmCover } from "../utils/coverArtCache";
 import { tagAudioFile } from "../utils/audioTag";
@@ -79,9 +81,16 @@ export interface TrackTarget {
     aliases: string[],
     isrcs: string[],
     title: string,
+    // what other releases call this recording - for a Japanese, Korean or Chinese song, usually the title a
+    // Latin-script release gives it ("Hatachi No Koi" for 二十歳の恋). Only for finding the file on Soulseek.
+    altTitles: string[],
     artistName: string,
+    // the artist under other names (sort name, other credits): the Latin spellings a peer may have used
+    artistAliases: string[],
     artistMbid: string,
     album: string | null,
+    // the album under other names, like `altTitles`
+    albumAltTitles: string[],
     albumId: string,
     albumType: "album" | "ep" | null,
     trackNumber: number | null,
@@ -91,6 +100,38 @@ export interface TrackTarget {
     coverArt: string | null,
     amId: string | null,
     discNumber: number
+}
+
+const MAX_NAME_FORMS = 8;
+
+// distinct, non-empty names other than `main`
+function otherNames(main: string, names: Array<string | undefined | null>): string[] {
+    const seen = new Set<string>([main.trim()]);
+    const out: string[] = [];
+    for (const name of names) {
+        const value = name?.trim();
+        if (!value || seen.has(value)) continue;
+        seen.add(value);
+        out.push(value);
+        if (out.length >= MAX_NAME_FORMS) break;
+    }
+    return out;
+}
+
+// MusicBrainz sorts a person as "Utada, Hikaru"; the name somebody types or tags a file with is "Hikaru Utada"
+function readableSortName(sortName: string | undefined): string | undefined {
+    if (!sortName) return undefined;
+    const parts = sortName.split(/,\s*/);
+    return parts.length === 2 ? `${parts[1]} ${parts[0]}` : sortName;
+}
+
+interface CreditLike {
+    name?: string,
+    artist?: { name?: string, "sort-name"?: string }
+}
+
+function artistNameForms(credits: CreditLike[] | undefined): Array<string | undefined> {
+    return (credits ?? []).flatMap((credit) => [credit.name, credit.artist?.name, credit.artist?.["sort-name"], readableSortName(credit.artist?.["sort-name"])]);
 }
 
 function parseReleaseDate(date: string | undefined): Date | null {
@@ -132,6 +173,11 @@ export async function resolveTargets(client: MusicBrainzRepository, musicbrainzI
         // the file's tags must be the one the user was looking at when they requested the track
         const release = pickCanonicalRelease(recording.releases);
         const credit = recording["artist-credit"]?.[0]?.artist;
+        // every release's own track for this recording: a Latin-script release is where the romanized title and
+        // artist spelling live (see TrackTarget.altTitles)
+        const ownTracks = (recording.releases ?? []).flatMap((candidate) => (candidate.media ?? [])
+            .flatMap((medium) => medium.tracks ?? [])
+            .filter((track) => track.recording?.id === recording.id || track.recording === undefined));
         // this recording's position within the picked release's tracklist, when the release carries one
         const trackNumber = release?.media
             ?.flatMap((medium) => medium.tracks ?? [])
@@ -145,9 +191,12 @@ export async function resolveTargets(client: MusicBrainzRepository, musicbrainzI
             aliases: recording.id.toLowerCase() === musicbrainzId.toLowerCase() ? [] : [musicbrainzId],
             isrcs: recording.isrcs ?? [],
             title: recording.title,
+            altTitles: otherNames(recording.title, ownTracks.map((track) => track.title)),
             artistName: credit?.name ?? "Unknown Artist",
+            artistAliases: otherNames(credit?.name ?? "", [...artistNameForms(recording["artist-credit"]), ...ownTracks.flatMap((track) => artistNameForms(track["artist-credit"]))]),
             artistMbid: credit?.id ?? "unknown-artist",
             album: release?.title ?? null,
+            albumAltTitles: otherNames(release?.title ?? "", (recording.releases ?? []).map((candidate) => candidate.title)),
             albumId: release?.["release-group"]?.id ?? "unknown-album",
             albumType: null,
             trackNumber,
@@ -180,18 +229,38 @@ export async function resolveTargets(client: MusicBrainzRepository, musicbrainzI
     const coverArt = `https://coverartarchive.org/release-group/${releaseGroup.id}/front-250`;
     const amId = getAppleMusicTrackID(undefined, release) ?? null;
 
+    // the other releases of the group, for what they call the album and each of its recordings
+    const otherReleases = (browsed.releases ?? []).filter((candidate) => candidate.id !== release.id);
+    const albumAltTitles = otherNames(releaseGroup.title, [release.title, ...otherReleases.map((candidate) => candidate.title)]);
+    const altTracks = new Map<string, Array<{ title: string, artists: Array<string | undefined> }>>();
+    for (const other of otherReleases) {
+        for (const medium of other.media ?? []) {
+            for (const track of medium.tracks ?? []) {
+                const id = track.recording?.id;
+                if (!id) continue;
+                const list = altTracks.get(id) ?? [];
+                list.push({ title: track.title, artists: artistNameForms(track["artist-credit"]) });
+                altTracks.set(id, list);
+            }
+        }
+    }
+
     const targets: TrackTarget[] = [];
     for (const [mediumIndex, medium] of (release.media ?? []).entries()) {
         for (const track of medium.tracks ?? []) {
             const trackArtist = track["artist-credit"]?.[0]?.artist ?? releaseArtist;
+            const alternatives = altTracks.get(track.recording.id) ?? [];
             targets.push({
                 recordingId: track.recording.id,
                 aliases: [],
                 isrcs: track.recording.isrcs ?? [],
                 title: track.title,
+                altTitles: otherNames(track.title, alternatives.map((alternative) => alternative.title)),
                 artistName: trackArtist?.name ?? "Unknown Artist",
+                artistAliases: otherNames(trackArtist?.name ?? "", [...artistNameForms(releaseGroup["artist-credit"]), ...artistNameForms(track["artist-credit"]), ...alternatives.flatMap((alternative) => alternative.artists)]),
                 artistMbid: trackArtist?.id ?? "unknown-artist",
                 album: releaseGroup.title,
+                albumAltTitles,
                 albumId: releaseGroup.id,
                 albumType,
                 trackNumber: track.position,
@@ -217,18 +286,17 @@ function sanitizeCandidate(result: SlskSearchResult): { extension: string } | nu
     return { extension };
 }
 
-function pickCandidates(results: SlskSearchResult[]): SlskSearchResult[] {
-    return results
-        .filter((result) => result.slots && sanitizeCandidate(result))
-        .sort((a, b) => (b.bitrate ?? 0) - (a.bitrate ?? 0) || (b.speed ?? 0) - (a.speed ?? 0))
+// nearest to furthest from MusicBrainz' length for the recording (the peer's own reported length, which doesn't
+// depend on how the filename is spelled), so a failed verification moves on to the next-closest file; quality
+// only breaks ties - see utils/soulseekRank.ts
+function pickCandidates(results: SlskSearchResult[], wantedSeconds: number): SlskSearchResult[] {
+    return rankByDuration(results.filter((result) => result.slots && sanitizeCandidate(result)), wantedSeconds)
         .slice(0, MAX_CANDIDATES_PER_TRACK);
 }
 
-// must diacritic-fold the same way soulseek.ts's foldDiacritics does before collapsing non-ASCII runs to
-// spaces, or accented titles ("Dîner" -> "d ner") never substring-match their unaccented filenames ("diner")
-function normalize(s: string): string {
-    return foldDiacritics(s).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-}
+// Latin accents are folded ("Dîner" matches "diner") and every other script is kept: reducing all non-ASCII to
+// spaces left a Japanese, Korean or Chinese title empty, which matched no file at all
+const normalize = matchKey;
 
 // true when `fileName` names a different version (instrumental/karaoke/...) than the one actually requested
 function isExcludedVersion(fileName: string, wantedTitle: string): boolean {
@@ -239,11 +307,13 @@ function isExcludedVersion(fileName: string, wantedTitle: string): boolean {
 
 // narrows an album-wide search down to the results that look like they're this specific track
 function candidatesForTrack(results: SlskSearchResult[], target: TrackTarget): SlskSearchResult[] {
-    const wantedTitle = normalize(target.title);
-    if (!wantedTitle) return [];
+    // the title as MusicBrainz has it and as other releases spell it: a peer's file for a Japanese song may be
+    // named in kanji or in romaji
+    const wantedTitles = [target.title, ...target.altTitles];
+    if (!normalize(target.title)) return [];
     return results.filter((result) => {
-        const name = normalize(basename(result.file.replace(/\\/g, "/"), extname(result.file)));
-        return name.includes(wantedTitle) && !isExcludedVersion(name, target.title);
+        const fileName = basename(result.file.replace(/\\/g, "/"), extname(result.file));
+        return nameMatchesAnyTitle(fileName, wantedTitles) && !isExcludedVersion(fileName, target.title);
     });
 }
 
@@ -352,23 +422,23 @@ async function downloadTrack(
     }
     if (results.length === 0) {
         console.log(`[downloads] "${target.title}" not found in album search results, falling back to per-track search (last resort)`);
-        const rawResults = await searchWithFallback([
-            `${target.artistName} ${target.title}`,
-            `${target.title} ${target.artistName}`,
-            `*${target.artistName.substring(1, target.artistName.length)} ${target.title}`,
-            `${target.title} *${target.artistName.substring(1, target.artistName.length)}`,
-        ]);
+        const rawResults = await searchWithFallback(buildSearchQueries({
+            title: target.title,
+            altTitles: target.altTitles,
+            artistName: target.artistName,
+            artistAliases: target.artistAliases
+        }));
         results = rawResults.filter((result) => !isExcludedVersion(basename(result.file.replace(/\\/g, "/"), extname(result.file)), target.title));
     }
 
-    const candidates = pickCandidates(results);
+    const candidates = pickCandidates(results, target.duration);
 
     if (candidates.length === 0) {
         progress({ stage: "failed", message: "No Soulseek results found" });
         return false;
     }
 
-    console.log(`[downloads] Matching ${candidates.length} candidates`);
+    console.log(`[downloads] Matching ${candidates.length} candidates for "${target.title}" (MusicBrainz ${target.duration || "?"}s), nearest first: ${candidates.map((c) => `${c.user} ${c.length ?? "?"}s`).join(", ")}`);
 
     for (const candidate of candidates) {
         const extension = sanitizeCandidate(candidate)!.extension;
@@ -613,12 +683,12 @@ async function runDownloadRequest(request: NafynRequest): Promise<void> {
         let poolResults: SlskSearchResult[] | undefined;
         if (request.type === "album" && targets[0].album) {
             emitDownloadProgress({ requestId: request.id, stage: "searching", message: "Searching Soulseek for album" });
-            const rawResults = await searchWithFallback([
-                `${targets[0].artistName} ${targets[0].album}`,
-                `${targets[0].album} ${targets[0].artistName}`,
-                `*${targets[0]?.artistName.substring(1, targets[0]?.artistName.length)} ${targets[0].album}`,
-                `${targets[0].album} *${targets[0]?.artistName.substring(1, targets[0]?.artistName.length)}`
-            ]);
+            const rawResults = await searchWithFallback(buildSearchQueries({
+                title: targets[0].album,
+                altTitles: targets[0].albumAltTitles,
+                artistName: targets[0].artistName,
+                artistAliases: targets[0].artistAliases
+            }));
             poolResults = rawResults;
 
             const bestUser = pickBestAlbumUser(rawResults, missingTargets);

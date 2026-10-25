@@ -3,6 +3,8 @@
 import { readFile, stat } from "node:fs/promises";
 import sharp from "sharp";
 import { fetchCoverArt } from "./coverArt";
+import { getCachedCover, parseCoverArtUrl } from "./coverArtCache";
+import { toArchiveCoverUrl } from "./coverUrl";
 import { mediaCoverFilePath } from "./mediaCover";
 
 export interface ImageColorsResult {
@@ -21,6 +23,7 @@ const DEFAULT_RESULT: ImageColorsResult = { imageColors: [], textColor: "#ffffff
 const DOMINANT_COLOR_COUNT = 5;
 const QUANT_STEP = 32;
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const MISS_TTL_MS = 60 * 1000;
 
 const MAX_REMOTE_COVER_BYTES = 10 * 1024 * 1024;
 // every distinct cover URL anyone browses adds an entry, so the map is capped (oldest-inserted evicted first)
@@ -99,7 +102,21 @@ async function extractDominantColors(buffer: Buffer, count: number): Promise<str
         .map((bucket) => `#${toHex(bucket.r / bucket.count)}${toHex(bucket.g / bucket.count)}${toHex(bucket.b / bucket.count)}`);
 }
 
+// A cover that is a Cover Art Archive one comes through the same disk cache the cover endpoint fills
+// (`getCachedCover`), so it is fetched once for the colors *and* the <img>, and a cold archive that needs 10-20 s
+// is waited on in one place. Anything else allowed (an archive.org host) is fetched directly.
 async function loadRemoteCover(url: string): Promise<Buffer | null> {
+    const cover = parseCoverArtUrl(url);
+    if (cover) {
+        const cached = await getCachedCover(cover.kind, cover.id, cover.size);
+        if (!cached || cached === "missing") return null;
+        try {
+            return await readFile(cached.path);
+        } catch {
+            return null;
+        }
+    }
+
     const res = await fetchCoverArt(url);
     if (!res) return null;
     // decoded in memory right after, so an oversized body is refused rather than buffered
@@ -133,10 +150,17 @@ export async function getImageColors(source: CoverSource): Promise<ImageColorsRe
     }
 
     if (!buffer && source.coverArtUrl) {
-        cacheKey = `url:${source.coverArtUrl}`;
+        // either spelling of a cover URL (stored archive form, or the `/api/v1/art/..` path a client got back)
+        const url = toArchiveCoverUrl(source.coverArtUrl);
+        cacheKey = `url:${url}`;
         const cached = cache.get(cacheKey);
         if (cached && cached.expiresAtMs > Date.now()) return cached.value;
-        buffer = await loadRemoteCover(source.coverArtUrl);
+        buffer = await loadRemoteCover(url);
+        if (!buffer) {
+            // remembered briefly so a page polling for colors doesn't re-ask a slow or empty archive each time
+            remember(cacheKey, DEFAULT_RESULT, MISS_TTL_MS);
+            return DEFAULT_RESULT;
+        }
     }
 
     if (!buffer) return DEFAULT_RESULT;
@@ -150,12 +174,25 @@ export async function getImageColors(source: CoverSource): Promise<ImageColorsRe
         value = DEFAULT_RESULT;
     }
 
-    if (cacheKey) {
-        if (cache.size >= MAX_CACHE_ENTRIES) {
-            const oldest = cache.keys().next().value;
-            if (oldest !== undefined) cache.delete(oldest);
-        }
-        cache.set(cacheKey, { value, expiresAtMs: Date.now() + CACHE_TTL_MS });
-    }
+    if (cacheKey) remember(cacheKey, value, CACHE_TTL_MS);
     return value;
+}
+
+function remember(key: string, value: ImageColorsResult, ttlMs: number): void {
+    if (cache.size >= MAX_CACHE_ENTRIES) {
+        const oldest = cache.keys().next().value;
+        if (oldest !== undefined) cache.delete(oldest);
+    }
+    cache.set(key, { value, expiresAtMs: Date.now() + ttlMs });
+}
+
+// the first of several covers that yields colors: an album's tracks do not all carry the same cover (an
+// uploaded one on a single track, a different release's cover on another), and the one `MIN()` happened to pick
+// may be the one the archive does not have
+export async function getFirstImageColors(sources: CoverSource[]): Promise<ImageColorsResult> {
+    for (const source of sources) {
+        const result = await getImageColors(source);
+        if (result.imageColors.length > 0) return result;
+    }
+    return DEFAULT_RESULT;
 }

@@ -107,6 +107,16 @@ export function luceneTerms(text: string): string {
     return text.split(/\s+/).filter(Boolean).map(escapeLucene).join(" AND ");
 }
 
+/**
+ * Bare terms, all required, the longer ones fuzzy (`hatashi~` also finds "hatachi"): for a query that may carry
+ * a typo. Short words stay exact, a fuzzy "no" would match half the index.
+ */
+export function luceneFuzzyTerms(text: string, minFuzzyLength = 5): string {
+    return text.split(/\s+/).filter(Boolean)
+        .map((term) => (Array.from(term).length >= minFuzzyLength && /^[\p{Script=Latin}\p{N}']+$/u.test(term) ? `${escapeLucene(term)}~` : escapeLucene(term)))
+        .join(" AND ");
+}
+
 export class MusicBrainzRepository {
     private readonly options: RepositoryOptions;
     private readonly cache = new Map<string, CacheEntry>();

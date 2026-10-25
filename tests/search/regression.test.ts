@@ -169,3 +169,68 @@ describe("the correct album has no front cover", () => {
         expect(results.some((r) => r.bestResult)).toBe(false);
     });
 });
+
+const HATACHI_NO_KOI = "c6795475-06d3-4483-aa8a-4f19b607fdb3";
+const LAMP_GENSO = "22e24512-bb0c-4c93-b2b1-dbf6868b9965";
+const YUME_UTSUTSU = "331f8cef-e4d7-4544-96c8-20e648d9dcfd";
+const SUKISUKI_DIE = "991dc5b7-8964-4cc3-bd64-2269441e1b20";
+const AHOY_ALBUM = "0d77e1cd-3762-480a-b912-7b13f1b72135";
+const HOSHOU_MARINE = "b1409908-c5ef-4833-b202-e7109fc4eec4";
+
+describe("non-Latin works typed in Latin letters", () => {
+    test("a romanized title finds the Japanese recording, through the Latin release's track title", async () => {
+        const [hit, ...others] = await run("romanized-track");
+        expect(hit!.id).toBe(HATACHI_NO_KOI);
+        expect(hit!.title).toBe("二十歳の恋");
+        expect(hit!.match.flags).toContain("transliterated");
+        expect(others).toHaveLength(0);
+    });
+
+    test("...even with a typo and no artist", async () => {
+        const [hit] = await run("romanized-track-typo");
+        expect(hit!.id).toBe(HATACHI_NO_KOI);
+        expect(hit!.bestResult).toBe(true);
+    });
+
+    test("a romanized album title finds the album, through its Latin release", async () => {
+        const [hit] = await run("romanized-album");
+        expect(hit!.id).toBe(LAMP_GENSO);
+        expect(hit!.title).toBe("ランプ幻想");
+    });
+
+    test("romaji is read as kana for a title MusicBrainz only has in kana", async () => {
+        const [hit] = await run("romaji-as-kana");
+        expect(hit!.id).toBe(YUME_UTSUTSU);
+        expect(hit!.title).toBe("ゆめうつつ");
+    });
+
+    test("a title mixing kana, kanji and Latin words is found as written", async () => {
+        const [hit] = await run("japanese-mixed-track");
+        expect(hit!.id).toBe(SUKISUKI_DIE);
+        expect(hit!.bestResult).toBe(true);
+        expect(hit!.match.flags).not.toContain("transliterated");
+    });
+
+    test("a Japanese artist alone lists that artist's tracks", async () => {
+        const hits = await run("japanese-artist");
+        expect(hits.length).toBeGreaterThan(0);
+        expect(hits.every((hit) => hit.artist.name.includes("宝鐘マリン") || hit.match.flags.includes("artist_only"))).toBe(true);
+    });
+
+    test("a romanized title with the artist's Latin spelling is read off the artist's catalogue", async () => {
+        const [hit] = await run("romanized-track-latin-artist");
+        expect(hit!.id).toBe(SUKISUKI_DIE);
+        expect(hit!.artist.id).toBe(HOSHOU_MARINE);
+        expect(hit!.match.flags).toContain("transliterated");
+    });
+
+    test("an album has the same result under its Latin and its Japanese title", async () => {
+        const latin = await run("album-latin-title");
+        const japanese = await run("album-japanese-title");
+        expect(latin.map((r) => r.id)).toEqual([AHOY_ALBUM]);
+        expect(japanese.map((r) => r.id)).toEqual([AHOY_ALBUM]);
+        expect(latin[0]!.bestResult).toBe(true);
+        expect(japanese[0]!.bestResult).toBe(true);
+        expect(latin[0]!.match.flags).toContain("transliterated");
+    });
+});

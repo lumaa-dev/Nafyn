@@ -8,7 +8,7 @@
 //   - Manually imported files have no MusicBrainz ID at all.
 // So a recording is matched, strongest signal first, by MBID (its own plus every alias recorded for a media
 // row), then by ISRC, then - for the requester's own library only - by title + artist + duration.
-import { foldDiacritics } from "./soulseek";
+import { foldDiacritics } from "./soulseekText";
 
 export interface RecordingIdentity {
     // every MBID known to name this recording: the canonical one MusicBrainz returned, plus the one asked for
