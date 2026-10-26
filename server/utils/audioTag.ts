@@ -11,6 +11,7 @@ export interface AudioTags {
     artist: string,
     album?: string | null,
     trackNumber?: number | null,
+    discNumber?: number | null,
     date?: Date | null,
     label?: string | null
 }
@@ -48,6 +49,7 @@ export function tagAudioFile(inputPath: string, outputPath: string, tags: AudioT
 
         if (tags.album) command.outputOptions("-metadata", `album=${tags.album}`);
         if (tags.trackNumber) command.outputOptions("-metadata", `track=${tags.trackNumber}`);
+        if (tags.discNumber) command.outputOptions("-metadata", `disc=${tags.discNumber}`);
         if (tags.date) command.outputOptions("-metadata", `date=${tags.date.toISOString().slice(0, 10)}`);
         if (tags.label) command.outputOptions("-metadata", `publisher=${tags.label}`);
 

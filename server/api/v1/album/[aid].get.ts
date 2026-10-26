@@ -1,7 +1,7 @@
 import type { IRelease, IReleaseGroup } from "musicbrainz-api";
 import { getMusicBrainzRepository, parseReleaseDate } from "~~/server/utils/musicbrainz";
 import { pickReleaseForGroup } from "~~/server/utils/release";
-import type { AlbumDetail } from "~~/server/entity/media/AlbumDetail";
+import type { AlbumDetail, DiscInfo } from "~~/server/entity/media/AlbumDetail";
 import type { TrackInfo } from "~~/server/entity/media/TrackInfo";
 import type { ArtistInfo } from "~~/server/entity/media/ArtistInfo";
 import { findMediaByIdentity, findOwnedMediaByIdentity } from "~~/server/core/library";
@@ -78,11 +78,12 @@ defineRouteMeta({
                     },
                     TrackInfo: {
                         type: "object",
-                        required: ["id", "title", "trackNumber", "duration", "releaseDate", "released", "inLibrary", "requested", "mediaId"],
+                        required: ["id", "title", "trackNumber", "discNumber", "duration", "releaseDate", "released", "inLibrary", "requested", "mediaId"],
                         properties: {
                             id: { type: "string", description: "MusicBrainz recording ID" },
                             title: { type: "string" },
-                            trackNumber: { type: "number" },
+                            trackNumber: { type: "number", description: "Position within its disc - a multi-disc album repeats the numbers once per disc" },
+                            discNumber: { type: "number", description: "The disc the track is on; see `discs` on the album" },
                             duration: { type: "number", description: "Seconds" },
                             releaseDate: { type: "string", format: "date-time", nullable: true },
                             released: { type: "boolean", description: "Whether the release date has already passed" },
@@ -91,9 +92,17 @@ defineRouteMeta({
                             mediaId: { type: "string", nullable: true, description: "Nafyn's internal media ID, if this recording has been downloaded by anyone" }
                         }
                     },
+                    DiscInfo: {
+                        type: "object",
+                        required: ["number", "title"],
+                        properties: {
+                            number: { type: "number" },
+                            title: { type: "string", nullable: true, description: "The disc's own title in MusicBrainz; null when it has none, in which case clients show \"Disc {number}\"" }
+                        }
+                    },
                     AlbumDetail: {
                         type: "object",
-                        required: ["id", "releaseId", "title", "artist", "type", "coverArt", "imageColors", "textColor", "releaseDate", "releaseDatePrecision", "released", "subscribed", "requested", "inLibrary", "description", "label", "tracks"],
+                        required: ["id", "releaseId", "title", "artist", "type", "coverArt", "imageColors", "textColor", "releaseDate", "releaseDatePrecision", "released", "subscribed", "requested", "inLibrary", "description", "label", "discs", "tracks"],
                         properties: {
                             id: { type: "string", description: "MusicBrainz release-group ID" },
                             releaseId: { type: "string", description: "MusicBrainz release ID for the selected release" },
@@ -117,6 +126,11 @@ defineRouteMeta({
                             inLibrary: { type: "boolean", description: "Whether every track of the album is already in the caller's library, in which case it can't be requested (POST /api/v1/request returns 409)" },
                             description: { type: "string", nullable: true },
                             label: { type: "string", nullable: true },
+                            discs: {
+                                type: "array",
+                                items: { $ref: "#/components/schemas/DiscInfo" },
+                                description: "One entry per disc, in order. Only show disc headers when there is more than one"
+                            },
                             tracks: {
                                 type: "array",
                                 items: { $ref: "#/components/schemas/TrackInfo" }
@@ -167,7 +181,10 @@ export default defineEventHandler(async (event): Promise<AlbumDetail> => {
     // a track's own recording can carry an earlier/later first-release-date than the album
     // (staggered singles/rollouts); fall back to the album's date when the recording has none
     const tracks: TrackInfo[] = [];
-    for (const medium of release.media ?? []) {
+    const discs: DiscInfo[] = [];
+    for (const [mediumIndex, medium] of (release.media ?? []).entries()) {
+        const discNumber = medium.position ?? mediumIndex + 1;
+        discs.push({ number: discNumber, title: medium.title?.trim() || null });
         for (const track of medium.tracks ?? []) {
             const trackReleaseDate = parseReleaseDate(track.recording?.["first-release-date"]) ?? releaseDate;
             // same identity match as POST /api/v1/request and the download pipeline, so a track shown as
@@ -190,6 +207,7 @@ export default defineEventHandler(async (event): Promise<AlbumDetail> => {
                 id: track.recording.id,
                 title: track.title,
                 trackNumber: track.position,
+                discNumber,
                 duration: track.length ? Math.round(track.length / 1000) : 0,
                 releaseDate: trackReleaseDate,
                 released: isReleased(trackReleaseDate),
@@ -220,6 +238,7 @@ export default defineEventHandler(async (event): Promise<AlbumDetail> => {
         inLibrary: tracks.length > 0 && tracks.every((track) => track.inLibrary),
         description: releaseGroup.disambiguation || null,
         label,
+        discs,
         tracks
     };
 });

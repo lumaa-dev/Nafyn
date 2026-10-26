@@ -1,6 +1,12 @@
 import { ArtistInfo } from "./ArtistInfo";
 import { TrackInfo } from "./TrackInfo";
 
+export interface DiscInfo {
+    number: number,
+    // the disc's own MusicBrainz title, or null when it has none - clients show "Disc {number}"
+    title: string | null
+}
+
 export interface AlbumDetail {
     id: string,
     releaseId: string,
@@ -25,5 +31,7 @@ export interface AlbumDetail {
     inLibrary: boolean,
     description: string | null,
     label: string | null,
+    // one entry per disc, in order; a single-disc album has exactly one and clients show no disc headers
+    discs: DiscInfo[],
     tracks: TrackInfo[]
 }

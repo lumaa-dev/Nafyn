@@ -26,7 +26,12 @@ export interface MediaRow {
     fileSize: number | null,
     // 'soulseek' for rows created by the download pipeline, 'manual' for a user-uploaded file
     source: MediaSource,
+    // position within its disc (MusicBrainz `track.position`), so a multi-disc album repeats the numbers
     trackNumber: number | null,
+    // the disc (MusicBrainz medium position) the track is on; null = unknown, treated as disc 1
+    discNumber: number | null,
+    // the disc's own title when MusicBrainz has one; null = unnamed, clients show "Disc N"
+    discTitle: string | null,
     // 1 when a user uploaded a cover image for this row; it wins over `coverArt` everywhere
     hasCustomCover: number,
     addedAt: number
@@ -91,7 +96,7 @@ export async function findAnyLibraryEntryForMedia(mediaId: string): Promise<Libr
     return row ?? null;
 }
 
-export async function insertMedia(media: Omit<MediaRow, "id" | "addedAt" | "source" | "trackNumber" | "hasCustomCover"> & Partial<Pick<MediaRow, "id" | "source" | "trackNumber" | "hasCustomCover">>): Promise<MediaRow> {
+export async function insertMedia(media: Omit<MediaRow, "id" | "addedAt" | "source" | "trackNumber" | "discNumber" | "discTitle" | "hasCustomCover"> & Partial<Pick<MediaRow, "id" | "source" | "trackNumber" | "discNumber" | "discTitle" | "hasCustomCover">>): Promise<MediaRow> {
     const row: MediaRow = {
         id: media.id ?? randomUUID(),
         musicbrainzId: media.musicbrainzId,
@@ -110,13 +115,15 @@ export async function insertMedia(media: Omit<MediaRow, "id" | "addedAt" | "sour
         fileSize: media.fileSize,
         source: media.source ?? "soulseek",
         trackNumber: media.trackNumber ?? null,
+        discNumber: media.discNumber ?? null,
+        discTitle: media.discTitle ?? null,
         hasCustomCover: media.hasCustomCover ?? 0,
         addedAt: Date.now()
     };
 
     await getLibrariesDb().prepare(`
-        INSERT INTO media (id, musicbrainzId, title, artistName, artistMbid, album, albumId, albumType, coverArt, releaseDate, duration, label, fingerprint, amId, fileSize, source, trackNumber, hasCustomCover, addedAt)
-        VALUES (:id, :musicbrainzId, :title, :artistName, :artistMbid, :album, :albumId, :albumType, :coverArt, :releaseDate, :duration, :label, :fingerprint, :amId, :fileSize, :source, :trackNumber, :hasCustomCover, :addedAt)
+        INSERT INTO media (id, musicbrainzId, title, artistName, artistMbid, album, albumId, albumType, coverArt, releaseDate, duration, label, fingerprint, amId, fileSize, source, trackNumber, discNumber, discTitle, hasCustomCover, addedAt)
+        VALUES (:id, :musicbrainzId, :title, :artistName, :artistMbid, :album, :albumId, :albumType, :coverArt, :releaseDate, :duration, :label, :fingerprint, :amId, :fileSize, :source, :trackNumber, :discNumber, :discTitle, :hasCustomCover, :addedAt)
     `).run(row);
 
     return row;
@@ -340,14 +347,15 @@ export async function getAlbumOfUser(userId: string, albumId: string): Promise<A
 export type SubsonicSong = MediaRow & { filePath: string };
 
 // every owned track from one album, for the Subsonic layer's getAlbum and the library album view - ordered
-// by trackNumber when known, falling back to title for rows without one (manual imports, older downloads)
+// by disc, then trackNumber when known, falling back to title for rows without one (manual imports, older
+// downloads). A row with no disc is on disc 1.
 export async function getAlbumSongsOfUser(userId: string, albumId: string): Promise<SubsonicSong[]> {
     return await getLibrariesDb().prepare(`
         SELECT media.*, library_entries.filePath AS filePath
         FROM library_entries
         JOIN media ON media.id = library_entries.mediaId
         WHERE library_entries.userId = ? AND media.albumId = ?
-        ORDER BY media.trackNumber IS NULL, media.trackNumber ASC, media.title ASC, media.id ASC
+        ORDER BY COALESCE(media.discNumber, 1) ASC, media.trackNumber IS NULL, media.trackNumber ASC, media.title ASC, media.id ASC
     `).all(userId, albumId) as SubsonicSong[];
 }
 

@@ -51,6 +51,7 @@ async function retagFile(filePath: string, media: MediaRow): Promise<void> {
             artist: media.artistName,
             album: media.album,
             trackNumber: media.trackNumber,
+            discNumber: media.discNumber,
             date: media.releaseDate ? new Date(media.releaseDate * 1000) : null,
             label: media.label
         });

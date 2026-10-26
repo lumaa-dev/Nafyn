@@ -99,7 +99,9 @@ export interface TrackTarget {
     label: string | null,
     coverArt: string | null,
     amId: string | null,
-    discNumber: number
+    discNumber: number,
+    // the disc's own MusicBrainz title, if it has one (null shows as "Disc N")
+    discTitle: string | null
 }
 
 const MAX_NAME_FORMS = 8;
@@ -179,9 +181,8 @@ export async function resolveTargets(client: MusicBrainzRepository, musicbrainzI
             .flatMap((medium) => medium.tracks ?? [])
             .filter((track) => track.recording?.id === recording.id || track.recording === undefined));
         // this recording's position within the picked release's tracklist, when the release carries one
-        const trackNumber = release?.media
-            ?.flatMap((medium) => medium.tracks ?? [])
-            .find((track) => track.recording?.id === recording.id)?.position ?? null;
+        const medium = release?.media?.find((candidate) => (candidate.tracks ?? []).some((track) => track.recording?.id === recording.id));
+        const trackNumber = medium?.tracks?.find((track) => track.recording?.id === recording.id)?.position ?? null;
 
         // albumId must be the release-*group* MBID (not the release's own ID) so the library's
         // "album" grouping links back to a valid /api/v1/album/{aid} target
@@ -205,7 +206,8 @@ export async function resolveTargets(client: MusicBrainzRepository, musicbrainzI
             label: null,
             coverArt: release?.id ? `https://coverartarchive.org/release/${release.id}/front-250` : null,
             amId: getAppleMusicTrackID(recording, release) ?? null,
-            discNumber: 1
+            discNumber: medium?.position ?? 1,
+            discTitle: medium?.title?.trim() || null
         }];
     }
 
@@ -269,7 +271,8 @@ export async function resolveTargets(client: MusicBrainzRepository, musicbrainzI
                 label,
                 coverArt,
                 amId,
-                discNumber: medium.position ?? mediumIndex + 1
+                discNumber: medium.position ?? mediumIndex + 1,
+                discTitle: medium.title?.trim() || null
             });
         }
     }
@@ -545,7 +548,9 @@ async function downloadTrack(
                 fingerprint: check.fingerprint,
                 amId: target.amId,
                 fileSize: null,
-                trackNumber: target.trackNumber
+                trackNumber: target.trackNumber,
+                discNumber: target.discNumber,
+                discTitle: target.discTitle
             });
             if (!reusableMedia) insertedMediaId = media.id;
             // have the cover on disk before the first page that shows it asks (the archive is slow when cold)
@@ -566,6 +571,7 @@ async function downloadTrack(
                 artist: target.artistName,
                 album: target.album,
                 trackNumber: target.trackNumber,
+                discNumber: target.discNumber,
                 date: target.releaseDate,
                 label: target.label
             });

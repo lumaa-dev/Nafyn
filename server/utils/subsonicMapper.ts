@@ -57,6 +57,8 @@ export function songNode(song: SubsonicSong): SubsonicNode {
         title: song.title,
         album: song.album ?? undefined,
         artist: song.artistName,
+        track: song.trackNumber ?? undefined,
+        discNumber: song.discNumber ?? undefined,
         year: song.releaseDate ? new Date(song.releaseDate * 1000).getUTCFullYear() : undefined,
         coverArt: (song.coverArt || song.hasCustomCover) ? coverArtId.song(song.id) : undefined,
         size: song.fileSize ?? undefined,

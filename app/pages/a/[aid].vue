@@ -26,7 +26,11 @@
 
     <ol class="tracks">
       <h2>{{ $t('album.trackList') }}</h2>
-      <li v-for="track in album.tracks" :key="track.id" :class="{ unreleased: !track.released, playing: currentTrack?.id === track.mediaId, playable: track.mediaId }" @click="track.mediaId ? playTrack(track) : undefined" @contextmenu.prevent="track.mediaId ? onTrackContextMenu($event, track.mediaId) : undefined">
+      <template v-for="group in discGroups" :key="group.number">
+      <li v-if="discGroups.length > 1" class="disc" role="presentation">
+        <h3>{{ group.label }}</h3>
+      </li>
+      <li v-for="track in group.tracks" :key="`${track.discNumber}-${track.trackNumber}-${track.id}`" :class="{ unreleased: !track.released, playing: currentTrack?.id === track.mediaId, playable: track.mediaId }" @click="track.mediaId ? playTrack(track) : undefined" @contextmenu.prevent="track.mediaId ? onTrackContextMenu($event, track.mediaId) : undefined">
         <span class="number">{{ track.trackNumber }}</span>
         <span class="title">{{ track.title }}</span>
         <ReleaseCountdown v-if="!track.released && track.releaseDate && album.released" compact :date="track.releaseDate" />
@@ -36,6 +40,7 @@
         </button>
         <span class="duration" v-if="track.duration > 0">{{ formatDuration(track.duration) }}</span>
       </li>
+      </template>
     </ol>
 
     <ContextMenu ref="trackMenu" :items="trackMenuItems" />
@@ -71,6 +76,18 @@ const { data: album, error } = await useAsyncData<AlbumDetail>(`album-${aid}`, (
 }, { deep: true });
 useLoadErrorToast(error);
 
+// tracks per disc, in order; the template only draws a disc header when there is more than one. An unnamed
+// disc reads "Disc N".
+const discGroups = computed(() => {
+  const current = album.value;
+  if (!current) return [];
+  return current.discs.map((disc) => ({
+    number: disc.number,
+    label: disc.title ?? $t('album.disc', { number: disc.number }),
+    tracks: current.tracks.filter((track) => track.discNumber === disc.number)
+  }));
+});
+
 const albumMediaIds = computed(() => album.value?.tracks.map((t) => t.mediaId).filter((id): id is string => id !== null) ?? []);
 
 const { currentTrack, play, addToQueue } = useUnity();
@@ -96,6 +113,9 @@ function toMediaRow(track: TrackInfo): MediaRow | null {
     label: album.value.label,
     fingerprint: null,
     amId: null,
+    trackNumber: track.trackNumber,
+    discNumber: track.discNumber,
+    discTitle: album.value.discs.find((disc) => disc.number === track.discNumber)?.title ?? null,
     addedAt: 0
   };
 }
@@ -308,6 +328,17 @@ async function requestTrack(track: TrackInfo) {
 
 .album .tracks li:not(:last-child) {
   border-bottom: 1px solid #666666;
+}
+
+.album .tracks li.disc,
+.album .tracks li.disc:not(:last-child) {
+  padding: 24px 0 8px;
+  border-bottom: 1px solid #ffffff;
+}
+
+.album .tracks li.disc h3 {
+  margin: 0;
+  font-size: 1em;
 }
 
 .album .tracks li.playable {

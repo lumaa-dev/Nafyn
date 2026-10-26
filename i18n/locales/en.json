@@ -65,6 +65,7 @@
     }
   },
   "album": {
+    "disc": "Disc {number}",
     "trackList": "Track list",
     "request": "Request",
     "requested": "Requested successfully",

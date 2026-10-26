@@ -403,6 +403,21 @@ const MIGRATIONS: Migration[] = [
                 ) ${tableOptions}
             `);
         }
+    },
+    {
+        // multi-disc releases. `trackNumber` is the position *within* its medium (what MusicBrainz and every tag
+        // format call "track"), so a two-disc album has two track 1s; `discNumber` + `discTitle` tell them apart.
+        //   `discNumber` - the medium's position, NULL for rows that predate this (shown as disc 1)
+        //   `discTitle`  - the medium's own title when MusicBrainz has one; NULL means "Disc N"
+        id: "2026-10-26-media-disc",
+        up: async (conn) => {
+            if (!await columnExists(conn, "media", "discNumber")) {
+                await conn.query(`ALTER TABLE media ADD COLUMN discNumber INT NULL`);
+            }
+            if (!await columnExists(conn, "media", "discTitle")) {
+                await conn.query(`ALTER TABLE media ADD COLUMN discTitle TEXT NULL`);
+            }
+        }
     }
 ];
 

@@ -13,7 +13,11 @@
     </div>
 
     <ol class="tracks" v-if="tracks.length > 0">
-      <li v-for="track in tracks" :key="track.id" :class="{ playing: currentTrack?.id === track.id }" @click="playFrom(track)" @contextmenu.prevent="onContextMenu($event, track)">
+      <template v-for="group in discGroups" :key="group.number">
+      <li v-if="discGroups.length > 1" class="disc" role="presentation">
+        <h3>{{ group.label }}</h3>
+      </li>
+      <li v-for="track in group.tracks" :key="track.id" :class="{ playing: currentTrack?.id === track.id }" @click="playFrom(track)" @contextmenu.prevent="onContextMenu($event, track)">
         <CoverImage :src="coverSrc(track)" />
         <span class="col">
           <span class="title">{{ track.title }}</span>
@@ -25,6 +29,7 @@
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
         </button>
       </li>
+      </template>
     </ol>
 
     <ContextMenu ref="trackMenu" :items="trackMenuItems" />
@@ -56,6 +61,20 @@ const { data: detail, error } = await useAsyncData<LibraryAlbumDetail>(`library-
 useLoadErrorToast(error);
 
 const tracks = computed<MediaRow[]>(() => detail.value?.tracks ?? []);
+
+// the tracks are already ordered disc by disc; a row with no disc is on disc 1. A disc header is only drawn
+// when the owned tracks span more than one disc, and an unnamed disc reads "Disc N".
+const discGroups = computed(() => {
+  const groups = new Map<number, { number: number, title: string | null, tracks: MediaRow[] }>();
+  for (const track of tracks.value) {
+    const number = track.discNumber ?? 1;
+    const group = groups.get(number) ?? { number, title: null, tracks: [] };
+    groups.set(number, group);
+    group.title ??= track.discTitle;
+    group.tracks.push(track);
+  }
+  return [...groups.values()].map((group) => ({ ...group, label: group.title ?? $t('album.disc', { number: group.number }) }));
+});
 
 const { currentTrack, play, addToQueue } = useUnity();
 
@@ -167,6 +186,17 @@ function onEllipsis(e: MouseEvent, track: MediaRow) {
 .libalbum .tracks li.playing .title {
   color: #ffffff;
   font-weight: 700;
+}
+
+.libalbum .tracks li.disc,
+.libalbum .tracks li.disc:not(:last-child) {
+  padding: 24px 0 8px;
+  border-bottom: 1px solid #ffffff;
+}
+
+.libalbum .tracks li.disc h3 {
+  margin: 0;
+  font-size: 1em;
 }
 
 .libalbum .tracks li:not(:last-child) {

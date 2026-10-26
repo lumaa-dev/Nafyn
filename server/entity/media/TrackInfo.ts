@@ -1,7 +1,10 @@
 export interface TrackInfo {
     id: string,
     title: string,
+    // position within its disc, so a multi-disc album repeats 1..N once per disc
     trackNumber: number,
+    // the disc (MusicBrainz medium position) the track is on; look it up in AlbumDetail.discs
+    discNumber: number,
     duration: number,
     releaseDate: Date | null,
     released: boolean,
