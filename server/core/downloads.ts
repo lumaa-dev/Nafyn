@@ -59,7 +59,7 @@ import {
 import { buildIdentity, type RecordingIdentity } from "../utils/mediaIdentity";
 import { emitDownloadProgress, clearDownloadEmitter } from "../utils/downloadEvents";
 import { isReleased } from "../utils/releaseDate";
-import { notifyRequestFinished } from "./notifications";
+import { notifyRequestFinished, notifyRequestStarted } from "./notifications";
 import { acquireDownloadSlot } from "./downloadQueue";
 import { NafynRequest } from "../entity/NafynRequest";
 import { ensureDir } from "../utils/ensureDir";
@@ -642,6 +642,8 @@ async function runDownloadRequest(request: NafynRequest): Promise<void> {
 
     try {
         await updateRequestStatus(request.id, "searching");
+        // out of the download queue and about to search: the requester's Live Activity starts now
+        notifyRequestStarted(request);
         emitDownloadProgress({ requestId: request.id, stage: "searching", message: "Resolving MusicBrainz data" });
 
         const client = getMusicBrainzRepository();

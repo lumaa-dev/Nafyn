@@ -44,12 +44,14 @@ export type ApnActivityKind = typeof APN_ACTIVITY_KINDS[number];
 export const REQUEST_ACTIVITY_TYPE = "NafynRequestActivityAttributes";
 export const RELEASE_ACTIVITY_TYPE = "NafynReleaseCountdownAttributes";
 
-// how long a finished request's Live Activity stays on the lock screen
-const REQUEST_ACTIVITY_LINGER_MS = 25 * 60 * 1000;
+// how long a finished request's outcome stays up in the Dynamic Island before the Live Activity is ended and
+// removed from the lock screen too (ending an activity hides its Dynamic Island presentation at once, so the
+// outcome goes out as an update first and the end follows after this)
+const REQUEST_ACTIVITY_OUTCOME_MS = 5_000;
 // how long the "out now" countdown stays up after release. iOS ends any Live Activity 8 hours after it
 // started; the countdown starts 3 hours before release, so this always fits inside that window.
 const RELEASE_ACTIVITY_LINGER_MS = 60 * 60 * 1000;
-// Apple budgets Live Activity updates; anything that isn't a stage/track change waits at least this long
+// Apple budgets Live Activity updates; a progress-only update (apns-priority 5) waits at least this long
 const REQUEST_UPDATE_MIN_INTERVAL_MS = 15_000;
 
 // `nowplaying` isn't in node-apn's NotificationPushType union yet; the library copies `pushType` straight into
@@ -161,17 +163,6 @@ interface DeviceRow {
     events: string | null,
     createdAt: number,
     lastSeenAt: number
-}
-
-interface ActivityTokenRow {
-    id: string,
-    userId: string,
-    sessionId: string,
-    kind: ApnActivityKind,
-    refId: string,
-    token: string,
-    environment: ApnEnvironment,
-    createdAt: number
 }
 
 /**
@@ -322,6 +313,14 @@ async function activityTargets(kind: ApnActivityKind, refId: string): Promise<Ap
     ).all(kind, refId) as ApnTarget[];
 }
 
+/** Logins that currently run a Live Activity for this refId, i.e. devices where one is really on screen. */
+async function activitySessionIds(kind: ApnActivityKind, refId: string): Promise<Set<string>> {
+    const rows = await getUsersDb().prepare(
+        `SELECT DISTINCT sessionId FROM apn_activity_tokens WHERE kind = ? AND refId = ?`
+    ).all(kind, refId) as { sessionId: string }[];
+    return new Set(rows.map((row) => row.sessionId));
+}
+
 async function deleteActivityTokens(kind: ApnActivityKind, refId: string): Promise<void> {
     await getUsersDb().prepare(`DELETE FROM apn_activity_tokens WHERE kind = ? AND refId = ?`).run(kind, refId);
 }
@@ -374,14 +373,15 @@ export async function sweepApnTokens(staleDays: number): Promise<void> {
     await db.prepare(`DELETE FROM apn_activity_tokens WHERE kind = 'nowplaying' AND createdAt < ?`).run(Date.now() - 86_400_000);
 }
 
-async function deviceTargets(userIds: string[], kind: ApnDeviceKind, event?: NotificationEvent, excludeSessionId?: string): Promise<(ApnTarget & { sessionId: string })[]> {
+async function deviceTargets(userIds: string[], kind: ApnDeviceKind, event?: NotificationEvent, excludeSessionIds?: ReadonlySet<string> | string): Promise<(ApnTarget & { sessionId: string })[]> {
+    const excluded = typeof excludeSessionIds === "string" ? new Set([excludeSessionIds]) : excludeSessionIds;
     if (userIds.length === 0) return [];
     const placeholders = userIds.map(() => "?").join(", ");
     const rows = await getUsersDb().prepare(
         `SELECT token, environment, sessionId, events FROM apn_devices WHERE kind = ? AND userId IN (${placeholders})`
     ).all(kind, ...userIds) as (ApnTarget & { sessionId: string, events: string | null })[];
     return rows
-        .filter((row) => row.sessionId !== excludeSessionId)
+        .filter((row) => !excluded?.has(row.sessionId))
         .filter((row) => {
             if (!event) return true;
             const events = parseEvents(row.events);
@@ -483,10 +483,13 @@ export async function sendNotification(deviceTokens: string | string[], alert: A
     await send(tokens.map((token) => ({ token, environment })), () => alertNotification(alert), "alert");
 }
 
-/** Sends an alert to every `alert` device of `userIds` that hasn't filtered `event` out. */
-export async function sendNotificationToUsers(userIds: string[], event: NotificationEvent, alert: ApnAlert): Promise<void> {
+/**
+ * Sends an alert to every `alert` device of `userIds` that hasn't filtered `event` out. Devices whose login id
+ * is in `excludeSessionIds` are skipped (e.g. the ones already telling the person through a Live Activity).
+ */
+export async function sendNotificationToUsers(userIds: string[], event: NotificationEvent, alert: ApnAlert, excludeSessionIds?: ReadonlySet<string>): Promise<void> {
     if (!apnEnabled()) return;
-    const targets = await deviceTargets(userIds, "alert", event);
+    const targets = await deviceTargets(userIds, "alert", event, excludeSessionIds);
     await send(targets, () => alertNotification(alert), `alert ${event}`);
 }
 
@@ -644,7 +647,9 @@ function liveActivityNotification(options: LiveActivityOptions): Notification {
 }
 
 // last update sent per request, to keep within Apple's Live Activity update budget
-const requestActivityThrottle = new Map<string, { sentAt: number, stage: string, trackIndex: number | null }>();
+// requests whose outcome is being shown (final update sent, end still pending)
+const finishingRequestActivities = new Set<string>();
+const requestActivityThrottle = new Map<string, { sentAt: number, stage: string, trackIndex: number | null, trackCount: number | null }>();
 
 /** Starts a request's progress Live Activity on the requester's devices (push-to-start). */
 export async function startRequestActivity(requesterId: string, attributes: RequestActivityAttributes): Promise<void> {
@@ -653,19 +658,21 @@ export async function startRequestActivity(requesterId: string, attributes: Requ
     const state: RequestActivityState = {
         stage: "searching", message: null, trackTitle: null, trackIndex: null, trackCount: null, progress: null, etaSeconds: null
     };
-    requestActivityThrottle.set(attributes.requestId, { sentAt: Date.now(), stage: state.stage, trackIndex: null });
+    requestActivityThrottle.set(attributes.requestId, { sentAt: Date.now(), stage: state.stage, trackIndex: null, trackCount: null });
     await send(targets, () => liveActivityNotification({
         event: "start",
         attributesType: REQUEST_ACTIVITY_TYPE,
         attributes,
         contentState: state,
-        alert: { title: attributes.title, body: "Your request was accepted" }
+        alert: { title: attributes.title, body: "Searching for your music" }
     }), "request activity start");
 }
 
 /** Pushes download progress to a running request Live Activity, throttled. Terminal stages go through endRequestActivity. */
 export async function updateRequestActivity(event: DownloadProgressEvent): Promise<void> {
     if (!apnEnabled()) return;
+    // the outcome is already on screen; a straggling progress event must not overwrite it
+    if (finishingRequestActivities.has(event.requestId)) return;
     // per-track "completed"/"failed" events arrive in the middle of an album; only the request-level end
     // (endRequestActivity, called once the whole pipeline is done) may end the activity
     if ((event.stage === "completed" || event.stage === "failed") && event.trackIndex === undefined) return;
@@ -673,12 +680,16 @@ export async function updateRequestActivity(event: DownloadProgressEvent): Promi
     const last = requestActivityThrottle.get(event.requestId);
     const now = Date.now();
     const trackIndex = event.trackIndex ?? null;
-    const important = !last || last.stage !== event.stage || last.trackIndex !== trackIndex;
+    const trackCount = event.trackCount ?? null;
+    // apns-priority 10 delivers immediately and is for what the person should notice: the stage or the track
+    // (count) changing. Everything else is the 0...1 download progress of the current track, which goes out
+    // at priority 5 (power-aware, may be delayed by the system) and at most once per interval.
+    const important = !last || last.stage !== event.stage || last.trackIndex !== trackIndex || last.trackCount !== trackCount;
     if (!important && now - last.sentAt < REQUEST_UPDATE_MIN_INTERVAL_MS) return;
 
     const targets = await activityTargets("request", event.requestId);
     if (targets.length === 0) return;
-    requestActivityThrottle.set(event.requestId, { sentAt: now, stage: event.stage, trackIndex });
+    requestActivityThrottle.set(event.requestId, { sentAt: now, stage: event.stage, trackIndex, trackCount });
 
     // a per-track "completed" between album tracks reads as "processing" from the outside: the request isn't done
     const stage: RequestActivityState["stage"] = event.stage === "completed" || event.stage === "failed" ? "processing" : event.stage;
@@ -687,7 +698,7 @@ export async function updateRequestActivity(event: DownloadProgressEvent): Promi
         message: event.message ?? null,
         trackTitle: event.trackTitle ?? null,
         trackIndex,
-        trackCount: event.trackCount ?? null,
+        trackCount,
         progress: event.totalBytes ? Math.min(1, (event.bytesDownloaded ?? 0) / event.totalBytes) : null,
         etaSeconds: event.etaSeconds ?? null
     };
@@ -698,21 +709,55 @@ export async function updateRequestActivity(event: DownloadProgressEvent): Promi
     }), "request activity update");
 }
 
-/** Ends a request's Live Activity; it stays visible for 25 minutes with the final outcome. */
-export async function endRequestActivity(requestId: string, outcome: "completed" | "failed", message: string | null = null): Promise<void> {
+/**
+ * Shows a request's outcome and then removes its Live Activity.
+ *
+ * Ending an activity takes its Dynamic Island presentation away immediately, so the outcome goes out first as
+ * a priority 10 `update` carrying an alert (which expands the island), and 5 seconds later the `end` follows
+ * with a dismissal date of now, which also removes it from the lock screen instead of leaving it there.
+ * Resolves once the outcome update is sent; the end is a timer (lost if the process dies in that window, in
+ * which case iOS' own limits end the activity eventually).
+ *
+ * Returns the logins that were running this activity, so the caller can skip the plain alert on them.
+ */
+export async function endRequestActivity(requestId: string, outcome: "completed" | "failed", message: string | null = null, alert?: { title: string, body: string }): Promise<Set<string>> {
     requestActivityThrottle.delete(requestId);
-    if (!apnEnabled()) return;
+    if (!apnEnabled()) return new Set();
     const targets = await activityTargets("request", requestId);
-    if (targets.length === 0) return;
+    if (targets.length === 0) return new Set();
+    const sessionIds = await activitySessionIds("request", requestId);
+
     const state: RequestActivityState = {
         stage: outcome, message, trackTitle: null, trackIndex: null, trackCount: null, progress: outcome === "completed" ? 1 : null, etaSeconds: null
     };
+    finishingRequestActivities.add(requestId);
     await send(targets, () => liveActivityNotification({
-        event: "end",
+        event: "update",
         contentState: state,
-        dismissalDateMs: Date.now() + REQUEST_ACTIVITY_LINGER_MS
-    }), "request activity end");
-    await deleteActivityTokens("request", requestId);
+        alert,
+        priority: 10
+    }), "request activity outcome");
+
+    const timer = setTimeout(async () => {
+        try {
+            // fresh read: the activity's update token may have been replaced since
+            const current = await activityTargets("request", requestId);
+            await send(current.length > 0 ? current : targets, () => liveActivityNotification({
+                event: "end",
+                contentState: state,
+                dismissalDateMs: Date.now(),
+                priority: 10
+            }), "request activity end");
+            await deleteActivityTokens("request", requestId);
+        } catch (err) {
+            console.error("[apn] request activity end failed:", err);
+        } finally {
+            finishingRequestActivities.delete(requestId);
+        }
+    }, REQUEST_ACTIVITY_OUTCOME_MS);
+    timer.unref?.();
+
+    return sessionIds;
 }
 
 /** Starts the release countdown Live Activity on the subscriber's devices (push-to-start). */

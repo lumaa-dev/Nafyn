@@ -79,7 +79,7 @@ const REQUEST_COPY: Record<Extract<NotificationEvent, `request.${string}`>, { ti
     "request.failed": { title: "Download failed", body: (c) => `${c.title} by ${c.artist} could not be downloaded`, key: "REQUEST_FAILED" }
 };
 
-async function dispatchRequestEvent(event: keyof typeof REQUEST_COPY, ctx: RequestContext, options: { actorId?: string | null, includeRequester: boolean, detail?: string | null, skipPush?: boolean, requesterOnlyPush?: boolean }): Promise<void> {
+async function dispatchRequestEvent(event: keyof typeof REQUEST_COPY, ctx: RequestContext, options: { actorId?: string | null, includeRequester: boolean, detail?: string | null, skipPush?: boolean, requesterOnlyPush?: boolean, excludePushSessionIds?: ReadonlySet<string> }): Promise<void> {
     const copy = REQUEST_COPY[event];
     const body = options.detail ? `${copy.body(ctx)} (${options.detail})` : copy.body(ctx);
 
@@ -124,7 +124,7 @@ async function dispatchRequestEvent(event: keyof typeof REQUEST_COPY, ctx: Reque
     };
 
     await Promise.allSettled([
-        options.skipPush ? Promise.resolve() : sendNotificationToUsers(pushUserIds, event, alert),
+        options.skipPush ? Promise.resolve() : sendNotificationToUsers(pushUserIds, event, alert, options.excludePushSessionIds),
         sendWebhookToUsers(userIds, message),
         sendGlobalWebhook(message)
     ]);
@@ -135,7 +135,7 @@ function liveActivityAttributes(ctx: RequestContext) {
 }
 
 /**
- * A request was just created. Auto-accepted ones also start the requester's Live Activity right away.
+ * A request was just created.
  *
  * "New request" exists to tell the people who manage requests there is something for them to decide. An
  * auto-accepted request has nothing to decide - it is already downloading - so it sends managers no push.
@@ -145,20 +145,28 @@ export function notifyRequestCreated(request: NafynRequest, autoAccepted: boolea
     fireAndForget("request.created", async () => {
         const ctx = await requestContext(request);
         await Promise.allSettled([
-            dispatchRequestEvent("request.created", ctx, { includeRequester: false, detail: autoAccepted ? "auto-accepted" : null, skipPush: autoAccepted }),
-            autoAccepted && ctx.requesterId ? startRequestActivity(ctx.requesterId, liveActivityAttributes(ctx)) : Promise.resolve()
+            dispatchRequestEvent("request.created", ctx, { includeRequester: false, detail: autoAccepted ? "auto-accepted" : null, skipPush: autoAccepted })
         ]);
     });
 }
 
-/** A manager accepted a waiting request; the download starts and so does the requester's Live Activity. */
+/** A manager accepted a waiting request. The Live Activity does not start here - see notifyRequestStarted. */
 export function notifyRequestAccepted(request: NafynRequest, actorId: string): void {
     fireAndForget("request.accepted", async () => {
         const ctx = await requestContext(request);
-        await Promise.allSettled([
-            dispatchRequestEvent("request.accepted", ctx, { actorId, includeRequester: true }),
-            ctx.requesterId ? startRequestActivity(ctx.requesterId, liveActivityAttributes(ctx)) : Promise.resolve()
-        ]);
+        await dispatchRequestEvent("request.accepted", ctx, { actorId, includeRequester: true });
+    });
+}
+
+/**
+ * The pipeline took a request off the download queue and begins resolving it on MusicBrainz / searching
+ * Soulseek: this, not acceptance, starts the requester's Live Activity. A request that is accepted but still
+ * waiting for a free download slot has nothing to show yet.
+ */
+export function notifyRequestStarted(request: NafynRequest): void {
+    fireAndForget("request activity start", async () => {
+        const ctx = await requestContext(request);
+        if (ctx.requesterId) await startRequestActivity(ctx.requesterId, liveActivityAttributes(ctx));
     });
 }
 
@@ -172,11 +180,23 @@ export function notifyRequestDenied(request: NafynRequest, actorId: string): voi
 /** The download pipeline is done with a request, one way or the other. */
 export function notifyRequestFinished(requestId: string, outcome: "completed" | "failed", detail: string | null = null): void {
     fireAndForget(`request.${outcome}`, async () => {
-        await endRequestActivity(requestId, outcome, detail);
         const request = await getRequestById(requestId);
-        if (!request) return;
-        const ctx = await requestContext(request);
-        await dispatchRequestEvent(outcome === "completed" ? "request.completed" : "request.failed", ctx, { includeRequester: true, detail, requesterOnlyPush: outcome === "completed" });
+        const ctx = request ? await requestContext(request) : null;
+        const event = outcome === "completed" ? "request.completed" : "request.failed";
+
+        // the Live Activity shows the outcome in the Dynamic Island for a few seconds, then ends
+        const copy = REQUEST_COPY[event];
+        const activitySessions = await endRequestActivity(requestId, outcome, detail, ctx ? { title: ctx.title, body: copy.title } : undefined);
+        if (!ctx) return;
+
+        // a success is already told by the Live Activity on the devices running it, so only the others (Live
+        // Activities switched off, or not supported) get the plain alert. A failure is always pushed.
+        await dispatchRequestEvent(event, ctx, {
+            includeRequester: true,
+            detail,
+            requesterOnlyPush: outcome === "completed",
+            excludePushSessionIds: outcome === "completed" ? activitySessions : undefined
+        });
     });
 }
 
