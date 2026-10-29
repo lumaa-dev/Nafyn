@@ -255,7 +255,7 @@ onUnmounted(() => {
 .lyrics-panel .lines li {
   /* the active line grows by transform, not font-size: no reflow, no re-wrapping of the lines around it, and it
      stays on the compositor. It scales from its left edge so the text doesn't drift sideways. */
-  transform: scale(1);
+  transform: scale(0.8);
   transform-origin: left center;
   /* --np-text is set by now-playing.vue from the cover (black on a light one, white on a dark one), so the
      lyrics follow the same WCAG-picked colour as the rest of the page instead of a hardcoded white */
@@ -284,12 +284,12 @@ onUnmounted(() => {
 
 .lyrics-panel .lines li.active {
   color: var(--np-text, #ffffff);
-  transform: scale(1.08);
+  transform: scale(1.0);
   will-change: transform;
 }
 
 .lyrics-panel .lines li.bg.active {
-  transform: scale(1.04);
+  transform: scale(0.95);
 }
 
 @media (prefers-reduced-motion: reduce) {
