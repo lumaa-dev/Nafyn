@@ -124,9 +124,10 @@ export async function isWhitelisted(ip: string | null): Promise<boolean> {
 }
 
 // every lookup behind these routes queues on the one shared MusicBrainz client (which throttles itself to
-// MusicBrainz's 1 req/s policy), so a single account spamming lookups would stall search, album pages and the
-// download pipeline for every other user. One bucket per account across all of them.
-const UPSTREAM_LOOKUPS_MAX = 60;
+// MusicBrainz's 1 req/s policy). Fairness between accounts is the client's own job now (round-robin per user,
+// see musicbrainzRepository.ts) and many of these hit its cache, so this is only an abuse ceiling - at 60 it
+// refused a playlist import that was, call for call, well inside what MusicBrainz could serve.
+const UPSTREAM_LOOKUPS_MAX = 300;
 const UPSTREAM_LOOKUPS_WINDOW_MS = 60 * 1000;
 
 export function enforceUpstreamLookupLimit(event: import("h3").H3Event, userId: string): void {

@@ -1,8 +1,8 @@
 // [tid].get.ts
-import { getMusicBrainzRepository, parseReleaseDate } from "~~/server/utils/musicbrainz";
+import { getMusicBrainzRepository, parseReleaseDate, TRACK_LOOKUP_INC } from "~~/server/utils/musicbrainz";
 import type { MediaInfo } from "~~/server/entity/media/MediaInfo";
 import type { ArtistInfo } from "~~/server/entity/media/ArtistInfo";
-import { IRecording } from "musicbrainz-api";
+import type { IRecording, RecordingIncludes } from "musicbrainz-api";
 import { assertMbid } from "~~/server/utils/ids";
 import { pickCanonicalRelease } from "~~/server/utils/release";
 import { getImageColors } from "~~/server/utils/imageColors";
@@ -90,7 +90,7 @@ export default defineEventHandler(async (event) => {
 
     const client = getMusicBrainzRepository();
 
-    const recording: IRecording = await client.lookup("recording", tid, ["artist-credits", "releases", "release-groups", "media", "isrcs"]).catch(() => {
+    const recording: IRecording = await client.lookup("recording", tid, TRACK_LOOKUP_INC as RecordingIncludes[]).catch(() => {
         throw createError({ statusCode: 404, statusMessage: "No track with ID " + tid });
     });
 

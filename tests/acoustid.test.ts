@@ -172,3 +172,45 @@ describe("aliasLookupCandidates", () => {
         expect(ids).toEqual(["aa", "bb", "cc"]);
     });
 });
+
+describe("judge: other names of the same song", () => {
+    const japanese: ExpectedRecording = {
+        recordingId: "44444444-4444-4444-4444-444444444444",
+        aliases: [],
+        title: "二十歳の恋",
+        artistName: "Lamp",
+        altTitles: ["Hatachi No Koi"],
+        duration: 200
+    };
+    const other = "55555555-5555-5555-5555-555555555555";
+
+    test("a confident candidate under the Latin release's title is the same song, not a contradiction", () => {
+        const verdict = judge(rankCandidates(answer(0.95, other, "Hatachi no Koi", "Lamp"), 200, config), japanese, config);
+        expect(verdict.matched).toBe(true);
+        expect(verdict.via).toBe("identity");
+        expect(verdict.confidentOther).toBeNull();
+    });
+
+    test("kana and its romanization are compared phonetically", () => {
+        const kana: ExpectedRecording = { ...japanese, title: "ありがとう", altTitles: [], artistName: "いきものがかり", artistAliases: ["Ikimono-gakari"] };
+        const verdict = judge(rankCandidates(answer(0.95, other, "Arigatou", "Ikimono-gakari"), 200, config), kana, config);
+        expect(verdict.matched).toBe(true);
+    });
+
+    test("an artist alias counts as the artist", () => {
+        const aliased: ExpectedRecording = { ...expected, artistName: "宇多田ヒカル", artistAliases: ["Hikaru Utada"] };
+        const verdict = judge(rankCandidates(answer(0.95, other, "Blinding Lights", "Hikaru Utada"), 200, config), aliased, config);
+        expect(verdict.matched).toBe(true);
+    });
+
+    test("a really different song is still a contradiction", () => {
+        const verdict = judge(rankCandidates(answer(0.95, other, "Save Your Tears", "The Weeknd"), 200, config), { ...expected, altTitles: ["Blinding Lights (Remix)"] }, config);
+        expect(verdict.confidentOther?.title).toBe("Save Your Tears");
+    });
+
+    test("alias lookups that could not run leave no contradiction behind", () => {
+        const verdict = judge(rankCandidates(answer(0.95, other, "Save Your Tears", "The Weeknd"), 200, config), expected, config, new Map(), false);
+        expect(verdict.matched).toBe(false);
+        expect(verdict.confidentOther).toBeNull();
+    });
+});

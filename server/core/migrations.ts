@@ -418,6 +418,52 @@ const MIGRATIONS: Migration[] = [
                 await conn.query(`ALTER TABLE media ADD COLUMN discTitle TEXT NULL`);
             }
         }
+    },
+    {
+        // playlist imports (server/core/imports.ts): a list of tracks another service described, resolved to
+        // MusicBrainz and requested one by one in the background. `imports.userId` and the items' title/artist
+        // are personal data: both tables are in eraseAccount() and buildAccountExport(), finished imports are
+        // pruned after 30 days. No FK to users (see db.ts), items go with their import.
+        id: "2026-10-29-playlist-imports",
+        up: async (conn) => {
+            if (!await tableExists(conn, "imports")) {
+                await conn.query(`
+                    CREATE TABLE imports (
+                        id VARCHAR(36) PRIMARY KEY,
+                        userId VARCHAR(36) NOT NULL,
+                        source VARCHAR(32) NULL,
+                        name VARCHAR(200) NULL,
+                        status VARCHAR(16) NOT NULL,
+                        total INT NOT NULL,
+                        processed INT NOT NULL DEFAULT 0,
+                        createdAt BIGINT NOT NULL,
+                        updatedAt BIGINT NOT NULL,
+                        INDEX idx_imports_user (userId, createdAt),
+                        INDEX idx_imports_status (status, updatedAt)
+                    )
+                `);
+            }
+            if (!await tableExists(conn, "import_items")) {
+                await conn.query(`
+                    CREATE TABLE import_items (
+                        importId VARCHAR(36) NOT NULL,
+                        position INT NOT NULL,
+                        isrc VARCHAR(12) NULL,
+                        title VARCHAR(300) NOT NULL,
+                        artist VARCHAR(300) NOT NULL,
+                        album VARCHAR(300) NULL,
+                        duration INT NULL,
+                        status VARCHAR(24) NOT NULL,
+                        attempts INT NOT NULL DEFAULT 0,
+                        musicbrainzId VARCHAR(36) NULL,
+                        requestId VARCHAR(36) NULL,
+                        via VARCHAR(8) NULL,
+                        message VARCHAR(255) NULL,
+                        PRIMARY KEY (importId, position)
+                    )
+                `);
+            }
+        }
     }
 ];
 

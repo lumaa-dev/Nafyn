@@ -77,7 +77,13 @@ const STRING_VARIABLES = [
 // flags that only the exact value "false" switches off (everything else leaves the feature ON)
 const OFF_SWITCHES = [
     "NAFYN_INSIGHTS_SCHEDULER", "NAFYN_RETENTION_SCHEDULER", "NAFYN_UNITY_SCHEDULER",
-    "NAFYN_NOTIFICATION_SCHEDULER", "NAFYN_UNITY_ENABLED"
+    "NAFYN_NOTIFICATION_SCHEDULER", "NAFYN_UNITY_ENABLED", "NAFYN_IMPORT_WORKER"
+];
+// tunables read as numbers; a value that isn't one is ignored in favour of the default (code defaults in brackets)
+const NUMBER_VARIABLES: Array<[name: string, min: number, integer: boolean]> = [
+    ["NAFYN_MAX_ACTIVE_REQUESTS_PER_USER", 1, true], // 500, core/requestCreate.ts
+    ["NAFYN_SLSKD_MAX_CONCURRENT_SEARCHES", 1, true], // 3, utils/soulseek.ts
+    ["NAFYN_SLSKD_SEARCH_INTERVAL_MS", 0, false] // 1000, utils/soulseek.ts
 ];
 // flags that only the exact value "true" switches on
 const ON_SWITCHES = ["NAFYN_PUBLIC_OPENAPI", "NAFYN_WEBHOOK_ALLOW_PRIVATE", "APN_PRODUCTION"];
@@ -273,6 +279,14 @@ export async function checkEnvironment(config: EnvConfig = configFromEnv(), env:
         const value = env[name];
         if (value && value !== "false" && value !== "true") {
             add("warn", "deployment", name, `is "${value}" - only the exact value false turns this off, so it is still ON.`);
+        }
+    }
+    for (const [name, min, integer] of NUMBER_VARIABLES) {
+        const value = env[name];
+        if (!value) continue;
+        const parsed = Number(value);
+        if (!Number.isFinite(parsed) || parsed < min || (integer && !Number.isInteger(parsed))) {
+            add("warn", "downloads", name, `is "${value}", which is not ${integer ? "a whole number" : "a number"} of at least ${min} - the default is used instead.`);
         }
     }
     for (const name of ON_SWITCHES) {

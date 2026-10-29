@@ -15,6 +15,7 @@
 import { pruneRecentlyPlayedOlderThan } from "~~/server/core/recentlyPlayed";
 import { getSetting } from "~~/server/core/appSettings";
 import { pruneNotifiedSubscriptions } from "~~/server/core/releaseSubscriptions";
+import { pruneFinishedImports } from "~~/server/core/imports";
 import { sweepApnTokens } from "~~/server/utils/apn";
 import { sweepCoverCache } from "~~/server/utils/coverArtCache";
 import { readdir, rm, stat } from "node:fs/promises";
@@ -81,6 +82,9 @@ async function tick(): Promise<void> {
     await sweepApnTokens(APN_DEVICE_STALE_DAYS);
     const subscriptions = await pruneNotifiedSubscriptions(NOTIFIED_SUBSCRIPTION_RETENTION_MS);
     if (subscriptions > 0) console.info(`[retention] removed ${subscriptions} delivered release subscriptions`);
+    // a finished playlist import is only a report of how it went; IMPORT_RETENTION_DAYS (30) is plenty to read it
+    const imports = await pruneFinishedImports();
+    if (imports > 0) console.info(`[retention] removed ${imports} finished playlist imports`);
 
     const tmpFiles = await sweepTmp();
     if (tmpFiles > 0) console.info(`[retention] removed ${tmpFiles} abandoned download temp files`);

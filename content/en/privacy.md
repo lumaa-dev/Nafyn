@@ -68,6 +68,13 @@ What was requested, when, and its outcome - the instance's record of what it dow
 
 *Kept as an operational record, with your account removed from it when you delete your account.*
 
+### Playlist imports
+
+When you import a playlist from another service (from the Nafyn app), the tracks in it - title, artist, album,
+length and ISRC code - and what became of each one: requested, already in your library, or not found.
+
+*Deleted 30 days after the import finishes, and with your account.*
+
 ### Recently played
 
 The last few tracks, albums and playlists you started playback from, to fill the "recently played" shelf.

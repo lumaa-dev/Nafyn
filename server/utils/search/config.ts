@@ -72,6 +72,11 @@ export interface SearchConfig {
     bestResultMinScore: number,
     /** The top result must beat the runner-up by this much, or nobody is flagged (ambiguous). */
     bestResultMargin: number,
+    /**
+     * Only works with an Official "Digital Media" release qualify. On for the search page; a playlist import turns
+     * it off (`resolveImportedTrack`): the track demonstrably exists digitally, MusicBrainz may only list the CD.
+     */
+    requireDigitalMedia: boolean,
 
     // ---- filters ----
     /** Words (any supported language) marking a "best of" / greatest-hits compilation in a title. */
@@ -166,6 +171,7 @@ export const DEFAULT_SEARCH_CONFIG: SearchConfig = {
 
     bestResultMinScore: 0.8,
     bestResultMargin: 0.08,
+    requireDigitalMedia: true,
 
     compilationKeywords: DEFAULT_COMPILATION_KEYWORDS,
     deluxeKeywords: DEFAULT_DELUXE_KEYWORDS,

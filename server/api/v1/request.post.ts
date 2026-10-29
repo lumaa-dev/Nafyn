@@ -1,16 +1,5 @@
-import type { UUID } from "crypto";
-import { processDownloadRequest, resolveTargets, targetIdentity, type TrackTarget } from "~~/server/core/downloads";
-import { findOwnedMediaByIdentity } from "~~/server/core/library";
-import { createRequest, hasActiveRequest } from "~~/server/core/requests";
-import { getPermissionsById } from "~~/server/core/users";
-import { hasPermission, Permission } from "~~/server/entity/Permission";
-import { NafynRequest } from "~~/server/entity/NafynRequest";
+import { createMediaRequest } from "~~/server/core/requestCreate";
 import { assertMbid } from "~~/server/utils/ids";
-import { getMediaInfo, getMusicBrainzRepository } from "~~/server/utils/musicbrainz";
-import type { MediaInfo } from "~~/server/entity/media/MediaInfo";
-import { isReleased } from "~~/server/utils/releaseDate";
-import { notifyRequestCreated } from "~~/server/core/notifications";
-import { consumeRateLimit } from "~~/server/utils/rateLimit";
 
 defineRouteMeta({
     openAPI: {
@@ -80,6 +69,14 @@ defineRouteMeta({
                     }
                 }
             },
+            "429": {
+                description: "The caller already has too many requests waiting or downloading (NAFYN_MAX_ACTIVE_REQUESTS_PER_USER, default 500); see Retry-After",
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/NuxtError" }
+                    }
+                }
+            },
             "502": {
                 description: "MusicBrainz could not be reached, so whether the caller already has this could not be checked",
                 content: {
@@ -121,24 +118,8 @@ defineRouteMeta({
     },
 });
 
-// each request triggers a MusicBrainz lookup and, with AUTOACCEPT, a Soulseek search + download - a
-// per-account ceiling keeps one account from queueing thousands of them
-const MAX_REQUESTS = 30;
-const REQUEST_WINDOW_MS = 10 * 60 * 1000;
-
-// requests currently being created, keyed by user + MusicBrainz ID. The "already requested" check below reads
-// the database, so two clicks landing in the same instant would both pass it before either row exists;
-// this closes that gap within the (single) server process.
-const inFlight = new Set<string>();
-
 export default defineEventHandler(async (event) => {
     const { sub: userId } = await requireAuthToken(event);
-
-    const rateLimit = consumeRateLimit(`request:${userId}`, MAX_REQUESTS, REQUEST_WINDOW_MS);
-    if (!rateLimit.allowed) {
-        setResponseHeader(event, "Retry-After", rateLimit.retryAfterSeconds);
-        throw createError({ statusCode: 429, message: "Too many requests queued, try again later" });
-    }
 
     const body = await readBody(event);
     const type: string | null = typeof body?.type == "string" ? body?.type : null
@@ -152,82 +133,12 @@ export default defineEventHandler(async (event) => {
     // string being spliced into that upstream request.
     const mbId: string = assertMbid(body?.id);
 
-    let permcount: number = await getPermissionsById(userId) ?? 0
-
-    // SECURITY: the REQUEST_ALBUMS / REQUEST_TRACKS permission bits were declared but never checked here,
-    // so every authenticated account could queue downloads regardless of what an admin had granted it.
-    const required = type == "album" ? Permission.REQUEST_ALBUMS : Permission.REQUEST_TRACKS;
-    if (!hasPermission(permcount, required)) {
-        throw createError({ statusCode: 403, message: "Unsufficient permissions" })
+    // every check (permissions, the per-account ceiling on active requests, ownership, duplicates, release date)
+    // lives in createMediaRequest, shared with playlist imports
+    const result = await createMediaRequest(userId, mbId, type);
+    if (!result.ok) {
+        if (result.retryAfterSeconds) setResponseHeader(event, "Retry-After", result.retryAfterSeconds);
+        throw createError({ statusCode: result.statusCode, message: result.message });
     }
-
-    // resolve the item exactly as the download pipeline will: the canonical MBID (MusicBrainz redirects a
-    // merged-away ID to the surviving entity) and, for an album, the tracklist that would be downloaded.
-    // Whether the caller already has it can't be answered without this, so a MusicBrainz outage refuses the
-    // request instead of letting a possible duplicate through.
-    let info: MediaInfo | null;
-    let targets: TrackTarget[];
-    try {
-        targets = await resolveTargets(getMusicBrainzRepository(), mbId, type);
-        info = targets.length > 0 ? await getMediaInfo(mbId, type).catch(() => null) : null;
-    } catch (error) {
-        // the repository throws on every error response; 400 ("Invalid mbid" - a well-formed UUID MusicBrainz
-        // still rejects) and 404 mean the ID points at nothing, anything else is MusicBrainz being unreachable
-        if ([400, 404].includes((error as { status?: number }).status ?? 0)) {
-            throw createError({ statusCode: 404, message: "Nothing found on MusicBrainz for this ID" });
-        }
-        throw createError({ statusCode: 502, message: "Could not reach MusicBrainz, try again later" });
-    }
-    if (targets.length === 0) {
-        throw createError({ statusCode: 404, message: "Nothing found on MusicBrainz for this ID" });
-    }
-    const canonicalId = (type === "track" ? targets[0]!.recordingId : targets[0]!.albumId).toLowerCase();
-    const knownIds = [...new Set([mbId.toLowerCase(), canonicalId])];
-
-    // unreleased media can't be requested by anyone - ADMIN included, there's simply nothing to download yet.
-    // A failed lookup isn't treated as "unreleased": the pipeline re-checks the date before searching anyway.
-    if (info && !isReleased(info.releaseDate)) {
-        throw createError({ statusCode: 403, message: "Not released yet" });
-    }
-
-    let autoAccept: boolean = hasPermission(permcount, type == "album" ? Permission.AUTOACCEPT_ALBUMS : Permission.AUTOACCEPT_TRACKS);
-
-    // one live request per user and item: the button on the album/track page disables itself, but that is a
-    // courtesy - a second tab, a script or a double click must not queue the same download again. Keyed by
-    // every ID the item goes by, so the old and the new MBID of a merged entity can't each slip one through.
-    // Checked and claimed with no await in between, so two concurrent calls can't both get past it.
-    const flightKeys = knownIds.map((id) => `${userId}:${id}`);
-    if (flightKeys.some((key) => inFlight.has(key))) {
-        throw createError({ statusCode: 409, message: "You already requested this" });
-    }
-    flightKeys.forEach((key) => inFlight.add(key));
-
-    let newRequest: NafynRequest;
-    try {
-        if (await hasActiveRequest(userId, knownIds)) {
-            throw createError({ statusCode: 409, message: "You already requested this" });
-        }
-
-        // nobody requests what they already have: a track in their library - under this MBID or any other
-        // name for the same song, see utils/mediaIdentity.ts - or an album whose every track is. An album only
-        // partly there stays requestable; the pipeline skips the tracks the caller has and downloads the rest.
-        let missingTracks = 0;
-        for (const target of targets) {
-            if (!(await findOwnedMediaByIdentity(userId, targetIdentity(target)))) missingTracks++;
-        }
-        if (missingTracks === 0) {
-            throw createError({ statusCode: 409, message: type === "album" ? "Every track of this album is already in your library" : "Already in your library" });
-        }
-
-        newRequest = await createRequest(canonicalId as UUID, type, userId as UUID, autoAccept ? "searching" : "waiting", info);
-    } finally {
-        flightKeys.forEach((key) => inFlight.delete(key));
-    }
-
-    notifyRequestCreated(newRequest, autoAccept);
-    if (autoAccept) {
-        processDownloadRequest(newRequest);
-    }
-
-    return newRequest
+    return result.request;
 })

@@ -7,6 +7,8 @@
 // candidate is filtered by score and by how far its duration is from the *measured* one, ranked, and only then
 // compared with what was requested.
 
+import { needsLatinForm, phoneticKey } from "./search/script";
+
 export interface AcoustIdRecording {
     id: string,
     title?: string,
@@ -37,6 +39,10 @@ export interface ExpectedRecording {
     aliases: string[],
     title: string,
     artistName: string,
+    // the same work and artist under other names (a Latin-script release's title, sort names, other credits):
+    // AcoustID often lists a Japanese song under its romanized title, which is still the same song
+    altTitles?: string[],
+    artistAliases?: string[],
     // seconds, 0 when MusicBrainz doesn't know it
     duration: number
 }
@@ -89,22 +95,37 @@ function baseTitle(title: string): string {
     return normalize(title.replace(/[([{][^)\]}]*[)\]}]/g, " ").replace(/\s[-–—]\s.*$/, " "));
 }
 
+// across scripts (さよならの夏 / "Sayonara no Natsu") only a phonetic skeleton can compare - on the raw text, the
+// accent fold above would take the dakuten off が. It is lossy, so it needs a few letters to mean anything. Kanji
+// have no reading here: 二十歳の恋 / "Hatachi no Koi" is caught through `altTitles` (MusicBrainz' Latin release title).
+const MIN_PHONETIC_KEY = 4;
+
+function samePhonetic(a: string, b: string): boolean {
+    if (!needsLatinForm(a) && !needsLatinForm(b)) return false;
+    const left = phoneticKey(a);
+    const right = phoneticKey(b);
+    if (left.length < MIN_PHONETIC_KEY || right.length < MIN_PHONETIC_KEY) return false;
+    return left === right || left.includes(right) || right.includes(left);
+}
+
 function sameTitle(a: string, b: string): boolean {
     const left = baseTitle(a);
     const right = baseTitle(b);
     if (!left || !right) return false;
-    return left === right || left.includes(right) || right.includes(left);
+    return left === right || left.includes(right) || right.includes(left) || samePhonetic(a, b);
 }
 
 function sameArtist(candidate: string, expected: string): boolean {
     const left = normalize(candidate);
     const right = normalize(expected);
     if (!left || !right) return false;
-    return left === right || left.includes(right) || right.includes(left);
+    return left === right || left.includes(right) || right.includes(left) || samePhonetic(candidate, expected);
 }
 
 function isSameSong(candidate: Candidate, expected: ExpectedRecording): boolean {
-    return sameTitle(candidate.title, expected.title) && sameArtist(candidate.artist, expected.artistName);
+    const titles = [expected.title, ...(expected.altTitles ?? [])];
+    const artists = [expected.artistName, ...(expected.artistAliases ?? [])];
+    return titles.some((title) => sameTitle(candidate.title, title)) && artists.some((artist) => sameArtist(candidate.artist, artist));
 }
 
 // one entry per recording ID (its best score across every AcoustID result that lists it), noise and
@@ -150,12 +171,16 @@ export interface Verdict {
 }
 
 // `canonical` maps a candidate's ID to the surviving MBID MusicBrainz resolves it to (merged recordings), as
-// looked up by the caller for the few candidates worth the request
+// looked up by the caller for the few candidates worth the request. `aliasesComplete` false means some of those
+// lookups couldn't be made (MusicBrainz busy): a confident "other" candidate may then be the requested recording
+// under a merged-away ID nobody could check, so it is not reported as a contradiction - the caller's duration
+// rule decides instead. Rejecting a right file needs a complete check.
 export function judge(
     candidates: Candidate[],
     expected: ExpectedRecording,
     config: MatchConfig = DEFAULT_MATCH_CONFIG,
-    canonical: ReadonlyMap<string, string> = new Map()
+    canonical: ReadonlyMap<string, string> = new Map(),
+    aliasesComplete = true
 ): Verdict {
     const primary = expected.recordingId.toLowerCase();
     const aliases = new Set(expected.aliases.map((id) => id.toLowerCase()));
@@ -180,9 +205,9 @@ export function judge(
         }
     }
 
-    const confidentOther = candidates.find((candidate) =>
-        candidate.score >= config.confidentScore && !isSameSong(candidate, expected)
-    ) ?? null;
+    const confidentOther = aliasesComplete
+        ? candidates.find((candidate) => candidate.score >= config.confidentScore && !isSameSong(candidate, expected)) ?? null
+        : null;
 
     return { matched: false, via: null, best: candidates[0] ?? null, confidentOther };
 }

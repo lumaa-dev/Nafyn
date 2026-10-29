@@ -32,12 +32,12 @@ import { rm } from "node:fs/promises";
 import { statSync } from "node:fs";
 import type { IRecording, IRelease, IReleaseGroup, RecordingIncludes } from "musicbrainz-api";
 import type { SlskSearchResult } from "../utils/soulseek";
-import { getMusicBrainzRepository, getAppleMusicTrackID } from "../utils/musicbrainz";
-import { MusicBrainzError, type MusicBrainzRepository } from "../utils/musicbrainzRepository";
+import { getMusicBrainzRepository, getAppleMusicTrackID, TRACK_LOOKUP_INC } from "../utils/musicbrainz";
+import { MusicBrainzError, withMusicBrainzContext, type MusicBrainzRepository } from "../utils/musicbrainzRepository";
 import { pickCanonicalRelease, pickReleaseForGroup } from "../utils/release";
 import { searchSoulseek, downloadFromSoulseek } from "../utils/soulseek";
 import { buildSearchQueries, matchKey, nameMatchesAnyTitle } from "../utils/soulseekText";
-import { rankByDuration } from "../utils/soulseekRank";
+import { isExcludedVersion, pickDiverse, rankForTrack } from "../utils/soulseekRank";
 import { verifyRecordingMatch } from "../utils/fingerprint";
 import { parseCoverArtUrl, warmCover } from "../utils/coverArtCache";
 import { tagAudioFile } from "../utils/audioTag";
@@ -69,11 +69,8 @@ const ALLOWED_EXTENSIONS = [".mp3", ".flac", ".ogg", ".wav"];
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const MAX_CANDIDATES_PER_TRACK = 5;
 const MAX_DURATION_DELTA_SECONDS = 5;
-
-// filenames carrying one of these words are a different version of the track (same duration as the original
-// is common for instrumentals/acapellas), so duration alone can't be trusted to wave a mismatched fingerprint
-// through - only exclude when the requested title itself isn't asking for that version
-const EXCLUDED_VERSION_KEYWORDS = ["instrumental", "acapella", "a cappella", "karaoke", "backing track", "no vocal", "no vocals"];
+// a per-track search stops asking further queries once it has this many candidates nothing speaks against
+const ENOUGH_STRONG_CANDIDATES = 3;
 
 export interface TrackTarget {
     recordingId: string,
@@ -164,12 +161,39 @@ async function lookupOrNull<T>(lookup: Promise<T>): Promise<T | null> {
     }
 }
 
+// resolved targets by `type:mbid`. An import resolves a track, POST /api/v1/request resolves it again, and the
+// pipeline once more when the request leaves the download queue - possibly hours later, long after the repository's
+// own cache let the (large) recording go. A target is small, so it is kept far longer than the response it came from.
+const TARGETS_TTL_MS = 6 * 60 * 60 * 1000;
+const MAX_CACHED_TARGETS = 2000;
+const targetsCache = new Map<string, { expires: number, targets: TrackTarget[] }>();
+
 // step 2: resolve the request's MusicBrainz ID into one (track) or many (album) concrete recordings to fetch.
 // Also what POST /api/v1/request checks against the caller's library before a request is even created.
+// Callers get their own copy: the pipeline edits a target (a duration only the audio could tell).
 export async function resolveTargets(client: MusicBrainzRepository, musicbrainzId: string, type: "album" | "track"): Promise<TrackTarget[]> {
+    const key = `${type}:${musicbrainzId.toLowerCase()}`;
+    const cached = targetsCache.get(key);
+    if (cached && cached.expires > Date.now()) return structuredClone(cached.targets);
+
+    const targets = await fetchTargets(client, musicbrainzId, type);
+    // an empty answer (unknown id) is not kept: MusicBrainz may know it in a minute
+    if (targets.length > 0) {
+        targetsCache.delete(key);
+        targetsCache.set(key, { expires: Date.now() + TARGETS_TTL_MS, targets: structuredClone(targets) });
+        while (targetsCache.size > MAX_CACHED_TARGETS) {
+            const oldest = targetsCache.keys().next().value;
+            if (oldest === undefined) break;
+            targetsCache.delete(oldest);
+        }
+    }
+    return targets;
+}
+
+async function fetchTargets(client: MusicBrainzRepository, musicbrainzId: string, type: "album" | "track"): Promise<TrackTarget[]> {
     if (type === "track") {
-        // `release-groups` is a valid recording include on MusicBrainz but missing from musicbrainz-api's types
-        const recording: IRecording | null = await lookupOrNull(client.lookup("recording", musicbrainzId, ["artist-credits", "releases", "release-groups", "media", "url-rels", "isrcs"] as RecordingIncludes[]));
+        // the same include list as the track page and GET /api/v1/track/isrc, so all of them share one cached response
+        const recording: IRecording | null = await lookupOrNull(client.lookup("recording", musicbrainzId, TRACK_LOOKUP_INC as RecordingIncludes[]));
         if (!recording) return [];
         // same picker as GET /api/v1/track/{tid} (see utils/release.ts): the album/label/cover written into
         // the file's tags must be the one the user was looking at when they requested the track
@@ -289,24 +313,38 @@ function sanitizeCandidate(result: SlskSearchResult): { extension: string } | nu
     return { extension };
 }
 
-// nearest to furthest from MusicBrainz' length for the recording (the peer's own reported length, which doesn't
-// depend on how the filename is spelled), so a failed verification moves on to the next-closest file; quality
-// only breaks ties - see utils/soulseekRank.ts
-function pickCandidates(results: SlskSearchResult[], wantedSeconds: number): SlskSearchResult[] {
-    return rankByDuration(results.filter((result) => result.slots && sanitizeCandidate(result)), wantedSeconds)
-        .slice(0, MAX_CANDIDATES_PER_TRACK);
+// what one track's attempts have used up so far, shared by its first attempt and its retry: the retry must try
+// *other* files and peers, and the queries the first attempt didn't get to, not the same five candidates again
+interface TrackAttempt {
+    // `user\u0000file` of every candidate downloaded (or tried to)
+    tried: Set<string>,
+    // peers whose transfer stalled, was refused or broke off: their other files would do the same
+    deadPeers: Set<string>,
+    // every per-track search result so far, and how many of the track's queries have run
+    searched: SlskSearchResult[],
+    queriesRun: number
+}
+
+function newTrackAttempt(): TrackAttempt {
+    return { tried: new Set(), deadPeers: new Set(), searched: [], queriesRun: 0 };
+}
+
+const candidateKey = (result: SlskSearchResult) => `${result.user}\u0000${result.file}`;
+
+// the files worth trying, best first (see utils/soulseekRank.ts): length, version, title, artist, peer
+// availability, quality; what this track already tried, or a peer that already failed it, is left out
+function rankUntried(results: SlskSearchResult[], target: TrackTarget, attempt: TrackAttempt) {
+    const fresh = results.filter((result) => sanitizeCandidate(result) && !attempt.tried.has(candidateKey(result)) && !attempt.deadPeers.has(result.user));
+    return rankForTrack(fresh, target);
+}
+
+function pickCandidates(results: SlskSearchResult[], target: TrackTarget, attempt: TrackAttempt): SlskSearchResult[] {
+    return pickDiverse(rankUntried(results, target, attempt).map((entry) => entry.result), MAX_CANDIDATES_PER_TRACK);
 }
 
 // Latin accents are folded ("Dîner" matches "diner") and every other script is kept: reducing all non-ASCII to
 // spaces left a Japanese, Korean or Chinese title empty, which matched no file at all
 const normalize = matchKey;
-
-// true when `fileName` names a different version (instrumental/karaoke/...) than the one actually requested
-function isExcludedVersion(fileName: string, wantedTitle: string): boolean {
-    const name = normalize(fileName);
-    const title = normalize(wantedTitle);
-    return EXCLUDED_VERSION_KEYWORDS.some((keyword) => name.includes(keyword) && !title.includes(keyword));
-}
 
 // narrows an album-wide search down to the results that look like they're this specific track
 function candidatesForTrack(results: SlskSearchResult[], target: TrackTarget): SlskSearchResult[] {
@@ -316,11 +354,11 @@ function candidatesForTrack(results: SlskSearchResult[], target: TrackTarget): S
     if (!normalize(target.title)) return [];
     return results.filter((result) => {
         const fileName = basename(result.file.replace(/\\/g, "/"), extname(result.file));
-        return nameMatchesAnyTitle(fileName, wantedTitles) && !isExcludedVersion(fileName, target.title);
+        return nameMatchesAnyTitle(fileName, wantedTitles) && !isExcludedVersion(fileName, target);
     });
 }
 
-// tries each query in order, returns the first one with hits
+// tries each query in order, returns the first one with hits (album-wide search: any hit is a seller to consider)
 async function searchWithFallback(queries: string[]): Promise<SlskSearchResult[]> {
     for (const q of queries) {
         const results = await searchSoulseek(q);
@@ -328,6 +366,28 @@ async function searchWithFallback(queries: string[]): Promise<SlskSearchResult[]
         if (results.length > 0) return results;
     }
     return [];
+}
+
+// one track's queries, in order, from where its previous attempt stopped. Results are pooled across queries (the
+// first query that returns *anything* used to win, even when none of it was the song) until enough of them are
+// candidates nothing speaks against.
+async function searchMoreForTrack(queries: string[], target: TrackTarget, attempt: TrackAttempt): Promise<void> {
+    const seen = new Set(attempt.searched.map(candidateKey));
+    while (attempt.queriesRun < queries.length) {
+        const q = queries[attempt.queriesRun++]!;
+        const results = await searchSoulseek(q);
+        let added = 0;
+        for (const result of results) {
+            const key = candidateKey(result);
+            if (seen.has(key)) continue;
+            seen.add(key);
+            attempt.searched.push(result);
+            added++;
+        }
+        const strong = rankUntried(attempt.searched, target, attempt).filter((entry) => entry.strong).length;
+        console.log(`[downloads] ${results.length} results (${added} new) for "${q}", ${strong} strong candidates so far`);
+        if (strong >= ENOUGH_STRONG_CANDIDATES) return;
+    }
 }
 
 // downloading an album from N different sellers is how you end up with the same track twice under two
@@ -383,6 +443,7 @@ async function downloadTrack(
     target: TrackTarget,
     trackIndex: number,
     trackCount: number,
+    attempt: TrackAttempt,
     primaryResults?: SlskSearchResult[],
     poolResults?: SlskSearchResult[]
 ): Promise<boolean> {
@@ -423,27 +484,33 @@ async function downloadTrack(
         if (pooled.length > 0 && results.length === 0) console.log(`[downloads] "${target.title}" not found with selected seller, matched from another seller in existing results`);
         results = results.concat(pooled);
     }
-    if (results.length === 0) {
-        console.log(`[downloads] "${target.title}" not found in album search results, falling back to per-track search (last resort)`);
-        const rawResults = await searchWithFallback(buildSearchQueries({
+    let candidates = pickCandidates(results, target, attempt);
+    if (candidates.length === 0) {
+        if (results.length > 0 || primaryResults || poolResults) console.log(`[downloads] "${target.title}" has no untried candidate in the album search results, searching for the track (last resort)`);
+        const queries = buildSearchQueries({
             title: target.title,
             altTitles: target.altTitles,
             artistName: target.artistName,
             artistAliases: target.artistAliases
-        }));
-        results = rawResults.filter((result) => !isExcludedVersion(basename(result.file.replace(/\\/g, "/"), extname(result.file)), target.title));
+        });
+        // results this track's earlier attempt found but didn't get to come first; more queries only if they run dry
+        candidates = pickCandidates(attempt.searched, target, attempt);
+        while (candidates.length === 0 && attempt.queriesRun < queries.length) {
+            await searchMoreForTrack(queries, target, attempt);
+            candidates = pickCandidates(attempt.searched, target, attempt);
+        }
     }
-
-    const candidates = pickCandidates(results, target.duration);
 
     if (candidates.length === 0) {
         progress({ stage: "failed", message: "No Soulseek results found" });
         return false;
     }
 
-    console.log(`[downloads] Matching ${candidates.length} candidates for "${target.title}" (MusicBrainz ${target.duration || "?"}s), nearest first: ${candidates.map((c) => `${c.user} ${c.length ?? "?"}s`).join(", ")}`);
+    console.log(`[downloads] Matching ${candidates.length} candidates for "${target.title}" (MusicBrainz ${target.duration || "?"}s), best first: ${candidates.map((c) => `${c.user} ${c.length ?? "?"}s`).join(", ")}`);
 
     for (const candidate of candidates) {
+        if (attempt.deadPeers.has(candidate.user)) continue;
+        attempt.tried.add(candidateKey(candidate));
         const extension = sanitizeCandidate(candidate)!.extension;
         const tempPath = join(TMP_DIR, `${randomUUID()}${extension}`);
         // set only when *this* candidate attempt inserts a brand-new media row, so a failure past this point
@@ -453,16 +520,22 @@ async function downloadTrack(
         let destPath: string | null = null;
 
         try {
-            await downloadFromSoulseek(candidate, tempPath, (dl) => {
-                progress({
-                    stage: "downloading",
-                    bytesDownloaded: dl.bytesDownloaded,
-                    totalBytes: dl.totalBytes,
-                    speedBytesPerSec: dl.speedBytesPerSec,
-                    etaSeconds: dl.etaSeconds,
-                    message: "Downloading"
+            try {
+                await downloadFromSoulseek(candidate, tempPath, (dl) => {
+                    progress({
+                        stage: "downloading",
+                        bytesDownloaded: dl.bytesDownloaded,
+                        totalBytes: dl.totalBytes,
+                        speedBytesPerSec: dl.speedBytesPerSec,
+                        etaSeconds: dl.etaSeconds,
+                        message: "Downloading"
+                    });
                 });
-            });
+            } catch (error) {
+                // the transfer itself failed (stalled, refused, broke off): that peer's other files would too
+                attempt.deadPeers.add(candidate.user);
+                throw error;
+            }
 
             // step 5: verify fingerprint
             await updateRequestStatus(requestId, "processing");
@@ -481,6 +554,8 @@ async function downloadTrack(
                 aliases: target.aliases,
                 title: target.title,
                 artistName: target.artistName,
+                altTitles: target.altTitles,
+                artistAliases: target.artistAliases,
                 duration: target.duration
             });
 
@@ -620,7 +695,10 @@ export async function processDownloadRequest(request: NafynRequest): Promise<voi
         emitDownloadProgress({ requestId: request.id, stage: "searching", message: `Queued (position ${position})` });
     });
     try {
-        await runDownloadRequest(request);
+        // background work: its MusicBrainz lookups (targets, fingerprint aliases) queue behind anyone browsing, and
+        // take turns with other users' downloads
+        const requester = typeof request.requestedBy === "string" ? request.requestedBy : request.requestedBy?.id;
+        await withMusicBrainzContext({ lane: "bulk", key: requester ?? "system" }, () => runDownloadRequest(request));
     } finally {
         release();
     }
@@ -718,8 +796,9 @@ async function runDownloadRequest(request: NafynRequest): Promise<void> {
         // strictly in track order, and a track that did not land gets one more go (fresh per-track search,
         // no preferred seller) before the next one starts, so a skipped track can't slip through unnoticed
         for (const [i, target] of targets.entries()) {
-            let ok = await downloadTrack(request.id, requestedById, target, i + 1, targets.length, primaryResults, poolResults);
-            if (!ok) ok = await downloadTrack(request.id, requestedById, target, i + 1, targets.length);
+            const attempt = newTrackAttempt();
+            let ok = await downloadTrack(request.id, requestedById, target, i + 1, targets.length, attempt, primaryResults, poolResults);
+            if (!ok) ok = await downloadTrack(request.id, requestedById, target, i + 1, targets.length, attempt);
         }
 
         // the request is only complete when the requester really owns every track of it (by the same

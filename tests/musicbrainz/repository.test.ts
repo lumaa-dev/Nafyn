@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
-    MusicBrainzError, MusicBrainzRepository, escapeLucene, luceneQuote, luceneTerms,
+    MusicBrainzError, MusicBrainzRepository, escapeLucene, luceneQuote, luceneTerms, withMusicBrainzContext,
     type Transport, type TransportResponse
 } from "../../server/utils/musicbrainzRepository";
 
@@ -161,4 +161,46 @@ describe("MusicBrainzRepository", () => {
             "https://musicbrainz.org/ws/2/recording?fmt=json&limit=1&query=isrc%3AX"
         ]);
     });
+
+    test("interactive requests go before queued bulk ones", async () => {
+        const h = harness([ok()], { minIntervalMs: 1000 }, false);
+        const first = h.repo.request("/first");
+        const bulk = [1, 2, 3].map((n) => withMusicBrainzContext({ lane: "bulk", key: "importer" }, () => h.repo.request(`/bulk${n}`)));
+        const page = withMusicBrainzContext({ lane: "interactive", key: "browser" }, () => h.repo.request("/page"));
+        await Promise.all([first, page, ...bulk]);
+        expect(h.urls.map((url) => url.split("?")[0]!.split("/").pop())).toEqual(["first", "page", "bulk1", "bulk2", "bulk3"]);
+    });
+
+    test("inside a lane, keys take turns", async () => {
+        const h = harness([ok()], { minIntervalMs: 1000 }, false);
+        const first = h.repo.request("/first");
+        const a = [1, 2, 3].map((n) => withMusicBrainzContext({ lane: "bulk", key: "a" }, () => h.repo.request(`/a${n}`)));
+        const b = [1, 2].map((n) => withMusicBrainzContext({ lane: "bulk", key: "b" }, () => h.repo.request(`/b${n}`)));
+        await Promise.all([first, ...a, ...b]);
+        expect(h.urls.map((url) => url.split("?")[0]!.split("/").pop())).toEqual(["first", "a1", "b1", "a2", "b2", "a3"]);
+    });
+
+    test("the bulk lane may queue far longer than the interactive one", async () => {
+        const h = harness([ok()], { minIntervalMs: 1000, maxQueueWaitMs: 2500, maxBulkQueueWaitMs: 60_000 }, false);
+        const results = await Promise.allSettled([1, 2, 3, 4, 5].map((n) => withMusicBrainzContext({ lane: "bulk", key: "k" }, () => h.repo.request(`/x${n}`))));
+        expect(results.every((r) => r.status === "fulfilled")).toBe(true);
+    });
+
+    test("an interactive caller joining a queued bulk fetch moves it to the front", async () => {
+        const h = harness([ok()], { minIntervalMs: 1000 }, false);
+        const first = h.repo.request("/first");
+        const bulk = [1, 2].map((n) => withMusicBrainzContext({ lane: "bulk", key: "importer" }, () => h.repo.request(`/bulk${n}`)));
+        const shared = withMusicBrainzContext({ lane: "bulk", key: "importer" }, () => h.repo.request("/shared"));
+        const joined = withMusicBrainzContext({ lane: "interactive", key: "browser" }, () => h.repo.request("/shared"));
+        await Promise.all([first, ...bulk, shared, joined]);
+        expect(h.urls.map((url) => url.split("?")[0]!.split("/").pop())).toEqual(["first", "shared", "bulk1", "bulk2"]);
+    });
+
+    test("a 503 from MusicBrainz holds the whole queue back, not just the caller", async () => {
+        const h = harness([busy(), ok(), ok()], { minIntervalMs: 1000, retryBaseMs: 100, maxRetries: 1 });
+        await Promise.all([h.repo.request("/a"), h.repo.request("/b")]);
+        // /a got the 503 at t=0: nobody leaves before t=2000 (two intervals), /b included
+        expect(h.clock).toBeGreaterThanOrEqual(3000);
+    });
 });
+

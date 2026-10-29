@@ -10,6 +10,7 @@
 
 import { latinize, needsLatinForm, phoneticKey } from "./search/script";
 import { foldKana, foldLatin } from "./search/normalize";
+import { coreTitle } from "./trackPick";
 
 /** Latin accents off ("Bénabar" -> "Benabar"); every other script is only recomposed (NFC), never decomposed. */
 export function foldDiacritics(text: string): string {
@@ -136,11 +137,17 @@ function unique(values: string[]): string[] {
     return out;
 }
 
+// Soulseek matches every word of a query anywhere in a path, in any order: "A B" and "B A" are one search
+function sameSearch(query: string): string {
+    return matchKey(query).split(" ").sort().join(" ");
+}
+
 /**
- * Searches to try, best first, for one track or album: the artist and title as MusicBrainz writes them, then in
- * the Latin letters a Western uploader would have used (a Latin release's title, a romanization), then the
- * wildcard forms for a name whose first character is awkward. Peers match on the path, folder included, so the
- * artist and the title may come from different forms.
+ * Searches to try, best first, for one track or album: the artist and title as MusicBrainz writes them, the title
+ * without its bracketed / dashed decoration ("Song (2011 Remaster)" is shared as "Song"), then in the Latin letters
+ * a Western uploader would have used (a Latin release's title, a romanization), then wildcard forms for a name the
+ * server filters or whose first character is awkward, then the title alone. Peers match on the path, folder
+ * included, so the artist and the title may come from different forms. Two queries with the same words are one.
  */
 export function buildSearchQueries(subject: QuerySubject): string[] {
     // a romanization is only worth searching for when it came out as plain Latin: kanji have no reading to give
@@ -149,6 +156,7 @@ export function buildSearchQueries(subject: QuerySubject): string[] {
 
     const titles = unique([
         subject.title,
+        coreTitle(subject.title),
         // the Latin spellings MusicBrainz knows come before a machine romanization
         ...(subject.altTitles ?? []).filter((alt) => !needsLatinForm(alt)),
         ...romanized(subject.title)
@@ -165,27 +173,28 @@ export function buildSearchQueries(subject: QuerySubject): string[] {
     const add = (text: string) => queries.push(soulseekQueryText(text));
 
     const [title, artist] = [titles[0]!, artists[0]!];
-    add(`${artist} ${title}`);
-    add(`${title} ${artist}`);
-
     for (const t of titles) {
-        for (const a of artists) {
-            if (t === title && a === artist) continue;
-            add(`${a} ${t}`);
-        }
+        for (const a of artists) add(`${a} ${t}`);
     }
 
-    // the leading character of a Latin name is the one most often written differently ("$uicideboy$", "P!nk");
-    // a name in another script has no such first letter to wildcard
-    if (!needsLatinForm(artist) && Array.from(artist).length > 3) {
-        add(`*${dropLeadingChars(artist)} ${title}`);
-        add(`${title} *${dropLeadingChars(artist)}`);
-    }
+    // the server silently drops searches containing phrases it filters (often an artist's or a title's name),
+    // and the leading character of a Latin name is the one most often written differently ("$uicideboy$",
+    // "P!nk"): a wildcard first letter gets past both. A name in another script has no such first letter.
+    // (with the shortest form of the title: the decoration is what peers leave out)
+    const shortTitle = titles[1] && matchKey(titles[1]).length < matchKey(title).length ? titles[1] : title;
+    if (!needsLatinForm(artist) && Array.from(artist).length > 3) add(`*${dropLeadingChars(artist)} ${shortTitle}`);
+    if (!needsLatinForm(shortTitle) && Array.from(shortTitle).length > 3) add(`${artist} *${dropLeadingChars(shortTitle)}`);
 
     // an artist-less search for a title long enough to be specific: the folder may carry another spelling
     for (const t of titles) {
         if (matchKey(t).length >= 8) add(t);
     }
 
-    return unique(queries.filter(Boolean)).slice(0, MAX_QUERIES);
+    const seen = new Set<string>();
+    return queries.filter((query) => {
+        const key = sameSearch(query);
+        if (!query || !key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    }).slice(0, MAX_QUERIES);
 }

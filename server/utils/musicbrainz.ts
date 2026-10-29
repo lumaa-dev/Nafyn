@@ -1,4 +1,4 @@
-import type { IReleaseGroup, IRelease, IRecording } from "musicbrainz-api";
+import type { IReleaseGroup, IRelease, IRecording, RecordingIncludes } from "musicbrainz-api";
 import { APP_NAME, APP_VERSION, APP_GITHUB } from "./app";
 import { MusicBrainzRepository } from "./musicbrainzRepository";
 import type { MediaInfo } from "../entity/media/MediaInfo";
@@ -6,6 +6,12 @@ import type { ArtistInfo } from "../entity/media/ArtistInfo";
 import { pickCanonicalRelease, pickReleaseForGroup } from "./release";
 
 let repository: MusicBrainzRepository | null = null;
+
+// The one include list a recording is looked up with, by the track page, GET /api/v1/track/isrc, getMediaInfo and the
+// download pipeline (resolveTargets): the repository caches per URL, so one list means one MusicBrainz call where
+// four different lists used to cost four. (`release-groups` is valid on MusicBrainz, missing from musicbrainz-api's
+// types, hence the plain string array.)
+export const TRACK_LOOKUP_INC: string[] = ["artist-credits", "releases", "release-groups", "media", "url-rels", "isrcs"];
 
 // The shared MusicBrainz repository: every request to MusicBrainz in Nafyn goes through this one instance, so
 // the 1 request/second limiter, retry, circuit breaker and cache are global. Identifies Nafyn with its app
@@ -30,12 +36,7 @@ async function getTrackMediaInfo(
 	client: MusicBrainzRepository,
 	musicbrainzId: string,
 ): Promise<MediaInfo> {
-	const recording = await client.lookup("recording", musicbrainzId, [
-		"artist-credits",
-		"releases",
-		"media",
-		"url-rels"
-	]);
+	const recording: IRecording = await client.lookup("recording", musicbrainzId, TRACK_LOOKUP_INC as RecordingIncludes[]);
 	// shared release picker (see utils/release.ts) so every surface agrees on which release a recording belongs to
 	const release = pickCanonicalRelease(recording.releases);
 	const credit = recording["artist-credit"]?.[0]?.artist;

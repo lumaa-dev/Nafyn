@@ -830,9 +830,11 @@ class Pipeline {
         const found = new Map<string, RawRelease[]>();
         const batchSize = field === "rgid" ? 6 : 12;
 
+        const format = this.config.requireDigitalMedia ? ` AND format:${luceneQuote("Digital Media")}` : "";
+
         for (let i = 0; i < ids.length; i += batchSize) {
             const batch = ids.slice(i, i + batchSize);
-            const query = `${field}:(${batch.join(" OR ")}) AND status:official AND format:${luceneQuote("Digital Media")}`;
+            const query = `${field}:(${batch.join(" OR ")}) AND status:official${format}`;
             const response = await this.request<ReleaseSearch>("/release", query, 100);
             const releases = response?.releases ?? [];
             for (const release of releases) {
@@ -846,7 +848,7 @@ class Pipeline {
             // a full page may have crowded some groups out; ask for those one by one
             if (field === "rgid" && (response?.count ?? 0) > releases.length) {
                 for (const id of batch.filter((candidate) => !found.has(candidate))) {
-                    const single = await this.request<ReleaseSearch>("/release", `rgid:${id} AND status:official AND format:${luceneQuote("Digital Media")}`, 25);
+                    const single = await this.request<ReleaseSearch>("/release", `rgid:${id} AND status:official${format}`, 25);
                     if (single?.releases?.length) found.set(id, single.releases);
                 }
             }

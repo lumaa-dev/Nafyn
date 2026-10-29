@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { rankByDuration } from "../server/utils/soulseekRank";
+import { isExcludedVersion, pickDiverse, rankByDuration, rankForTrack } from "../server/utils/soulseekRank";
 import { buildSearchQueries, dropLeadingChars, filenameVariants, foldDiacritics, matchKey, nameMatchesAnyTitle, soulseekQueryText } from "../server/utils/soulseekText";
 import { sanitizePathSegment } from "../server/utils/pathSegment";
 
@@ -94,13 +94,20 @@ describe("buildSearchQueries", () => {
     });
 
     test("a Latin track keeps its original queries", () => {
+        // the same words in another order are the same Soulseek search: asked once
         expect(buildSearchQueries({ title: "Stairway to Heaven", artistName: "Led Zeppelin" })).toEqual([
             "Led Zeppelin Stairway to Heaven",
-            "Stairway to Heaven Led Zeppelin",
             "*ed Zeppelin Stairway to Heaven",
-            "Stairway to Heaven *ed Zeppelin",
+            "Led Zeppelin *tairway to Heaven",
             "Stairway to Heaven"
         ]);
+    });
+
+    test("the title without its decoration comes second", () => {
+        const queries = buildSearchQueries({ title: "Get Lucky (feat. Pharrell Williams) - Radio Edit", artistName: "Daft Punk" });
+        expect(queries[1]).toBe("Daft Punk Get Lucky");
+        expect(queries).toContain("*aft Punk Get Lucky");
+        expect(queries).toContain("Daft Punk *et Lucky");
     });
 
     test("at most eight", () => {
@@ -164,5 +171,76 @@ describe("rankByDuration", () => {
         const input = [{ length: 300 }, { length: 180 }];
         rankByDuration(input, 180);
         expect(lengths(input)).toEqual([300, 180]);
+    });
+});
+
+describe("rankForTrack", () => {
+    const target = { title: "Blinding Lights", artistName: "The Weeknd", duration: 200 };
+    const file = (path: string, extra: Partial<{ user: string, length: number, slots: boolean, bitrate: number, queueLength: number, speed: number }> = {}) =>
+        ({ user: "peer", file: path, length: 200, slots: true, bitrate: 320, ...extra });
+    const order = (results: ReturnType<typeof file>[]) => rankForTrack(results, target).map((entry) => entry.result.file);
+
+    test("other versions sharing the runtime are dropped unless asked for", () => {
+        expect(order([file("Music\\The Weeknd - Blinding Lights (Instrumental).mp3"), file("Music\\The Weeknd - Blinding Lights.mp3")]))
+            .toEqual(["Music\\The Weeknd - Blinding Lights.mp3"]);
+        expect(isExcludedVersion("Blinding Lights (Instrumental)", { title: "Blinding Lights (Instrumental)" })).toBe(false);
+        expect(isExcludedVersion("Blinding Lights - sped up", target)).toBe(true);
+    });
+
+    test("the right length first, then a plain take before a remix, then the title in the filename", () => {
+        expect(order([
+            file("x/The Weeknd - Blinding Lights.mp3", { length: 260 }),
+            file("x/The Weeknd - Blinding Lights (Remix).mp3"),
+            file("The Weeknd - Blinding Lights/01.mp3"),
+            file("x/01 - Blinding Lights.mp3")
+        ])).toEqual([
+            "x/01 - Blinding Lights.mp3",
+            "The Weeknd - Blinding Lights/01.mp3",
+            "x/The Weeknd - Blinding Lights (Remix).mp3",
+            "x/The Weeknd - Blinding Lights.mp3"
+        ]);
+    });
+
+    test("a filename with words the title doesn't have comes after an exact one", () => {
+        expect(order([
+            file("a/The Weeknd - Blinding Lights Chromatics Mix.mp3"),
+            file("a/The Weeknd - Blinding Lights.mp3")
+        ])[0]).toBe("a/The Weeknd - Blinding Lights.mp3");
+    });
+
+    test("the artist in the path, then a peer with a free slot and a short queue", () => {
+        expect(order([
+            file("a/Blinding Lights.mp3", { user: "no-artist" }),
+            file("The Weeknd/Blinding Lights.mp3", { user: "busy", slots: false }),
+            file("The Weeknd/Blinding Lights.mp3", { user: "queued", queueLength: 50 }),
+            file("The Weeknd/Blinding Lights.mp3", { user: "free" })
+        ])).toHaveLength(4);
+        const users = rankForTrack([
+            file("a/Blinding Lights.mp3", { user: "no-artist" }),
+            file("The Weeknd/Blinding Lights.mp3", { user: "busy", slots: false }),
+            file("The Weeknd/Blinding Lights.mp3", { user: "queued", queueLength: 50 }),
+            file("The Weeknd/Blinding Lights.mp3", { user: "free" })
+        ], target).map((entry) => entry.result.user);
+        expect(users).toEqual(["free", "queued", "busy", "no-artist"]);
+    });
+
+    test("quality only breaks ties, lossless counts as high", () => {
+        const users = rankForTrack([
+            file("The Weeknd/Blinding Lights.mp3", { user: "128", bitrate: 128 }),
+            file("The Weeknd/Blinding Lights.flac", { user: "flac", bitrate: 0 })
+        ], target).map((entry) => entry.result.user);
+        expect(users).toEqual(["flac", "128"]);
+    });
+
+    test("strong = right length, plain take, title in the filename", () => {
+        const ranked = rankForTrack([file("The Weeknd/Blinding Lights.mp3"), file("The Weeknd/Blinding Lights.mp3", { user: "far", length: 300 })], target);
+        expect(ranked.map((entry) => entry.strong)).toEqual([true, false]);
+    });
+});
+
+describe("pickDiverse", () => {
+    test("at most two files from one peer before anybody else's", () => {
+        const ranked = ["a", "a", "a", "b", "a", "c"].map((user, index) => ({ user, index }));
+        expect(pickDiverse(ranked, 5).map((entry) => entry.index)).toEqual([0, 1, 3, 5, 2]);
     });
 });

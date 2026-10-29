@@ -1,9 +1,10 @@
-import { getMusicBrainzRepository, parseReleaseDate } from "~~/server/utils/musicbrainz";
+import { getMusicBrainzRepository, parseReleaseDate, TRACK_LOOKUP_INC } from "~~/server/utils/musicbrainz";
 import { MusicBrainzError } from "~~/server/utils/musicbrainzRepository";
-import { getSearchDeps } from "~~/server/utils/catalogSearch";
-import { searchTracks } from "~~/server/utils/search/engine";
+import { resolveDescribedTrack } from "~~/server/core/trackResolve";
 import type { MediaInfo } from "~~/server/entity/media/MediaInfo";
 import type { ArtistInfo } from "~~/server/entity/media/ArtistInfo";
+import type { IRecording, RecordingIncludes } from "musicbrainz-api";
+import { pickCanonicalRelease } from "~~/server/utils/release";
 import { getImageColors } from "~~/server/utils/imageColors";
 import { enforceUpstreamLookupLimit } from "~~/server/utils/rateLimit";
 
@@ -12,7 +13,7 @@ const ISRC_PATTERN = /^[A-Z]{2}[A-Z0-9]{3}\d{2}\d{5}$/i;
 
 defineRouteMeta({
     openAPI: {
-        description: "Look up a track by its ISRC (International Standard Recording Code). When MusicBrainz knows no recording with that ISRC and `title` and `artist` are given, the track is searched by title + artist with the same engine as `GET /api/v1/search` (Official digital releases only, ranked, front covers first) and the best match is returned if it is relevant enough.",
+        description: "Look up a track by its ISRC (International Standard Recording Code). When several recordings share the ISRC, the one whose title, artist and length agree with `title`, `artist` and `duration` is returned. When MusicBrainz knows no recording with that ISRC (or the ISRC is a `ZZ` placeholder) and `title` and `artist` are given, the track is searched by title + artist with the same engine as `GET /api/v1/search` (Official releases of any format here, the core title and the first of several artists tried too) and the best match is returned if it is relevant enough - or, with `duration`, if its length agrees.",
         tags: ["track"],
         operationId: "getTrackByIsrc",
         parameters: [
@@ -36,6 +37,13 @@ defineRouteMeta({
                 required: false,
                 description: "Artist name, fallback when no recording has this ISRC. Needs `title` too.",
                 schema: { type: "string" }
+            },
+            {
+                name: "duration",
+                in: "query",
+                required: false,
+                description: "Track length in seconds as the other service reports it: picks between recordings sharing the ISRC, and backs a search match",
+                schema: { type: "integer" }
             }
         ],
         responses: {
@@ -77,7 +85,7 @@ defineRouteMeta({
                 }
             },
             "503": {
-                description: "MusicBrainz is unreachable or overloaded (only when the title + artist fallback was needed)",
+                description: "MusicBrainz is unreachable or overloaded; see Retry-After",
                 content: {
                     "application/json": {
                         schema: { $ref: "#/components/schemas/NuxtError" }
@@ -100,6 +108,11 @@ function param(value: unknown): string {
     return (typeof value === "string" ? value.trim() : "").slice(0, 200);
 }
 
+function seconds(value: unknown): number | undefined {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 && parsed < 24 * 3600 ? Math.round(parsed) : undefined;
+}
+
 export default defineEventHandler(async (event) => {
     const { sub: userId } = await requireAuthToken(event);
     enforceUpstreamLookupLimit(event, userId);
@@ -112,45 +125,36 @@ export default defineEventHandler(async (event) => {
     const query = getQuery(event);
     const title = param(query?.title);
     const artistName = param(query?.artist);
+    const duration = seconds(query?.duration);
 
     const client = getMusicBrainzRepository();
 
-    // an upstream failure here is treated like "not found": the title + artist fallback below may still answer
-    const result = await client.search("recording", { query: `isrc:${isrc}`, limit: 1 }).catch(() => null);
-    let recordingId: string | undefined = result?.recordings?.[0]?.id;
-    let searchFallback = false;
-
-    if (!recordingId) {
-        if (!title || !artistName) {
-            throw createError({ statusCode: 404, statusMessage: "No song found for ISRC " + isrc + " (give `title` and `artist` to search by name instead)" });
+    let recording: IRecording;
+    let searchFallback: boolean;
+    try {
+        const resolved = await resolveDescribedTrack({ isrc, title, artist: artistName, duration });
+        if (!resolved) {
+            throw createError({
+                statusCode: 404,
+                statusMessage: title && artistName
+                    ? "No song found for ISRC " + isrc + " or for that title and artist"
+                    : "No song found for ISRC " + isrc + " (give `title` and `artist` to search by name instead)"
+            });
         }
-
-        // same engine as GET /api/v1/search. The ISRC goes along as evidence, it just found nothing on its own.
-        const deps = getSearchDeps();
-        let top;
-        try {
-            [top] = (await searchTracks({ title, artist: artistName, isrc }, deps, 1)).results;
-        } catch (error) {
-            if (error instanceof MusicBrainzError) {
-                setResponseHeader(event, "Retry-After", 30);
-                throw createError({ statusCode: 503, statusMessage: "MusicBrainz is unavailable, try again later" });
-            }
-            throw error;
+        searchFallback = resolved.via === "search";
+        // the include list resolveTargets uses too, so the request that usually follows this lookup costs nothing
+        recording = await client.lookup("recording", resolved.recordingId, TRACK_LOOKUP_INC as RecordingIncludes[]);
+    } catch (error) {
+        if (error instanceof MusicBrainzError) {
+            if (error.status === 404 || error.status === 400) throw createError({ statusCode: 404, statusMessage: "No song found for ISRC " + isrc });
+            setResponseHeader(event, "Retry-After", 30);
+            throw createError({ statusCode: 503, statusMessage: "MusicBrainz is unavailable, try again later" });
         }
-
-        // a guess is worse than a 404: the match has to be as strong as one `bestResult` would need on score
-        if (!top || top.match.relevance < deps.config.bestResultMinScore || top.match.flags.includes("code_contradiction")) {
-            throw createError({ statusCode: 404, statusMessage: "No song found for ISRC " + isrc + " or for that title and artist" });
-        }
-        recordingId = top.id;
-        searchFallback = true;
+        throw error;
     }
 
-    const recording = await client.lookup("recording", recordingId, ["artist-credits", "releases", "release-groups"]).catch(() => {
-        throw createError({ statusCode: 404, statusMessage: "No song found for ISRC " + isrc });
-    });
-
-    const release = recording.releases?.[0];
+    // the same release the track page and the download pipeline pick, so the album shown here is the one tagged
+    const release = pickCanonicalRelease(recording.releases);
     const albumMbid = release?.["release-group"]?.id ?? null;
     const credit = recording["artist-credit"]?.[0]?.artist;
 

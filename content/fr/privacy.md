@@ -71,6 +71,14 @@ Ce qui a été demandé, quand, et le résultat - l'historique des téléchargem
 
 *Conservé comme trace de fonctionnement, votre compte en étant retiré lorsque vous le supprimez.*
 
+### Imports de playlists
+
+Lorsque vous importez une playlist depuis un autre service (depuis l'app Nafyn), les titres qu'elle contient -
+titre, artiste, album, durée et code ISRC - et ce qu'il est advenu de chacun : demandé, déjà dans votre
+bibliothèque, ou introuvable.
+
+*Supprimés 30 jours après la fin de l'import, et avec votre compte.*
+
 ### Écoutes récentes
 
 Les derniers morceaux, albums et playlists depuis lesquels vous avez lancé la lecture, pour alimenter

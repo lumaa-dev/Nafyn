@@ -100,11 +100,12 @@ export function isDigital(release: RawRelease): boolean {
 }
 
 /**
- * Release level: Official + Digital Media + not a Deluxe/Remaster edition (unless asked for).
+ * Release level: Official + Digital Media (unless `config.requireDigitalMedia` is off) + not a Deluxe/Remaster
+ * edition (unless asked for).
  * `work` is the release-group the release belongs to - its title and types apply too.
  */
 export function releaseQualifies(release: RawRelease, work: WorkInfo, intent: QueryIntent, config: SearchConfig): boolean {
-    if (!isOfficial(release) || !isDigital(release)) return false;
+    if (!isOfficial(release) || (config.requireDigitalMedia && !isDigital(release))) return false;
     if (!workPasses(work, intent, config)) return false;
     const label = `${release.title ?? ""} ${release.disambiguation ?? ""}`;
     if (!intent.wantsDeluxe && hasDeluxeKeyword(label, config)) return false;

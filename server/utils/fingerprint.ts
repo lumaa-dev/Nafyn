@@ -11,6 +11,7 @@ import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { getMusicBrainzRepository } from "./musicbrainz";
+import { MusicBrainzError } from "./musicbrainzRepository";
 import {
     aliasLookupCandidates,
     judge,
@@ -88,6 +89,17 @@ function isRetryable(status: number): boolean {
     return status === 429 || status >= 500;
 }
 
+// AcoustID allows 3 requests per second per application key; ten pipelines verifying at once would go over it
+const ACOUSTID_MIN_INTERVAL_MS = 350;
+let nextAcoustIdSlot = 0;
+
+async function acoustIdTurn(): Promise<void> {
+    const now = Date.now();
+    const slot = Math.max(now, nextAcoustIdSlot);
+    nextAcoustIdSlot = slot + ACOUSTID_MIN_INTERVAL_MS;
+    if (slot > now) await new Promise((resolve) => setTimeout(resolve, slot - now));
+}
+
 async function lookupAcoustId(fingerprint: string, duration: number): Promise<AcoustIdResult[]> {
     const config = useRuntimeConfig();
     if (!config.acoustidApiKey) {
@@ -111,6 +123,7 @@ async function lookupAcoustId(fingerprint: string, duration: number): Promise<Ac
     let lastError: unknown;
     for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
         try {
+            await acoustIdTurn();
             const res = await fetch(ACOUSTID_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -142,21 +155,22 @@ async function lookupAcoustId(fingerprint: string, duration: number): Promise<Ac
 
 // MusicBrainz keeps a merged-away recording resolvable, answering with the surviving entity (a different `id`),
 // so a candidate AcoustID still lists under the old MBID can be the requested recording. Bounded and cached by
-// the repository; any failure just means "no alias found".
-async function resolveCanonicalIds(ids: string[]): Promise<Map<string, string>> {
+// the repository. A 404 is an answer ("no such recording"); busy / breaker open is not, and `complete` says so.
+async function resolveCanonicalIds(ids: string[]): Promise<{ canonical: Map<string, string>, complete: boolean }> {
     const canonical = new Map<string, string>();
-    if (ids.length === 0) return canonical;
+    let complete = true;
+    if (ids.length === 0) return { canonical, complete };
 
     const client = getMusicBrainzRepository();
     for (const id of ids) {
         try {
             const recording = await client.lookup("recording", id);
             if (recording?.id) canonical.set(id, recording.id.toLowerCase());
-        } catch {
-            // 404 / busy / breaker open: no verdict from this candidate
+        } catch (error) {
+            if (!(error instanceof MusicBrainzError) || (error.status !== 404 && error.status !== 400)) complete = false;
         }
     }
-    return canonical;
+    return { canonical, complete };
 }
 
 export interface FingerprintCheck {
@@ -195,8 +209,8 @@ export async function verifyRecordingMatch(filePath: string, expected: ExpectedR
     let verdict = judge(candidates, expected, config);
 
     if (!verdict.matched) {
-        const canonical = await resolveCanonicalIds(aliasLookupCandidates(candidates, expected, config));
-        if (canonical.size > 0) verdict = judge(candidates, expected, config, canonical);
+        const { canonical, complete } = await resolveCanonicalIds(aliasLookupCandidates(candidates, expected, config));
+        if (canonical.size > 0 || !complete) verdict = judge(candidates, expected, config, canonical, complete);
     }
 
     return {

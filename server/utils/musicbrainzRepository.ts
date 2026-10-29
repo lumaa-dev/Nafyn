@@ -1,8 +1,12 @@
 // The only place in Nafyn that talks to the MusicBrainz web service.
 //
-//  - one process-wide rate limiter (MusicBrainz asks anonymous clients for ~1 request/second)
+//  - one process-wide rate limiter (MusicBrainz asks anonymous clients for ~1 request/second), with two lanes:
+//    `interactive` (pages, search - someone is waiting) always goes before `bulk` (download pipeline, playlist
+//    imports), and inside a lane callers take turns per `key` (the user), so one account's 200-track import
+//    can't starve another account's album page. See `withMusicBrainzContext`.
 //  - a descriptive User-Agent with contact info
-//  - retry with exponential backoff on 429/5xx/network errors, honouring Retry-After
+//  - retry with exponential backoff on 429/5xx/network errors, honouring Retry-After; a 429/503 also pushes
+//    the whole queue back, so the other callers don't walk into the same wall one after the other
 //  - a circuit breaker, so an outage fails fast instead of queueing every caller behind timeouts
 //  - request de-duplication (identical in-flight requests share one HTTP call) and a TTL cache
 //
@@ -13,6 +17,7 @@
 // Errors are always thrown, as `MusicBrainzError` with the HTTP status: 400 invalid id, 404 unknown id,
 // 503 busy/unavailable (also what an open circuit breaker or a saturated queue reports).
 
+import { AsyncLocalStorage } from "node:async_hooks";
 import type { MusicBrainzApi } from "musicbrainz-api";
 
 export type QueryParams = Record<string, string | number | undefined>;
@@ -40,8 +45,10 @@ export interface RepositoryOptions {
     transport: Transport,
     /** Minimum spacing between two requests, across every caller. */
     minIntervalMs: number,
-    /** A request that would have to wait longer than this for its turn is refused. */
+    /** An interactive request that would have to wait longer than this for its turn is refused. */
     maxQueueWaitMs: number,
+    /** Same, for the bulk lane (pipeline, imports): nobody is staring at a spinner, so it may wait much longer. */
+    maxBulkQueueWaitMs: number,
     timeoutMs: number,
     maxRetries: number,
     retryBaseMs: number,
@@ -70,6 +77,7 @@ export const DEFAULT_REPOSITORY_OPTIONS: Omit<RepositoryOptions, "userAgent"> = 
     transport: defaultTransport,
     minIntervalMs: 1100,
     maxQueueWaitMs: 30_000,
+    maxBulkQueueWaitMs: 15 * 60_000,
     timeoutMs: 15_000,
     maxRetries: 3,
     retryBaseMs: 1000,
@@ -127,13 +135,53 @@ export function luceneAnyTerms(text: string, minFuzzyLength = 5): string {
         .join(" OR ");
 }
 
+export type Lane = "interactive" | "bulk";
+
+export interface MusicBrainzContext {
+    lane: Lane,
+    /** Who the request is for (a user id); turns are taken round-robin per key inside a lane. */
+    key: string
+}
+
+const DEFAULT_CONTEXT: MusicBrainzContext = { lane: "interactive", key: "anonymous" };
+const contextStore = new AsyncLocalStorage<MusicBrainzContext>();
+
+/**
+ * Runs `fn` with every MusicBrainz request it makes (however deep) queued in `lane` under `key`. Background work
+ * (the download pipeline, playlist imports) runs as `bulk`; anything someone is waiting on stays `interactive`.
+ */
+export function withMusicBrainzContext<T>(context: Partial<MusicBrainzContext>, fn: () => T): T {
+    return contextStore.run({ ...DEFAULT_CONTEXT, ...contextStore.getStore(), ...context }, fn);
+}
+
+export function currentMusicBrainzContext(): MusicBrainzContext {
+    return contextStore.getStore() ?? DEFAULT_CONTEXT;
+}
+
+// one fetch's place in the queue; shared by every caller of a de-duplicated URL, so an interactive caller joining
+// a bulk fetch that is still waiting can move it to the front lane
+interface Ticket {
+    lane: Lane,
+    key: string
+}
+
+interface Waiter {
+    ticket: Ticket,
+    deadline: number,
+    resolve: () => void,
+    reject: (error: Error) => void
+}
+
 export class MusicBrainzRepository {
     private readonly options: RepositoryOptions;
     private readonly cache = new Map<string, CacheEntry>();
-    private readonly inFlight = new Map<string, Promise<unknown>>();
+    private readonly inFlight = new Map<string, { promise: Promise<unknown>, ticket: Ticket }>();
 
-    // rate limiter: the next instant a request may leave
+    // rate limiter: the next instant a request may leave, and who is waiting for it - per lane, per key, in
+    // arrival order (a Map keeps insertion order, which is what makes the round-robin)
     private nextSlot = 0;
+    private readonly queues: Record<Lane, Map<string, Waiter[]>> = { interactive: new Map(), bulk: new Map() };
+    private pumping = false;
 
     // circuit breaker
     private consecutiveFailures = 0;
@@ -197,9 +245,13 @@ export class MusicBrainzRepository {
             return structuredClone(cached.value);
         }
 
-        let pending = this.inFlight.get(url);
-        if (!pending) {
-            pending = this.fetchWithRetry(url)
+        const context = currentMusicBrainzContext();
+        let entry = this.inFlight.get(url);
+        if (entry) {
+            if (context.lane === "interactive" && entry.ticket.lane === "bulk") this.promote(entry.ticket);
+        } else {
+            const ticket: Ticket = { lane: context.lane, key: context.key };
+            const promise = this.fetchWithRetry(url, ticket)
                 .then((value) => {
                     this.remember(url, { expires: this.options.now() + ttlMs, value });
                     return value;
@@ -211,10 +263,11 @@ export class MusicBrainzRepository {
                     throw error;
                 })
                 .finally(() => this.inFlight.delete(url));
-            this.inFlight.set(url, pending);
+            entry = { promise, ticket };
+            this.inFlight.set(url, entry);
         }
         // every caller gets its own copy: the callers edit what they receive
-        return structuredClone(await pending);
+        return structuredClone(await entry.promise);
     }
 
     private remember(url: string, entry: CacheEntry): void {
@@ -227,15 +280,100 @@ export class MusicBrainzRepository {
         }
     }
 
-    /** Reserves the next slot of the global limiter and waits for it. */
-    private async takeTurn(): Promise<void> {
+    private queued(lane: Lane): number {
+        let count = 0;
+        for (const waiters of this.queues[lane].values()) count += waiters.length;
+        return count;
+    }
+
+    /**
+     * Waits for this request's turn at the global limiter. Interactive requests go before bulk ones, and inside a
+     * lane keys take turns. A request whose turn is predictably further away than its lane allows is refused
+     * up front; a bulk one overtaken by interactive traffic until its deadline passes is refused then.
+     */
+    private async takeTurn(ticket: Ticket): Promise<void> {
         const now = this.options.now();
-        const slot = Math.max(now, this.nextSlot);
-        if (slot - now > this.options.maxQueueWaitMs) {
+        if (now >= this.nextSlot && this.queued("interactive") + this.queued("bulk") === 0) {
+            this.nextSlot = now + this.options.minIntervalMs;
+            return;
+        }
+
+        const ahead = this.queued("interactive") + (ticket.lane === "bulk" ? this.queued("bulk") : 0);
+        const maxWait = ticket.lane === "bulk" ? this.options.maxBulkQueueWaitMs : this.options.maxQueueWaitMs;
+        const expectedWait = Math.max(0, this.nextSlot - now) + ahead * this.options.minIntervalMs;
+        if (expectedWait > maxWait) {
             throw new MusicBrainzError("MusicBrainz request queue is full, try again later", 503, true);
         }
-        this.nextSlot = slot + this.options.minIntervalMs;
-        if (slot > now) await this.options.sleep(slot - now);
+
+        await new Promise<void>((resolve, reject) => {
+            const lane = this.queues[ticket.lane];
+            const waiters = lane.get(ticket.key) ?? [];
+            waiters.push({ ticket, deadline: now + maxWait, resolve, reject });
+            lane.set(ticket.key, waiters);
+            void this.pump();
+        });
+    }
+
+    // releases one waiter per interval until nobody is left. The clock used for a turn is never earlier than the
+    // slot it waited for, so a frozen test clock still moves forward.
+    private async pump(): Promise<void> {
+        if (this.pumping) return;
+        this.pumping = true;
+        try {
+            while (this.queued("interactive") + this.queued("bulk") > 0) {
+                let now = this.options.now();
+                if (now < this.nextSlot) {
+                    await this.options.sleep(this.nextSlot - now);
+                    now = Math.max(this.options.now(), this.nextSlot);
+                }
+                const waiter = this.dequeue(now);
+                if (!waiter) continue;
+                this.nextSlot = now + this.options.minIntervalMs;
+                waiter.resolve();
+            }
+        } finally {
+            this.pumping = false;
+        }
+    }
+
+    // the next waiter to go: interactive first, round-robin over keys; anyone past their deadline is refused
+    private dequeue(now: number): Waiter | null {
+        for (const laneName of ["interactive", "bulk"] as const) {
+            const lane = this.queues[laneName];
+            for (const [key, waiters] of lane) {
+                lane.delete(key);
+                const waiter = waiters.shift()!;
+                // back of the line for this key's next request
+                if (waiters.length > 0) lane.set(key, waiters);
+                if (now > waiter.deadline) {
+                    waiter.reject(new MusicBrainzError("MusicBrainz request queue is full, try again later", 503, true));
+                    return null;
+                }
+                return waiter;
+            }
+        }
+        return null;
+    }
+
+    // someone interactive now waits on a fetch that was queued as bulk: move it to the interactive lane
+    private promote(ticket: Ticket): void {
+        ticket.lane = "interactive";
+        for (const [key, waiters] of this.queues.bulk) {
+            const index = waiters.findIndex((waiter) => waiter.ticket === ticket);
+            if (index < 0) continue;
+            const [waiter] = waiters.splice(index, 1);
+            if (waiters.length === 0) this.queues.bulk.delete(key);
+            const target = this.queues.interactive.get(key) ?? [];
+            target.push({ ...waiter!, deadline: Math.min(waiter!.deadline, this.options.now() + this.options.maxQueueWaitMs) });
+            this.queues.interactive.set(key, target);
+            return;
+        }
+    }
+
+    // MusicBrainz said "slow down" (429/503): nobody leaves before it has had a breather, not just this caller
+    private backOff(retryAfterSeconds: number | undefined): void {
+        const pause = Math.max((retryAfterSeconds ?? 0) * 1000, this.options.minIntervalMs * 2);
+        this.nextSlot = Math.max(this.nextSlot, this.options.now() + pause);
     }
 
     private assertBreakerClosed(): void {
@@ -263,7 +401,7 @@ export class MusicBrainzRepository {
         this.probing = false;
     }
 
-    private async fetchWithRetry(url: string): Promise<unknown> {
+    private async fetchWithRetry(url: string, ticket: Ticket): Promise<unknown> {
         this.assertBreakerClosed();
 
         let lastError: MusicBrainzError | null = null;
@@ -274,7 +412,7 @@ export class MusicBrainzRepository {
                 const wait = Math.max(backoff, (lastRetryAfter ?? 0) * 1000);
                 await this.options.sleep(wait);
             }
-            await this.takeTurn();
+            await this.takeTurn(ticket);
 
             lastRetryAfter = undefined;
             try {
@@ -292,6 +430,7 @@ export class MusicBrainzRepository {
                     this.recordSuccess();
                     throw new MusicBrainzError(`MusicBrainz: ${message}`, response.status);
                 }
+                if (response.status === 429 || response.status === 503) this.backOff(response.retryAfter);
                 lastError = new MusicBrainzError(`MusicBrainz: ${message}`, response.status === 429 ? 429 : 503, true);
             } catch (error) {
                 if (error instanceof MusicBrainzError && !error.retryable) throw error;

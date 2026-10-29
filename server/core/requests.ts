@@ -184,6 +184,16 @@ export async function hasActiveRequest(requestedBy: string, musicbrainzIds: stri
     return row != null;
 }
 
+// how many of this user's requests haven't reached an end state (waiting for a manager, or in the pipeline):
+// the per-account ceiling POST /api/v1/request and playlist imports are held to
+export async function countActiveRequests(requestedBy: string): Promise<number> {
+    const row = await getRequestsDb().prepare(`
+        SELECT COUNT(*) AS count FROM requests
+        WHERE requestedBy = ? AND status IN ('waiting', 'searching', 'downloading', 'processing')
+    `).get(requestedBy) as { count: number | string } | undefined;
+    return Number(row?.count ?? 0);
+}
+
 export async function deleteRequest(id: string): Promise<boolean> {
     const result = await getRequestsDb().prepare(`DELETE FROM requests WHERE id = ?`).run(id);
     return result.changes > 0;

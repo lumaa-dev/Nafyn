@@ -21,9 +21,11 @@ export interface SlskSearchResult {
     size: number,
     slots: boolean,
     bitrate?: number,
-    // seconds, as the peer reports it - what downloads.ts ranks the candidates by
+    // seconds, as the peer reports it - one of what soulseekRank.ts ranks the candidates by
     length?: number,
-    speed?: number
+    speed?: number,
+    // uploads the peer has queued ahead of us; a peer with a long queue (or no free slot) may never start
+    queueLength?: number
 }
 
 // how long a transfer is allowed to sit at 0 bytes (queued/remotely-queued) before we give up on that peer
@@ -123,6 +125,7 @@ interface SlskdResponse {
     username: string,
     hasFreeUploadSlot: boolean,
     uploadSpeed: number,
+    queueLength?: number,
     files: SlskdFile[]
 }
 
@@ -154,14 +157,68 @@ async function fetchSearchResponses(id: string, attempts = 6): Promise<SlskdResp
 // search can come back with zero hits every single time. `soulseekQueryText` folds Latin accents - and only
 // those: hangul, kana and hanzi are kept whole (an NFD fold took 한 apart into jamo and が into か + a combining
 // mark, which no filename contains) - and drops what is not valid in a request (see soulseekText.ts).
+//
+// Searches also go through one process-wide gate (at most NAFYN_SLSKD_MAX_CONCURRENT_SEARCHES at a time, started
+// NAFYN_SLSKD_SEARCH_INTERVAL_MS apart): ten pipelines each firing their queries at once is the kind of burst the
+// Soulseek server throttles, and a throttled search looks exactly like "nobody has this song".
 export async function searchSoulseek(query: string, timeoutMs = 20000): Promise<SlskSearchResult[]> {
-    const id = randomUUID();
     const searchText = soulseekQueryText(query);
     if (!searchText) return [];
 
+    const release = await acquireSearchSlot();
+    try {
+        return await runSearch(query, searchText, timeoutMs);
+    } finally {
+        release();
+    }
+}
+
+const DEFAULT_MAX_CONCURRENT_SEARCHES = 3;
+const DEFAULT_SEARCH_INTERVAL_MS = 1000;
+
+function searchLimits(): { maxConcurrent: number, intervalMs: number } {
+    const max = Number(process.env.NAFYN_SLSKD_MAX_CONCURRENT_SEARCHES);
+    const interval = Number(process.env.NAFYN_SLSKD_SEARCH_INTERVAL_MS);
+    return {
+        maxConcurrent: Number.isInteger(max) && max > 0 ? max : DEFAULT_MAX_CONCURRENT_SEARCHES,
+        intervalMs: Number.isFinite(interval) && interval >= 0 ? interval : DEFAULT_SEARCH_INTERVAL_MS
+    };
+}
+
+let activeSearches = 0;
+let nextSearchAt = 0;
+const searchQueue: Array<() => void> = [];
+
+// a semaphore (a finished search hands its slot straight to the next in line) plus a minimum spacing between starts
+async function acquireSearchSlot(): Promise<() => void> {
+    const { maxConcurrent, intervalMs } = searchLimits();
+    if (activeSearches < maxConcurrent) {
+        activeSearches++;
+    } else {
+        await new Promise<void>((resolve) => searchQueue.push(resolve));
+    }
+
+    const now = Date.now();
+    const wait = nextSearchAt - now;
+    nextSearchAt = Math.max(now, nextSearchAt) + intervalMs;
+    if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
+
+    let released = false;
+    return () => {
+        if (released) return;
+        released = true;
+        const next = searchQueue.shift();
+        if (next) next();
+        else activeSearches--;
+    };
+}
+
+async function runSearch(query: string, searchText: string, timeoutMs: number): Promise<SlskSearchResult[]> {
+    const id = randomUUID();
     const startRes = await slskdFetch("/api/v0/searches", {
         method: "POST",
-        body: JSON.stringify({ id, searchText })
+        // slskd's own timeout (ms) matched to how long we wait for it, instead of its 15 s default
+        body: JSON.stringify({ id, searchText, searchTimeout: timeoutMs })
     });
 
     if (!startRes.ok) {
@@ -192,7 +249,8 @@ export async function searchSoulseek(query: string, timeoutMs = 20000): Promise<
             slots: response.hasFreeUploadSlot,
             bitrate: file.bitRate,
             length: file.length,
-            speed: response.uploadSpeed
+            speed: response.uploadSpeed,
+            queueLength: response.queueLength
         }))
     );
 }
