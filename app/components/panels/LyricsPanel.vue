@@ -143,7 +143,15 @@ function setLineRef(el: HTMLElement | null, index: number) {
 }
 
 function scrollToLine(index: number, smooth: boolean) {
-  lineRefs[index]?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'center' });
+  // scrolls only the panel: scrollIntoView also scrolls every ancestor, including the document, which dragged
+  // the whole now-playing page past the viewport whenever a line became active
+  const container = scrollContainer.value;
+  const el = lineRefs[index];
+  if (!container || !el) return;
+  const box = container.getBoundingClientRect();
+  const line = el.getBoundingClientRect();
+  const top = container.scrollTop + (line.top - box.top) - (box.height - line.height) / 2;
+  container.scrollTo({ top, behavior: smooth ? 'smooth' : 'auto' });
 }
 
 // re-targets the intersection observer at whichever line is active; watching its visibility is

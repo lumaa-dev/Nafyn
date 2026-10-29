@@ -86,10 +86,11 @@ function formatDuration(seconds: number): string {
   flex-direction: row;
   gap: clamp(24px, 4vw, 60px);
   max-width: 1100px;
-  /* the viewport minus the Header band `.view` already leaves above (15vh - 10px) and a little air below; dvh so a
-     mobile browser's collapsing toolbar can't push the controls off-screen */
-  height: calc(100dvh - 15vh - 20px);
+  /* margin-top + height + margin-bottom of `.view` add up to exactly the viewport, so the document is never taller
+     than 100vh; dvh so a mobile browser's collapsing toolbar can't push the controls off-screen */
+  height: calc(100dvh - (15vh - 10px) - 1.2em);
   min-height: 0;
+  max-height: calc(100dvh - (15vh - 10px) - 1.2em);
   padding-bottom: 0;
   color: var(--np-text, #ffffff);
   transition: color 0.6s ease;
@@ -314,6 +315,7 @@ function formatDuration(seconds: number): string {
     gap: 30px;
     /* stacked: the page itself scrolls, nothing is held to the viewport height */
     height: auto;
+    max-height: none;
   }
 
   .npp .cover {
