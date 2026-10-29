@@ -1,12 +1,13 @@
 // per-user music library: shared `media` metadata rows + shared audio file on disk, `library_entries` only grants per-user access
 import { randomUUID, UUID } from "node:crypto";
-import { closeSync, mkdirSync, openSync } from "node:fs";
+import { closeSync, openSync } from "node:fs";
 import { rm, rmdir } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { getLibrariesDb, withTransaction, sqlInt } from "./db";
 import { deleteMediaCover } from "../utils/mediaCover";
 import { isSameSongByMetadata, type RecordingIdentity } from "../utils/mediaIdentity";
 import { sanitizePathSegment } from "../utils/pathSegment";
+import { ensureDirSync } from "../utils/ensureDir";
 
 export interface MediaRow {
     id: string,
@@ -661,12 +662,14 @@ export function libraryFilePath(album: string | null, artistName: string, title:
         throw createError({ statusCode: 400, statusMessage: "Invalid album or artist name" });
     }
 
-    mkdirSync(dir, { recursive: true });
+    // not a bare mkdir: a folder that exists but isn't writable (wrong owner, no mode bits) must be repaired or
+    // reported by name here, not surface as an anonymous EACCES from the open() below
+    ensureDirSync(dir);
 
     for (let n = 1; ; n++) {
         const candidate = join(dir, n === 1 ? `${baseName}${extension}` : `${baseName} (${n})${extension}`);
         try {
-            closeSync(openSync(candidate, "wx"));
+            closeSync(openSync(candidate, "wx", 0o644));
             return candidate;
         } catch (error) {
             if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;

@@ -628,9 +628,13 @@ export async function processDownloadRequest(request: NafynRequest): Promise<voi
 
 async function runDownloadRequest(request: NafynRequest): Promise<void> {
 
+    // set once the outcome is stored: anything that throws after that point (events, notifications) must not
+    // reach the catch below and overwrite a "completed" request with "failed"
+    let finished = false;
     // the one way a request leaves the pipeline: status, live progress and notifications all agree on it
     const finish = async (outcome: "completed" | "failed", message?: string) => {
         await updateRequestStatus(request.id, outcome);
+        finished = true;
         emitDownloadProgress({ requestId: request.id, stage: outcome, message });
         notifyRequestFinished(request.id, outcome, outcome === "failed" ? message ?? null : null);
     };
@@ -733,7 +737,8 @@ async function runDownloadRequest(request: NafynRequest): Promise<void> {
             await finish("completed");
         }
     } catch (err) {
-        await finish("failed", err instanceof Error ? err.message : "Unknown error");
+        if (finished) console.error(`[downloads] Error after request ${request.id} was already finished:`, err);
+        else await finish("failed", err instanceof Error ? err.message : "Unknown error");
     } finally {
         clearDownloadEmitter(request.id);
     }
