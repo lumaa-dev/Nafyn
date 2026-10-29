@@ -13,7 +13,7 @@ import { open, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fetchCoverArtResult } from "./coverArt";
 import { isUuid } from "./ids";
-import { coverArchiveUrl, type CoverKind, type CoverSize } from "./coverUrl";
+import { coverArchiveUrl, COVER_SIZES, type CoverKind, type CoverSize } from "./coverUrl";
 import { ensureDir } from "./ensureDir";
 
 export { COVER_SIZES, isCoverKind, isCoverSize, parseCoverArtUrl } from "./coverUrl";
@@ -26,9 +26,17 @@ const MAX_COVER_BYTES = 8 * 1024 * 1024;
 const COLD_WAIT_MS = 8_000;
 const NEGATIVE_TTL_MS = 60 * 60 * 1000;
 const MAX_NEGATIVE_ENTRIES = 5_000;
+// a transient failure (network error, 5xx) is retried once straight away, then backed off: the client re-asks on
+// its own (CoverImage retries, every page reload), and each ask used to hit the archive again and log again
+const TRANSIENT_RETRY_DELAY_MS = 1_500;
+const FAILURE_BACKOFF_MS = [30_000, 2 * 60_000, 10 * 60_000];
+// the archive sometimes answers a thumbnail request with the multi-megabyte original; that won't change soon
+const OVERSIZE_TTL_MS = 24 * 60 * 60 * 1000;
 
 const inFlight = new Map<string, Promise<boolean>>();
 const missing = new Map<string, number>();
+const failures = new Map<string, { retryAt: number, streak: number }>();
+const oversize = new Map<string, number>();
 
 export interface CachedCover {
     path: string,
@@ -70,32 +78,76 @@ async function cachedFileType(path: string): Promise<string | null> {
     }
 }
 
+function remember(map: Map<string, number>, cacheKey: string, ttlMs: number): void {
+    if (map.size >= MAX_NEGATIVE_ENTRIES) map.delete(map.keys().next().value!);
+    map.set(cacheKey, Date.now() + ttlMs);
+}
+
 function rememberMissing(cacheKey: string): void {
-    if (missing.size >= MAX_NEGATIVE_ENTRIES) missing.delete(missing.keys().next().value!);
-    missing.set(cacheKey, Date.now() + NEGATIVE_TTL_MS);
+    remember(missing, cacheKey, NEGATIVE_TTL_MS);
+}
+
+function isRemembered(map: Map<string, number>, cacheKey: string): boolean {
+    const until = map.get(cacheKey);
+    if (until && until > Date.now()) return true;
+    map.delete(cacheKey);
+    return false;
+}
+
+function inBackoff(cacheKey: string): boolean {
+    const failure = failures.get(cacheKey);
+    return !!failure && failure.retryAt > Date.now();
+}
+
+function rememberFailure(cacheKey: string): number {
+    if (failures.size >= MAX_NEGATIVE_ENTRIES) failures.delete(failures.keys().next().value!);
+    const streak = (failures.get(cacheKey)?.streak ?? 0) + 1;
+    const delay = FAILURE_BACKOFF_MS[Math.min(streak, FAILURE_BACKOFF_MS.length) - 1]!;
+    failures.set(cacheKey, { retryAt: Date.now() + delay, streak });
+    return streak;
+}
+
+// the next smaller thumbnail, for a size the archive only answers with a huge original
+function smallerSize(size: CoverSize): CoverSize | null {
+    const index = COVER_SIZES.indexOf(size);
+    return index > 0 ? COVER_SIZES[index - 1]! : null;
 }
 
 async function fetchIntoCache(kind: CoverKind, id: string, size: CoverSize, cacheKey: string): Promise<boolean> {
-    const result = await fetchCoverArtResult(coverArchiveUrl(kind, id, size));
+    const url = coverArchiveUrl(kind, id, size);
+    let result = await fetchCoverArtResult(url);
+    if (result.kind === "error") {
+        await new Promise((resolve) => setTimeout(resolve, TRANSIENT_RETRY_DELAY_MS));
+        result = await fetchCoverArtResult(url);
+    }
     if (result.kind === "missing") {
         rememberMissing(cacheKey);
         return false;
     }
     if (result.kind === "error") {
-        // not remembered: a timeout or a 5xx says nothing about whether the cover exists
-        console.error(`[cover-art] couldn't fetch ${cacheKey}: ${result.reason}`);
+        // says nothing about whether the cover exists, so it is only backed off, never treated as missing
+        const streak = rememberFailure(cacheKey);
+        console.error(`[cover-art] couldn't fetch ${cacheKey}: ${result.reason} (failure ${streak}, retrying later)`);
         return false;
     }
+    failures.delete(cacheKey);
     const response = result.response;
 
     const declared = Number(response.headers.get("content-length") ?? 0);
     if (declared > MAX_COVER_BYTES) {
-        console.error(`[cover-art] ${cacheKey} is ${declared} bytes, over the ${MAX_COVER_BYTES} cap`);
+        await response.body?.cancel().catch(() => {});
+        remember(oversize, cacheKey, OVERSIZE_TTL_MS);
+        console.error(`[cover-art] ${cacheKey} is ${declared} bytes, over the ${MAX_COVER_BYTES} cap; serving a smaller size instead`);
         return false;
     }
 
     const bytes = new Uint8Array(await response.arrayBuffer());
-    if (bytes.byteLength === 0 || bytes.byteLength > MAX_COVER_BYTES || !sniffContentType(bytes)) {
+    if (bytes.byteLength > MAX_COVER_BYTES) {
+        remember(oversize, cacheKey, OVERSIZE_TTL_MS);
+        console.error(`[cover-art] ${cacheKey} is ${bytes.byteLength} bytes, over the ${MAX_COVER_BYTES} cap; serving a smaller size instead`);
+        return false;
+    }
+    if (bytes.byteLength === 0 || !sniffContentType(bytes)) {
         console.error(`[cover-art] ${cacheKey}: upstream sent ${bytes.byteLength} bytes that aren't a usable image`);
         return false;
     }
@@ -143,9 +195,15 @@ export async function getCachedCover(kind: CoverKind, id: string, size: CoverSiz
     const hit = await lookup();
     if (hit) return hit;
 
-    const retryAt = missing.get(cacheKey);
-    if (retryAt && retryAt > Date.now()) return "missing";
-    missing.delete(cacheKey);
+    if (isRemembered(missing, cacheKey)) return "missing";
+
+    if (isRemembered(oversize, cacheKey)) {
+        const smaller = smallerSize(size);
+        if (smaller) return getCachedCover(kind, id, smaller);
+        return "missing";
+    }
+    // the archive failed on this one a moment ago: don't ask (or log) again until the backoff is over
+    if (inBackoff(cacheKey)) return null;
 
     const fetched = ensureFetched(kind, id, size, cacheKey);
     const ready = await Promise.race([
@@ -153,6 +211,11 @@ export async function getCachedCover(kind: CoverKind, id: string, size: CoverSiz
         new Promise<false>((resolve) => setTimeout(() => resolve(false), COLD_WAIT_MS).unref?.())
     ]);
     if (ready) return lookup();
+    // the fetch may have just found the original too big for this size
+    if (isRemembered(oversize, cacheKey)) {
+        const smaller = smallerSize(size);
+        if (smaller) return getCachedCover(kind, id, smaller);
+    }
     return missing.has(cacheKey) ? "missing" : null;
 }
 
@@ -160,7 +223,7 @@ export async function getCachedCover(kind: CoverKind, id: string, size: CoverSiz
 export function warmCover(kind: CoverKind, id: string, size: CoverSize = 250): void {
     if (!isUuid(id)) return;
     const cacheKey = key(kind, id, size);
-    if (missing.has(cacheKey)) return;
+    if (missing.has(cacheKey) || oversize.has(cacheKey) || inBackoff(cacheKey)) return;
     void ensureFetched(kind, id.toLowerCase(), size, cacheKey);
 }
 
