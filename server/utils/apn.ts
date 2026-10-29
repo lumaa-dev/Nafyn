@@ -53,6 +53,17 @@ const REQUEST_ACTIVITY_OUTCOME_MS = 5_000;
 const RELEASE_ACTIVITY_LINGER_MS = 60 * 60 * 1000;
 // Apple budgets Live Activity updates; a progress-only update (apns-priority 5) waits at least this long
 const REQUEST_UPDATE_MIN_INTERVAL_MS = 15_000;
+// every request Live Activity push of one user goes through one pacer (see enqueueActivityJob): the budget
+// Apple enforces is per app on the device, not per activity, so ten running requests share it
+const ACTIVITY_PUSH_MIN_GAP_MS = 2_000;
+// apns-priority 10 is budgeted by iOS; once spent, *all* the app's Live Activities stop updating for minutes.
+// A user gets at most one priority 10 update per this long, the rest go out at priority 5.
+const ACTIVITY_HIGH_PRIORITY_MIN_GAP_MS = 20_000;
+// a push that APNs never answers must not stall the user's queue
+const ACTIVITY_PUSH_TIMEOUT_MS = 20_000;
+// APNs said "too many requests" / "unavailable": pause (doubling) between these
+const ACTIVITY_BACKOFF_MIN_MS = 30_000;
+const ACTIVITY_BACKOFF_MAX_MS = 5 * 60_000;
 
 // `nowplaying` isn't in node-apn's NotificationPushType union yet; the library copies `pushType` straight into
 // the apns-push-type header (lib/notification/index.js), so widening the type locally is all it takes
@@ -313,6 +324,12 @@ async function activityTargets(kind: ApnActivityKind, refId: string): Promise<Ap
     ).all(kind, refId) as ApnTarget[];
 }
 
+async function activityTargetsWithUser(kind: ApnActivityKind, refId: string): Promise<(ApnTarget & { userId: string })[]> {
+    return await getUsersDb().prepare(
+        `SELECT token, environment, userId FROM apn_activity_tokens WHERE kind = ? AND refId = ?`
+    ).all(kind, refId) as (ApnTarget & { userId: string })[];
+}
+
 /** Logins that currently run a Live Activity for this refId, i.e. devices where one is really on screen. */
 async function activitySessionIds(kind: ApnActivityKind, refId: string): Promise<Set<string>> {
     const rows = await getUsersDb().prepare(
@@ -404,9 +421,17 @@ async function pruneDeadTokens(failures: ResponseFailure[]): Promise<void> {
     await db.prepare(`DELETE FROM apn_activity_tokens WHERE token IN (${placeholders})`).run(...dead);
 }
 
+interface SendOutcome {
+    /** APNs asked us to slow down (429 / 503 / ...) */
+    throttled: boolean
+}
+
+const THROTTLE_REASONS = new Set(["TooManyRequests", "ServiceUnavailable", "Shutdown", "InternalServerError"]);
+
 /** Sends one notification to every target, grouped by APNs environment. Never throws. */
-async function send(targets: ApnTarget[], build: () => Notification, label: string): Promise<void> {
-    if (!apnEnabled() || targets.length === 0) return;
+async function send(targets: ApnTarget[], build: () => Notification, label: string): Promise<SendOutcome> {
+    const outcome: SendOutcome = { throttled: false };
+    if (!apnEnabled() || targets.length === 0) return outcome;
 
     const byEnvironment = new Map<ApnEnvironment, string[]>();
     for (const { token, environment } of targets) {
@@ -421,6 +446,7 @@ async function send(targets: ApnTarget[], build: () => Notification, label: stri
             if (result.failed.length > 0) {
                 for (const failure of result.failed) {
                     console.warn(`[apn] ${label} to …${failure.device.slice(-8)} failed: ${failure.response?.reason ?? failure.error?.message ?? failure.status}`);
+                    if (failure.status === 429 || failure.status === 503 || THROTTLE_REASONS.has(failure.response?.reason ?? "")) outcome.throttled = true;
                 }
                 await pruneDeadTokens(result.failed);
             }
@@ -428,6 +454,7 @@ async function send(targets: ApnTarget[], build: () => Notification, label: stri
             console.error(`[apn] ${label} (${environment}) failed:`, err);
         }
     }
+    return outcome;
 }
 
 function baseNotification(pushType: ApnPushType, topicSuffix: string | null, priority: number = 10): Notification {
@@ -646,10 +673,125 @@ function liveActivityNotification(options: LiveActivityOptions): Notification {
     return notif;
 }
 
+// ---------------------------------------------------------------------------------------------------------
+// request Live Activity pacing
+//
+// Every request has its own activity, but iOS budgets updates per *app*: ten requests at once, each pushing
+// stage/track changes at priority 10 plus progress, used to exhaust that budget and freeze every Live Activity
+// for minutes. So all pushes of one user go through one queue: one push per ACTIVITY_PUSH_MIN_GAP_MS, the
+// newest state per request replaces an older pending one, urgent jobs (start, outcome, end) go first, only
+// one priority 10 update per ACTIVITY_HIGH_PRIORITY_MIN_GAP_MS (the rest at priority 5), a hung push times out,
+// and a 429/503 from APNs pauses progress traffic with a growing backoff.
+// ---------------------------------------------------------------------------------------------------------
+
+/** lower runs first */
+const JOB_URGENT = 0;
+const JOB_IMPORTANT = 1;
+const JOB_PROGRESS = 2;
+
+interface ActivityJob {
+    priority: number,
+    run: () => Promise<SendOutcome>,
+    settle: () => void
+}
+
+interface UserPacer {
+    jobs: Map<string, ActivityJob>,
+    nextAt: number,
+    timer: ReturnType<typeof setTimeout> | null,
+    busy: boolean
+}
+
+const pacers = new Map<string, UserPacer>();
+const lastHighPriorityAt = new Map<string, number>();
+let activityBackoffUntil = 0;
+let activityBackoffMs = 0;
+
+/**
+ * Queues a push for `userId`. A pending job with the same key is replaced by this one (its promise resolves
+ * without having run). The returned promise resolves once the job ran, was replaced or was dropped.
+ */
+function enqueueActivityJob(userId: string, key: string, priority: number, run: () => Promise<SendOutcome>): Promise<void> {
+    let pacer = pacers.get(userId);
+    if (!pacer) {
+        pacer = { jobs: new Map(), nextAt: 0, timer: null, busy: false };
+        pacers.set(userId, pacer);
+    }
+    return new Promise<void>((settle) => {
+        const previous = pacer!.jobs.get(key);
+        previous?.settle();
+        pacer!.jobs.set(key, { priority: previous ? Math.min(previous.priority, priority) : priority, run, settle });
+        pumpActivityJobs(userId, pacer!);
+    });
+}
+
+function pumpActivityJobs(userId: string, pacer: UserPacer): void {
+    if (pacer.timer || pacer.busy) return;
+
+    const now = Date.now();
+    const backingOff = now < activityBackoffUntil;
+    if (backingOff) {
+        // progress is disposable, the next one carries newer numbers anyway
+        for (const [key, job] of pacer.jobs) {
+            if (job.priority !== JOB_PROGRESS) continue;
+            pacer.jobs.delete(key);
+            job.settle();
+        }
+    }
+    if (pacer.jobs.size === 0) {
+        pacers.delete(userId);
+        for (const [id, at] of lastHighPriorityAt) {
+            if (now - at > ACTIVITY_HIGH_PRIORITY_MIN_GAP_MS) lastHighPriorityAt.delete(id);
+        }
+        return;
+    }
+
+    const wait = Math.max(0, pacer.nextAt - now, backingOff ? activityBackoffUntil - now : 0);
+    pacer.timer = setTimeout(async () => {
+        pacer.timer = null;
+        // chosen only now, so a job queued during the wait can still jump ahead
+        let chosenKey: string | null = null;
+        for (const [key, job] of pacer.jobs) {
+            if (chosenKey === null || job.priority < pacer.jobs.get(chosenKey)!.priority) chosenKey = key;
+        }
+        const job = chosenKey === null ? null : pacer.jobs.get(chosenKey)!;
+        if (chosenKey !== null) pacer.jobs.delete(chosenKey);
+
+        pacer.busy = true;
+        if (job) {
+            let guard: ReturnType<typeof setTimeout> | undefined;
+            try {
+                const outcome = await Promise.race([
+                    job.run(),
+                    new Promise<null>((resolve) => { guard = setTimeout(() => resolve(null), ACTIVITY_PUSH_TIMEOUT_MS); })
+                ]);
+                if (outcome === null) {
+                    console.warn(`[apn] request activity push for ${userId} got no answer in ${ACTIVITY_PUSH_TIMEOUT_MS / 1000}s, moving on`);
+                } else if (outcome.throttled) {
+                    activityBackoffMs = Math.min(Math.max(ACTIVITY_BACKOFF_MIN_MS, activityBackoffMs * 2), ACTIVITY_BACKOFF_MAX_MS);
+                    activityBackoffUntil = Date.now() + activityBackoffMs;
+                    console.warn(`[apn] APNs is throttling Live Activity pushes, pausing progress for ${activityBackoffMs / 1000}s`);
+                } else {
+                    activityBackoffMs = 0;
+                }
+            } catch (err) {
+                console.error("[apn] request activity push failed:", err);
+            } finally {
+                clearTimeout(guard);
+                job.settle();
+            }
+        }
+        pacer.busy = false;
+        pacer.nextAt = Date.now() + ACTIVITY_PUSH_MIN_GAP_MS;
+        pumpActivityJobs(userId, pacer);
+    }, wait);
+    pacer.timer.unref?.();
+}
+
 // last update sent per request, to keep within Apple's Live Activity update budget
 // requests whose outcome is being shown (final update sent, end still pending)
 const finishingRequestActivities = new Set<string>();
-const requestActivityThrottle = new Map<string, { sentAt: number, stage: string, trackIndex: number | null, trackCount: number | null }>();
+const requestActivityThrottle = new Map<string, { userId: string, sentAt: number, stage: string, trackIndex: number | null, trackCount: number | null }>();
 
 /** Starts a request's progress Live Activity on the requester's devices (push-to-start). */
 export async function startRequestActivity(requesterId: string, attributes: RequestActivityAttributes): Promise<void> {
@@ -658,14 +800,14 @@ export async function startRequestActivity(requesterId: string, attributes: Requ
     const state: RequestActivityState = {
         stage: "searching", message: null, trackTitle: null, trackIndex: null, trackCount: null, progress: null, etaSeconds: null
     };
-    requestActivityThrottle.set(attributes.requestId, { sentAt: Date.now(), stage: state.stage, trackIndex: null, trackCount: null });
-    await send(targets, () => liveActivityNotification({
+    requestActivityThrottle.set(attributes.requestId, { userId: requesterId, sentAt: Date.now(), stage: state.stage, trackIndex: null, trackCount: null });
+    await enqueueActivityJob(requesterId, `start:${attributes.requestId}`, JOB_URGENT, () => send(targets, () => liveActivityNotification({
         event: "start",
         attributesType: REQUEST_ACTIVITY_TYPE,
         attributes,
         contentState: state,
         alert: { title: attributes.title, body: "Searching for your music" }
-    }), "request activity start");
+    }), "request activity start"));
 }
 
 /** Pushes download progress to a running request Live Activity, throttled. Terminal stages go through endRequestActivity. */
@@ -681,15 +823,20 @@ export async function updateRequestActivity(event: DownloadProgressEvent): Promi
     const now = Date.now();
     const trackIndex = event.trackIndex ?? null;
     const trackCount = event.trackCount ?? null;
-    // apns-priority 10 delivers immediately and is for what the person should notice: the stage or the track
-    // (count) changing. Everything else is the 0...1 download progress of the current track, which goes out
-    // at priority 5 (power-aware, may be delayed by the system) and at most once per interval.
+    // what the person should notice (the stage or the track (count) changing) is "important"; everything else
+    // is the 0...1 download progress of the current track, which waits for an interval that grows with the
+    // number of activities the user has running (they share one budget).
     const important = !last || last.stage !== event.stage || last.trackIndex !== trackIndex || last.trackCount !== trackCount;
-    if (!important && now - last.sentAt < REQUEST_UPDATE_MIN_INTERVAL_MS) return;
+    if (!important) {
+        let running = 0;
+        for (const entry of requestActivityThrottle.values()) if (entry.userId === last.userId) running++;
+        if (now - last.sentAt < REQUEST_UPDATE_MIN_INTERVAL_MS * Math.min(Math.max(running, 1), 4)) return;
+    }
 
-    const targets = await activityTargets("request", event.requestId);
-    if (targets.length === 0) return;
-    requestActivityThrottle.set(event.requestId, { sentAt: now, stage: event.stage, trackIndex, trackCount });
+    const targets = await activityTargetsWithUser("request", event.requestId);
+    const userId = targets[0]?.userId;
+    if (!userId) return;
+    requestActivityThrottle.set(event.requestId, { userId, sentAt: now, stage: event.stage, trackIndex, trackCount });
 
     // a per-track "completed" between album tracks reads as "processing" from the outside: the request isn't done
     const stage: RequestActivityState["stage"] = event.stage === "completed" || event.stage === "failed" ? "processing" : event.stage;
@@ -702,11 +849,20 @@ export async function updateRequestActivity(event: DownloadProgressEvent): Promi
         progress: event.totalBytes ? Math.min(1, (event.bytesDownloaded ?? 0) / event.totalBytes) : null,
         etaSeconds: event.etaSeconds ?? null
     };
-    await send(targets, () => liveActivityNotification({
-        event: "update",
-        contentState: state,
-        priority: important ? 10 : 5
-    }), "request activity update");
+    await enqueueActivityJob(userId, `update:${event.requestId}`, important ? JOB_IMPORTANT : JOB_PROGRESS, async () => {
+        // still running? (the outcome may have gone out while this waited its turn)
+        if (finishingRequestActivities.has(event.requestId)) return { throttled: false };
+        const current = await activityTargets("request", event.requestId);
+        if (current.length === 0) return { throttled: false };
+        const sentAt = Date.now();
+        const high = important && sentAt - (lastHighPriorityAt.get(userId) ?? 0) >= ACTIVITY_HIGH_PRIORITY_MIN_GAP_MS;
+        if (high) lastHighPriorityAt.set(userId, sentAt);
+        return await send(current, () => liveActivityNotification({
+            event: "update",
+            contentState: state,
+            priority: high ? 10 : 5
+        }), "request activity update");
+    });
 }
 
 /**
@@ -723,31 +879,32 @@ export async function updateRequestActivity(event: DownloadProgressEvent): Promi
 export async function endRequestActivity(requestId: string, outcome: "completed" | "failed", message: string | null = null, alert?: { title: string, body: string }): Promise<Set<string>> {
     requestActivityThrottle.delete(requestId);
     if (!apnEnabled()) return new Set();
-    const targets = await activityTargets("request", requestId);
+    const targets = await activityTargetsWithUser("request", requestId);
     if (targets.length === 0) return new Set();
+    const userId = targets[0]!.userId;
     const sessionIds = await activitySessionIds("request", requestId);
 
     const state: RequestActivityState = {
         stage: outcome, message, trackTitle: null, trackIndex: null, trackCount: null, progress: outcome === "completed" ? 1 : null, etaSeconds: null
     };
     finishingRequestActivities.add(requestId);
-    await send(targets, () => liveActivityNotification({
+    await enqueueActivityJob(userId, `update:${requestId}`, JOB_URGENT, () => send(targets, () => liveActivityNotification({
         event: "update",
         contentState: state,
         alert,
         priority: 10
-    }), "request activity outcome");
+    }), "request activity outcome"));
 
     const timer = setTimeout(async () => {
         try {
             // fresh read: the activity's update token may have been replaced since
             const current = await activityTargets("request", requestId);
-            await send(current.length > 0 ? current : targets, () => liveActivityNotification({
+            await enqueueActivityJob(userId, `end:${requestId}`, JOB_URGENT, () => send(current.length > 0 ? current : targets, () => liveActivityNotification({
                 event: "end",
                 contentState: state,
                 dismissalDateMs: Date.now(),
                 priority: 10
-            }), "request activity end");
+            }), "request activity end"));
             await deleteActivityTokens("request", requestId);
         } catch (err) {
             console.error("[apn] request activity end failed:", err);
