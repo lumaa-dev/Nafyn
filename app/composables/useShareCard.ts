@@ -25,8 +25,10 @@ const MUTED = "#8a8a86";
 
 // "Instrument-Serif" is loaded as a webfont; if it hasn't finished loading the browser silently falls back,
 // so the stack names a real serif rather than leaving it to chance
-const SERIF = '"Instrument-Serif", Georgia, serif';
-const MONO = '"Discy", ui-monospace, monospace';
+const SERIF_DEFAULT = '"Instrument-Serif", Georgia, serif';
+const MONO_DEFAULT = '"Discy", ui-monospace, monospace';
+// the OpenDyslexic setting replaces every font, and the card is drawn on a canvas that CSS cannot reach
+const DYSLEXIC = '"OpenDyslexic", sans-serif';
 
 function truncate(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string {
     if (ctx.measureText(text).width <= maxWidth) return text;
@@ -51,6 +53,11 @@ export async function renderShareCard(spec: ShareCardSpec): Promise<Blob | null>
     // waiting on the webfonts means the card looks like the app rather than like Times New Roman; a font
     // that never loads must not block the download, hence the catch
     if (document.fonts?.ready) await document.fonts.ready.catch(() => {});
+
+    const dyslexic = document.documentElement.classList.contains("dyslexic-font");
+    const SERIF = dyslexic ? DYSLEXIC : SERIF_DEFAULT;
+    const MONO = dyslexic ? DYSLEXIC : MONO_DEFAULT;
+    if (dyslexic) await document.fonts?.load("48px OpenDyslexic").catch(() => {});
 
     ctx.fillStyle = BG;
     ctx.fillRect(0, 0, WIDTH, HEIGHT);

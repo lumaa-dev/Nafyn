@@ -63,6 +63,14 @@
             {{ $t('settings.appearance.duration') }}
           </label>
         </section>
+
+        <section class="subsection">
+          <label class="switch-row">
+            <input type="checkbox" v-model="dyslexicFont">
+            {{ $t('settings.appearance.dyslexicFont') }}
+          </label>
+          <p class="subsonic-note">{{ $t('settings.appearance.dyslexicFontNote') }}</p>
+        </section>
       </div>
 
       <div v-else-if="activeCategory === 'playback'" class="panel">
@@ -367,6 +375,7 @@ import { canManageUser, hasPermission, Permission } from '~~/server/entity/Permi
 import type { RegisterTokenRow } from '~~/server/core/registerTokens';
 import type { ApiTokenSummary, ApiTokenRow } from '~~/server/core/apiTokens';
 import { syncHistorySetting, useHistoryEnabled, setHistoryEnabledState } from '~/composables/usePlayTracking';
+import { useDyslexicFont } from '~/composables/useDyslexicFont';
 import { useAppearanceSettings, syncAppearanceSettings, setAppearanceSetting } from '~/composables/useAppearanceSettings';
 import { usePlaybackSettings, syncPlaybackSettings, setPlaybackSetting } from '~/composables/usePlaybackSettings';
 import { useUnitySettings, syncUnitySettings, setUnitySetting, useUnitySessionOverride, setUnityDisabledThisSession } from '~/composables/useUnitySettings';
@@ -808,6 +817,7 @@ function onPieHover(e: MouseEvent) {
 // -- appearance panel --
 
 const appearance = useAppearanceSettings();
+const dyslexicFont = useDyslexicFont();
 
 async function loadAppearancePanel() {
   await syncAppearanceSettings();

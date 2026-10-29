@@ -293,7 +293,9 @@
       "title": "Appearance",
       "fileSize": "Show file size in track lists",
       "fileSizeLocked": "Only available to accounts with the Manage music permission.",
-      "duration": "Show track duration in track lists"
+      "duration": "Show track duration in track lists",
+      "dyslexicFont": "Use the OpenDyslexic font",
+      "dyslexicFontNote": "Replaces every font in Nafyn with OpenDyslexic, made to be easier to read with dyslexia. Saved in this browser only."
     },
     "playback": {
       "title": "Playback",

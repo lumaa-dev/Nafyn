@@ -21,12 +21,55 @@
 	src: url("./assets/fonts/InstrumentSerif-Italic.ttf");
 }
 
+/* OpenDyslexic: only fetched when the Appearance setting turns it on (see .dyslexic-font below) */
+@font-face {
+	font-family: "OpenDyslexic";
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url("./assets/fonts/OpenDyslexic-Regular.otf") format("opentype");
+}
+
+@font-face {
+	font-family: "OpenDyslexic";
+	font-style: italic;
+	font-weight: 400;
+	font-display: swap;
+	src: url("./assets/fonts/OpenDyslexic-Italic.otf") format("opentype");
+}
+
+@font-face {
+	font-family: "OpenDyslexic";
+	font-style: normal;
+	font-weight: 700;
+	font-display: swap;
+	src: url("./assets/fonts/OpenDyslexic-Bold.otf") format("opentype");
+}
+
+@font-face {
+	font-family: "OpenDyslexic";
+	font-style: italic;
+	font-weight: 700;
+	font-display: swap;
+	src: url("./assets/fonts/OpenDyslexic-BoldItalic.otf") format("opentype");
+}
+
 /* "Discy" is the UI sans (inputs, numbers, small print): SF Pro where the device has it, then Arial, then
    whatever sans-serif the system has. It used to be an @font-face with no url(), which browsers drop whole -
    so it silently fell back to the default serif on devices that were meant to get a system font. Use the
    variable; there is no "Discy" family to ask for. */
 :root {
 	--font-discy: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "SF Pro", Arial, "Helvetica Neue", sans-serif;
+}
+
+/* Settings -> Appearance -> OpenDyslexic: every font on the page, whatever its place or purpose (serif
+   headings, UI sans, inputs, monospace, SVG chart labels, pseudo-elements), becomes OpenDyslexic. The
+   !important is the point - the app sets font-family on dozens of selectors and this must beat all of them. */
+html.dyslexic-font,
+html.dyslexic-font *,
+html.dyslexic-font *::before,
+html.dyslexic-font *::after {
+	font-family: "OpenDyslexic", var(--font-discy) !important;
 }
 
 html {
@@ -298,6 +341,8 @@ import Sidebar from "./components/Sidebar.vue";
 import ToastPill from "./components/ToastPill.vue";
 import NowPlaying from "./components/NowPlaying.vue";
 import { useAuthToken, isTokenExpired } from "./composables/useAuthToken";
+
+applyDyslexicFont();
 
 const route = useRoute();
 const showSidebar = ref(false);

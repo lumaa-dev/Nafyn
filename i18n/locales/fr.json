@@ -293,7 +293,9 @@
       "title": "Apparence",
       "fileSize": "Afficher la taille des fichiers dans les listes de titres",
       "fileSizeLocked": "Réservé aux comptes disposant de la permission Gérer la musique.",
-      "duration": "Afficher la durée des titres dans les listes de titres"
+      "duration": "Afficher la durée des titres dans les listes de titres",
+      "dyslexicFont": "Utiliser la police OpenDyslexic",
+      "dyslexicFontNote": "Remplace toutes les polices de Nafyn par OpenDyslexic, conçue pour faciliter la lecture en cas de dyslexie. Enregistré dans ce navigateur uniquement."
     },
     "playback": {
       "title": "Lecture",
