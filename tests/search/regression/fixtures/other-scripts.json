@@ -1,0 +1,1238 @@
+{
+ "requests": {
+  "https://musicbrainz.org/ws/2/release-group?fmt=json&limit=40&query=releasegroup%3A%22dr%20feelgood%22%20AND%20artist%3A%22motley%20crue%22%20AND%20status%3Aofficial": {
+   "created": "2026-10-22T18:53:20.822Z",
+   "offset": 0,
+   "release-groups": [
+    {
+     "id": "c678a19e-2d51-49d8-89a7-5779e47fd97e",
+     "score": 100,
+     "title": "Dr. Feelgood",
+     "first-release-date": "1989-09-25",
+     "primary-type": "Single",
+     "artist-credit": [
+      {
+       "name": "M\u00f6tley Cr\u00fce",
+       "artist": {
+        "id": "26f07661-e115-471d-a930-206f5c89d17c",
+        "name": "M\u00f6tley Cr\u00fce",
+        "sort-name": "M\u00f6tley Cr\u00fce",
+        "aliases": [
+         {
+          "sort-name": "\u30e2\u30c8\u30ea\u30fc\u30fb\u30af\u30eb\u30fc",
+          "name": "\u30e2\u30c8\u30ea\u30fc\u30fb\u30af\u30eb\u30fc"
+         },
+         {
+          "sort-name": "M\u00f6tley Crue",
+          "name": "M\u00f6tley Crue"
+         },
+         {
+          "sort-name": "Motley Crue",
+          "name": "Motley Crue"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "f7338c5a-280a-474c-a078-09c2cfa4dead",
+       "title": "Dr. Feelgood",
+       "status": "Promotion"
+      },
+      {
+       "id": "3264ba83-2e40-4973-b224-9905bf4ad8fe",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "36ef342b-df20-4084-b3ea-1189c33d0982",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "8a50b779-bf70-424b-b14f-d9ab040b16ea",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "92ff6ea9-94b2-4b0f-ad6d-eab778624522",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "2fc8cf0a-2370-3238-b4f3-0fcea1511c12",
+     "score": 100,
+     "title": "Dr. Feelgood",
+     "first-release-date": "1989-08-28",
+     "primary-type": "Album",
+     "artist-credit": [
+      {
+       "name": "M\u00f6tley Cr\u00fce",
+       "artist": {
+        "id": "26f07661-e115-471d-a930-206f5c89d17c",
+        "name": "M\u00f6tley Cr\u00fce",
+        "sort-name": "M\u00f6tley Cr\u00fce",
+        "aliases": [
+         {
+          "sort-name": "\u30e2\u30c8\u30ea\u30fc\u30fb\u30af\u30eb\u30fc",
+          "name": "\u30e2\u30c8\u30ea\u30fc\u30fb\u30af\u30eb\u30fc"
+         },
+         {
+          "sort-name": "M\u00f6tley Crue",
+          "name": "M\u00f6tley Crue"
+         },
+         {
+          "sort-name": "Motley Crue",
+          "name": "Motley Crue"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "607f576d-633a-4fd8-9af4-22376a68291f",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "a523944a-31a1-47c3-9d49-897af4b280db",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "8a0fe367-8177-41a5-9565-17f0c6a2c7d0",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "55cc1ff8-ed58-4872-8eee-d4b24cfc7d1e",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "077f781a-b5fb-46d4-b7cf-fa6598d292eb",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "1d6c061e-ea99-430b-8ba6-823b735317bd",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "efd78ba6-ef2d-4b03-92b8-c2b3413875cd",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "97fc49f0-482e-498d-9085-405dd25cfc51",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "451e1c2f-bfc7-4a56-860b-a065d6ee7c8a",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "3845bdf1-4066-471a-a434-d63d73992277",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "f2bc7c98-fa0b-43c8-bf41-23e7ff9e417f",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "b66eeeb6-78c4-40fb-99ec-f7b065757c55",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "fa7b4db0-984b-49bc-93b8-78642481abbb",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "e28c63c3-86ea-46a9-a394-d5721093eeae",
+       "title": "Dr. Feelgood",
+       "status": "Withdrawn"
+      },
+      {
+       "id": "39591a73-50bd-430b-bf82-34900b9e56af",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "e74e1747-fcee-491b-8ff7-5f4d914d698b",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "ed0a1df3-eeea-408b-a98b-b2f538e71109",
+       "title": "Dr. Feelgood",
+       "status": "Withdrawn"
+      },
+      {
+       "id": "e603ef54-063c-42cb-8a1f-3421ad60e235",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "40f477eb-e3b5-3a91-80cd-ea9ee98366fb",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "504a27d6-33ee-436e-93de-6e67a5dac917",
+       "title": "Dr. Feelgood",
+       "status": "Withdrawn"
+      },
+      {
+       "id": "36acbacc-40a8-4a1f-a282-70b700bdfb8b",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "77c39c66-3af3-4527-855e-83a6497c8788",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "60328f06-2e4e-44fd-abb1-a573b676e094",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "b9b56f7b-ff8c-309a-b806-c46de113accd",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "d43af882-7018-4c7e-b3ab-d1ce06feb9a0",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "2d49caf6-9b47-45e3-9930-cae3f6157723",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "a4df3826-fdd6-49b3-bfc7-037e964d5d33",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "4168dcf6-353f-441c-a68b-e476415d277f",
+       "title": "Dr. Feelgood",
+       "status": "Withdrawn"
+      },
+      {
+       "id": "33f31a09-8dc3-49b4-a278-9ae10e036fc4",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "6ddab2b6-0128-4d9e-b31f-73df92736bbc",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "c39e056a-1f52-4bf2-b92b-e4b702b07daf",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "daf4c671-184f-4c86-89b3-310ecf4a904f",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "38245b35-94b9-4873-b147-552371bfd5c2",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "f7983bdb-322a-4609-83cf-9b093e07c760",
+       "title": "Dr. Feelgood",
+       "status": "Withdrawn"
+      },
+      {
+       "id": "01ce7473-2f36-491d-a204-bbe2bcdc5fb2",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "f5624d79-e8f1-4a84-9c94-2c30fc5b32cd",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "d4d3976f-41c4-478a-a096-c4917c1731c8",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "bf21583e-ec22-4704-9b5e-38f2d57c7e82",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "ebec8714-b83d-4b87-8dbd-0fcc4e07f311",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "6c676a1a-e0ca-492e-a4d7-829bbcc1006d",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      }
+     ]
+    }
+   ]
+  },
+  "https://musicbrainz.org/ws/2/release-group?fmt=json&limit=40&query=releasegroup%3A(dr%20AND%20feelgood)%20AND%20artist%3A(motley%20AND%20crue)%20AND%20status%3Aofficial": {
+   "created": "2026-10-22T18:53:22.952Z",
+   "offset": 0,
+   "release-groups": [
+    {
+     "id": "c678a19e-2d51-49d8-89a7-5779e47fd97e",
+     "score": 100,
+     "title": "Dr. Feelgood",
+     "first-release-date": "1989-09-25",
+     "primary-type": "Single",
+     "artist-credit": [
+      {
+       "name": "M\u00f6tley Cr\u00fce",
+       "artist": {
+        "id": "26f07661-e115-471d-a930-206f5c89d17c",
+        "name": "M\u00f6tley Cr\u00fce",
+        "sort-name": "M\u00f6tley Cr\u00fce",
+        "aliases": [
+         {
+          "sort-name": "\u30e2\u30c8\u30ea\u30fc\u30fb\u30af\u30eb\u30fc",
+          "name": "\u30e2\u30c8\u30ea\u30fc\u30fb\u30af\u30eb\u30fc"
+         },
+         {
+          "sort-name": "M\u00f6tley Crue",
+          "name": "M\u00f6tley Crue"
+         },
+         {
+          "sort-name": "Motley Crue",
+          "name": "Motley Crue"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "f7338c5a-280a-474c-a078-09c2cfa4dead",
+       "title": "Dr. Feelgood",
+       "status": "Promotion"
+      },
+      {
+       "id": "3264ba83-2e40-4973-b224-9905bf4ad8fe",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "36ef342b-df20-4084-b3ea-1189c33d0982",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "8a50b779-bf70-424b-b14f-d9ab040b16ea",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "92ff6ea9-94b2-4b0f-ad6d-eab778624522",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "2fc8cf0a-2370-3238-b4f3-0fcea1511c12",
+     "score": 100,
+     "title": "Dr. Feelgood",
+     "first-release-date": "1989-08-28",
+     "primary-type": "Album",
+     "artist-credit": [
+      {
+       "name": "M\u00f6tley Cr\u00fce",
+       "artist": {
+        "id": "26f07661-e115-471d-a930-206f5c89d17c",
+        "name": "M\u00f6tley Cr\u00fce",
+        "sort-name": "M\u00f6tley Cr\u00fce",
+        "aliases": [
+         {
+          "sort-name": "\u30e2\u30c8\u30ea\u30fc\u30fb\u30af\u30eb\u30fc",
+          "name": "\u30e2\u30c8\u30ea\u30fc\u30fb\u30af\u30eb\u30fc"
+         },
+         {
+          "sort-name": "M\u00f6tley Crue",
+          "name": "M\u00f6tley Crue"
+         },
+         {
+          "sort-name": "Motley Crue",
+          "name": "Motley Crue"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "607f576d-633a-4fd8-9af4-22376a68291f",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "a523944a-31a1-47c3-9d49-897af4b280db",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "8a0fe367-8177-41a5-9565-17f0c6a2c7d0",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "55cc1ff8-ed58-4872-8eee-d4b24cfc7d1e",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "077f781a-b5fb-46d4-b7cf-fa6598d292eb",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "1d6c061e-ea99-430b-8ba6-823b735317bd",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "efd78ba6-ef2d-4b03-92b8-c2b3413875cd",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "97fc49f0-482e-498d-9085-405dd25cfc51",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "451e1c2f-bfc7-4a56-860b-a065d6ee7c8a",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "3845bdf1-4066-471a-a434-d63d73992277",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "f2bc7c98-fa0b-43c8-bf41-23e7ff9e417f",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "b66eeeb6-78c4-40fb-99ec-f7b065757c55",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "fa7b4db0-984b-49bc-93b8-78642481abbb",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "e28c63c3-86ea-46a9-a394-d5721093eeae",
+       "title": "Dr. Feelgood",
+       "status": "Withdrawn"
+      },
+      {
+       "id": "39591a73-50bd-430b-bf82-34900b9e56af",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "e74e1747-fcee-491b-8ff7-5f4d914d698b",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "ed0a1df3-eeea-408b-a98b-b2f538e71109",
+       "title": "Dr. Feelgood",
+       "status": "Withdrawn"
+      },
+      {
+       "id": "e603ef54-063c-42cb-8a1f-3421ad60e235",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "40f477eb-e3b5-3a91-80cd-ea9ee98366fb",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "504a27d6-33ee-436e-93de-6e67a5dac917",
+       "title": "Dr. Feelgood",
+       "status": "Withdrawn"
+      },
+      {
+       "id": "36acbacc-40a8-4a1f-a282-70b700bdfb8b",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "77c39c66-3af3-4527-855e-83a6497c8788",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "60328f06-2e4e-44fd-abb1-a573b676e094",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "b9b56f7b-ff8c-309a-b806-c46de113accd",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "d43af882-7018-4c7e-b3ab-d1ce06feb9a0",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "2d49caf6-9b47-45e3-9930-cae3f6157723",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "a4df3826-fdd6-49b3-bfc7-037e964d5d33",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "4168dcf6-353f-441c-a68b-e476415d277f",
+       "title": "Dr. Feelgood",
+       "status": "Withdrawn"
+      },
+      {
+       "id": "33f31a09-8dc3-49b4-a278-9ae10e036fc4",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "6ddab2b6-0128-4d9e-b31f-73df92736bbc",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "c39e056a-1f52-4bf2-b92b-e4b702b07daf",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "daf4c671-184f-4c86-89b3-310ecf4a904f",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "38245b35-94b9-4873-b147-552371bfd5c2",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "f7983bdb-322a-4609-83cf-9b093e07c760",
+       "title": "Dr. Feelgood",
+       "status": "Withdrawn"
+      },
+      {
+       "id": "01ce7473-2f36-491d-a204-bbe2bcdc5fb2",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "f5624d79-e8f1-4a84-9c94-2c30fc5b32cd",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "d4d3976f-41c4-478a-a096-c4917c1731c8",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "bf21583e-ec22-4704-9b5e-38f2d57c7e82",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "ebec8714-b83d-4b87-8dbd-0fcc4e07f311",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      },
+      {
+       "id": "6c676a1a-e0ca-492e-a4d7-829bbcc1006d",
+       "title": "Dr. Feelgood",
+       "status": "Official"
+      }
+     ]
+    }
+   ]
+  },
+  "https://musicbrainz.org/ws/2/release?fmt=json&limit=100&query=rgid%3A(c678a19e-2d51-49d8-89a7-5779e47fd97e%20OR%202fc8cf0a-2370-3238-b4f3-0fcea1511c12)%20AND%20status%3Aofficial%20AND%20format%3A%22Digital%20Media%22": {
+   "created": "2026-10-22T18:53:27.359Z",
+   "offset": 0,
+   "releases": [
+    {
+     "id": "fa7b4db0-984b-49bc-93b8-78642481abbb",
+     "score": 100,
+     "title": "Dr. Feelgood",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "M\u00f6tley Cr\u00fce",
+       "artist": {
+        "id": "26f07661-e115-471d-a930-206f5c89d17c",
+        "name": "M\u00f6tley Cr\u00fce",
+        "sort-name": "M\u00f6tley Cr\u00fce"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "2fc8cf0a-2370-3238-b4f3-0fcea1511c12",
+      "title": "Dr. Feelgood",
+      "primary-type": "Album"
+     },
+     "date": "",
+     "barcode": "4050538778670",
+     "track-count": 16,
+     "media": [
+      {
+       "id": "6a6faf66-258e-3e1c-90e1-fe67a0f6268d",
+       "format": "Digital Media",
+       "track-count": 16
+      }
+     ]
+    },
+    {
+     "id": "b66eeeb6-78c4-40fb-99ec-f7b065757c55",
+     "score": 100,
+     "title": "Dr. Feelgood",
+     "status": "Official",
+     "disambiguation": "Dolby Atmos mix",
+     "artist-credit": [
+      {
+       "name": "M\u00f6tley Cr\u00fce",
+       "artist": {
+        "id": "26f07661-e115-471d-a930-206f5c89d17c",
+        "name": "M\u00f6tley Cr\u00fce",
+        "sort-name": "M\u00f6tley Cr\u00fce"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "2fc8cf0a-2370-3238-b4f3-0fcea1511c12",
+      "title": "Dr. Feelgood",
+      "primary-type": "Album"
+     },
+     "barcode": "4050538853346",
+     "track-count": 11,
+     "media": [
+      {
+       "id": "ef1485a7-f1c5-3c1c-873b-cf204de83a71",
+       "format": "Digital Media",
+       "track-count": 11
+      }
+     ]
+    },
+    {
+     "id": "39591a73-50bd-430b-bf82-34900b9e56af",
+     "score": 100,
+     "title": "Dr. Feelgood",
+     "status": "Official",
+     "disambiguation": "40th anniversary remaster",
+     "artist-credit": [
+      {
+       "name": "M\u00f6tley Cr\u00fce",
+       "artist": {
+        "id": "26f07661-e115-471d-a930-206f5c89d17c",
+        "name": "M\u00f6tley Cr\u00fce",
+        "sort-name": "M\u00f6tley Cr\u00fce"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "2fc8cf0a-2370-3238-b4f3-0fcea1511c12",
+      "title": "Dr. Feelgood",
+      "primary-type": "Album"
+     },
+     "date": "2021-09-03",
+     "barcode": "4050538781595",
+     "track-count": 11,
+     "media": [
+      {
+       "id": "7c8e4101-060a-3078-857f-50dac5b4daea",
+       "format": "Digital Media",
+       "track-count": 11
+      }
+     ]
+    },
+    {
+     "id": "077f781a-b5fb-46d4-b7cf-fa6598d292eb",
+     "score": 100,
+     "title": "Dr. Feelgood",
+     "status": "Official",
+     "disambiguation": "deluxe version",
+     "artist-credit": [
+      {
+       "name": "M\u00f6tley Cr\u00fce",
+       "artist": {
+        "id": "26f07661-e115-471d-a930-206f5c89d17c",
+        "name": "M\u00f6tley Cr\u00fce",
+        "sort-name": "M\u00f6tley Cr\u00fce"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "2fc8cf0a-2370-3238-b4f3-0fcea1511c12",
+      "title": "Dr. Feelgood",
+      "primary-type": "Album"
+     },
+     "date": "",
+     "barcode": "4050538778670",
+     "track-count": 16,
+     "media": [
+      {
+       "id": "71ad3e5c-3b28-3409-9841-168096e51e8f",
+       "format": "Digital Media",
+       "track-count": 16
+      }
+     ]
+    },
+    {
+     "id": "8a0fe367-8177-41a5-9565-17f0c6a2c7d0",
+     "score": 100,
+     "title": "Dr. Feelgood",
+     "status": "Official",
+     "disambiguation": "35th Anniversary - 2024 Remaster",
+     "artist-credit": [
+      {
+       "name": "M\u00f6tley Cr\u00fce",
+       "artist": {
+        "id": "26f07661-e115-471d-a930-206f5c89d17c",
+        "name": "M\u00f6tley Cr\u00fce",
+        "sort-name": "M\u00f6tley Cr\u00fce"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "2fc8cf0a-2370-3238-b4f3-0fcea1511c12",
+      "title": "Dr. Feelgood",
+      "primary-type": "Album"
+     },
+     "barcode": "4099964047745",
+     "track-count": 21,
+     "media": [
+      {
+       "id": "1b1aaf97-277d-31e4-abba-05bdec88b608",
+       "format": "Digital Media",
+       "track-count": 21
+      }
+     ]
+    }
+   ]
+  },
+  "https://musicbrainz.org/ws/2/release-group?fmt=json&limit=40&query=releasegroup%3A(%D0%B3%D1%80%D1%83%D0%BF%D0%BF%D0%B0%20AND%20%D0%BA%D1%80%D0%BE%D0%B2%D0%B8)%20AND%20artist%3A(%D0%BA%D0%B8%D0%BD%D0%BE)%20AND%20status%3Aofficial": {
+   "created": "2026-10-22T18:53:13.681Z",
+   "offset": 0,
+   "release-groups": [
+    {
+     "id": "7ff1eff0-a8c8-37dc-807e-eea5a9e173b5",
+     "score": 100,
+     "title": "\u0413\u0440\u0443\u043f\u043f\u0430 \u043a\u0440\u043e\u0432\u0438",
+     "first-release-date": "1988",
+     "primary-type": "Album",
+     "artist-credit": [
+      {
+       "name": "\u041a\u0438\u043d\u043e",
+       "artist": {
+        "id": "064db6e8-fdfb-4acb-a327-fc2de75b37de",
+        "name": "\u041a\u0438\u043d\u043e",
+        "sort-name": "Kino",
+        "disambiguation": "Soviet rock band active in 1980s",
+        "aliases": [
+         {
+          "sort-name": "\u0410\u0431\u0441\u043e\u043b\u044e\u0442\u043d\u043e\u0435 \u043a\u0438\u043d\u043e",
+          "name": "\u0410\u0431\u0441\u043e\u043b\u044e\u0442\u043d\u043e\u0435 \u043a\u0438\u043d\u043e"
+         },
+         {
+          "sort-name": "Kino",
+          "name": "Kino"
+         },
+         {
+          "sort-name": "\u041a\u0456\u043d\u043e",
+          "name": "\u041a\u0456\u043d\u043e"
+         },
+         {
+          "sort-name": "\u041a\u0438\u043d\u043e",
+          "name": "\u041a\u0438\u043d\u043e"
+         },
+         {
+          "sort-name": "Gruppa Kino",
+          "name": "Gruppa Kino"
+         },
+         {
+          "sort-name": "\u00ca\u00e8\u00ed\u00ee",
+          "name": "\u00ca\u00e8\u00ed\u00ee"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "8abddaf3-81ce-3f26-9836-caf4bce73ae8",
+       "title": "Groupa Kroovy (Blood Type)",
+       "status": "Official"
+      },
+      {
+       "id": "d5352ccb-e912-4d8c-b42f-8393ca617d73",
+       "title": "\u0413\u0440\u0443\u043f\u043f\u0430 \u043a\u0440\u043e\u0432\u0438",
+       "status": "Official"
+      },
+      {
+       "id": "e7806421-1b98-4b7c-9a96-cdf70688af07",
+       "title": "\u0413\u0440\u0443\u043f\u043f\u0430 \u043a\u0440\u043e\u0432\u0438",
+       "status": "Pseudo-Release"
+      },
+      {
+       "id": "409764bc-0541-41e9-b121-32bf8492e372",
+       "title": "\u0413\u0440\u0443\u043f\u043f\u0430 \u043a\u0440\u043e\u0432\u0438",
+       "status": "Pseudo-Release"
+      },
+      {
+       "id": "a6a5be47-4032-41c7-be7f-0454551a508f",
+       "title": "\u0413\u0440\u0443\u043f\u043f\u0430 \u043a\u0440\u043e\u0432\u0438",
+       "status": "Official"
+      },
+      {
+       "id": "6220387a-deed-4ac6-8160-01695304fc0b",
+       "title": "\u0413\u0440\u0443\u043f\u043f\u0430 \u043a\u0440\u043e\u0432\u0438",
+       "status": "Official"
+      },
+      {
+       "id": "95b7461d-36ba-45c4-9a14-750cb55e0038",
+       "title": "\u0413\u0440\u0443\u043f\u043f\u0430 \u043a\u0440\u043e\u0432\u0438",
+       "status": "Official"
+      },
+      {
+       "id": "fefc0791-049a-45b7-8bd1-7bb2014c9e91",
+       "title": "\u0413\u0440\u0443\u043f\u043f\u0430 \u043a\u0440\u043e\u0432\u0438",
+       "status": "Official"
+      },
+      {
+       "id": "1a6c60ae-bc71-3a40-9245-5256368d852a",
+       "title": "\u0413\u0440\u0443\u043f\u043f\u0430 \u043a\u0440\u043e\u0432\u0438",
+       "status": "Official"
+      },
+      {
+       "id": "ef532e2d-aa14-49da-827e-471de3f05fb0",
+       "title": "\u0413\u0440\u0443\u043f\u043f\u0430 \u043a\u0440\u043e\u0432\u0438",
+       "status": "Official"
+      },
+      {
+       "id": "5a5e438b-c280-3eb2-aa66-6290cdf7b17b",
+       "title": "\u0413\u0440\u0443\u043f\u043f\u0430 \u043a\u0440\u043e\u0432\u0438",
+       "status": "Official"
+      },
+      {
+       "id": "f68e2aed-434e-321a-8fbf-310b6cbf42ba",
+       "title": "Groupa Kroovy (Blood Type)",
+       "status": "Official"
+      },
+      {
+       "id": "0a5e82ef-7c22-4bf4-a8a7-64c010b06b86",
+       "title": "\u0413\u0440\u0443\u043f\u043f\u0430 \u043a\u0440\u043e\u0432\u0438",
+       "status": "Official"
+      },
+      {
+       "id": "a0c386e8-0274-4867-aea2-3d25b0698003",
+       "title": "Gruppa krovi",
+       "status": "Pseudo-Release"
+      },
+      {
+       "id": "3c2ba666-6b04-366e-9a85-1e2961efdac5",
+       "title": "Gruppa krovi",
+       "status": "Pseudo-Release"
+      },
+      {
+       "id": "0c4c9994-d3b2-3eb8-9f33-b2c1eb957864",
+       "title": "\u0413\u0440\u0443\u043f\u043f\u0430 \u043a\u0440\u043e\u0432\u0438",
+       "status": "Official"
+      },
+      {
+       "id": "b7f17d89-38b2-4c6d-a1ec-511c9bded037",
+       "title": "Groupa Kroovy (Blood Type)",
+       "status": "Official"
+      },
+      {
+       "id": "004524ca-7fca-4783-9ed5-a74a7e6525a9",
+       "title": "\u0413\u0440\u0443\u043f\u043f\u0430 \u043a\u0440\u043e\u0432\u0438",
+       "status": "Official"
+      }
+     ]
+    }
+   ]
+  },
+  "https://musicbrainz.org/ws/2/release?fmt=json&limit=100&query=rgid%3A(7ff1eff0-a8c8-37dc-807e-eea5a9e173b5)%20AND%20status%3Aofficial%20AND%20format%3A%22Digital%20Media%22": {
+   "created": "2026-10-22T18:53:20.538Z",
+   "offset": 0,
+   "releases": [
+    {
+     "id": "95b7461d-36ba-45c4-9a14-750cb55e0038",
+     "score": 100,
+     "title": "\u0413\u0440\u0443\u043f\u043f\u0430 \u043a\u0440\u043e\u0432\u0438",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "\u041a\u0438\u043d\u043e",
+       "artist": {
+        "id": "064db6e8-fdfb-4acb-a327-fc2de75b37de",
+        "name": "\u041a\u0438\u043d\u043e",
+        "sort-name": "Kino",
+        "disambiguation": "Soviet rock band active in 1980s"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "7ff1eff0-a8c8-37dc-807e-eea5a9e173b5",
+      "title": "\u0413\u0440\u0443\u043f\u043f\u0430 \u043a\u0440\u043e\u0432\u0438",
+      "primary-type": "Album"
+     },
+     "date": "2018-05-16",
+     "barcode": "5056132070881",
+     "track-count": 11,
+     "media": [
+      {
+       "id": "58a3fd16-d6a5-3e55-90db-623a0ab34d51",
+       "format": "Digital Media",
+       "track-count": 11
+      }
+     ]
+    },
+    {
+     "id": "6220387a-deed-4ac6-8160-01695304fc0b",
+     "score": 100,
+     "title": "\u0413\u0440\u0443\u043f\u043f\u0430 \u043a\u0440\u043e\u0432\u0438",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "\u041a\u0438\u043d\u043e",
+       "artist": {
+        "id": "064db6e8-fdfb-4acb-a327-fc2de75b37de",
+        "name": "\u041a\u0438\u043d\u043e",
+        "sort-name": "Kino",
+        "disambiguation": "Soviet rock band active in 1980s"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "7ff1eff0-a8c8-37dc-807e-eea5a9e173b5",
+      "title": "\u0413\u0440\u0443\u043f\u043f\u0430 \u043a\u0440\u043e\u0432\u0438",
+      "primary-type": "Album"
+     },
+     "date": "2020-02-02",
+     "barcode": "",
+     "track-count": 11,
+     "media": [
+      {
+       "id": "5b351090-88a5-3b8c-8e1d-bb046be6a48f",
+       "format": "Digital Media",
+       "track-count": 11
+      }
+     ]
+    }
+   ]
+  },
+  "https://musicbrainz.org/ws/2/release-group?fmt=json&limit=40&query=releasegroup%3A%22%D0%B2%D0%B5%D0%BD%D0%B4%D0%B5%D1%82%D1%82%D0%B0%22%20AND%20artist%3A%22zemfira%22%20AND%20status%3Aofficial": {
+   "created": "2026-10-22T18:56:34.375Z",
+   "offset": 0,
+   "release-groups": []
+  },
+  "https://musicbrainz.org/ws/2/release-group?fmt=json&limit=40&query=releasegroup%3A(%D0%B2%D0%B5%D0%BD%D0%B4%D0%B5%D1%82%D1%82%D0%B0)%20AND%20artist%3A(zemfira)%20AND%20status%3Aofficial": {
+   "created": "2026-10-22T18:56:34.897Z",
+   "offset": 0,
+   "release-groups": []
+  },
+  "https://musicbrainz.org/ws/2/artist?fmt=json&limit=5&query=alias%3A%22zemfira%22%20OR%20artist%3A%22zemfira%22%20OR%20sortname%3A%22zemfira%22": {
+   "created": "2026-10-22T18:56:27.288Z",
+   "offset": 0,
+   "artists": [
+    {
+     "id": "cec59910-2d12-46ec-8e39-85ca06acb0ed",
+     "score": 100,
+     "name": "\u0417\u0435\u043c\u0444\u0438\u0440\u0430",
+     "sort-name": "Zemfira",
+     "aliases": [
+      {
+       "sort-name": "Ramazanova, Zemfira Talgatovna",
+       "name": "Zemfira Talgatovna Ramazanova"
+      },
+      {
+       "sort-name": "Ramazanova, Zemfira Talgatovna",
+       "name": "\u0417\u0435\u043c\u0444\u0438\u0440\u0430 \u0422\u0430\u043b\u0433\u0430\u0442\u043e\u0432\u043d\u0430 \u0420\u0430\u043c\u0430\u0437\u0430\u043d\u043e\u0432\u0430"
+      },
+      {
+       "sort-name": "Zemfira",
+       "name": "Zemfira"
+      },
+      {
+       "sort-name": "Z\u0435\u043c\u0444\u0438\u0440\u0430",
+       "name": "Z\u0435\u043c\u0444\u0438\u0440\u0430"
+      },
+      {
+       "sort-name": "\u0417\u0435\u043c\u0444\u0438\u0440\u0430",
+       "name": "\u0417\u0435\u043c\u0444\u0438\u0440\u0430"
+      },
+      {
+       "sort-name": "Zemphira",
+       "name": "Zemphira"
+      }
+     ]
+    },
+    {
+     "id": "7f5c2724-07d4-4bb8-856c-5e2928f77d9e",
+     "score": 74,
+     "name": "\u0417\u0435\u043c\u0444\u0438\u0440\u0430 \u0420\u0430\u043c\u0430\u0437\u0430\u043d\u043e\u0432\u0430",
+     "sort-name": "Ramazanova, Zemfira",
+     "aliases": [
+      {
+       "sort-name": "Ramazanova, Zemfira",
+       "name": "Zemfira Ramazanova"
+      },
+      {
+       "sort-name": "\u0420\u0430\u043c\u0430\u0437\u0430\u043d\u043e\u0432\u0430, \u0417\u0435\u043c\u0444\u0438\u0440\u0430 \u0422\u0430\u043b\u0433\u0430\u0442\u043e\u0432\u043d\u0430",
+       "name": "\u0417\u0435\u043c\u0444\u0438\u0440\u0430 \u0422\u0430\u043b\u0433\u0430\u0442\u043e\u0432\u043d\u0430 \u0420\u0430\u043c\u0430\u0437\u0430\u043d\u043e\u0432\u0430"
+      },
+      {
+       "sort-name": "\u0420\u0430\u043c\u0430\u0437\u0430\u043d\u043e\u0432\u0430, \u0417\u0435\u043c\u0444\u0438\u0440\u0430",
+       "name": "\u0417\u0435\u043c\u0444\u0438\u0440\u0430 \u0420\u0430\u043c\u0430\u0437\u0430\u043d\u043e\u0432\u0430"
+      }
+     ]
+    },
+    {
+     "id": "3c4e5804-048e-4a70-a633-cfc9fbe69ecc",
+     "score": 53,
+     "name": "\u0417\u0435\u043c\u0444\u0438\u0440\u0430 \u043e\u0442 \u041b\u0443\u043a\u0438",
+     "sort-name": "Zemfira ot Luki"
+    }
+   ]
+  },
+  "https://musicbrainz.org/ws/2/release-group?fmt=json&limit=40&query=arid%3A(cec59910-2d12-46ec-8e39-85ca06acb0ed)%20AND%20releasegroup%3A(%D0%B2%D0%B5%D0%BD%D0%B4%D0%B5%D1%82%D1%82%D0%B0)%20AND%20status%3Aofficial": {
+   "created": "2026-10-22T18:56:36.651Z",
+   "offset": 0,
+   "release-groups": [
+    {
+     "id": "3d23a09b-2447-3425-977c-511d4da6ac67",
+     "score": 100,
+     "title": "\u0412\u0435\u043d\u0434\u0435\u0442\u0442\u0430",
+     "first-release-date": "2005-03-01",
+     "primary-type": "Album",
+     "artist-credit": [
+      {
+       "name": "\u0417\u0435\u043c\u0444\u0438\u0440\u0430",
+       "artist": {
+        "id": "cec59910-2d12-46ec-8e39-85ca06acb0ed",
+        "name": "\u0417\u0435\u043c\u0444\u0438\u0440\u0430",
+        "sort-name": "Zemfira",
+        "aliases": [
+         {
+          "sort-name": "Ramazanova, Zemfira Talgatovna",
+          "name": "Zemfira Talgatovna Ramazanova"
+         },
+         {
+          "sort-name": "Ramazanova, Zemfira Talgatovna",
+          "name": "\u0417\u0435\u043c\u0444\u0438\u0440\u0430 \u0422\u0430\u043b\u0433\u0430\u0442\u043e\u0432\u043d\u0430 \u0420\u0430\u043c\u0430\u0437\u0430\u043d\u043e\u0432\u0430"
+         },
+         {
+          "sort-name": "Zemfira",
+          "name": "Zemfira"
+         },
+         {
+          "sort-name": "Z\u0435\u043c\u0444\u0438\u0440\u0430",
+          "name": "Z\u0435\u043c\u0444\u0438\u0440\u0430"
+         },
+         {
+          "sort-name": "\u0417\u0435\u043c\u0444\u0438\u0440\u0430",
+          "name": "\u0417\u0435\u043c\u0444\u0438\u0440\u0430"
+         },
+         {
+          "sort-name": "Zemphira",
+          "name": "Zemphira"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "d8b65d46-932f-4b6c-b284-eb0e86b42af2",
+       "title": "\u0412\u0435\u043d\u0434\u0435\u0442\u0442\u0430",
+       "status": "Official"
+      },
+      {
+       "id": "e3fa68a7-454e-4a09-9ba8-f3e361293874",
+       "title": "\u0412\u0435\u043d\u0434\u0435\u0442\u0442\u0430",
+       "status": "Official"
+      },
+      {
+       "id": "ea2064cb-402b-4f01-8096-c9aa48bae9fd",
+       "title": "\u0412\u0435\u043d\u0434\u0435\u0442\u0442\u0430",
+       "status": "Official"
+      },
+      {
+       "id": "df039d34-92ff-4a5e-a3af-58b7cfe0d0c3",
+       "title": "Vendetta",
+       "status": "Pseudo-Release"
+      },
+      {
+       "id": "ef336b9e-0295-4407-b9dd-e77000c9b5c2",
+       "title": "\u0412\u0435\u043d\u0434\u0435\u0442\u0442\u0430",
+       "status": "Official"
+      },
+      {
+       "id": "6cf8a4db-0122-4a7b-8d63-3e9bad6918b0",
+       "title": "\u0412\u0435\u043d\u0434\u0435\u0442\u0442\u0430",
+       "status": "Official"
+      },
+      {
+       "id": "95ef46de-a186-4d59-ad5d-f62f3202852f",
+       "title": "\u0412\u0435\u043d\u0434\u0435\u0442\u0442\u0430",
+       "status": "Official"
+      },
+      {
+       "id": "955228e0-985c-40a9-863b-bb0a12d644d2",
+       "title": "\u0412\u0435\u043d\u0434\u0435\u0442\u0442\u0430",
+       "status": "Official"
+      }
+     ]
+    },
+    {
+     "id": "fd61d97c-0fb0-451f-99ee-5dbbd824bb2c",
+     "score": 91,
+     "title": "\u0421\u043f\u0430\u0441\u0438\u0431\u043e, \u0412\u0435\u043d\u0434\u0435\u0442\u0442\u0430",
+     "first-release-date": "2007-11-22",
+     "primary-type": "Album",
+     "secondary-types": [
+      "Compilation"
+     ],
+     "artist-credit": [
+      {
+       "name": "\u0417\u0435\u043c\u0444\u0438\u0440\u0430",
+       "artist": {
+        "id": "cec59910-2d12-46ec-8e39-85ca06acb0ed",
+        "name": "\u0417\u0435\u043c\u0444\u0438\u0440\u0430",
+        "sort-name": "Zemfira",
+        "aliases": [
+         {
+          "sort-name": "Ramazanova, Zemfira Talgatovna",
+          "name": "Zemfira Talgatovna Ramazanova"
+         },
+         {
+          "sort-name": "Ramazanova, Zemfira Talgatovna",
+          "name": "\u0417\u0435\u043c\u0444\u0438\u0440\u0430 \u0422\u0430\u043b\u0433\u0430\u0442\u043e\u0432\u043d\u0430 \u0420\u0430\u043c\u0430\u0437\u0430\u043d\u043e\u0432\u0430"
+         },
+         {
+          "sort-name": "Zemfira",
+          "name": "Zemfira"
+         },
+         {
+          "sort-name": "Z\u0435\u043c\u0444\u0438\u0440\u0430",
+          "name": "Z\u0435\u043c\u0444\u0438\u0440\u0430"
+         },
+         {
+          "sort-name": "\u0417\u0435\u043c\u0444\u0438\u0440\u0430",
+          "name": "\u0417\u0435\u043c\u0444\u0438\u0440\u0430"
+         },
+         {
+          "sort-name": "Zemphira",
+          "name": "Zemphira"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "b2697b5c-742e-4ae5-be71-ca9eb03950e7",
+       "title": "\u0421\u043f\u0430\u0441\u0438\u0431\u043e, \u0412\u0435\u043d\u0434\u0435\u0442\u0442\u0430",
+       "status": "Official"
+      }
+     ]
+    }
+   ]
+  },
+  "https://musicbrainz.org/ws/2/recording?fmt=json&limit=40&query=release%3A%22%D0%B2%D0%B5%D0%BD%D0%B4%D0%B5%D1%82%D1%82%D0%B0%22%20AND%20artist%3A%22zemfira%22%20AND%20status%3Aofficial": {
+   "created": "2026-10-22T18:56:37.750Z",
+   "offset": 0,
+   "recordings": []
+  },
+  "https://musicbrainz.org/ws/2/release?fmt=json&limit=100&query=rgid%3A(3d23a09b-2447-3425-977c-511d4da6ac67)%20AND%20status%3Aofficial%20AND%20format%3A%22Digital%20Media%22": {
+   "created": "2026-10-22T18:56:39.227Z",
+   "offset": 0,
+   "releases": [
+    {
+     "id": "d8b65d46-932f-4b6c-b284-eb0e86b42af2",
+     "score": 100,
+     "title": "\u0412\u0435\u043d\u0434\u0435\u0442\u0442\u0430",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "\u0417\u0435\u043c\u0444\u0438\u0440\u0430",
+       "artist": {
+        "id": "cec59910-2d12-46ec-8e39-85ca06acb0ed",
+        "name": "\u0417\u0435\u043c\u0444\u0438\u0440\u0430",
+        "sort-name": "Zemfira"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "3d23a09b-2447-3425-977c-511d4da6ac67",
+      "title": "\u0412\u0435\u043d\u0434\u0435\u0442\u0442\u0430",
+      "primary-type": "Album"
+     },
+     "date": "",
+     "barcode": "3610154402932",
+     "track-count": 15,
+     "media": [
+      {
+       "id": "9e5e58d0-f308-4944-9960-1dcb57fb32fb",
+       "format": "Digital Media",
+       "track-count": 15
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "covers": {
+  "https://coverartarchive.org/release/fa7b4db0-984b-49bc-93b8-78642481abbb/front": 307,
+  "https://coverartarchive.org/release/95b7461d-36ba-45c4-9a14-750cb55e0038/front": 307,
+  "https://coverartarchive.org/release/d8b65d46-932f-4b6c-b284-eb0e86b42af2/front": 307
+ }
+}

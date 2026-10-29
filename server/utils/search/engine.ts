@@ -12,14 +12,14 @@
 // the repository; the engine has no HTTP of its own.
 
 import type { MusicBrainzRepository } from "../musicbrainzRepository";
-import { luceneFuzzyTerms, luceneQuote, luceneTerms } from "../musicbrainzRepository";
+import { luceneAnyTerms, luceneFuzzyTerms, luceneQuote, luceneTerms } from "../musicbrainzRepository";
 import { barcodeForms, parseIsrc, parseUpc, sameBarcode } from "./codes";
 import type { SearchConfig } from "./config";
 import type { CoverArtChecker } from "./coverArt";
 import { detectIntent, hasDeluxeKeyword, hasRemasterKeyword, releaseQualifies, sortableDate, workPasses, type QueryIntent } from "./filters";
 import { normalizeText, type NormalizedText } from "./normalize";
 import { latinize, needsLatinForm, phoneticKey, romajiToKanaVariants } from "./script";
-import { compareNormalized, exactness, levenshteinRatio, nameSimilarity, titleScore, type Comparison } from "./similarity";
+import { alignWords, compareNormalized, exactness, levenshteinRatio, nameSimilarity, titleScore, type Comparison } from "./similarity";
 import type {
     ArtistSearch, MatchFlag, RawArtistCredit, RawRecording, RawRelease, RawReleaseGroup, RecordingSearch,
     ReleaseGroupSearch, ReleaseSearch, SearchResult
@@ -59,7 +59,12 @@ interface Interpretation {
      * A reading of the same words in another script (romaji -> kana). Never searched in the first wave, only by
      * its own angle and in scoring, so an ordinary Latin search costs no extra request.
      */
-    variant?: boolean
+    variant?: boolean,
+    /**
+     * Free text read as artist and title in one string, in any order ("lovejoy one trick"): `title` holds the
+     * whole text and the split is found per candidate, against its own credit (see `jointScore`).
+     */
+    joint?: boolean
 }
 
 // breaks the tie between editions of one work in favour of the one the query named; far below any real score gap
@@ -77,7 +82,7 @@ function buildInterpretations(input: SearchInput, config: SearchConfig): Interpr
     for (const interpretation of base) {
         const title = interpretation.title;
         // romaji typed for a title that MusicBrainz holds in kana ("Yume Utsutsu" -> ゆめうつつ)
-        if (!title || title.cjk.length > 0 || needsLatinForm(title.original)) continue;
+        if (interpretation.joint || !title || title.cjk.length > 0 || needsLatinForm(title.original)) continue;
         for (const kana of romajiToKanaVariants(title.cleaned).slice(0, 2)) {
             if (Array.from(kana).length < 2) continue;
             const normalized = emptyToNull(normalizeText(kana, config));
@@ -112,10 +117,13 @@ function baseInterpretations(input: SearchInput, config: SearchConfig): Interpre
 
     const whole = norm(q);
     if (!whole) return [];
-    return [
+    const readings: Interpretation[] = [
         { title: whole, artist: null, factor: 1, flags: [] },
         { title: null, artist: whole, factor: config.artistOnlyFactor, flags: ["artist_only"] }
     ];
+    // two words or more can be an artist and a title together
+    if (whole.distinctive.length >= 2 && whole.cjk.length === 0) readings.push({ title: whole, artist: null, factor: config.jointFactor, flags: ["artist_in_query"], joint: true });
+    return readings;
 }
 
 /** The most an artist-catalogue recall asks for: MusicBrainz' own maximum page. */
@@ -177,6 +185,9 @@ function scoringTitle(candidate: Candidate): string {
 
 const MAX_ALT_TITLES = 12;
 
+// where an album title breaks into clauses: a comma, semicolon or colon, or a spaced dash
+const CLAUSE_SPLIT = /\s*[,;:]\s+|\s+[-–—]\s+/;
+
 function distinctTitles(main: string, others: Array<string | undefined>): string[] {
     const seen = new Set<string>([main]);
     for (const other of others) {
@@ -230,8 +241,24 @@ class Pipeline {
         this.intent = detectIntent([input.q, input.title, input.artist], deps.config);
     }
 
+    /** Only `q` was given: no field says what is title and what is artist. */
+    private get freeText(): boolean {
+        return Boolean(this.input.q?.trim()) && !this.input.title?.trim() && !this.input.artist?.trim();
+    }
+
+    private configMemo: SearchConfig | null = null;
+
     private get config(): SearchConfig {
-        return this.deps.config;
+        this.configMemo ??= this.freeText ? { ...this.deps.config, typoCreditSlope: this.deps.config.freeTextTypoCreditSlope } : this.deps.config;
+        return this.configMemo;
+    }
+
+    /** The scoring config of the joint reading: typos and skipped title words are cheaper there. */
+    private jointConfigMemo: SearchConfig | null = null;
+
+    private get jointConfig(): SearchConfig {
+        this.jointConfigMemo ??= { ...this.config, tokenTypoRatio: this.config.jointTypoRatio, extraTokenPenalty: this.config.jointExtraTokenPenalty };
+        return this.jointConfigMemo;
     }
 
     private norm(text: string): NormalizedText {
@@ -247,9 +274,9 @@ class Pipeline {
         this.deps.log?.(`[search:${this.kind}] ${message}`);
     }
 
-    private async request<T>(path: string, query: string, limit = limitTo(this.config)): Promise<T | null> {
+    private async request<T>(path: string, query: string, limit = limitTo(this.config), offset?: number): Promise<T | null> {
         try {
-            return await this.deps.repo.request<T>(path, { query, limit });
+            return await this.deps.repo.request<T>(path, { query, limit, offset });
         } catch (error) {
             // one failed angle must not sink the others; the circuit breaker / queue errors surface when
             // *nothing* could be retrieved (see `run`)
@@ -330,24 +357,24 @@ class Pipeline {
         if (existing.credits.length === 0) existing.credits = candidate.credits;
     }
 
-    /** One search angle over every interpretation. */
-    private async angle(pool: Map<string, Candidate>, source: string, build: (interpretation: Interpretation) => string | null, variants = false, limit = limitTo(this.config)): Promise<number> {
+    /** One search angle over the interpretations of one kind: the plain readings, the other-script variants or the joint one. */
+    private async angle(pool: Map<string, Candidate>, source: string, build: (interpretation: Interpretation) => string | null, kind: "base" | "variant" | "joint" = "base", limit = limitTo(this.config), offset?: number): Promise<number> {
         const seen = new Set<string>();
         let found = 0;
         for (const interpretation of this.interpretations) {
-            if (Boolean(interpretation.variant) !== variants) continue;
+            if ((interpretation.joint ? "joint" : interpretation.variant ? "variant" : "base") !== kind) continue;
             const query = build(interpretation);
             if (!query || seen.has(query)) continue;
             seen.add(query);
 
             if (this.kind === "album" && source !== "recording-release") {
-                const response = await this.request<ReleaseGroupSearch>("/release-group", query, limit);
+                const response = await this.request<ReleaseGroupSearch>("/release-group", query, limit, offset);
                 for (const group of response?.["release-groups"] ?? []) {
                     this.add(pool, this.candidateFromGroup(group, source));
                     found++;
                 }
             } else {
-                const response = await this.request<RecordingSearch>("/recording", query, limit);
+                const response = await this.request<RecordingSearch>("/recording", query, limit, offset);
                 for (const recording of response?.recordings ?? []) {
                     if (this.kind === "track") {
                         this.add(pool, this.candidateFromRecording(recording, source));
@@ -409,6 +436,21 @@ class Pipeline {
         // wave 1: the quoted phrase, then the same words unquoted
         await this.angle(pool, "phrase", (i) => this.join([this.fieldClause(entity, i.title, "phrase"), this.fieldClause("artist", i.artist, "phrase")], official));
         await this.angle(pool, "terms", (i) => this.join([this.fieldClause(entity, i.title, "terms"), this.fieldClause("artist", i.artist, "terms")], official));
+        await this.deepen(pool, entity, official);
+
+        // free text that may be an artist and a title in one string: the words are not all in either field, so
+        // neither wave 1 search can find it. Any word in the title and any in the credit, best-matching first...
+        if (this.hasJoint() && !this.convincing(pool)) {
+            await this.angle(pool, "joint-terms", (i) => (i.title ? this.jointTermsQuery(i.title, entity, official) : null), "joint");
+        }
+        // ...and when that is not enough (a typo in every word, a split word), the catalogue of the artist named in it
+        if (this.hasJoint() && !this.convincing(pool)) {
+            const ids = await this.jointArtistIds();
+            if (ids.length > 0) {
+                const arid = `arid:(${ids.join(" OR ")})`;
+                await this.angle(pool, "joint-catalogue", () => this.join([arid], official), "joint", CATALOGUE_LIMIT);
+            }
+        }
 
         // wave 2, only when wave 1 was not convincing: other angles (alias/artist, recordings on a release of that name)
         if (!this.convincing(pool)) {
@@ -433,7 +475,7 @@ class Pipeline {
         }
         if (!this.convincing(pool)) {
             await this.angle(pool, "title-fuzzy", (i) => (i.title ? this.join([this.aliasClause(i.title, "fuzzy", entity), this.fieldClause("artist", i.artist, "terms")], official) : null));
-            await this.angle(pool, "title-kana", (i) => (i.title ? this.join([this.fieldClause(entity, i.title, "phrase"), this.fieldClause("artist", i.artist, "phrase")], official) : null), true);
+            await this.angle(pool, "title-kana", (i) => (i.title ? this.join([this.fieldClause(entity, i.title, "phrase"), this.fieldClause("artist", i.artist, "phrase")], official) : null), "variant");
         }
 
         // wave 4: the artist is known (a Latin spelling finds the artist through its aliases) but no title matched:
@@ -443,8 +485,75 @@ class Pipeline {
             const ids = await this.artistIds();
             if (ids.length > 0) {
                 const arid = `arid:(${ids.join(" OR ")})`;
-                await this.angle(pool, "artist-catalogue", (i) => (i.artist && i.title ? this.join([arid], official) : null), false, CATALOGUE_LIMIT);
+                await this.angle(pool, "artist-catalogue", (i) => (i.artist && i.title ? this.join([arid], official) : null), "base", CATALOGUE_LIMIT);
             }
+        }
+    }
+
+    private hasJoint(): boolean {
+        return this.interpretations.some((interpretation) => interpretation.joint);
+    }
+
+    private jointTermsQuery(norm: NormalizedText, entity: string, official: string): string | null {
+        const text = norm.distinctive.join(" ");
+        if (!text) return null;
+        const any = luceneAnyTerms(text);
+        return `${entity}:(${any}) AND artist:(${any}) AND ${official}`;
+    }
+
+    /** Set when a bare title turned out to be shared by dozens of works, see `deepen`. */
+    private crowded = false;
+
+    private jointArtistsMemo: Promise<string[]> | null = null;
+
+    private jointArtistIds(): Promise<string[]> {
+        this.jointArtistsMemo ??= this.lookupJointArtistIds();
+        return this.jointArtistsMemo;
+    }
+
+    /** Artists whose whole name is spelled somewhere in the free text, the longest names first. */
+    private async lookupJointArtistIds(): Promise<string[]> {
+        const joint = this.interpretations.find((interpretation) => interpretation.joint)?.title;
+        if (!joint) return [];
+        const any = luceneAnyTerms(joint.distinctive.join(" "));
+        const response = await this.request<ArtistSearch>("/artist", `artist:(${any}) OR alias:(${any})`, 25);
+
+        const found: Array<{ id: string, words: number, score: number }> = [];
+        for (const hit of response?.artists ?? []) {
+            let words = 0;
+            for (const name of [hit.name, hit["sort-name"], ...(hit.aliases ?? []).map((alias) => alias.name)]) {
+                if (!name) continue;
+                const normalized = this.norm(name);
+                if (normalized.distinctive.length === 0) continue;
+                const alignment = alignWords(normalized.distinctive, joint.distinctive, this.jointConfig);
+                if (alignment.strength / normalized.distinctive.length >= this.config.artistFloor + 0.25) words = Math.max(words, normalized.distinctive.length);
+            }
+            if (words > 0) found.push({ id: hit.id, words, score: hit.score ?? 0 });
+        }
+        found.sort((a, b) => b.words - a.words || b.score - a.score);
+        return found.slice(0, 4).map((artist) => artist.id);
+    }
+
+    /**
+     * A bare title shared by dozens of works ("Chimera": 148 official release-groups) fills the first page with
+     * exact matches (half of it or more once compilations and the like are gone), and which of them MusicBrainz lists first is arbitrary - so the one asked for may not be
+     * there at all. Only when that page is saturated, the next 100 are fetched too.
+     */
+    private async deepen(pool: Map<string, Candidate>, entity: string, official: string): Promise<void> {
+        // a request that names the artist is narrowed by it; and a text with no title in it has nothing to page through
+        if (!this.interpretations.some((interpretation) => interpretation.title && !interpretation.artist)) return;
+        const pageSize = limitTo(this.config);
+        let exact = 0;
+        for (const candidate of pool.values()) {
+            const evaluated = this.evaluate(candidate);
+            if (evaluated && evaluated.relevance >= 0.99) exact++;
+        }
+        if (exact < pageSize / 2) return;
+        this.crowded = true;
+        // two more pages at most: past 240 works named alike nothing separates them anyway
+        for (let page = 0; page < 2; page++) {
+            const found = await this.angle(pool, "phrase-deep", (i) => (i.title && !i.artist ? this.join([this.fieldClause(entity, i.title, "phrase")], official) : null), "base", 100, pageSize + page * 100);
+            if (found < 100) return;
         }
     }
 
@@ -532,6 +641,12 @@ class Pipeline {
         let best: Evaluated | null = null;
 
         for (const interpretation of this.interpretations) {
+            if (interpretation.joint) {
+                const joint = this.jointScore(interpretation, forms, names);
+                if (joint && (!best || joint.relevance > best.relevance)) best = { candidate, ...joint };
+                continue;
+            }
+
             const matched = interpretation.title ? this.bestTitle(interpretation.title, forms) : null;
             const title = matched?.score ?? null;
             const artist = interpretation.artist
@@ -566,7 +681,7 @@ class Pipeline {
 
             const flags: MatchFlag[] = [...interpretation.flags];
             // found through another script: a transliterated title, a romanization, romaji read as kana
-            if (matched && matched.via !== "native") {
+            if (matched && (matched.via === "alt" || matched.via === "roman")) {
                 relevance *= this.config.transliterationFactor;
                 if (!flags.includes("transliterated")) flags.push("transliterated");
             } else if (interpretation.variant) {
@@ -596,9 +711,45 @@ class Pipeline {
         if (!best) return null;
 
         // corroboration and code bonuses sit on top of the base relevance
-        const extraSources = Math.min((candidate.sources.size - 1) * this.config.corroborationBonus, this.config.corroborationBonusCap);
+        // (not among dozens of exact matches: which of them several searches happened to list is noise)
+        const extraSources = this.crowded ? 0 : Math.min((candidate.sources.size - 1) * this.config.corroborationBonus, this.config.corroborationBonusCap);
         best.relevance += Math.max(0, extraSources);
         if (best.flags.includes("upc_match") || best.flags.includes("isrc_match")) best.relevance += this.config.codeMatchBonus;
+        return best;
+    }
+
+    /**
+     * Free text as artist + title in one string. The candidate's own credit says which words are the artist (all
+     * of its name must be in the text, in any position); what is left is compared with the title, which may have
+     * words the text skipped ("lovejoy one trick" for One Simple Trick). Nothing left, no joint reading: that is
+     * the artist-only one.
+     */
+    private jointScore(interpretation: Interpretation, forms: TitleForm[], names: NormalizedText[]): Omit<Evaluated, "candidate"> | null {
+        const query = interpretation.title!;
+        const config = this.jointConfig;
+        let best: Omit<Evaluated, "candidate"> | null = null;
+
+        for (const name of names) {
+            if (name.distinctive.length === 0) continue;
+            const alignment = alignWords(name.distinctive, query.distinctive, config);
+            const artist = Math.min(1, alignment.strength / name.distinctive.length);
+            if (artist < config.artistFloor + 0.25 || alignment.extra.length === 0) continue;
+
+            const text = alignment.extra.join(" ");
+            const rest: NormalizedText = { original: text, cleaned: text, text, words: alignment.extra, distinctive: alignment.extra, cjk: "" };
+            const matched = this.bestTitle(rest, forms, config);
+
+            const weightSum = config.titleWeight + config.artistWeight;
+            let relevance = ((matched.score.score * config.titleWeight + artist * config.artistWeight) / weightSum) * interpretation.factor;
+            const flags: MatchFlag[] = [...interpretation.flags];
+            if (matched.via === "alt" || matched.via === "roman") {
+                relevance *= config.transliterationFactor;
+                flags.push("transliterated");
+            }
+            if (!best || relevance > best.relevance) {
+                best = { title: matched.score.score, artist, exactness: exactness(rest, matched.norm), relevance, flags };
+            }
+        }
         return best;
     }
 
@@ -618,15 +769,33 @@ class Pipeline {
         if (needsLatinForm(candidate.title)) {
             forms.push({ norm: this.norm(withLabel(latinize(candidate.title))), via: "roman", key: phoneticKey(candidate.title) });
         }
+        // "A season in the dark, a bottomless trench": either half names the album. Albums only - a track's
+        // "(live ...)" and "- remix" are what tells versions apart, and must keep costing - and only for free
+        // text: asked for "First Love" by title and artist, "First Love - From THE FIRST TAKE" is another work.
+        if (candidate.kind === "album" && this.freeText) {
+            const clauses = candidate.title.split(CLAUSE_SPLIT).map((clause) => clause.trim()).filter(Boolean);
+            if (clauses.length > 1) {
+                for (const clause of clauses) {
+                    const norm = this.norm(clause);
+                    if (norm.distinctive.length >= 2 || Array.from(norm.text).length >= 6) forms.push({ norm, via: "clause", key: null });
+                }
+            }
+        }
         this.formsCache.set(candidate, { signature, forms });
         return forms;
     }
 
     /** The best score of the requested title against any form of the candidate's; a tie goes to the title itself. */
-    private bestTitle(requested: NormalizedText, forms: TitleForm[]): { score: { score: number, comparison: Comparison }, via: TitleForm["via"], norm: NormalizedText } {
+    private bestTitle(requested: NormalizedText, forms: TitleForm[], config: SearchConfig = this.config): { score: { score: number, comparison: Comparison }, via: TitleForm["via"], norm: NormalizedText } {
         let best: { score: { score: number, comparison: Comparison }, via: TitleForm["via"], norm: NormalizedText } | null = null;
         for (const form of forms) {
-            const score = titleScore(requested, form.norm, this.config);
+            let score = titleScore(requested, form.norm, config);
+            // half a title is a good match, not a perfect one: the whole title still outranks it
+            if (form.via === "clause") {
+                // three words or more that make up a clause are nearly the title; one or two (a name?) are a weaker hint
+                const factor = requested.words.length >= 3 ? config.clauseLongFactor : config.clauseFactor;
+                score = { score: score.score * factor, comparison: score.comparison };
+            }
             if (!best || score.score > best.score.score + 1e-9) best = { score, via: form.via, norm: form.norm };
         }
 
@@ -788,6 +957,14 @@ class Pipeline {
         // albums need a network round trip per batch of release-groups, so only the most relevant are verified;
         // a recording's releases arrive with the search itself, so every plausible one is filtered for free
         const budget = this.kind === "album" ? this.config.maxVerified : this.config.candidatePool;
+        // when more works tie on an exact match than the budget covers (dozens of works named alike), the newest
+        // of them are the ones verified - the order MusicBrainz listed them in is arbitrary
+        const bareTitle = this.interpretations.some((interpretation) => interpretation.title && !interpretation.artist);
+        if (bareTitle && prescored.filter((entry) => entry.relevance >= 0.99 && entry.exactness >= 0.99 && !entry.flags.includes("artist_only")).length > budget) {
+            prescored.sort((a, b) => Math.round(b.relevance * SCORE_RESOLUTION) - Math.round(a.relevance * SCORE_RESOLUTION)
+                || (b.candidate.firstReleaseDate ?? "").localeCompare(a.candidate.firstReleaseDate ?? ""));
+        }
+
         const verified = await this.verify(prescored.slice(0, budget));
 
         // the HEAD requests are what costs for tracks: best first, and among equals the work with the most
@@ -835,7 +1012,8 @@ class Pipeline {
         }
 
         const results = [...evaluated.values()].map((entry) => this.toResult(entry));
-        results.sort((a, b) => compareResults(a, b, this.config.primaryTypeOrder));
+        const newest = newestByArtist(results);
+        results.sort((a, b) => compareResults(a, b, this.config.primaryTypeOrder, newest));
         return markBestResult(dedupe(results, this.kind, this.config), this.config);
     }
 
@@ -872,7 +1050,7 @@ class Pipeline {
 
 interface TitleForm {
     norm: NormalizedText,
-    via: "native" | "alt" | "roman",
+    via: "native" | "alt" | "roman" | "clause",
     /** `phoneticKey` of the native title, set on the romanized form only. */
     key: string | null
 }
@@ -912,7 +1090,7 @@ const SCORE_RESOLUTION = 1000;
  *
  * Scores are compared at 3 decimals so that float noise does not decide the order ahead of the later keys.
  */
-export function compareResults(a: SearchResult, b: SearchResult, order: string[] = ["album", "ep", "single", "broadcast", "other"]): number {
+export function compareResults(a: SearchResult, b: SearchResult, order: string[] = ["album", "ep", "single", "broadcast", "other"], newest?: Map<string, string>): number {
     if (a.hasFrontCover !== b.hasFrontCover) return a.hasFrontCover ? -1 : 1;
 
     const bucket = (value: number) => Math.round(value * SCORE_RESOLUTION);
@@ -926,10 +1104,35 @@ export function compareResults(a: SearchResult, b: SearchResult, order: string[]
     };
     if (typeRank(a) !== typeRank(b)) return typeRank(a) - typeRank(b);
 
+    // works that tie on everything above and are by different artists: the artist with the newest release first
+    // (a bare title shared by dozens of works - what is new is what is looked up). Per artist the earliest
+    // release still leads, so a reissue never beats the original.
+    if (newest) {
+        const newestA = newest.get(artistKey(a)) ?? "";
+        const newestB = newest.get(artistKey(b)) ?? "";
+        if (newestA !== newestB) return newestB.localeCompare(newestA);
+        if (artistKey(a) !== artistKey(b)) return artistKey(a).localeCompare(artistKey(b));
+    }
+
     const dateOrder = sortableDate(a.releaseDate).localeCompare(sortableDate(b.releaseDate));
     if (dateOrder !== 0) return dateOrder;
 
     return a.id.localeCompare(b.id);
+}
+
+function artistKey(result: SearchResult): string {
+    return result.artist.id ?? `name:${result.artist.name}`;
+}
+
+// a partial date sorts before the full ones of its period, as a string: "2027" < "2027-04-09"
+function newestByArtist(results: SearchResult[]): Map<string, string> {
+    const newest = new Map<string, string>();
+    for (const result of results) {
+        const date = result.releaseDate ?? "";
+        const key = artistKey(result);
+        if (date > (newest.get(key) ?? "")) newest.set(key, date);
+    }
+    return newest;
 }
 
 const LENGTH_TOLERANCE_MS = 3000;

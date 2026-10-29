@@ -44,7 +44,7 @@ export function wordsMatch(a: string, b: string, config: SearchConfig): number {
     if (HAS_DIGIT.test(a) || HAS_DIGIT.test(b)) return 0;
     if (Math.min(Array.from(a).length, Array.from(b).length) < config.typoMinLength) return 0;
     const ratio = levenshteinRatio(a, b);
-    return ratio >= config.tokenTypoRatio ? ratio : 0;
+    return ratio >= config.tokenTypoRatio ? 1 - config.typoCreditSlope * (1 - ratio) : 0;
 }
 
 export interface WordAlignment {
@@ -74,6 +74,30 @@ export function alignWords(requested: string[], candidate: string[], config: Sea
         usedR.add(pair.r);
         usedC.add(pair.c);
         strength += pair.strength;
+    }
+
+    // a word written as two ("bottom less" for "bottomless") or two written as one: only among what is left
+    const joinedStrength = (joined: string, other: string) => (joined === other ? 1 : wordsMatch(joined, other, config));
+    const splittable = (a: string, b: string) => a.length >= 2 && b.length >= 2 && !HAS_DIGIT.test(a + b) && a.length + b.length >= 5;
+    for (let r = 0; r + 1 < requested.length; r++) {
+        if (usedR.has(r) || usedR.has(r + 1) || !splittable(requested[r]!, requested[r + 1]!)) continue;
+        const joined = requested[r]! + requested[r + 1]!;
+        const c = candidate.findIndex((word, index) => !usedC.has(index) && joinedStrength(joined, word) > 0);
+        if (c === -1) continue;
+        usedR.add(r);
+        usedR.add(r + 1);
+        usedC.add(c);
+        strength += 2 * joinedStrength(joined, candidate[c]!);
+    }
+    for (let c = 0; c + 1 < candidate.length; c++) {
+        if (usedC.has(c) || usedC.has(c + 1) || !splittable(candidate[c]!, candidate[c + 1]!)) continue;
+        const joined = candidate[c]! + candidate[c + 1]!;
+        const r = requested.findIndex((word, index) => !usedR.has(index) && joinedStrength(joined, word) > 0);
+        if (r === -1) continue;
+        usedR.add(r);
+        usedC.add(c);
+        usedC.add(c + 1);
+        strength += joinedStrength(joined, requested[r]!);
     }
 
     return {

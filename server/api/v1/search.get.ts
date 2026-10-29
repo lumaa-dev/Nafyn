@@ -4,6 +4,7 @@ import { MusicBrainzError, escapeLucene } from "../../utils/musicbrainzRepositor
 import { getSearchDeps } from "../../utils/catalogSearch";
 import { searchAlbums, searchTracks, type SearchInput } from "../../utils/search/engine";
 import type { SearchResult } from "../../utils/search/types";
+import { getAlbumContents, type AlbumContents } from "../../utils/albumContents";
 import { getLastfmArtistInfo } from "../../utils/lastfm";
 import { requireAuthToken } from "../../utils/requireAuth";
 import { consumeRateLimit } from "../../utils/rateLimit";
@@ -16,13 +17,16 @@ const MAX_LIMIT = 50;
 // this endpoint fans out to MusicBrainz (and Last.fm) on every call, so an authenticated account could
 // otherwise use Nafyn as a free proxy to hammer those upstreams - and get Nafyn's own IP blocked there
 const MAX_SEARCHES = 60;
+
+// the most artists of an album that also get a Last.fm lookup (a compilation can credit hundreds)
+const MAX_ARTIST_IMAGES = 10;
 const SEARCH_WINDOW_MS = 60 * 1000;
 
 type Filter = "album" | "track" | "artist" | "all";
 
 defineRouteMeta({
     openAPI: {
-        description: "Search MusicBrainz for albums, tracks, and/or artists. Albums and tracks are normalized, filtered (Official digital releases only, no bootlegs/compilations/deluxe/remasters unless asked for) and ranked; results with a front cover come first. At most one result has `bestResult: true`.",
+        description: "Search MusicBrainz for albums, tracks, and/or artists. Albums and tracks are normalized, filtered (Official digital releases only, no bootlegs/compilations/deluxe/remasters unless asked for) and ranked; results with a front cover come first. At most one result has `bestResult: true`. Free text may name the artist and the title together, in any order, with words left out or misspelled (\"lovejoy one trick\"). When `filter` is `all` and the best result is an album, the response is about that album: `artists` is every artist credited on it (featurings included) and `tracks` starts with all of its tracks, in order (flagged `from_album`), followed by the other matching tracks.",
         tags: ["search"],
         operationId: "search",
         parameters: [
@@ -194,7 +198,7 @@ defineRouteMeta({
                             hasFrontCover: { type: "boolean", description: "The best qualifying release has a front cover. Results with one rank first." },
                             flags: {
                                 type: "array",
-                                items: { type: "string", enum: ["upc_match", "isrc_match", "code_contradiction", "artist_only", "swapped_order", "transliterated", "no_front_cover"] }
+                                items: { type: "string", enum: ["upc_match", "isrc_match", "code_contradiction", "artist_only", "swapped_order", "transliterated", "artist_in_query", "from_album", "no_front_cover"] }
                             }
                         }
                     }
@@ -279,6 +283,40 @@ function trackToMediaInfo(result: SearchResult): SearchMediaInfo {
 
 type SearchMediaInfo = Omit<MediaInfo, "relations"> & { bestResult: boolean, match: ReturnType<typeof toMatch> };
 
+// a track of the album that came back as the best result, shaped like any other track result
+function albumTrackToMediaInfo(track: AlbumContents["tracks"][number], album: AlbumContents, best: SearchResult): SearchMediaInfo {
+    return {
+        id: track.id,
+        title: track.title,
+        artist: { name: track.artist.name, musicbrainzId: track.artist.id ?? "", description: null, image: null },
+        album: { title: album.albumTitle, id: album.albumId, type: album.albumType },
+        type: "track",
+        coverArt: `https://coverartarchive.org/release/${album.releaseId}/front-250`,
+        releaseDate: parseReleaseDate(track.releaseDate ?? album.releaseDate),
+        inLibrary: false,
+        duration: track.length ? Math.round(track.length / 1000) : 0,
+        label: null,
+        bestResult: false,
+        match: { ...toMatch(best), title: 1, artist: 1, exactness: 1, sources: 1, flags: ["from_album"] }
+    };
+}
+
+/**
+ * The best-result album's tracks and artists, or null when there is none to speak of (no confident album, or
+ * MusicBrainz cannot say what is on it - the plain results are then still a good answer).
+ */
+async function albumOfBestResult(albums: SearchResult[]): Promise<{ album: AlbumContents, best: SearchResult } | null> {
+    const best = albums.find((result) => result.bestResult);
+    if (!best) return null;
+    try {
+        const album = await getAlbumContents(getMusicBrainzRepository(), best.id);
+        return album ? { album, best } : null;
+    } catch (error) {
+        console.warn(`[search] could not read the tracklist of ${best.id}: ${(error as Error).message}`);
+        return null;
+    }
+}
+
 function param(value: unknown): string {
     return (typeof value === "string" ? value.trim() : "").slice(0, 200);
 }
@@ -326,11 +364,27 @@ export default defineEventHandler(async (event) => {
                 : null
         ]);
 
-        const artistInfos = artists ? await Promise.all(artists.artists.map(toArtistInfo).map(withLastfmImage)) : [];
+        // an album is the answer: what is on it is the answer too (first page only, `offset` pages through the rest)
+        const content = filter === "all" && albums && offset === 0 ? await albumOfBestResult(albums.results) : null;
+
+        let trackInfos: SearchMediaInfo[] = tracks ? tracks.results.map(trackToMediaInfo) : [];
+        let artistInfos: ArtistInfo[];
+        if (content) {
+            const onAlbum = content.album.tracks.map((track) => albumTrackToMediaInfo(track, content.album, content.best));
+            const seen = new Set(onAlbum.map((track) => track.id));
+            // the album's tracks are never cut by `limit`; the other matches fill what is left of it
+            trackInfos = [...onAlbum, ...trackInfos.filter((track) => !seen.has(track.id))].slice(0, Math.max(limit, onAlbum.length));
+            artistInfos = await Promise.all(content.album.artists.map((artist, index): Promise<ArtistInfo> | ArtistInfo => {
+                const info: ArtistInfo = { name: artist.name, musicbrainzId: artist.id, description: artist.disambiguation, image: null };
+                return index < MAX_ARTIST_IMAGES ? withLastfmImage(info) : info;
+            }));
+        } else {
+            artistInfos = artists ? await Promise.all(artists.artists.map(toArtistInfo).map(withLastfmImage)) : [];
+        }
 
         return {
             albums: albums ? albums.results.map(albumToMediaInfo) : [],
-            tracks: tracks ? tracks.results.map(trackToMediaInfo) : [],
+            tracks: trackInfos,
             artists: artistInfos
         };
     } catch (error) {

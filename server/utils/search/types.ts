@@ -74,6 +74,8 @@ export interface RawRecording {
 export interface RawArtistHit {
     id: string,
     name: string,
+    "sort-name"?: string,
+    aliases?: RawAlias[],
     score?: number
 }
 
@@ -91,6 +93,8 @@ export type MatchFlag =
     | "artist_only"
     | "swapped_order"
     | "transliterated"
+    | "artist_in_query"
+    | "from_album"
     | "no_front_cover";
 
 export interface MatchBreakdown {

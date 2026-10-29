@@ -117,6 +117,16 @@ export function luceneFuzzyTerms(text: string, minFuzzyLength = 5): string {
         .join(" AND ");
 }
 
+/**
+ * Bare terms, any of them (`a b` -> `a OR b`), the longer ones fuzzy: recall for text that mixes an artist and
+ * a title, where the ranking (more terms matched, higher) does the sorting.
+ */
+export function luceneAnyTerms(text: string, minFuzzyLength = 5): string {
+    return text.split(/\s+/).filter(Boolean)
+        .map((term) => (Array.from(term).length >= minFuzzyLength && /^[\p{Script=Latin}\p{N}']+$/u.test(term) ? `${escapeLucene(term)}~` : escapeLucene(term)))
+        .join(" OR ");
+}
+
 export class MusicBrainzRepository {
     private readonly options: RepositoryOptions;
     private readonly cache = new Map<string, CacheEntry>();

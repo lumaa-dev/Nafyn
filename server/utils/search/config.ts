@@ -15,6 +15,13 @@ export interface SearchConfig {
     tokenTypoRatio: number,
     /** Words shorter than this must match exactly - a one-letter typo in "man" is a different word. */
     typoMinLength: number,
+    /**
+     * How fast the credit of a near-miss word falls: `1 - slope * (1 - similarity)`. 1 = the similarity itself.
+     * Free text uses more (see `freeTextTypoCreditSlope`), where "seasons" must not pass for "season".
+     */
+    typoCreditSlope: number,
+    /** `typoCreditSlope` when only free text (`q`) was given. */
+    freeTextTypoCreditSlope: number,
     /** Artist similarity below this drops a candidate when an artist was requested. */
     artistFloor: number,
     /** Relevance below this is discarded *before* ranking, so an irrelevant covered result can't surface. */
@@ -43,6 +50,19 @@ export interface SearchConfig {
      * its own script ahead of a transliterated guess.
      */
     transliterationFactor: number,
+    /**
+     * Free text read as "artist and title in one string, any order" ("lovejoy one trick", "bottomless trench
+     * feldup"): the multiplier on that reading, small, so a title that matches the whole text still wins.
+     */
+    jointFactor: number,
+    /** `extraTokenPenalty` for that reading: the title is allowed to have words the text skipped. */
+    jointExtraTokenPenalty: number,
+    /** `tokenTypoRatio` for that reading: loose text is full of typos ("tranch" for "trench"). */
+    jointTypoRatio: number,
+    /** Multiplier when the text matched one clause of an album title ("a season in the dark" of "A season in the dark, a bottomless trench"). */
+    clauseFactor: number,
+    /** `clauseFactor` when the text is at least three words long: that is a phrase, not a name. */
+    clauseLongFactor: number,
 
     // ---- ranking ----
     /** Preference order when everything else ties; earlier wins. */
@@ -121,6 +141,8 @@ export const DEFAULT_SEARCH_CONFIG: SearchConfig = {
 
     tokenTypoRatio: 0.85,
     typoMinLength: 4,
+    typoCreditSlope: 1,
+    freeTextTypoCreditSlope: 2,
     artistFloor: 0.6,
     minRelevance: 0.55,
     extraTokenPenalty: 0.65,
@@ -134,6 +156,11 @@ export const DEFAULT_SEARCH_CONFIG: SearchConfig = {
     codeContradictionBelow: 0.5,
     artistOnlyFactor: 0.9,
     transliterationFactor: 0.97,
+    jointFactor: 0.97,
+    jointExtraTokenPenalty: 0.9,
+    jointTypoRatio: 0.83,
+    clauseFactor: 0.85,
+    clauseLongFactor: 0.97,
 
     primaryTypeOrder: ["album", "ep", "single", "broadcast", "other"],
 

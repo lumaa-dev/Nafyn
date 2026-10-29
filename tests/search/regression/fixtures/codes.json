@@ -1,0 +1,4250 @@
+{
+ "requests": {
+  "https://musicbrainz.org/ws/2/release?fmt=json&limit=25&query=barcode%3A(075678263323%20OR%200075678263323)": {
+   "created": "2026-10-22T18:54:10.086Z",
+   "offset": 0,
+   "releases": [
+    {
+     "id": "de3ba4ad-1865-4f08-af15-dd4273b8fe09",
+     "score": 100,
+     "title": "Led Zeppelin II",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "33b4653d-006e-3cc1-8afb-386b15a6cd6e",
+      "title": "Led Zeppelin II",
+      "primary-type": "Album"
+     },
+     "date": "1994",
+     "barcode": "075678263323",
+     "track-count": 9,
+     "media": [
+      {
+       "id": "47e70037-93bc-3b4b-8e66-e89f30b911ed",
+       "format": "CD",
+       "track-count": 9
+      }
+     ]
+    },
+    {
+     "id": "ba07bb97-6239-4a27-9c27-6a4e6996ba64",
+     "score": 100,
+     "title": "Led Zeppelin II",
+     "status": "Official",
+     "disambiguation": "European 1990s reissue",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "33b4653d-006e-3cc1-8afb-386b15a6cd6e",
+      "title": "Led Zeppelin II",
+      "primary-type": "Album"
+     },
+     "date": "",
+     "barcode": "075678263323",
+     "track-count": 9,
+     "media": [
+      {
+       "id": "9cea54de-3b68-3e47-a8a5-1b89c46bcaad",
+       "format": "CD",
+       "track-count": 9
+      }
+     ]
+    },
+    {
+     "id": "472aea5a-ef4f-360f-84b9-0ed21abcec65",
+     "score": 100,
+     "title": "Led Zeppelin II",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "33b4653d-006e-3cc1-8afb-386b15a6cd6e",
+      "title": "Led Zeppelin II",
+      "primary-type": "Album"
+     },
+     "date": "1994-07-19",
+     "barcode": "075678263323",
+     "asin": "B000002J03",
+     "track-count": 9,
+     "media": [
+      {
+       "id": "e73e88e6-cffe-3948-ad01-447c443b42c8",
+       "format": "CD",
+       "track-count": 9
+      }
+     ]
+    },
+    {
+     "id": "9421d5a3-c6bd-4a3b-ade1-007831920694",
+     "score": 100,
+     "title": "Led Zeppelin II",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "33b4653d-006e-3cc1-8afb-386b15a6cd6e",
+      "title": "Led Zeppelin II",
+      "primary-type": "Album"
+     },
+     "date": "1994-07-19",
+     "barcode": "075678263323",
+     "track-count": 9,
+     "media": [
+      {
+       "id": "b2bea7f5-10a6-3777-8745-c69561865688",
+       "format": "CD",
+       "track-count": 9
+      }
+     ]
+    },
+    {
+     "id": "ca108fb0-b6f2-45ff-89f6-d13e18792cf4",
+     "score": 100,
+     "title": "Led Zeppelin II",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "33b4653d-006e-3cc1-8afb-386b15a6cd6e",
+      "title": "Led Zeppelin II",
+      "primary-type": "Album"
+     },
+     "date": "1994",
+     "barcode": "075678263323",
+     "track-count": 9,
+     "media": [
+      {
+       "id": "246e0b17-5593-3ff4-a092-491d69c43192",
+       "format": "CD",
+       "track-count": 9
+      }
+     ]
+    },
+    {
+     "id": "9b2b4f9f-4bcb-3130-90bb-db8261b27f28",
+     "score": 100,
+     "title": "Led Zeppelin II",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "33b4653d-006e-3cc1-8afb-386b15a6cd6e",
+      "title": "Led Zeppelin II",
+      "primary-type": "Album"
+     },
+     "date": "1994-07-18",
+     "barcode": "075678263323",
+     "asin": "B000002J03",
+     "track-count": 9,
+     "media": [
+      {
+       "id": "10ba39be-9ff1-3d25-8b17-26d7f49f047c",
+       "format": "CD",
+       "track-count": 9
+      }
+     ]
+    },
+    {
+     "id": "1edd5844-7a0e-41bc-b122-fa6b1d402c83",
+     "score": 100,
+     "title": "Led Zeppelin II",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "33b4653d-006e-3cc1-8afb-386b15a6cd6e",
+      "title": "Led Zeppelin II",
+      "primary-type": "Album"
+     },
+     "date": "1994",
+     "barcode": "075678263323",
+     "track-count": 9,
+     "media": [
+      {
+       "id": "d82416e7-d6f8-4677-9e40-7caaa9f2576d",
+       "format": "CD",
+       "track-count": 9
+      }
+     ]
+    }
+   ]
+  },
+  "https://musicbrainz.org/ws/2/release?fmt=json&limit=100&query=rgid%3A(33b4653d-006e-3cc1-8afb-386b15a6cd6e)%20AND%20status%3Aofficial%20AND%20format%3A%22Digital%20Media%22": {
+   "created": "2026-10-22T18:54:10.177Z",
+   "offset": 0,
+   "releases": [
+    {
+     "id": "7bba9861-f7bb-4bee-b1df-14eb2fb7b65c",
+     "score": 100,
+     "title": "Led Zeppelin II",
+     "status": "Official",
+     "disambiguation": "Deluxe Edition | 24 bit/96 kHz",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "33b4653d-006e-3cc1-8afb-386b15a6cd6e",
+      "title": "Led Zeppelin II",
+      "primary-type": "Album"
+     },
+     "date": "2014-06-02",
+     "barcode": "0603497920068",
+     "track-count": 17,
+     "media": [
+      {
+       "id": "d0e6ca01-0514-3935-ac22-52d0e2898656",
+       "format": "Digital Media",
+       "track-count": 9
+      },
+      {
+       "id": "f1dc8055-cda6-3b81-abe9-abadf084d604",
+       "format": "Digital Media",
+       "track-count": 8
+      }
+     ]
+    },
+    {
+     "id": "fe05227e-73ad-4ee7-9f6c-89f6246c2cf2",
+     "score": 100,
+     "title": "Led Zeppelin II",
+     "status": "Official",
+     "disambiguation": "2014 remaster",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "33b4653d-006e-3cc1-8afb-386b15a6cd6e",
+      "title": "Led Zeppelin II",
+      "primary-type": "Album"
+     },
+     "date": "2014-06-03",
+     "asin": "B00KHDHI5A",
+     "track-count": 9,
+     "media": [
+      {
+       "id": "2257558f-35c9-388a-8cbd-69fda0f05031",
+       "format": "Digital Media",
+       "track-count": 9
+      }
+     ]
+    },
+    {
+     "id": "c4889ad4-55d4-4d23-8f27-5353750585fe",
+     "score": 100,
+     "title": "Led Zeppelin II",
+     "status": "Official",
+     "disambiguation": "deluxe edition",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "33b4653d-006e-3cc1-8afb-386b15a6cd6e",
+      "title": "Led Zeppelin II",
+      "primary-type": "Album"
+     },
+     "date": "2014-06-03",
+     "track-count": 17,
+     "media": [
+      {
+       "id": "c57ac186-7d00-3822-8525-8b01f87a44bb",
+       "format": "Digital Media",
+       "track-count": 17
+      }
+     ]
+    },
+    {
+     "id": "57eb35c9-0e7b-4b1e-a120-f63883e7aad3",
+     "score": 100,
+     "title": "Led Zeppelin II",
+     "status": "Official",
+     "disambiguation": "mastered for iTunes",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "33b4653d-006e-3cc1-8afb-386b15a6cd6e",
+      "title": "Led Zeppelin II",
+      "primary-type": "Album"
+     },
+     "date": "2014-06-03",
+     "barcode": "603497926145",
+     "track-count": 9,
+     "media": [
+      {
+       "id": "ae89dcea-e353-3e0e-a07f-7f7ae5b2a277",
+       "format": "Digital Media",
+       "track-count": 9
+      }
+     ]
+    },
+    {
+     "id": "0d1fc06f-4dcb-45b0-8fae-33deb44f46ed",
+     "score": 100,
+     "title": "Led Zeppelin II",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "33b4653d-006e-3cc1-8afb-386b15a6cd6e",
+      "title": "Led Zeppelin II",
+      "primary-type": "Album"
+     },
+     "date": "",
+     "barcode": "603497900831",
+     "track-count": 9,
+     "media": [
+      {
+       "id": "d76cb4fa-b07b-3d35-b5fb-853124ac4994",
+       "format": "Digital Media",
+       "track-count": 9
+      }
+     ]
+    },
+    {
+     "id": "4bc6a5d2-98bc-4e42-a46f-bbc90139fd9a",
+     "score": 100,
+     "title": "Led Zeppelin II",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "33b4653d-006e-3cc1-8afb-386b15a6cd6e",
+      "title": "Led Zeppelin II",
+      "primary-type": "Album"
+     },
+     "date": "2007-11-13",
+     "asin": "B0011Z5IUK",
+     "track-count": 9,
+     "media": [
+      {
+       "id": "a433b44b-0c11-33ff-9f65-2e3c17e652a5",
+       "format": "Digital Media",
+       "track-count": 9
+      }
+     ]
+    },
+    {
+     "id": "164f9f2e-5d0e-48c9-ad32-3853375cd9fa",
+     "score": 100,
+     "title": "Led Zeppelin II",
+     "status": "Official",
+     "disambiguation": "\"1994 remaster\"",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "33b4653d-006e-3cc1-8afb-386b15a6cd6e",
+      "title": "Led Zeppelin II",
+      "primary-type": "Album"
+     },
+     "date": "2012",
+     "barcode": "603497906178",
+     "track-count": 9,
+     "media": [
+      {
+       "id": "ddf38f9c-561c-384a-9731-c63577cbe175",
+       "format": "Digital Media",
+       "track-count": 9
+      }
+     ]
+    },
+    {
+     "id": "d39ef8e7-a0e4-4acf-99e0-33405399cd2d",
+     "score": 100,
+     "title": "Led Zeppelin II",
+     "status": "Official",
+     "disambiguation": "deluxe edition",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "33b4653d-006e-3cc1-8afb-386b15a6cd6e",
+      "title": "Led Zeppelin II",
+      "primary-type": "Album"
+     },
+     "date": "2014",
+     "barcode": "603497920051",
+     "track-count": 17,
+     "media": [
+      {
+       "id": "50dfdf1e-263f-432a-9c06-59bb9b54bae1",
+       "format": "Digital Media",
+       "track-count": 9
+      },
+      {
+       "id": "f6e45dce-76e8-45f8-a77e-e80a190c1041",
+       "format": "Digital Media",
+       "track-count": 8
+      }
+     ]
+    }
+   ]
+  },
+  "https://musicbrainz.org/ws/2/release?fmt=json&limit=25&query=barcode%3A(012345678905%20OR%200012345678905)": {
+   "created": "2026-10-22T18:54:12.172Z",
+   "offset": 0,
+   "releases": [
+    {
+     "id": "b5ed89d0-1ea1-43cd-aaf5-b50f62c648aa",
+     "score": 100,
+     "title": "Panic/Fitzgerald Original Motion Picture Soundtracks",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "Brian Tyler",
+       "artist": {
+        "id": "23d89243-79c9-4afc-8db5-fce27e7ba78d",
+        "name": "Brian Tyler",
+        "sort-name": "Tyler, Brian",
+        "disambiguation": "American score composer"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "58e8d40f-27e8-4358-bca5-49a392c744b4",
+      "title": "Panic/Fitzgerald Original Motion Picture Soundtracks",
+      "primary-type": "Album",
+      "secondary-types": [
+       "Soundtrack"
+      ]
+     },
+     "date": "2017-03-31",
+     "barcode": "012345678905",
+     "track-count": 28,
+     "media": [
+      {
+       "id": "f1f0a33c-47b2-387d-bff0-2499c752df08",
+       "format": "CD",
+       "track-count": 28
+      }
+     ]
+    },
+    {
+     "id": "15f8b9c4-ac5f-4c7d-9a96-6b9aae3134fc",
+     "score": 100,
+     "title": "Tercera Dimensi\u00f3n",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "Edwin Ramirez",
+       "artist": {
+        "id": "29ed9860-de35-4c05-8062-3e4e9d27ef4c",
+        "name": "Edwin Ramirez",
+        "sort-name": "Edwin Ramirez"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "44c207c2-c073-4617-88d9-e7b336cc12d7",
+      "title": "Tercera Dimensi\u00f3n",
+      "primary-type": "Album"
+     },
+     "date": "2008",
+     "barcode": "012345678905",
+     "track-count": 13,
+     "media": [
+      {
+       "id": "5d16a2d4-afc6-390b-98d1-d99bda562955",
+       "format": "CD",
+       "track-count": 13
+      }
+     ]
+    },
+    {
+     "id": "870014ff-4038-4437-9de4-5d3d0b2293d2",
+     "score": 100,
+     "title": "Orson Nietes",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "JoosTVD",
+       "artist": {
+        "id": "922b7e16-2869-4461-8573-de45117c2681",
+        "name": "JoosTVD",
+        "sort-name": "JoosTVD"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "aa11716f-2b81-4b80-be07-c61761d60982",
+      "title": "Orson Nietes",
+      "primary-type": "Album"
+     },
+     "date": "2011-08-22",
+     "barcode": "0012345678905",
+     "track-count": 24,
+     "media": [
+      {
+       "id": "544fb02a-d03a-3391-b306-c35a6cd28bb8",
+       "format": "CD",
+       "track-count": 24
+      }
+     ]
+    },
+    {
+     "id": "4fa93368-e09c-4878-bcd4-c5844e233cbb",
+     "score": 100,
+     "title": "30 a\u00f1os de vallenato",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "Iv\u00e1n Ovalle",
+       "artist": {
+        "id": "231b8332-0564-4aa0-ad4e-a3d40aae924d",
+        "name": "Iv\u00e1n Ovalle",
+        "sort-name": "Ovalle, Iv\u00e1n"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "4886a98e-2716-4a4f-bad8-d1c41f722fd0",
+      "title": "30 a\u00f1os de vallenato",
+      "primary-type": "Album"
+     },
+     "date": "2017-09-15",
+     "barcode": "012345678905",
+     "track-count": 41,
+     "media": [
+      {
+       "id": "60d7a3ec-8ac3-37ab-8a5a-60ac7ba1507e",
+       "format": "CD",
+       "track-count": 15
+      },
+      {
+       "id": "85774892-9257-3238-98fa-fb6dd3e38406",
+       "format": "CD",
+       "track-count": 15
+      },
+      {
+       "id": "b9b9e1f6-1abb-3166-828f-9efb0dcc4b1f",
+       "format": "DVD",
+       "track-count": 11
+      }
+     ]
+    },
+    {
+     "id": "0344e4c3-3e30-4786-b4a4-2aa32f223ff1",
+     "score": 100,
+     "title": "Ghetto Cycle",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "joinphrase": " & ",
+       "name": "O.B.F.",
+       "artist": {
+        "id": "71c2ca42-0df4-4cf3-a868-c86f826aea26",
+        "name": "O.B.F.",
+        "sort-name": "O.B.F."
+       }
+      },
+      {
+       "name": "Charlie P",
+       "artist": {
+        "id": "114c7a42-81c8-4d19-b79c-e2d6a26a9c69",
+        "name": "Charlie P",
+        "sort-name": "Charlie P",
+        "disambiguation": "Reggae/Roots/Dub singer"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "ab612eaa-8036-4a5b-a613-68899e968b84",
+      "title": "Ghetto Cycle",
+      "primary-type": "Album"
+     },
+     "date": "2018",
+     "barcode": "012345678905",
+     "track-count": 13,
+     "media": [
+      {
+       "id": "f0bb13e8-7027-38ce-9c66-17d26cb86045",
+       "format": "CD",
+       "track-count": 13
+      }
+     ]
+    },
+    {
+     "id": "8fbc358f-492d-4893-9f01-f755dafab828",
+     "score": 100,
+     "title": "River of Corticone",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "Sacramentary Abolishment",
+       "artist": {
+        "id": "b343b70f-b6c4-4a0e-9850-609b96c61740",
+        "name": "Sacramentary Abolishment",
+        "sort-name": "Sacramentary Abolishment",
+        "disambiguation": "Canadian black/death metal"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "cdce839f-4672-30dc-b4eb-97eb5a63e7cb",
+      "title": "River of Corticone",
+      "primary-type": "Album"
+     },
+     "date": "1996",
+     "barcode": "012345678905",
+     "track-count": 8,
+     "media": [
+      {
+       "id": "931fdebb-db6e-3d72-b3f2-b1d7cc8b6afb",
+       "format": "CD",
+       "track-count": 8
+      }
+     ]
+    },
+    {
+     "id": "62328919-b458-4b8c-8c07-b39a6b8772f8",
+     "score": 100,
+     "title": "Le p'tit d\u00e9rangement",
+     "artist-credit": [
+      {
+       "name": "Le p'tit d\u00e9rangement",
+       "artist": {
+        "id": "c39ca3d4-c1f8-4c60-a330-7b8a1000e37d",
+        "name": "Le p'tit d\u00e9rangement",
+        "sort-name": "P'tit d\u00e9rangement, Le"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "c12fb190-5345-4abf-9da8-0dbad66f7f3f",
+      "title": "Le p'tit d\u00e9rangement",
+      "primary-type": "Album"
+     },
+     "date": "2011",
+     "barcode": "012345678905",
+     "track-count": 10,
+     "media": [
+      {
+       "id": "1da32555-0a25-4a74-b661-a773638d445b",
+       "format": "CD",
+       "track-count": 10
+      }
+     ]
+    },
+    {
+     "id": "f2c70b86-4132-48a4-a7be-f5e1144f107e",
+     "score": 100,
+     "title": "Elise",
+     "artist-credit": [
+      {
+       "name": "Elise Comeau",
+       "artist": {
+        "id": "47397195-252e-4cbc-bcbd-929a29a302d7",
+        "name": "Elise Comeau",
+        "sort-name": "Comeau, Elise"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "574d9609-c4a1-497c-809d-03348cb87483",
+      "title": "Elise",
+      "primary-type": "Album"
+     },
+     "date": "2011",
+     "barcode": "012345678905",
+     "track-count": 8,
+     "media": [
+      {
+       "id": "779cb038-16d1-45c9-8d17-ae13f75885cc",
+       "format": "CD",
+       "track-count": 8
+      }
+     ]
+    },
+    {
+     "id": "98e1b6e8-fdfd-4710-ab17-e830e5b82b8f",
+     "score": 100,
+     "title": "Indie Rocket Science",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "MC Lars",
+       "artist": {
+        "id": "fdf0d5e1-e773-4740-a50f-a032c96c63d3",
+        "name": "MC Lars",
+        "sort-name": "Lars, MC",
+        "disambiguation": "American rapper"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "726e7136-05a9-45a3-a58f-991725b38186",
+      "title": "Indie Rocket Science",
+      "primary-type": "Album"
+     },
+     "date": "2011",
+     "barcode": "012345678905",
+     "track-count": 18,
+     "media": [
+      {
+       "id": "f81e90be-c102-3315-9969-a5233ca2a276",
+       "format": "CD",
+       "track-count": 18
+      }
+     ]
+    },
+    {
+     "id": "14fc7b4f-239c-491c-80ef-e45b74830080",
+     "score": 100,
+     "title": "Indie Rocket Science",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "MC Lars",
+       "artist": {
+        "id": "fdf0d5e1-e773-4740-a50f-a032c96c63d3",
+        "name": "MC Lars",
+        "sort-name": "Lars, MC",
+        "disambiguation": "American rapper"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "726e7136-05a9-45a3-a58f-991725b38186",
+      "title": "Indie Rocket Science",
+      "primary-type": "Album"
+     },
+     "date": "2011",
+     "barcode": "012345678905",
+     "track-count": 18,
+     "media": [
+      {
+       "id": "38987d2c-4655-334e-83ea-8ac5fae4ed17",
+       "format": "Digital Media",
+       "track-count": 18
+      }
+     ]
+    },
+    {
+     "id": "8329f1c4-e0d3-4517-9ae9-72243ca66d60",
+     "score": 100,
+     "title": "Sundressed",
+     "status": "Official",
+     "artist-credit": [
+      {
+       "name": "Blind Man's Daughter",
+       "artist": {
+        "id": "7a33e2d3-e752-4def-94be-72843f6311a4",
+        "name": "Blind Man's Daughter",
+        "sort-name": "Blind Man's Daughter",
+        "disambiguation": "US prog/metal group"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "d17c3e03-6862-4ecf-a96e-c7fbdf143144",
+      "title": "Sundressed",
+      "primary-type": "Album"
+     },
+     "date": "2023-08-18",
+     "barcode": "012345678905",
+     "track-count": 10,
+     "media": [
+      {
+       "id": "0e0de2e2-6029-3231-826c-ecc14d7e27ef",
+       "format": "CD",
+       "track-count": 10
+      }
+     ]
+    },
+    {
+     "id": "8c45e092-801a-4eb6-acfe-1e8ba671726e",
+     "score": 100,
+     "title": "SHE IS COMING",
+     "status": "Bootleg",
+     "artist-credit": [
+      {
+       "name": "Miley Cyrus",
+       "artist": {
+        "id": "7e9bd05a-117f-4cce-87bc-e011527a8b18",
+        "name": "MILEY",
+        "sort-name": "MILEY",
+        "disambiguation": "Cyrus"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "e3d0b727-0edc-48f8-80e4-8ea60b55af0a",
+      "title": "SHE IS COMING",
+      "primary-type": "EP"
+     },
+     "date": "2019",
+     "barcode": "012345678905",
+     "track-count": 8,
+     "media": [
+      {
+       "id": "f36cd456-4034-3870-abfb-b3626b1d7e6b",
+       "format": "CD-R",
+       "track-count": 8
+      }
+     ]
+    },
+    {
+     "id": "4cf51c66-8779-4cad-9f42-71679a53634a",
+     "score": 100,
+     "title": "National Lampoon\u2019s Christmas Vacation",
+     "status": "Bootleg",
+     "disambiguation": "Limited Edition",
+     "artist-credit": [
+      {
+       "name": "Various Artists",
+       "artist": {
+        "id": "89ad4ac3-39f7-470e-963a-56509c546377",
+        "name": "Various Artists",
+        "sort-name": "Various Artists",
+        "disambiguation": "add compilations to this artist"
+       }
+      }
+     ],
+     "release-group": {
+      "id": "8b64da62-f891-3447-a2a9-6a8547fa9d0c",
+      "title": "National Lampoon\u2019s Christmas Vacation",
+      "primary-type": "Album",
+      "secondary-types": [
+       "Soundtrack"
+      ]
+     },
+     "date": "1999",
+     "barcode": "012345678905",
+     "track-count": 25,
+     "media": [
+      {
+       "id": "6aaeba8d-d1f7-4114-9497-def627584e60",
+       "format": "CD",
+       "track-count": 25
+      }
+     ]
+    }
+   ]
+  },
+  "https://musicbrainz.org/ws/2/release-group?fmt=json&limit=40&query=releasegroup%3A%22led%20zeppelin%20ii%22%20AND%20artist%3A%22led%20zeppelin%22%20AND%20status%3Aofficial": {
+   "created": "2026-10-22T18:54:13.250Z",
+   "offset": 0,
+   "release-groups": [
+    {
+     "id": "33b4653d-006e-3cc1-8afb-386b15a6cd6e",
+     "score": 100,
+     "title": "Led Zeppelin II",
+     "first-release-date": "1969-10-22",
+     "primary-type": "Album",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "\u30ec\u30c3\u30c9\u30fb\u30c4\u30a7\u30c3\u30da\u30ea\u30f3",
+          "name": "\u30ec\u30c3\u30c9\u30fb\u30c4\u30a7\u30c3\u30da\u30ea\u30f3"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "\u30ec\u30c3\u30c9\u30fb\u30bc\u30c3\u30d7",
+          "name": "\u30ec\u30c3\u30c9\u30fb\u30bc\u30c3\u30d7"
+         },
+         {
+          "sort-name": "\u30ec\u30c3\u30c9\u30bc\u30c3\u30d7",
+          "name": "\u30ec\u30c3\u30c9\u30bc\u30c3\u30d7"
+         },
+         {
+          "sort-name": "\u30bc\u30c3\u30d7",
+          "name": "\u30bc\u30c3\u30d7"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "\u30ec\u30c3\u30c9 \u30c4\u30a7\u30c3\u30da\u30ea\u30f3",
+          "name": "\u30ec\u30c3\u30c9 \u30c4\u30a7\u30c3\u30da\u30ea\u30f3"
+         },
+         {
+          "sort-name": "\u30ec\u30c3\u30c9\u30c4\u30a7\u30c3\u30da\u30ea\u30f3",
+          "name": "\u30ec\u30c3\u30c9\u30c4\u30a7\u30c3\u30da\u30ea\u30f3"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "1edd5844-7a0e-41bc-b122-fa6b1d402c83",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "80d99d0d-93d9-4f9a-8873-7c3f7dd5ab7f",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "66a211d6-9b56-4eb1-8bde-06456c8388fe",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "ffd29f20-e0e4-4d42-b476-0a5ea7e0c3ba",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "56685555-ad19-4968-ac2c-6525897681b4",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "7e4a5c43-eb33-49ad-baf3-6d794dc26b60",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "d39ef8e7-a0e4-4acf-99e0-33405399cd2d",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "0fc6adbb-cc6a-4825-a4be-01b0a35844de",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "35317cff-f99a-4baf-93b0-bb456190c480",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "aa9e9070-32da-4dd3-bab5-e8b430f28032",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "a3396fed-af4e-474a-83f6-555b15424acd",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "8ba96cce-73f4-4d2d-80d9-99d9cab46e53",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "2ac3b867-02d7-47fb-a360-f1f5828d5e9b",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "4caaad0c-79f2-4d08-8eb3-b3a6a3229bbf",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "472aea5a-ef4f-360f-84b9-0ed21abcec65",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "812ab973-05b8-4542-9c42-a8e934a785cc",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "b01b8dc4-a033-4f3c-8623-f77e9a2f34a3",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "929b2b59-9a4e-4e8d-96f4-49a86153fec6",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "e91ed5de-bee1-4246-b64c-3218ef64ab0b",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "7bba9861-f7bb-4bee-b1df-14eb2fb7b65c",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "0d1fc06f-4dcb-45b0-8fae-33deb44f46ed",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "164f9f2e-5d0e-48c9-ad32-3853375cd9fa",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "295470dc-66e4-4d93-a464-25cb2ee03aaf",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "743c0976-3f48-4109-841c-cd5158536a45",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "5f1fc485-bc31-478f-9a4e-5b7aec3a2a93",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "672b9d14-15c1-4a14-a62c-9600629d3b07",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "18ba83c2-354c-4ebc-918d-8795f821747f",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "3687ea29-1243-4b0b-8983-35197365327d",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "ba07bb97-6239-4a27-9c27-6a4e6996ba64",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "0848b6e5-858b-4219-9df6-6cbe8705a191",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "c2ac2fe1-817d-4979-ad7b-40b3e880645c",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "9421d5a3-c6bd-4a3b-ade1-007831920694",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "3f06b417-926a-4566-b180-fb09fb7b3552",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "a650ab1f-283d-4630-9e44-69d8d099144a",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "af1fda38-1832-443a-8af6-2519804c0ca2",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "9b2b4f9f-4bcb-3130-90bb-db8261b27f28",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "2c2d301d-30de-44fd-89f4-e2d78a4a9de2",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "3b5b27bc-776d-4e2b-b7da-6a02b4ce20bc",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "1eedb603-6818-4201-a934-4a537abb59e4",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "0529e595-a06a-461b-916e-5f4a69cba847",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "c6b2d713-feec-4592-b3c4-1cc8b971a189",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "f0e7c9b0-f5a5-3022-89a6-48c94e965fc8",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "44a720dd-6fe8-4c97-8503-aa9023e02bd3",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "c918d2fa-24ed-3b9f-8cfa-94c7a3417960",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "dd235704-a182-415c-bb8e-9033bffe2817",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "a19631e2-b689-44e2-b9d1-2879f45410e4",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "f79e96d2-fb5d-4a41-bf45-4a270133b631",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "cdb24572-175c-4317-9bf4-9411979439f9",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "8808b68e-fdb9-4830-9345-184709039ceb",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "4bc6a5d2-98bc-4e42-a46f-bbc90139fd9a",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "fe05227e-73ad-4ee7-9f6c-89f6246c2cf2",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "57eb35c9-0e7b-4b1e-a120-f63883e7aad3",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "97e89db2-e0fe-3e49-8183-ec846c2892ce",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "ab45f915-cd5a-4929-8b3a-9048efe052e5",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "d7be0adc-dbcb-3a6c-878c-ddac4dc711f5",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "87e8eaa5-2285-4fd5-b392-f0e8bad5b2f9",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "ee5fd8b2-59da-4ba3-8356-25d7a04efb41",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "8e4600bc-cd9a-4822-b615-d9095dc6cf8e",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "3a02aff7-7b03-425e-bc2f-2ab8f7edf679",
+       "title": "Led Zeppelin II: Whola Lotta Love",
+       "status": "Bootleg"
+      },
+      {
+       "id": "57fc464a-a8da-3b4c-a7de-6ca260297f65",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "8e4ddfc0-c68c-3f77-9248-340e665d18b7",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "6950a53c-c22b-431d-a0e9-639ffda0c470",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "de3ba4ad-1865-4f08-af15-dd4273b8fe09",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "bffe742c-7e3a-4fef-9630-9df459a34470",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "c4889ad4-55d4-4d23-8f27-5353750585fe",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "7f6aca4e-faf4-4f62-a6a7-e1b6fe50308e",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "04f0936c-1d0b-4901-872b-aad32826562f",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "ca108fb0-b6f2-45ff-89f6-d13e18792cf4",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "fe0aec30-6538-4ff6-98e1-2af99e93ac1f",
+       "title": "Led Zeppelin II",
+       "status": "Bootleg"
+      },
+      {
+       "id": "1e16716f-ed6c-4390-afe5-94267f9c4254",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "e85b6f60-4293-3cf2-ba44-7f653d3887f1",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "3c33c843-148e-4323-9b44-868ac0656456",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "c85c1ab1-2cfa-444c-a092-eadefd1bd927",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      }
+     ]
+    }
+   ]
+  },
+  "https://musicbrainz.org/ws/2/release-group?fmt=json&limit=40&query=releasegroup%3A(led%20AND%20zeppelin%20AND%20ii)%20AND%20artist%3A(led%20AND%20zeppelin)%20AND%20status%3Aofficial": {
+   "created": "2026-10-22T18:54:13.622Z",
+   "offset": 0,
+   "release-groups": [
+    {
+     "id": "33b4653d-006e-3cc1-8afb-386b15a6cd6e",
+     "score": 100,
+     "title": "Led Zeppelin II",
+     "first-release-date": "1969-10-22",
+     "primary-type": "Album",
+     "artist-credit": [
+      {
+       "name": "Led Zeppelin",
+       "artist": {
+        "id": "678d88b2-87b0-403b-b63d-5da7465aecc3",
+        "name": "Led Zeppelin",
+        "sort-name": "Led Zeppelin",
+        "aliases": [
+         {
+          "sort-name": "\u30ec\u30c3\u30c9\u30fb\u30c4\u30a7\u30c3\u30da\u30ea\u30f3",
+          "name": "\u30ec\u30c3\u30c9\u30fb\u30c4\u30a7\u30c3\u30da\u30ea\u30f3"
+         },
+         {
+          "sort-name": "Led Zeppelin",
+          "name": "Led Zeppelin"
+         },
+         {
+          "sort-name": "\u30ec\u30c3\u30c9\u30fb\u30bc\u30c3\u30d7",
+          "name": "\u30ec\u30c3\u30c9\u30fb\u30bc\u30c3\u30d7"
+         },
+         {
+          "sort-name": "\u30ec\u30c3\u30c9\u30bc\u30c3\u30d7",
+          "name": "\u30ec\u30c3\u30c9\u30bc\u30c3\u30d7"
+         },
+         {
+          "sort-name": "\u30bc\u30c3\u30d7",
+          "name": "\u30bc\u30c3\u30d7"
+         },
+         {
+          "sort-name": "ledzep",
+          "name": "ledzep"
+         },
+         {
+          "sort-name": "Bootleg Zeppelin",
+          "name": "Bootleg Zeppelin"
+         },
+         {
+          "sort-name": "LZ",
+          "name": "LZ"
+         },
+         {
+          "sort-name": "Led Zepplelin",
+          "name": "Led Zepplelin"
+         },
+         {
+          "sort-name": "Led Zepellin",
+          "name": "Led Zepellin"
+         },
+         {
+          "sort-name": "\u30ec\u30c3\u30c9 \u30c4\u30a7\u30c3\u30da\u30ea\u30f3",
+          "name": "\u30ec\u30c3\u30c9 \u30c4\u30a7\u30c3\u30da\u30ea\u30f3"
+         },
+         {
+          "sort-name": "\u30ec\u30c3\u30c9\u30c4\u30a7\u30c3\u30da\u30ea\u30f3",
+          "name": "\u30ec\u30c3\u30c9\u30c4\u30a7\u30c3\u30da\u30ea\u30f3"
+         },
+         {
+          "sort-name": "Led Zepplin",
+          "name": "Led Zepplin"
+         },
+         {
+          "sort-name": "Led Zep",
+          "name": "Led Zep"
+         }
+        ]
+       }
+      }
+     ],
+     "releases": [
+      {
+       "id": "1edd5844-7a0e-41bc-b122-fa6b1d402c83",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "80d99d0d-93d9-4f9a-8873-7c3f7dd5ab7f",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "66a211d6-9b56-4eb1-8bde-06456c8388fe",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "ffd29f20-e0e4-4d42-b476-0a5ea7e0c3ba",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "56685555-ad19-4968-ac2c-6525897681b4",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "7e4a5c43-eb33-49ad-baf3-6d794dc26b60",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "d39ef8e7-a0e4-4acf-99e0-33405399cd2d",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "0fc6adbb-cc6a-4825-a4be-01b0a35844de",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "35317cff-f99a-4baf-93b0-bb456190c480",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "aa9e9070-32da-4dd3-bab5-e8b430f28032",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "a3396fed-af4e-474a-83f6-555b15424acd",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "8ba96cce-73f4-4d2d-80d9-99d9cab46e53",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "2ac3b867-02d7-47fb-a360-f1f5828d5e9b",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "4caaad0c-79f2-4d08-8eb3-b3a6a3229bbf",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "472aea5a-ef4f-360f-84b9-0ed21abcec65",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "812ab973-05b8-4542-9c42-a8e934a785cc",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "b01b8dc4-a033-4f3c-8623-f77e9a2f34a3",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "929b2b59-9a4e-4e8d-96f4-49a86153fec6",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "e91ed5de-bee1-4246-b64c-3218ef64ab0b",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "7bba9861-f7bb-4bee-b1df-14eb2fb7b65c",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "0d1fc06f-4dcb-45b0-8fae-33deb44f46ed",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "164f9f2e-5d0e-48c9-ad32-3853375cd9fa",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "295470dc-66e4-4d93-a464-25cb2ee03aaf",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "743c0976-3f48-4109-841c-cd5158536a45",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "5f1fc485-bc31-478f-9a4e-5b7aec3a2a93",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "672b9d14-15c1-4a14-a62c-9600629d3b07",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "18ba83c2-354c-4ebc-918d-8795f821747f",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "3687ea29-1243-4b0b-8983-35197365327d",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "ba07bb97-6239-4a27-9c27-6a4e6996ba64",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "0848b6e5-858b-4219-9df6-6cbe8705a191",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "c2ac2fe1-817d-4979-ad7b-40b3e880645c",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "9421d5a3-c6bd-4a3b-ade1-007831920694",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "3f06b417-926a-4566-b180-fb09fb7b3552",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "a650ab1f-283d-4630-9e44-69d8d099144a",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "af1fda38-1832-443a-8af6-2519804c0ca2",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "9b2b4f9f-4bcb-3130-90bb-db8261b27f28",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "2c2d301d-30de-44fd-89f4-e2d78a4a9de2",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "3b5b27bc-776d-4e2b-b7da-6a02b4ce20bc",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "1eedb603-6818-4201-a934-4a537abb59e4",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "0529e595-a06a-461b-916e-5f4a69cba847",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "c6b2d713-feec-4592-b3c4-1cc8b971a189",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "f0e7c9b0-f5a5-3022-89a6-48c94e965fc8",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "44a720dd-6fe8-4c97-8503-aa9023e02bd3",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "c918d2fa-24ed-3b9f-8cfa-94c7a3417960",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "dd235704-a182-415c-bb8e-9033bffe2817",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "a19631e2-b689-44e2-b9d1-2879f45410e4",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "f79e96d2-fb5d-4a41-bf45-4a270133b631",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "cdb24572-175c-4317-9bf4-9411979439f9",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "8808b68e-fdb9-4830-9345-184709039ceb",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "4bc6a5d2-98bc-4e42-a46f-bbc90139fd9a",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "fe05227e-73ad-4ee7-9f6c-89f6246c2cf2",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "57eb35c9-0e7b-4b1e-a120-f63883e7aad3",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "97e89db2-e0fe-3e49-8183-ec846c2892ce",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "ab45f915-cd5a-4929-8b3a-9048efe052e5",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "d7be0adc-dbcb-3a6c-878c-ddac4dc711f5",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "87e8eaa5-2285-4fd5-b392-f0e8bad5b2f9",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "ee5fd8b2-59da-4ba3-8356-25d7a04efb41",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "8e4600bc-cd9a-4822-b615-d9095dc6cf8e",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "3a02aff7-7b03-425e-bc2f-2ab8f7edf679",
+       "title": "Led Zeppelin II: Whola Lotta Love",
+       "status": "Bootleg"
+      },
+      {
+       "id": "57fc464a-a8da-3b4c-a7de-6ca260297f65",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "8e4ddfc0-c68c-3f77-9248-340e665d18b7",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "6950a53c-c22b-431d-a0e9-639ffda0c470",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "de3ba4ad-1865-4f08-af15-dd4273b8fe09",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "bffe742c-7e3a-4fef-9630-9df459a34470",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "c4889ad4-55d4-4d23-8f27-5353750585fe",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "7f6aca4e-faf4-4f62-a6a7-e1b6fe50308e",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "04f0936c-1d0b-4901-872b-aad32826562f",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "ca108fb0-b6f2-45ff-89f6-d13e18792cf4",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "fe0aec30-6538-4ff6-98e1-2af99e93ac1f",
+       "title": "Led Zeppelin II",
+       "status": "Bootleg"
+      },
+      {
+       "id": "1e16716f-ed6c-4390-afe5-94267f9c4254",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "e85b6f60-4293-3cf2-ba44-7f653d3887f1",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "3c33c843-148e-4323-9b44-868ac0656456",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      },
+      {
+       "id": "c85c1ab1-2cfa-444c-a092-eadefd1bd927",
+       "title": "Led Zeppelin II",
+       "status": "Official"
+      }
+     ]
+    }
+   ]
+  },
+  "https://musicbrainz.org/ws/2/recording?fmt=json&limit=25&query=isrc%3AGBAHT1600302": {
+   "created": "2026-10-22T18:54:52.460Z",
+   "offset": 0,
+   "recordings": [
+    {
+     "id": "026fa041-3917-4c73-9079-ed16e36f20f8",
+     "score": 100,
+     "title": "Blow Your Mind (Mwah)",
+     "length": 178583,
+     "disambiguation": "explicit",
+     "artist-credit": [
+      {
+       "name": "Dua Lipa",
+       "artist": {
+        "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+        "name": "Dua Lipa",
+        "sort-name": "Lipa, Dua",
+        "aliases": [
+         {
+          "sort-name": "\ub450\uc544\ub9ac\ud30c",
+          "name": "\ub450\uc544\ub9ac\ud30c"
+         },
+         {
+          "sort-name": "Dua Lipa",
+          "name": "\ub450\uc544 \ub9ac\ud30c"
+         },
+         {
+          "sort-name": "Dua Lipa",
+          "name": "\u30c7\u30e5\u30a2\u30fb\u30ea\u30d1"
+         },
+         {
+          "sort-name": "Dula Peep",
+          "name": "Dula Peep"
+         },
+         {
+          "sort-name": "Lipa, Dua",
+          "name": "Dua Lipa"
+         }
+        ]
+       }
+      }
+     ],
+     "first-release-date": "2016-08-26",
+     "releases": [
+      {
+       "id": "d648147f-8c9e-4097-bf8c-1e23e34b4a4c",
+       "title": "Dua Lipa (complete edition)",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "date": "2018",
+       "track-count": 25,
+       "media": [
+        {
+         "id": "a0aedfb4-44c3-4dc6-af83-fd0d8a03b4b9",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "1759d598-ccf1-440b-9efe-505aadf6c596",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 179386
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      },
+      {
+       "id": "067be32d-88e9-4ef5-85dd-897af2b3f814",
+       "title": "Pop Girly Summer",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Various Artists",
+         "artist": {
+          "id": "89ad4ac3-39f7-470e-963a-56509c546377",
+          "name": "Various Artists",
+          "sort-name": "Various Artists",
+          "disambiguation": "add compilations to this artist"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "81c7637a-bfe3-46b5-a4bf-067fe5167c6a",
+        "title": "Pop Girly Summer",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2026-07-05",
+       "track-count": 45,
+       "media": [
+        {
+         "id": "068313a3-22cd-4331-a165-c0d5099bd3bf",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "a060c39f-7a90-40d3-aeae-9b30b59d0de5",
+           "number": "4",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178583
+          }
+         ],
+         "track-count": 45
+        }
+       ]
+      },
+      {
+       "id": "5e120da5-afbf-4885-a084-963186518b1e",
+       "title": "Girly Pop Songs",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Various Artists",
+         "artist": {
+          "id": "89ad4ac3-39f7-470e-963a-56509c546377",
+          "name": "Various Artists",
+          "sort-name": "Various Artists",
+          "disambiguation": "add compilations to this artist"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "45f1c089-e14e-40fc-8b53-ec572c028114",
+        "title": "Girly Pop Songs",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2026-06-17",
+       "track-count": 30,
+       "media": [
+        {
+         "id": "98254c39-068e-417d-af0f-5e5729f17eaa",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "e844bb1b-24a2-4eae-840b-a7e414b44149",
+           "number": "23",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178583
+          }
+         ],
+         "track-count": 30
+        }
+       ]
+      },
+      {
+       "id": "c00fb1a2-e6e3-4583-8954-222465ee88b0",
+       "title": "Girly Girl Vibes",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Various Artists",
+         "artist": {
+          "id": "89ad4ac3-39f7-470e-963a-56509c546377",
+          "name": "Various Artists",
+          "sort-name": "Various Artists",
+          "disambiguation": "add compilations to this artist"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "20e8011e-be79-4a85-bd59-40c8eb15cdc7",
+        "title": "Girly Girl Vibes",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2026-06-07",
+       "track-count": 40,
+       "media": [
+        {
+         "id": "265b9bd8-109e-4fa1-972f-6cb6b537be84",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "6019ec5b-c6e5-4c69-88ce-40846f0b91cc",
+           "number": "3",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178000
+          }
+         ],
+         "track-count": 40
+        }
+       ]
+      },
+      {
+       "id": "4b72388b-4c8f-4470-b04b-2a9dba543753",
+       "title": "Radical Optimism Tour \u2013 \u010cesk\u00e1 Republika",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "5c678d03-9aef-46db-9ecf-831efbd6d040",
+        "title": "Dua Lipa Radical Optimism Tour",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2024-11-09",
+       "track-count": 19,
+       "media": [
+        {
+         "id": "6abe1fa3-5a8f-3f9c-b708-0fdbf7be3343",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "3a19a0c1-c746-40d0-844a-f7f210ff4af8",
+           "number": "13",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178583
+          }
+         ],
+         "track-count": 19
+        }
+       ]
+      },
+      {
+       "id": "13d08982-35dd-4eea-8f86-673e1c607c6a",
+       "title": "Radical Optimism Tour \u2013 Espa\u00f1a",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "5c678d03-9aef-46db-9ecf-831efbd6d040",
+        "title": "Dua Lipa Radical Optimism Tour",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2024-11-09",
+       "track-count": 19,
+       "media": [
+        {
+         "id": "78451dcb-292c-39b8-828d-a3ae6949928a",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "d62146be-3953-4dbd-a01b-d897c636e346",
+           "number": "16",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178583
+          }
+         ],
+         "track-count": 19
+        }
+       ]
+      },
+      {
+       "id": "1b02622c-bc01-4972-b787-d478b6687023",
+       "title": "Radical Optimism Tour - UK",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "5c678d03-9aef-46db-9ecf-831efbd6d040",
+        "title": "Dua Lipa Radical Optimism Tour",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2024-11-09",
+       "track-count": 20,
+       "media": [
+        {
+         "id": "b2d67f8a-4180-3fb7-9c19-3e3ead3d6ac4",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "b275b4a7-d77e-4d39-a9f5-5adbd6d15b1d",
+           "number": "16",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178583
+          }
+         ],
+         "track-count": 20
+        }
+       ]
+      },
+      {
+       "id": "edf86f23-a89a-46ef-bc98-b590c0f7fdd1",
+       "title": "Radical Optimism Tour \u2013 Italia",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "5c678d03-9aef-46db-9ecf-831efbd6d040",
+        "title": "Dua Lipa Radical Optimism Tour",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2024-11-09",
+       "track-count": 19,
+       "media": [
+        {
+         "id": "456615dc-4224-39a4-8ff8-36e47a592c23",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "5bfad682-b8cb-412a-bf16-24c17f0068fa",
+           "number": "15",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178583
+          }
+         ],
+         "track-count": 19
+        }
+       ]
+      },
+      {
+       "id": "e57511d3-1b6b-4bf1-a524-62da986ba137",
+       "title": "Radical Optimism Tour \u2013 \u00c9ire",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "5c678d03-9aef-46db-9ecf-831efbd6d040",
+        "title": "Dua Lipa Radical Optimism Tour",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2024-11-09",
+       "track-count": 19,
+       "media": [
+        {
+         "id": "5f467ba6-a1b7-3753-b39f-0cc0a8133f44",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "92b4a70d-894c-4974-96b1-02413976ae79",
+           "number": "15",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178583
+          }
+         ],
+         "track-count": 19
+        }
+       ]
+      },
+      {
+       "id": "d3af3b27-e703-4383-ab4e-46031d3ea08e",
+       "title": "Radical Optimism Tour \u2013 Deutschland",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "5c678d03-9aef-46db-9ecf-831efbd6d040",
+        "title": "Dua Lipa Radical Optimism Tour",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2024-11-09",
+       "track-count": 20,
+       "media": [
+        {
+         "id": "0d4cc820-5965-3143-9fbb-1c4d6783f180",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "2ad2e677-94a7-46d7-a7db-6175cc2d5a99",
+           "number": "16",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 179386
+          }
+         ],
+         "track-count": 20
+        }
+       ]
+      },
+      {
+       "id": "13ef2d04-f80d-4061-99aa-a3ac885e63cb",
+       "title": "Radical Optimism Tour \u2013 Canada",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "5c678d03-9aef-46db-9ecf-831efbd6d040",
+        "title": "Dua Lipa Radical Optimism Tour",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2024-11-09",
+       "track-count": 20,
+       "media": [
+        {
+         "id": "c2d78433-4303-3919-a0c2-3fc65de0c982",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "a5dec10a-9d11-492c-b495-dbe22212e3a9",
+           "number": "16",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178583
+          }
+         ],
+         "track-count": 20
+        }
+       ]
+      },
+      {
+       "id": "19e658cc-da58-4b7f-ae8b-a500521055ac",
+       "title": "Radical Optimism Tour \u2013 Belgien, Belgi\u00eb, Belgique",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "5c678d03-9aef-46db-9ecf-831efbd6d040",
+        "title": "Dua Lipa Radical Optimism Tour",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2024-11-09",
+       "track-count": 20,
+       "media": [
+        {
+         "id": "a9c1cd84-f9e0-355f-b91d-205fae416b95",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "ed713ebc-e1c3-4e0e-aaf4-2529d60a9c4b",
+           "number": "17",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178583
+          }
+         ],
+         "track-count": 20
+        }
+       ]
+      },
+      {
+       "id": "d20ed323-8187-44cf-9182-be1198126002",
+       "title": "Radical Optimism Tour - Nederland",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "5c678d03-9aef-46db-9ecf-831efbd6d040",
+        "title": "Dua Lipa Radical Optimism Tour",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2024-11-09",
+       "track-count": 19,
+       "media": [
+        {
+         "id": "c11cc5ec-fb7f-305e-9f1f-6ad8d7664ac7",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "b8d219d6-f69e-49dc-899c-8ce60f3c42d9",
+           "number": "17",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178583
+          }
+         ],
+         "track-count": 19
+        }
+       ]
+      },
+      {
+       "id": "709c3758-849a-4ed6-981c-e174fb5d8dc1",
+       "title": "Radical Optimism Tour \u2013 France",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "5c678d03-9aef-46db-9ecf-831efbd6d040",
+        "title": "Dua Lipa Radical Optimism Tour",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2024-11-09",
+       "track-count": 19,
+       "media": [
+        {
+         "id": "c81c13a6-c2b4-3c76-937d-f0f9a29c5d3b",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "a0952d43-9ed5-49c6-ac31-4a1c4da2fdaf",
+           "number": "15",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178583
+          }
+         ],
+         "track-count": 19
+        }
+       ]
+      },
+      {
+       "id": "12f6af15-24b2-4098-a56b-dff83afb81b5",
+       "title": "Radical Optimism Tour \u2013 USA",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "5c678d03-9aef-46db-9ecf-831efbd6d040",
+        "title": "Dua Lipa Radical Optimism Tour",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2024-11-09",
+       "track-count": 20,
+       "media": [
+        {
+         "id": "f8c00752-6fc2-3a05-b251-aff551c44041",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "c861fb0f-c329-4cbf-8ed3-5f41e17d71f9",
+           "number": "17",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178583
+          }
+         ],
+         "track-count": 20
+        }
+       ]
+      },
+      {
+       "id": "304e079f-feb0-419f-a3d9-7a01b5214149",
+       "title": "Dua Lipa (complete edition)",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "date": "2018-10-19",
+       "track-count": 30,
+       "media": [
+        {
+         "id": "f2b32262-094e-35e8-9fc8-a9ba6d1c7863",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "1761ccfa-4c30-4190-97b7-9a29f6d495a8",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 179386
+          }
+         ],
+         "track-count": 22
+        }
+       ]
+      },
+      {
+       "id": "b9427042-b63f-445b-9e48-65953283fcab",
+       "title": "Ballermann Hits Party 2017",
+       "status": "Official",
+       "disambiguation": "XXL Fan Edition",
+       "artist-credit": [
+        {
+         "name": "Various Artists",
+         "artist": {
+          "id": "89ad4ac3-39f7-470e-963a-56509c546377",
+          "name": "Various Artists",
+          "sort-name": "Various Artists",
+          "disambiguation": "add compilations to this artist"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "3f246446-a71f-44eb-b14a-7287dc7e9c27",
+        "title": "Ballermann Hits Party 2017",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2016-10-28",
+       "track-count": 63,
+       "media": [
+        {
+         "id": "cbf9d573-55dc-37a0-bbbd-3a38de623821",
+         "position": 2,
+         "format": "CD",
+         "track": [
+          {
+           "id": "18b7476a-be81-4fc9-a078-cd8a2da5ae3b",
+           "number": "9",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178805
+          }
+         ],
+         "track-count": 21
+        }
+       ]
+      },
+      {
+       "id": "6dd44772-ef54-4a89-b9ea-65fa7a6bef52",
+       "title": "Dua Lipa (complete edition)",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "date": "2018-10-19",
+       "track-count": 25,
+       "media": [
+        {
+         "id": "b4addafe-c495-3c55-9771-642bc8ca93fa",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "646f9048-b40e-4201-b884-36c6cd5ce50b",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 179386
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      },
+      {
+       "id": "15705c91-0d9e-41e8-bfb9-98a72c1f14cb",
+       "title": "100 Greatest TikTok Songs & Viral Hits",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Various Artists",
+         "artist": {
+          "id": "89ad4ac3-39f7-470e-963a-56509c546377",
+          "name": "Various Artists",
+          "sort-name": "Various Artists",
+          "disambiguation": "add compilations to this artist"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "67462809-b4ad-42ae-8a3e-00755e19d280",
+        "title": "100 Greatest TikTok Songs & Viral Hits",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "track-count": 100,
+       "media": [
+        {
+         "id": "f9fc26f4-50ff-34f9-89ae-4dc11778931a",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "53c34de9-ccde-44a9-bcef-0b9d84b1611b",
+           "number": "52",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178583
+          }
+         ],
+         "track-count": 100
+        }
+       ]
+      },
+      {
+       "id": "2a355e68-9c0c-4389-acae-d390836c11ed",
+       "title": "Dua Lipa (complete edition)",
+       "status": "Official",
+       "disambiguation": "explicit",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "track-count": 25,
+       "media": [
+        {
+         "id": "84cc7f46-5ed9-39e1-a838-eb55e5b90a7e",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "df27f703-9caa-4347-a8c9-8bdb88ac67b1",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178583
+          }
+         ],
+         "track-count": 25
+        }
+       ]
+      },
+      {
+       "id": "7cd31be3-9f22-4b33-819c-2103298e8336",
+       "title": "Blow Your Mind (Mwah)",
+       "status": "Promotion",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "4a45bfa5-eb1e-49eb-a20c-1021389b2121",
+        "title": "Blow Your Mind (Mwah)",
+        "primary-type": "Single"
+       },
+       "date": "",
+       "track-count": 1,
+       "media": [
+        {
+         "id": "5127d8ee-cbc3-30f4-9a98-f741686db829",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "be66e8d7-ce4f-4a09-91a7-26e7063ffca3",
+           "number": "1",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 179000
+          }
+         ],
+         "track-count": 1
+        }
+       ]
+      },
+      {
+       "id": "8b95136f-9edd-4f25-9b69-a72bca1c682e",
+       "title": "Mean Girls",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Various Artists",
+         "artist": {
+          "id": "89ad4ac3-39f7-470e-963a-56509c546377",
+          "name": "Various Artists",
+          "sort-name": "Various Artists",
+          "disambiguation": "add compilations to this artist"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "23c8bdb7-7913-491b-b043-2ef1e58e447a",
+        "title": "Mean Girls",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "track-count": 20,
+       "media": [
+        {
+         "id": "be44ddd2-b9ec-343e-bb25-62d8119f5d8f",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "7334916e-b9c9-4edb-916c-539f490fcf38",
+           "number": "5",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178583
+          }
+         ],
+         "track-count": 20
+        }
+       ]
+      },
+      {
+       "id": "95f78576-664d-45ff-9254-5e98938f50ac",
+       "title": "Dua Lipa",
+       "status": "Official",
+       "disambiguation": "hi\u2010res, explicit",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "track-count": 12,
+       "media": [
+        {
+         "id": "4001a328-d20b-33b4-b5f7-d3936fdb0263",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "3a191adc-2786-4c8c-b4d4-e95cc8918faa",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178583
+          }
+         ],
+         "track-count": 12
+        }
+       ]
+      },
+      {
+       "id": "394eca12-a71b-4356-b072-17860883f99f",
+       "title": "Dua Lipa",
+       "status": "Withdrawn",
+       "disambiguation": "complete edition, kaleidoscope cover, explicit",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "date": "2023-10-11",
+       "track-count": 25,
+       "media": [
+        {
+         "id": "4612f588-12bd-3bd7-90c8-b5b30f596c12",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "1ab798f5-9373-4518-91c3-f12a4755db9c",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 179386
+          }
+         ],
+         "track-count": 25
+        }
+       ]
+      },
+      {
+       "id": "65111edc-988b-444e-87a0-5cba44096553",
+       "title": "Dua Lipa",
+       "status": "Withdrawn",
+       "disambiguation": "complete edition, kaleidoscope cover, explicit",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "date": "2023-10-11",
+       "track-count": 25,
+       "media": [
+        {
+         "id": "e3e18890-aee1-3a52-bd9f-cf0c1df559ac",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "4ff9eb1a-7a8a-44ab-9799-8d61d7787a0e",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 179386
+          }
+         ],
+         "track-count": 25
+        }
+       ]
+      },
+      {
+       "id": "a9070ade-743e-476e-b35d-34e3f88cc4d8",
+       "title": "Dua Lipa (complete edition)",
+       "status": "Official",
+       "disambiguation": "explicit",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "date": "2018-10-19",
+       "track-count": 25,
+       "media": [
+        {
+         "id": "dd5ded46-7fae-3bc3-8dc1-14457bedef93",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "4d492ed5-6ad6-4464-958e-584113dcb70a",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 179386
+          }
+         ],
+         "track-count": 25
+        }
+       ]
+      },
+      {
+       "id": "01b450a5-2e28-4cab-966c-1741436db865",
+       "title": "Dua Lipa",
+       "status": "Withdrawn",
+       "disambiguation": "complete edition, kaleidoscope cover, explicit",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "date": "2023-10-11",
+       "track-count": 21,
+       "media": [
+        {
+         "id": "d11fcae0-7034-39f9-9fee-14e1e563b703",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "06a875bf-678a-4d27-888a-792fd29b9948",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 179386
+          }
+         ],
+         "track-count": 21
+        }
+       ]
+      },
+      {
+       "id": "d885a2c5-af28-4e58-8f9b-65a4eb2bfd99",
+       "title": "Dua Lipa (complete edition)",
+       "status": "Official",
+       "disambiguation": "explicit",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "date": "2018-10-19",
+       "track-count": 21,
+       "media": [
+        {
+         "id": "305eafcb-0035-3a40-b50f-129cf3f7651d",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "0f4ca4c6-7b16-49ce-b72f-65c818929d1d",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 179386
+          }
+         ],
+         "track-count": 21
+        }
+       ]
+      },
+      {
+       "id": "bbaff9a7-0f39-4dd0-be90-684387ec367e",
+       "title": "Dua Lipa",
+       "status": "Withdrawn",
+       "disambiguation": "complete edition, kaleidoscope cover, explicit",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "track-count": 25,
+       "media": [
+        {
+         "id": "78dbddb1-94ce-3e6e-8e68-49d73195a2d3",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "d5f88c6b-5fc6-4357-bfda-4d8ca8bdbfab",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178000
+          }
+         ],
+         "track-count": 25
+        }
+       ]
+      },
+      {
+       "id": "4bd223c0-f4cf-4d25-bdc3-b847cf4658b5",
+       "title": "Dua Lipa (complete edition)",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "date": "2018",
+       "track-count": 25,
+       "media": [
+        {
+         "id": "5db7617d-6786-3487-9ce2-70218c440beb",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "c32a0b0a-5595-4892-8026-578041810f60",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178000
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      },
+      {
+       "id": "3a68ec2c-536e-4827-944d-d40b0113dcc2",
+       "title": "Dua Lipa",
+       "status": "Withdrawn",
+       "disambiguation": "deluxe, kaleidoscope cover, hi\u2010res, explicit",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "track-count": 17,
+       "media": [
+        {
+         "id": "60b86bd3-c4e5-3232-b508-3bf6cb96406a",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "3857e634-a010-4a0b-8a7d-0ec76cb23755",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178000
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      },
+      {
+       "id": "ddf00a75-4e94-411a-855d-8b244dda359f",
+       "title": "Dua Lipa",
+       "status": "Withdrawn",
+       "disambiguation": "kaleidoscope cover, hi\u2010res, explicit",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "track-count": 12,
+       "media": [
+        {
+         "id": "f4104753-36f5-3fc9-b9fd-30e41b540220",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "a166128d-05c4-454a-bd67-9a82c542214c",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178583
+          }
+         ],
+         "track-count": 12
+        }
+       ]
+      },
+      {
+       "id": "a7d21b7f-688b-4e57-ab3e-cede6889931d",
+       "title": "Dua Lipa",
+       "status": "Official",
+       "disambiguation": "hi\u2010res, explicit",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "track-count": 12,
+       "media": [
+        {
+         "id": "d3e921df-073d-3b4f-b000-36a5008397ef",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "f86ca295-f808-44fc-b51b-7c633a7997f8",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178583
+          }
+         ],
+         "track-count": 12
+        }
+       ]
+      },
+      {
+       "id": "f0cfeae5-1aaf-43c8-82b0-075c5dd44344",
+       "title": "Dua Lipa",
+       "status": "Withdrawn",
+       "disambiguation": "kaleidoscope cover, explicit",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "track-count": 12,
+       "media": [
+        {
+         "id": "e152b5d7-fe89-38e3-8987-697c8b4d33db",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "0a6b859d-ab7a-462e-a453-e2097be64c99",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178583
+          }
+         ],
+         "track-count": 12
+        }
+       ]
+      },
+      {
+       "id": "88c57ec1-7b04-4cad-92ad-aa967d7fd11e",
+       "title": "Dua Lipa",
+       "status": "Official",
+       "disambiguation": "explicit",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "track-count": 12,
+       "media": [
+        {
+         "id": "bf5e074a-98c3-3348-8efe-0c3745ad2116",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "e83c32b2-3e93-4339-be51-cb327e76983d",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178583
+          }
+         ],
+         "track-count": 12
+        }
+       ]
+      },
+      {
+       "id": "6807631d-1a4a-4887-969f-0c9f834e69bd",
+       "title": "Dua Lipa",
+       "status": "Withdrawn",
+       "disambiguation": "deluxe, kaleidoscope cover, explicit",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "track-count": 17,
+       "media": [
+        {
+         "id": "0beb9f7c-e000-3ed8-80d7-31d82f34d0bf",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "f5049ad3-54a2-4b58-b4e2-a2d75f332dbb",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178583
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      },
+      {
+       "id": "1529430a-5e3c-4145-acfe-33f6ea4b09f9",
+       "title": "Dua Lipa",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "date": "2017",
+       "track-count": 12,
+       "media": [
+        {
+         "id": "42f09056-aedc-394b-9105-f23514fa9cc7",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "a9072808-3b27-43f6-a9c8-cd294e82186c",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 179386
+          }
+         ],
+         "track-count": 12
+        }
+       ]
+      },
+      {
+       "id": "1a343c09-e2e5-497f-a6d0-3ca62a17fc4f",
+       "title": "Dua Lipa (complete edition)",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "date": "2018-10-19",
+       "track-count": 25,
+       "media": [
+        {
+         "id": "068c41d2-d73f-38a4-adad-3508837e98f3",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "6e522793-ff89-4e9c-b07a-cd1914eccee4",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 179386
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      },
+      {
+       "id": "2c535c78-cafb-42e7-ac21-7b29efad7d46",
+       "title": "Dua Lipa",
+       "status": "Official",
+       "disambiguation": "Japan special edition",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "date": "2018-04-25",
+       "track-count": 22,
+       "media": [
+        {
+         "id": "d08d9935-3221-36fe-9439-7e73c71319f9",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "7814b1c9-99b5-4f2b-91da-a464733aa3d3",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 179386
+          }
+         ],
+         "track-count": 22
+        }
+       ]
+      },
+      {
+       "id": "1aaa0641-b875-45f4-845a-260a0bceb2c9",
+       "title": "Dua Lipa",
+       "status": "Official",
+       "disambiguation": "Italian special edition",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "date": "2017-10-20",
+       "track-count": 13,
+       "media": [
+        {
+         "id": "36a783f2-8869-3f4c-8b01-df4e4ae17735",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "fa0baec9-ee0a-451c-845a-a67ffe770723",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 179386
+          }
+         ],
+         "track-count": 13
+        }
+       ]
+      },
+      {
+       "id": "d3a6bd3c-41cc-46f5-bb96-b70427c81e5a",
+       "title": "Dua Lipa",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "date": "2017-06-02",
+       "track-count": 17,
+       "media": [
+        {
+         "id": "5870050d-e199-336f-b102-0db0c63ba2cf",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "70ed4fce-1677-4ec6-abc4-692354c2cbec",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 179386
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      },
+      {
+       "id": "dd50401f-e1d8-48c4-b9a6-fbf5cedb998b",
+       "title": "Dua Lipa",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "date": "2017-06-02",
+       "track-count": 17,
+       "media": [
+        {
+         "id": "452eb524-b7b1-31af-92a3-f3bdf17ef672",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "ddd26b43-9de8-459c-81fd-fe76a582af8e",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 179386
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      },
+      {
+       "id": "6313b666-6042-486b-b2aa-614e7542ff68",
+       "title": "Life Is Music 2016.2",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Various Artists",
+         "artist": {
+          "id": "89ad4ac3-39f7-470e-963a-56509c546377",
+          "name": "Various Artists",
+          "sort-name": "Various Artists",
+          "disambiguation": "add compilations to this artist"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "406d765d-c5ca-43e9-b268-a33878927ff5",
+        "title": "Life Is Music 2016.2",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2016-12-02",
+       "track-count": 39,
+       "media": [
+        {
+         "id": "1f50a739-63d0-3891-8007-dbcdc44c08b6",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "7e93e73c-e8f2-4218-af5e-baae4ce98882",
+           "number": "8",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 177240
+          }
+         ],
+         "track-count": 20
+        }
+       ]
+      },
+      {
+       "id": "701fd060-1e01-4c06-b802-65c678127822",
+       "title": "Dua Lipa (deluxe edition)",
+       "status": "Official",
+       "disambiguation": "hi\u2010res, explicit",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "track-count": 17,
+       "media": [
+        {
+         "id": "32458217-1e8a-334f-a2f8-8ed49e0807f8",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "56a61b4a-ab20-4ab1-b6cb-052595e353ef",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178000
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      },
+      {
+       "id": "30ae4326-94b5-4099-880c-23935ebf625c",
+       "title": "Dua Lipa",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "date": "2019",
+       "track-count": 12,
+       "media": [
+        {
+         "id": "9e69d2df-6195-3110-a977-30ea95b42279",
+         "position": 1,
+         "format": "12\" Vinyl",
+         "track": [
+          {
+           "id": "2aa2f405-8d30-4359-82b5-b7fa3efa2b89",
+           "number": "A6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 179000
+          }
+         ],
+         "track-count": 12
+        }
+       ]
+      },
+      {
+       "id": "e498c49b-6176-4221-ad6e-497d9a49516d",
+       "title": "Dua Lipa (complete edition)",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "date": "2018-10-19",
+       "track-count": 25,
+       "media": [
+        {
+         "id": "988feaaf-1839-377e-9a1a-61e0cbfbfc69",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "a26b964a-837b-460d-88a2-19314b90dca8",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 179386
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      },
+      {
+       "id": "014450e4-d022-483e-a85e-a4761a57da51",
+       "title": "Dua Lipa (complete edition)",
+       "status": "Official",
+       "disambiguation": "explicit",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "date": "2018-10-19",
+       "track-count": 25,
+       "media": [
+        {
+         "id": "9c71c978-9bfe-350d-9774-6325fe89df8c",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "73df756e-9f53-42ff-ab0d-2eff71ab0ba7",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 179386
+          }
+         ],
+         "track-count": 25
+        }
+       ]
+      },
+      {
+       "id": "13dc2824-3efd-4459-9987-51bd4e263f5c",
+       "title": "Dua Lipa (deluxe edition)",
+       "status": "Official",
+       "disambiguation": "explicit",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "date": "2017-06-02",
+       "track-count": 17,
+       "media": [
+        {
+         "id": "02cdfb51-2d3f-3ad8-b5f2-4e7203cc0bb6",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "e8dda9af-beff-478c-8932-87ba5ed63f6e",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178000
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      },
+      {
+       "id": "74a67a66-5486-45bd-978d-96a23856c99e",
+       "title": "Dua Lipa",
+       "status": "Official",
+       "disambiguation": "deluxe edition",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "date": "2017-06-02",
+       "track-count": 17,
+       "media": [
+        {
+         "id": "1aefb853-b040-3d4c-a77d-dc1cacde53fb",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "697b678d-48c6-4791-bd93-4e4793bd59cf",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 179386
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      },
+      {
+       "id": "6ec1f854-f81b-40a0-8daf-07cac9ff026b",
+       "title": "Dua Lipa (deluxe edition)",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "date": "2017-06-02",
+       "track-count": 17,
+       "media": [
+        {
+         "id": "e9a57355-4e97-385a-8d75-3043a7655c9a",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "a2fcb379-7638-4f27-b2e4-5242a69ed09c",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178000
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      },
+      {
+       "id": "10b7ac15-19e8-44e4-830a-b22a4c04cb4e",
+       "title": "Dua Lipa",
+       "status": "Official",
+       "disambiguation": "Japan deluxe edition",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "date": "2017-06-02",
+       "track-count": 19,
+       "media": [
+        {
+         "id": "90551b74-ad7d-3274-89a2-e9e8236d4724",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "b8de8dc7-a84e-496a-8a07-a29b648ef674",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178583
+          }
+         ],
+         "track-count": 19
+        }
+       ]
+      },
+      {
+       "id": "0cc6afc1-931e-46ef-881e-7cd98c428793",
+       "title": "Dua Lipa",
+       "status": "Official",
+       "disambiguation": "Germany deluxe edition",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "date": "2017-06-02",
+       "track-count": 17,
+       "media": [
+        {
+         "id": "0164f514-c6a2-325e-95fc-0a7fea94515a",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "d2b9b6fc-a2fd-42e0-b873-e61b00624c5c",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178583
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      },
+      {
+       "id": "a22cb9d6-bbb4-494b-8363-0835c1652351",
+       "title": "Dua Lipa",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "date": "2017-06-02",
+       "track-count": 12,
+       "media": [
+        {
+         "id": "cb56de1c-417b-3225-a162-04cc50e39f5d",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "53d02b03-032d-4823-8bfd-3dcbac7f9a95",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 179386
+          }
+         ],
+         "track-count": 12
+        }
+       ]
+      },
+      {
+       "id": "faae05c9-0080-4575-a098-92739f5d7e3e",
+       "title": "Dua Lipa (complete edition)",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "date": "2018-10-19",
+       "track-count": 25,
+       "media": [
+        {
+         "id": "0b4c6890-2767-3f07-ac1b-4671686623eb",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "efa18881-eed9-44e7-ad20-f0a8d21bf600",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178583
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      },
+      {
+       "id": "ca9fe684-223b-48ca-ac8b-f75a15d0229b",
+       "title": "Life Is Music 2016.2",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Various Artists",
+         "artist": {
+          "id": "89ad4ac3-39f7-470e-963a-56509c546377",
+          "name": "Various Artists",
+          "sort-name": "Various Artists",
+          "disambiguation": "add compilations to this artist"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "406d765d-c5ca-43e9-b268-a33878927ff5",
+        "title": "Life Is Music 2016.2",
+        "primary-type": "Album",
+        "secondary-types": [
+         "Compilation"
+        ]
+       },
+       "date": "2016-12-02",
+       "track-count": 39,
+       "media": [
+        {
+         "id": "14161609-c1cc-33b4-ad2d-1a78f1fe57eb",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "331e1f0b-5a10-468c-95e1-a72c159c257d",
+           "number": "8",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178583
+          }
+         ],
+         "track-count": 20
+        }
+       ]
+      },
+      {
+       "id": "3f37b852-085c-47cc-a6ed-305204bd2f17",
+       "title": "Dua Lipa",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "date": "2017-06-02",
+       "track-count": 12,
+       "media": [
+        {
+         "id": "aa188b4d-9219-3ff3-a53a-a3f8d6c9dd6a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "a1182982-babe-444d-8c01-871043fc1b2f",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 179000
+          }
+         ],
+         "track-count": 12
+        }
+       ]
+      },
+      {
+       "id": "538792e7-e9af-4351-8753-15f70348538b",
+       "title": "Dua Lipa",
+       "status": "Official",
+       "disambiguation": "deluxe edition",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "date": "2017-06-02",
+       "track-count": 17,
+       "media": [
+        {
+         "id": "9e90ac02-d05f-3f7c-b846-15f18d3fa81a",
+         "position": 1,
+         "format": "CD",
+         "track": [
+          {
+           "id": "51ddda22-1ac8-4f2a-9dfe-0376e4c37f87",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 179386
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      },
+      {
+       "id": "5084de65-a2f6-4b2f-91c3-4ff50dffaf8b",
+       "title": "Dua Lipa (deluxe edition)",
+       "status": "Official",
+       "disambiguation": "explicit",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "93747376-b698-4610-a023-d256de075460",
+        "title": "Dua Lipa",
+        "primary-type": "Album"
+       },
+       "track-count": 17,
+       "media": [
+        {
+         "id": "47a5b8ec-849e-3221-acba-5feed2dddf6e",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "b9b4d750-cb1b-4418-8392-f9543881ee6a",
+           "number": "6",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 178583
+          }
+         ],
+         "track-count": 17
+        }
+       ]
+      },
+      {
+       "id": "899215cd-1944-4309-8aae-2749db2a1a49",
+       "title": "The Only EP",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "5e0f5e51-42df-4c5f-a3b8-34e50f9ed495",
+        "title": "The Only EP",
+        "primary-type": "EP"
+       },
+       "date": "2017-04-21",
+       "track-count": 5,
+       "media": [
+        {
+         "id": "140ba9f3-a98d-33aa-b77a-789130311557",
+         "position": 1,
+         "format": "Vinyl",
+         "track": [
+          {
+           "id": "e56f7bce-df6c-4655-a519-0191c1ff592d",
+           "number": "1",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 179000
+          }
+         ],
+         "track-count": 5
+        }
+       ]
+      },
+      {
+       "id": "383be31c-37a0-4e08-8cda-cbcbbc587ae5",
+       "title": "Blow Your Mind (Mwah)",
+       "status": "Official",
+       "artist-credit": [
+        {
+         "name": "Dua Lipa",
+         "artist": {
+          "id": "6f1a58bf-9b1b-49cf-a44a-6cefad7ae04f",
+          "name": "Dua Lipa",
+          "sort-name": "Lipa, Dua"
+         }
+        }
+       ],
+       "release-group": {
+        "id": "4a45bfa5-eb1e-49eb-a20c-1021389b2121",
+        "title": "Blow Your Mind (Mwah)",
+        "primary-type": "Single"
+       },
+       "date": "2016-08-26",
+       "track-count": 1,
+       "media": [
+        {
+         "id": "2aaa147b-04ee-31df-8a8f-3ee9ddb9bd12",
+         "position": 1,
+         "format": "Digital Media",
+         "track": [
+          {
+           "id": "0ef6e647-4aeb-438e-8c8a-50c22c511203",
+           "number": "1",
+           "title": "Blow Your Mind (Mwah)",
+           "length": 179000
+          }
+         ],
+         "track-count": 1
+        }
+       ]
+      }
+     ],
+     "isrcs": [
+      "GBAHT1600318",
+      "GBAHT1600302",
+      "DEUM71601954"
+     ]
+    }
+   ]
+  }
+ },
+ "covers": {
+  "https://coverartarchive.org/release/4bc6a5d2-98bc-4e42-a46f-bbc90139fd9a/front": 307,
+  "https://coverartarchive.org/release/2a355e68-9c0c-4389-acae-d390836c11ed/front": 307
+ }
+}
