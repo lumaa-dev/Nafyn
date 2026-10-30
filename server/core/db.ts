@@ -1,6 +1,6 @@
 // central MySQL connection + schema setup for all Nafyn databases
 import mysql from "mysql2/promise";
-import { createInsightsTables } from "./insightsSchema";
+import { createInsightsTables, resolveTableOptions } from "./insightsSchema";
 import { runMigrations } from "./migrations";
 
 let pool: mysql.Pool | null = null;
@@ -251,6 +251,133 @@ export async function initDatabases(): Promise<void> {
             userId VARCHAR(36) PRIMARY KEY,
             enabled TINYINT(1) NOT NULL DEFAULT 1
         );
+
+        -- WebAuthn passkeys, an alternative to password login. No FK to users, same informal-reference
+        -- convention as api_tokens/sessions. publicKey/transports hold no secret (a public key, and a hint
+        -- list like "usb,internal"), so they are plain text, not hashed.
+        CREATE TABLE IF NOT EXISTS passkeys (
+            id VARCHAR(36) PRIMARY KEY,
+            userId VARCHAR(36) NOT NULL,
+            credentialId VARCHAR(255) NOT NULL UNIQUE,
+            publicKey TEXT NOT NULL,
+            counter BIGINT NOT NULL DEFAULT 0,
+            deviceType VARCHAR(16) NOT NULL,
+            backedUp TINYINT(1) NOT NULL DEFAULT 0,
+            transports VARCHAR(255),
+            label VARCHAR(100),
+            createdAt BIGINT NOT NULL,
+            lastUsedAt BIGINT NULL,
+            INDEX idx_passkeys_userId (userId)
+        );
+
+        -- outbound webhooks. userId NULL is an instance-wide ("global") webhook, managed under
+        -- MANAGE_WEBHOOKS, anything else is one user's own. \`url\` is a credential in its own right (a Discord
+        -- or Slack webhook URL is all it takes to post into that channel), so it is never exported or echoed
+        -- back in full.
+        CREATE TABLE IF NOT EXISTS webhooks (
+            id VARCHAR(36) PRIMARY KEY,
+            userId VARCHAR(36) NULL,
+            name VARCHAR(100) NOT NULL,
+            url TEXT NOT NULL,
+            format VARCHAR(16) NOT NULL,
+            events TEXT NULL,
+            enabled TINYINT(1) NOT NULL DEFAULT 1,
+            failureCount INT NOT NULL DEFAULT 0,
+            lastError TEXT NULL,
+            lastDeliveredAt BIGINT NULL,
+            createdAt BIGINT NOT NULL,
+            INDEX idx_webhooks_userId (userId)
+        );
+
+        -- APNs tokens registered by the Nafyn iOS app. One row per (token, kind), bound to the login
+        -- (sessionId = JWT jti) that registered it, so logging that device out or revoking its session stops
+        -- its pushes too. kind separates the regular alert token from the per-attributes-type push-to-start
+        -- tokens Live Activities and Now Playing remote sessions use.
+        CREATE TABLE IF NOT EXISTS apn_devices (
+            id VARCHAR(36) PRIMARY KEY,
+            userId VARCHAR(36) NOT NULL,
+            sessionId VARCHAR(36) NOT NULL,
+            token VARCHAR(255) NOT NULL,
+            kind VARCHAR(32) NOT NULL,
+            environment VARCHAR(16) NOT NULL,
+            deviceName VARCHAR(100) NULL,
+            events TEXT NULL,
+            createdAt BIGINT NOT NULL,
+            lastSeenAt BIGINT NOT NULL,
+            UNIQUE KEY uq_apn_devices_token_kind (token, kind),
+            INDEX idx_apn_devices_userId (userId),
+            INDEX idx_apn_devices_sessionId (sessionId)
+        );
+
+        -- per-activity APNs update tokens: a running Live Activity (request progress, release countdown) or a
+        -- Now Playing remote session hands the app a token that only addresses that one activity/session.
+        -- Bound to the registering login like apn_devices, and swept with it.
+        CREATE TABLE IF NOT EXISTS apn_activity_tokens (
+            id VARCHAR(36) PRIMARY KEY,
+            userId VARCHAR(36) NOT NULL,
+            sessionId VARCHAR(36) NOT NULL,
+            kind VARCHAR(16) NOT NULL,
+            refId VARCHAR(64) NOT NULL,
+            token VARCHAR(255) NOT NULL,
+            environment VARCHAR(16) NOT NULL,
+            createdAt BIGINT NOT NULL,
+            UNIQUE KEY uq_apn_activity (kind, refId, sessionId),
+            INDEX idx_apn_activity_userId (userId)
+        );
+
+        -- "notify me when this comes out" for unreleased albums/tracks. releaseAt is the UTC instant of local
+        -- midnight on releaseDate in the subscriber's own timezone, which is when the notification goes out.
+        CREATE TABLE IF NOT EXISTS release_subscriptions (
+            id VARCHAR(36) PRIMARY KEY,
+            userId VARCHAR(36) NOT NULL,
+            musicbrainzId VARCHAR(36) NOT NULL,
+            type VARCHAR(16) NOT NULL,
+            title TEXT NULL,
+            artistName TEXT NULL,
+            coverArt TEXT NULL,
+            releaseDate CHAR(10) NOT NULL,
+            timezone VARCHAR(64) NOT NULL,
+            releaseAt BIGINT NOT NULL,
+            activityStartedAt BIGINT NULL,
+            notifiedAt BIGINT NULL,
+            createdAt BIGINT NOT NULL,
+            UNIQUE KEY uq_release_sub (userId, musicbrainzId),
+            INDEX idx_release_sub_due (notifiedAt, releaseAt)
+        );
+
+        -- playlist imports: a list of tracks another service described, resolved to MusicBrainz and requested
+        -- one by one in the background. imports.userId and the items' title/artist are personal data: both
+        -- tables are in eraseAccount() and buildAccountExport(). No FK to users, items go with their import.
+        CREATE TABLE IF NOT EXISTS imports (
+            id VARCHAR(36) PRIMARY KEY,
+            userId VARCHAR(36) NOT NULL,
+            source VARCHAR(32) NULL,
+            name VARCHAR(200) NULL,
+            status VARCHAR(16) NOT NULL,
+            total INT NOT NULL,
+            processed INT NOT NULL DEFAULT 0,
+            createdAt BIGINT NOT NULL,
+            updatedAt BIGINT NOT NULL,
+            INDEX idx_imports_user (userId, createdAt),
+            INDEX idx_imports_status (status, updatedAt)
+        );
+
+        CREATE TABLE IF NOT EXISTS import_items (
+            importId VARCHAR(36) NOT NULL,
+            position INT NOT NULL,
+            isrc VARCHAR(12) NULL,
+            title VARCHAR(300) NOT NULL,
+            artist VARCHAR(300) NOT NULL,
+            album VARCHAR(300) NULL,
+            duration INT NULL,
+            status VARCHAR(24) NOT NULL,
+            attempts INT NOT NULL DEFAULT 0,
+            musicbrainzId VARCHAR(36) NULL,
+            requestId VARCHAR(36) NULL,
+            via VARCHAR(8) NULL,
+            message VARCHAR(255) NULL,
+            PRIMARY KEY (importId, position)
+        );
     `);
 
     const requests = getRequestsDb();
@@ -287,6 +414,15 @@ export async function initDatabases(): Promise<void> {
             fingerprint TEXT,
             amId VARCHAR(64),
             fileSize BIGINT,
+            -- 'soulseek' for the download pipeline's rows, 'manual' for user uploads
+            source VARCHAR(16) NOT NULL DEFAULT 'soulseek',
+            -- position within its medium (a two-disc album has two track 1s), see discNumber
+            trackNumber INT NULL,
+            -- the medium's position (NULL = disc 1) and its own title (NULL = shown as "Disc N")
+            discNumber INT NULL,
+            discTitle TEXT NULL,
+            -- a cover image uploaded by a user, served from .data/covers/<mediaId>.webp instead of coverArt
+            hasCustomCover TINYINT(1) NOT NULL DEFAULT 0,
             addedAt BIGINT NOT NULL,
             INDEX idx_media_musicbrainzId (musicbrainzId)
         );
@@ -352,6 +488,50 @@ export async function initDatabases(): Promise<void> {
     // listening-insights tables live in their own module (they need one-statement-at-a-time execution that
     // `exec()`'s split-on-";" can't give them), and migrations run last so they can assume every
     // CREATE TABLE above has already happened
+    await createMediaChildTables();
     await createInsightsTables();
     await runMigrations();
+}
+
+// the tables that hang off `media` with a foreign key. Their charset/collation must match media.id exactly or
+// the FK creation fails with ER_FK_INCOMPATIBLE_COLUMNS: a fresh install defaults to utf8mb4_general_ci, same
+// as `media`, but a database that predates Nafyn can leave `media` on a different collation (see
+// resolveTableOptions in insightsSchema.ts), hence one statement at a time with the options taken from media.
+async function createMediaChildTables(): Promise<void> {
+    const conn = await getConnection();
+    try {
+        const tableOptions = await resolveTableOptions(conn);
+
+        // user-supplied lyrics, kept out of `media` so a row with no custom lyrics costs nothing and the
+        // (potentially long) text never rides along on every library listing query. ON DELETE CASCADE so
+        // deleting the last owner's entry - which deletes the media row - takes the lyrics with it.
+        await conn.query(`
+            CREATE TABLE IF NOT EXISTS media_lyrics (
+                mediaId VARCHAR(36) PRIMARY KEY,
+                format VARCHAR(8) NOT NULL DEFAULT 'plain',
+                content MEDIUMTEXT NOT NULL,
+                updatedAt BIGINT NOT NULL,
+                CONSTRAINT fk_media_lyrics_media FOREIGN KEY (mediaId) REFERENCES media(id) ON DELETE CASCADE
+            ) ${tableOptions}
+        `);
+
+        // every other identifier a `media` row is known by, so "does this user already have this song?" holds
+        // when MusicBrainz names the same song differently:
+        //   kind 'mbid' - recording MBIDs besides media.musicbrainzId (MusicBrainz merges duplicate recordings
+        //                 and the merged-away MBID then resolves to another one)
+        //   kind 'isrc' - the recording's ISRCs; two MBIDs carrying the same ISRC are the same master
+        // ON DELETE CASCADE so the identifiers go with the row when its last owner deletes it.
+        await conn.query(`
+            CREATE TABLE IF NOT EXISTS media_identifiers (
+                mediaId VARCHAR(36) NOT NULL,
+                kind VARCHAR(8) NOT NULL CHECK(kind IN ('mbid', 'isrc')),
+                value VARCHAR(64) NOT NULL,
+                PRIMARY KEY (mediaId, kind, value),
+                INDEX idx_media_identifiers_value (kind, value),
+                CONSTRAINT fk_media_identifiers_media FOREIGN KEY (mediaId) REFERENCES media(id) ON DELETE CASCADE
+            ) ${tableOptions}
+        `);
+    } finally {
+        conn.release();
+    }
 }

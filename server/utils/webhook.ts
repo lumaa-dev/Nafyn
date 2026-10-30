@@ -1,6 +1,6 @@
 // outbound webhooks: storage, URL safety, per-service formatting and delivery.
 //
-// Two scopes share one table (`webhooks`, migrations.ts):
+// Two scopes share one table (`webhooks`, db.ts):
 //   * local  - userId set: one user's own webhooks, editable by that user whatever their permissions, receiving
 //              only notifications aimed at that user (server/core/notifications.ts decides who that is);
 //   * global - userId NULL: the instance's own, editable under MANAGE_WEBHOOKS, receiving every request event.

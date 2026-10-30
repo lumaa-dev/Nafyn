@@ -1,7 +1,7 @@
 // ADMIN must always be the highest bit in this enum, so reading the list top to bottom is reading the
 // hierarchy bottom to top. A new permission goes in *below* it, which means ADMIN moves up - and because the
-// values are stored in users.permissions, moving a bit needs a data migration (server/core/migrations.ts,
-// "2026-10-18-admin-highest-permission-bit" is the worked example).
+// values are stored in users.permissions, moving a bit needs a data migration (server/core/migrations.ts)
+// that remaps the existing rows.
 export enum Permission {
     NONE = 0,
     REQUEST_ALBUMS = 1,

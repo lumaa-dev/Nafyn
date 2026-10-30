@@ -10,7 +10,7 @@ export default defineNitroPlugin(() => {
         console.info("[imports] worker disabled by NAFYN_IMPORT_WORKER=false");
         return;
     }
-    // a little after boot, like the other schedulers: the database plugin's migrations run first
+    // a little after boot, like the other schedulers: the database plugin has set up the schema by then
     const timer = setTimeout(() => {
         resumeImports().catch((error) => console.error("[imports] could not resume imports:", error));
     }, 15_000);
