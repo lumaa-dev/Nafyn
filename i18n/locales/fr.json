@@ -405,6 +405,11 @@
       "empty": "Votre bibliothèque n'a plus de titre à ajouter.",
       "added": "Titre ajouté",
       "error": "Impossible d'ajouter le titre"
+    },
+    "embed": {
+      "trackCount": "{count} titre | {count} titres",
+      "more": "et {count} de plus",
+      "open": "Ouvrir dans Nafyn"
     }
   },
   "player": {

@@ -405,6 +405,11 @@
       "empty": "Your library has no more tracks to add.",
       "added": "Track added",
       "error": "Couldn't add track"
+    },
+    "embed": {
+      "trackCount": "{count} track | {count} tracks",
+      "more": "and {count} more",
+      "open": "Open in Nafyn"
     }
   },
   "player": {

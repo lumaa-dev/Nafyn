@@ -197,6 +197,52 @@ useLoadErrorToast(error);
 
 const viewer = computed(() => detail.value?.viewer ?? { userId: null, isOwner: false, isMember: false });
 
+// Link previews (Open Graph + Discord component embed) of a *public* playlist. Crawlers run no scripts and have
+// no login, so this is rendered server-side from the anonymous-readable playlist; a private one gets nothing,
+// even for its owner, so its title never sits in markup that could be copied or cached.
+const requestUrl = useRequestURL();
+const playlistEmbed = computed(() => {
+  const d = detail.value;
+  if (!d || d.playlist.privacy !== "public") return null;
+
+  const ownerName = d.owner?.displayName ?? d.owner?.username ?? null;
+  return buildPlaylistEmbed({
+    id: d.playlist.id,
+    title: d.playlist.title,
+    description: d.playlist.description,
+    image: d.playlist.image,
+    ownerName,
+    trackTotal: d.entriesTotal,
+    tracks: d.entries.map((e) => ({ title: e.media.title, artistName: e.media.artistName, coverArt: e.media.coverArt })),
+    origin: requestUrl.origin,
+    labels: {
+      owner: $t('playlist.ownedBy', { name: ownerName ?? "" }),
+      trackCount: $t('playlist.embed.trackCount', { count: d.entriesTotal }, d.entriesTotal),
+      more: (count: number) => $t('playlist.embed.more', { count }, count),
+      open: $t('playlist.embed.open')
+    }
+  });
+});
+
+useSeoMeta({
+  title: () => playlistEmbed.value ? `Nafyn - ${playlistEmbed.value.title}` : "Nafyn",
+  description: () => playlistEmbed.value?.description,
+  ogType: () => playlistEmbed.value ? "music.playlist" : undefined,
+  ogSiteName: () => playlistEmbed.value ? "Nafyn" : undefined,
+  ogTitle: () => playlistEmbed.value?.title,
+  ogDescription: () => playlistEmbed.value?.description,
+  ogUrl: () => playlistEmbed.value?.url,
+  ogImage: () => playlistEmbed.value?.image ?? undefined,
+  twitterCard: () => playlistEmbed.value ? "summary" : undefined
+});
+
+// Discord reads the payload from the server-rendered <head>; the string is already escaped for a script element
+useHead(() => ({
+  script: playlistEmbed.value
+    ? [{ id: "discord:component-embed", type: "application/json", innerHTML: playlistEmbed.value.discordEmbed }]
+    : []
+}));
+
 // entries page further beyond what's embedded in the playlist detail response (server/api/v1/playlist/[pid]/tracks)
 const { items: entries, page: entriesPage, hasMore: entriesHasMore, loadingMore: loadingMoreEntries, sentinel, loadMore: loadMoreEntries } = useInfiniteList<PlaylistEntry>((page, limit) => {
   return $fetch(`/api/v1/playlist/${pid}/tracks`, { headers: token ? { Authorization: token } : {}, query: { page, limit } });
