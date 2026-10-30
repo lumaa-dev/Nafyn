@@ -5,10 +5,10 @@
       <button v-show="!mobileSearchActive" @click="props.toggleSidebar()">
         <Wordmark />
       </button>
-      <button class="search-toggle" :class="{ active: mobileSearchActive }" @click="mobileSearchActive = !mobileSearchActive">
+      <button v-if="loggedIn" class="search-toggle" :class="{ active: mobileSearchActive }" @click="mobileSearchActive = !mobileSearchActive">
         <img src="../assets/icons/search.svg" draggable="false" />
       </button>
-      <input v-model="searchText" type="text" name="search" id="search" :class="{ 'mobile-active': mobileSearchActive }" :placeholder="$t('common.search')" :title="$t('search.hint')" :disabled="sidebarActive" @keydown.enter="search()">
+      <input v-if="loggedIn" v-model="searchText" type="text" name="search" id="search" :class="{ 'mobile-active': mobileSearchActive }" :placeholder="$t('common.search')" :title="$t('search.hint')" :disabled="sidebarActive" @keydown.enter="search()">
     </span>
   </header>
 </template>
@@ -23,7 +23,8 @@ const headerRef = ref<HTMLElement | null>(null);
 
 const props = defineProps({
   toggleSidebar: { type: Function, default: () => { } },
-  sidebarActive: { type: Boolean, default: false }
+  sidebarActive: { type: Boolean, default: false },
+  loggedIn: { type: Boolean, default: true }
 })
 
 function search() {

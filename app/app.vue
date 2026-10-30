@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<Header :toggleSidebar="toggleSidebar" :class="`hd ${hasToken ? '' : 'out'}`" :sidebarActive="showSidebar && isMobileWidth()" />
+		<Header :toggleSidebar="toggleSidebar" :class="`hd ${hasToken ? '' : 'out'}`" :sidebarActive="showSidebar && isMobileWidth()" :loggedIn="hasToken" />
 		<Sidebar :class="`sb ${showSidebar ? '' : 'hide'}`" @click="toggleSidebar" />
 		<NuxtPage class="view" />
 		<TransitionGroup tag="span" name="pill" class="toasts">
