@@ -5,3 +5,5 @@
 - `t` is for track content
 - `privacy` is the privacy notice (GDPR art. 13). One of the few pages reachable while logged out, alongside `login` and `register` - it has to be readable before an account exists
 - `insights` is for personal listening insights - `insights` is the weekly/monthly/yearly hub, `insights/{year}` is the year-end package (reel + share cards + full ranked lists), and `insights/replay/{year}` is the Replay Mix (`current` and `all-time` are accepted in place of a year)
+- `l/import` is the manual import of an audio file the user already owns (not the playlist import, which is API-only)
+- `now-playing`, `search`, `requests`, `library` and `settings` are single pages; `login` and `register` are full-viewport and bypass the header margin
