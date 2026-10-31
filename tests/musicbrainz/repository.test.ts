@@ -22,6 +22,7 @@ function harness(responses: Array<TransportResponse | Error>, options: Partial<C
         transport,
         now: () => clock,
         sleep: async (ms) => { sleeps.push(ms); if (realTime) clock += ms; },
+        burst: 1, // strict spacing unless a test asks for a burst
         ...options
     });
     return { repo, urls, sleeps, advance: (ms: number) => { clock += ms; }, get clock() { return clock; } };
@@ -51,6 +52,14 @@ describe("MusicBrainzRepository", () => {
         await Promise.all([h.repo.request("/a"), h.repo.request("/b"), h.repo.request("/c")]);
         expect(h.sleeps).toEqual([1000, 2000]);
         expect(h.urls).toHaveLength(3);
+    });
+
+    test("after a quiet spell a burst leaves at once, then the average spacing holds", async () => {
+        const h = harness([ok()], { minIntervalMs: 1000, burst: 3 }, false);
+        await Promise.all(["/a", "/b", "/c", "/d", "/e"].map((path) => h.repo.request(path)));
+        // the first three go straight out; the 4th and 5th wait for the average rate to catch up
+        expect(h.sleeps).toEqual([1000, 2000]);
+        expect(h.urls).toHaveLength(5);
     });
 
     test("the request URL is stable (sorted params, json format) and carries the query", async () => {

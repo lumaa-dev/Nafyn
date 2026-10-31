@@ -21,12 +21,16 @@
 	src: url("./assets/fonts/InstrumentSerif-Italic.ttf");
 }
 
-/* OpenDyslexic: only fetched when the Appearance setting turns it on (see .dyslexic-font below) */
+/* OpenDyslexic: only fetched when the Appearance setting turns it on (see .dyslexic-font below).
+   Its glyphs are far larger than the fonts it replaces at the same font-size (cap height 0.85 em against
+   0.72 for Instrument Serif and ~0.71 for SF Pro, and much wider letters), so every face is scaled down with
+   size-adjust: layouts keep the sizes they were designed with instead of overflowing. */
 @font-face {
 	font-family: "OpenDyslexic";
 	font-style: normal;
 	font-weight: 400;
 	font-display: swap;
+	size-adjust: 85%;
 	src: url("./assets/fonts/OpenDyslexic-Regular.otf") format("opentype");
 }
 
@@ -35,6 +39,7 @@
 	font-style: italic;
 	font-weight: 400;
 	font-display: swap;
+	size-adjust: 85%;
 	src: url("./assets/fonts/OpenDyslexic-Italic.otf") format("opentype");
 }
 
@@ -43,6 +48,7 @@
 	font-style: normal;
 	font-weight: 700;
 	font-display: swap;
+	size-adjust: 85%;
 	src: url("./assets/fonts/OpenDyslexic-Bold.otf") format("opentype");
 }
 
@@ -51,6 +57,7 @@
 	font-style: italic;
 	font-weight: 700;
 	font-display: swap;
+	size-adjust: 85%;
 	src: url("./assets/fonts/OpenDyslexic-BoldItalic.otf") format("opentype");
 }
 

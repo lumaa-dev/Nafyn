@@ -23,7 +23,7 @@
     <span class="results" v-if="results.artists?.length">
       <h2>{{ $t('search.artists') }}</h2>
       <div class="xs one">
-        <NuxtLink class="trad" :to="`/ar/${art.musicbrainzId}`" v-for="art in results.artists" :key="art.musicbrainzId">
+        <NuxtLink class="trad" :to="`/ar/${art.musicbrainzId}`" v-for="art in artists" :key="art.musicbrainzId">
           <ArtistBox :artist="art" />
         </NuxtLink>
       </div>
@@ -70,6 +70,40 @@ const { data: results, status: searchStatus, error: searchError } = useLazyAsync
     : Promise.resolve(emptyResponse());
 }, { server: false, default: emptyResponse, watch: [() => route.query.q] });
 useLoadErrorToast(searchError);
+
+// Artist pictures are not part of the search response (finding one can take three upstream calls): the ones the
+// server already knew come with it, the others are fetched here a few at a time and fill in as they arrive.
+// Background traffic nobody asked for by name, so a failure stays silent and the artist keeps the placeholder.
+const MAX_PICTURE_REQUESTS = 3;
+const artistImages = ref<Record<string, string>>({});
+const requestedPictures = new Set<string>();
+let pictureRun = 0;
+
+const artists = computed<ArtistInfo[]>(() =>
+  results.value.artists.map((artist) => ({ ...artist, image: artist.image ?? artistImages.value[artist.musicbrainzId] ?? null }))
+);
+
+async function fetchArtistPictures(list: ArtistInfo[]) {
+  if (!token.value) return;
+  const run = ++pictureRun;
+  const queue = list.filter((artist) => artist.musicbrainzId && !artist.image && !requestedPictures.has(artist.musicbrainzId));
+  const worker = async () => {
+    for (let artist = queue.shift(); artist; artist = queue.shift()) {
+      if (run !== pictureRun) return;
+      requestedPictures.add(artist.musicbrainzId);
+      try {
+        const { image } = await $fetch<{ image: string | null }>(`/api/v1/artist/${artist.musicbrainzId}/image`, { headers: { Authorization: token.value! } });
+        if (image) artistImages.value = { ...artistImages.value, [artist.musicbrainzId]: image };
+      } catch {
+        // allowed to try again on the next search
+        requestedPictures.delete(artist.musicbrainzId);
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: MAX_PICTURE_REQUESTS }, worker));
+}
+
+watch(() => results.value.artists, (list) => { void fetchArtistPictures(list); }, { immediate: true });
 
 const searching = computed(() => searchStatus.value === "pending");
 

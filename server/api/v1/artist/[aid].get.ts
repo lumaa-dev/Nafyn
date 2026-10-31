@@ -1,6 +1,7 @@
 import type { IReleaseGroup } from "musicbrainz-api";
 import { getMusicBrainzRepository, parseReleaseDate } from "~~/server/utils/musicbrainz";
 import { getLastfmArtistInfo } from "~~/server/utils/lastfm";
+import { resolveArtistImage } from "~~/server/utils/artistImage";
 import { userOwnsAlbum } from "~~/server/core/library";
 import type { ArtistDetail } from "~~/server/entity/media/ArtistDetail";
 import type { MediaInfo } from "~~/server/entity/media/MediaInfo";
@@ -9,7 +10,7 @@ import { enforceUpstreamLookupLimit } from "~~/server/utils/rateLimit";
 
 defineRouteMeta({
     openAPI: {
-        description: "Get artist details: name, Last.fm bio/image (if LASTFM_API_KEY is configured), and their discography from MusicBrainz with per-album library status for the requesting user",
+        description: "Get artist details: name, picture, Last.fm bio (if LASTFM_API_KEY is configured), and their discography from MusicBrainz with per-album library status for the requesting user",
         tags: ["artist"],
         operationId: "getArtist",
         parameters: [
@@ -64,7 +65,7 @@ defineRouteMeta({
                         properties: {
                             id: { type: "string", description: "MusicBrainz artist ID" },
                             name: { type: "string" },
-                            image: { type: "string", nullable: true, description: "From Last.fm, often null - Last.fm stopped serving real per-artist photos years ago" },
+                            image: { type: "string", nullable: true, description: "The Last.fm profile photo MusicBrainz links to the artist; without a link, TheAudioDB then Last.fm. Null when none has one" },
                             bio: { type: "string", nullable: true, description: "From Last.fm" },
                             listeners: { type: "number", nullable: true, description: "Last.fm listener count" },
                             albums: {
@@ -88,14 +89,15 @@ export default defineEventHandler(async (event) => {
 
     const client = getMusicBrainzRepository();
 
-    const artist = await client.lookup("artist", aid).catch(() => null);
+    const artist = await client.lookup("artist", aid, ["url-rels"]).catch(() => null);
     if (!artist) {
         throw createError({ statusCode: 404, statusMessage: "No artist found for that ID" });
     }
 
-    const [browsed, lastfm] = await Promise.all([
+    const [browsed, lastfm, image] = await Promise.all([
         client.browse("release-group", { artist: aid }, ["artist-credits"]).catch(() => ({ "release-groups": [] as IReleaseGroup[] })),
-        getLastfmArtistInfo(artist.name, aid)
+        getLastfmArtistInfo(artist.name, aid),
+        resolveArtistImage(aid, artist.name, artist.relations ?? [])
     ]);
 
     // one MediaInfo per release-group, newest first; secondary types (live/compilation/remix/...) are left
@@ -124,7 +126,7 @@ export default defineEventHandler(async (event) => {
     const detail: ArtistDetail = {
         id: artist.id,
         name: artist.name,
-        image: lastfm?.image ?? null,
+        image,
         bio: lastfm?.bio ?? null,
         listeners: lastfm?.listeners ?? null,
         albums

@@ -44,6 +44,12 @@ export function coverArchiveUrl(kind: CoverKind, id: string, size: CoverSize): s
     return `https://coverartarchive.org/${kind}/${id.toLowerCase()}/front-${size}`;
 }
 
+// the full-size image, which the archive serves without generating a thumbnail: some releases have no usable
+// resized versions (the thumbnail request 404s or 500s) though the original is there
+export function coverOriginalUrl(kind: CoverKind, id: string): string {
+    return `https://coverartarchive.org/${kind}/${id.toLowerCase()}/front`;
+}
+
 // any spelling -> the archive form; other strings come back unchanged
 export function toArchiveCoverUrl(value: string): string {
     const cover = parseCoverArtUrl(value);

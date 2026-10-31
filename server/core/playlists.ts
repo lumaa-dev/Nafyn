@@ -341,3 +341,28 @@ export async function anonymizeEntriesAddedBy(userId: string): Promise<number> {
     `).run(DELETED_USER_SENTINEL, userId);
     return result.changes;
 }
+
+// Anonymous visitors may view public playlists, so the covers of the tracks in them have to load without a
+// token. These two answer "is this cover part of some public playlist": the cover routes serve it to a
+// visitor only then, which keeps them from being an open proxy to the Cover Art Archive / the uploaded files.
+// `id` is a validated UUID (no LIKE wildcards).
+export async function isCoverArtInPublicPlaylist(kind: "release" | "release-group", id: string): Promise<boolean> {
+    const row = await getLibrariesDb().prepare(`
+        SELECT 1 FROM playlists p
+        JOIN playlist_entries e ON e.playlistId = p.id
+        JOIN media m ON m.id = e.mediaId
+        WHERE p.privacy = 'public' AND m.coverArt LIKE ?
+        LIMIT 1
+    `).get(`https://coverartarchive.org/${kind}/${id.toLowerCase()}/%`);
+    return !!row;
+}
+
+export async function isCustomCoverInPublicPlaylist(mediaId: string): Promise<boolean> {
+    const row = await getLibrariesDb().prepare(`
+        SELECT 1 FROM playlists p
+        JOIN playlist_entries e ON e.playlistId = p.id
+        WHERE p.privacy = 'public' AND e.mediaId = ?
+        LIMIT 1
+    `).get(mediaId);
+    return !!row;
+}

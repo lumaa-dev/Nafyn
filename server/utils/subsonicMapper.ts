@@ -1,8 +1,8 @@
 // maps Nafyn's own row shapes (server/core/library.ts, playlists.ts) onto Subsonic API "ID3" elements
 // (artist/album/song) - see server/routes/rest/[method].ts for how these get assembled per endpoint
 import { extname, relative, isAbsolute, sep } from "node:path";
-import type { AlbumRow, ArtistRow, SubsonicSong } from "./library";
-import type { PlaylistRow, PlaylistEntryWithMedia } from "./playlists";
+import type { AlbumRow, ArtistRow, SubsonicSong } from "../core/library";
+import type { PlaylistRow, PlaylistEntryWithMedia } from "../core/playlists";
 import { el, asList, type SubsonicNode } from "./subsonicResponse";
 
 const MIME_TYPES: Record<string, string> = {

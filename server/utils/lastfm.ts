@@ -3,12 +3,16 @@
 // returning real per-artist photos years ago (licensing) - the `image` field below is usually a Last.fm
 // placeholder or null in practice, kept anyway since Last.fm can still start returning real ones and callers
 // already treat it as "may be null".
+import { lastfmProfileUrl, ogImage, usableImageUrl } from "./artistImageParse";
+
 const LASTFM_URL = "https://ws.audioscrobbler.com/2.0/";
 
 export interface LastfmArtistInfo {
     bio: string | null,
     image: string | null,
-    listeners: number | null
+    listeners: number | null,
+    /** The artist's Last.fm profile page, when the API said which it is. */
+    url: string | null
 }
 
 interface LastfmImage {
@@ -18,6 +22,7 @@ interface LastfmImage {
 
 interface LastfmArtistResponse {
     artist?: {
+        url?: string,
         bio?: { summary?: string },
         image?: LastfmImage[],
         stats?: { listeners?: string }
@@ -46,7 +51,7 @@ function bestImage(images: LastfmImage[] | undefined): string | null {
     if (!images || images.length === 0) return null;
     // Last.fm orders small -> extralarge -> mega; last one present is the biggest
     const sized = images.filter((img) => img["#text"]);
-    return sized.length > 0 ? sized[sized.length - 1]!["#text"] : null;
+    return sized.length > 0 ? usableImageUrl(sized[sized.length - 1]!["#text"]) : null;
 }
 
 // looks up an artist by MusicBrainz ID when known (more precise - avoids name collisions), else by name
@@ -78,7 +83,8 @@ export async function getLastfmArtistInfo(name: string, mbid?: string | null): P
                 value = {
                     bio: cleanBio(data.artist.bio?.summary),
                     image: bestImage(data.artist.image),
-                    listeners: data.artist.stats?.listeners ? Number(data.artist.stats.listeners) : null
+                    listeners: data.artist.stats?.listeners ? Number(data.artist.stats.listeners) : null,
+                    url: lastfmProfileUrl(data.artist.url)
                 };
             }
         }
@@ -89,5 +95,71 @@ export async function getLastfmArtistInfo(name: string, mbid?: string | null): P
 
     if (cache.size >= MAX_CACHE_ENTRIES) cache.delete(cache.keys().next().value!);
     cache.set(cacheKey, { value, expiresAtMs: Date.now() + (failed ? FAILURE_TTL_MS : CACHE_TTL_MS) });
+    return value;
+}
+
+// The API's `image` is the star placeholder for nearly every artist, but the artist's profile page shows (and
+// advertises, as its og:image) a real photo. The page is fetched by hand: only last.fm itself may be asked, also
+// after a redirect (/music/radiohead -> /music/Radiohead), and only the start of the document is read.
+const PROFILE_TIMEOUT_MS = 6_000;
+const PROFILE_MAX_REDIRECTS = 3;
+const PROFILE_MAX_BYTES = 400_000;
+
+const profileImages = new Map<string, { value: string | null, expiresAtMs: number }>();
+
+async function readHead(response: Response): Promise<string> {
+    const reader = response.body?.getReader();
+    if (!reader) return "";
+    const decoder = new TextDecoder();
+    let html = "";
+    let bytes = 0;
+    try {
+        while (bytes < PROFILE_MAX_BYTES) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            bytes += value.byteLength;
+            html += decoder.decode(value, { stream: true });
+            // the meta tags are in <head>
+            if (html.includes("</head>")) break;
+        }
+    } finally {
+        await reader.cancel().catch(() => {});
+    }
+    return html;
+}
+
+/** The photo on an artist's Last.fm profile (`https://www.last.fm/music/<name>`), or null when it has none. */
+export async function getLastfmProfileImage(profileUrl: string): Promise<string | null> {
+    const canonical = lastfmProfileUrl(profileUrl);
+    if (!canonical) return null;
+
+    const cached = profileImages.get(canonical);
+    if (cached && cached.expiresAtMs > Date.now()) return cached.value;
+
+    let value: string | null = null;
+    let failed = false;
+    try {
+        const signal = AbortSignal.timeout(PROFILE_TIMEOUT_MS);
+        let target = canonical;
+        for (let hop = 0; hop <= PROFILE_MAX_REDIRECTS; hop++) {
+            // SECURITY: re-checked on every hop, a redirect must not lead the server anywhere else
+            if (!lastfmProfileUrl(target)) { failed = true; break; }
+            const response = await fetch(target, { redirect: "manual", signal, headers: { "User-Agent": "Nafyn (self-hosted music app)", "Accept": "text/html" } });
+            if (response.status >= 300 && response.status < 400) {
+                const location = response.headers.get("location");
+                if (!location) { failed = true; break; }
+                target = new URL(location, target).href;
+                continue;
+            }
+            if (response.ok) value = ogImage(await readHead(response));
+            else failed = response.status !== 404;
+            break;
+        }
+    } catch {
+        failed = true;
+    }
+
+    if (profileImages.size >= MAX_CACHE_ENTRIES) profileImages.delete(profileImages.keys().next().value!);
+    profileImages.set(canonical, { value, expiresAtMs: Date.now() + (failed ? FAILURE_TTL_MS : CACHE_TTL_MS) });
     return value;
 }

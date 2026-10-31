@@ -128,6 +128,29 @@ export async function authenticateSubsonic(event: H3Event, query: Record<string,
         verified.delete(cacheKey);
     }
 
+    // A client starting a sync fires dozens of requests at once, all with the same credentials and none yet in
+    // `verified`. Each used to spend an attempt and run its own bcrypt, so a burst past MAX_ATTEMPTS answered
+    // "Too many attempts" to a perfectly correct password. Requests with identical credentials now share one.
+    const pending = verifying.get(cacheKey);
+    if (pending) return pending;
+    const run = verifyCredentials(username, password, cacheKey, rateLimitKey, rejectIfLimited);
+    verifying.set(cacheKey, run);
+    try {
+        return await run;
+    } finally {
+        verifying.delete(cacheKey);
+    }
+}
+
+const verifying = new Map<string, Promise<NafynUser>>();
+
+async function verifyCredentials(
+    username: string,
+    password: string,
+    cacheKey: string,
+    rateLimitKey: string,
+    rejectIfLimited: (check: (key: string, max: number) => { allowed: boolean }) => void
+): Promise<NafynUser> {
     const user = await getUserByUsername(username);
 
     // An API token used directly as the password: a constant-time string compare against a handful of rows. It

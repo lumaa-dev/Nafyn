@@ -2,10 +2,11 @@
 //
 // Unlike the rest of /library, this accepts the auth token from the `nafynToken` cookie as well: the URL
 // ends up in an <img src>, which can't carry an Authorization header (the same reason the streaming route
-// takes a `?token=`). The token is still verified either way - a cover is library content, not public.
+// takes a `?token=`). The token is still verified either way - a cover is library content, except for tracks in a public playlist, which anonymous visitors can view.
 import { createReadStream, existsSync } from "node:fs";
 import { verifyAuthToken } from "~~/server/utils/jwt";
 import { findLibraryEntry, getMediaId } from "~~/server/core/library";
+import { isCustomCoverInPublicPlaylist } from "~~/server/core/playlists";
 import { mediaCoverFilePath } from "~~/server/utils/mediaCover";
 
 defineRouteMeta({
@@ -30,17 +31,16 @@ export default defineEventHandler(async (event) => {
     const query = getQuery(event);
     const cookie = getCookie(event, "nafynToken");
     let token = header ?? (typeof query.token === "string" ? query.token : null) ?? cookie ?? null;
+    token = token?.startsWith("Bearer ") ? token.slice("Bearer ".length).trim() : token;
 
-    if (!token) {
-        throw createError({ statusCode: 401, statusMessage: "Not authenticated" });
-    }
-    token = token.startsWith("Bearer ") ? token.slice("Bearer ".length).trim() : token;
-
-    let userId: string;
-    try {
-        userId = (await verifyAuthToken(token)).sub;
-    } catch {
-        throw createError({ statusCode: 401, statusMessage: "Invalid or expired token" });
+    let userId: string | null = null;
+    if (token) {
+        try {
+            userId = (await verifyAuthToken(token)).sub;
+        } catch {
+            // a stale cookie must not hide the covers of a public playlist: handled below
+            userId = null;
+        }
     }
 
     const mediaId = getRouterParam(event, "id");
@@ -48,10 +48,17 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 400, statusMessage: "Missing media ID" });
     }
 
-    // SECURITY: scoped to the caller's own library, like every other /library route
     const media = await getMediaId(mediaId);
-    if (!media || !await findLibraryEntry(userId, mediaId)) {
-        throw createError({ statusCode: 404, statusMessage: "Track not found in your library" });
+    if (userId) {
+        // SECURITY: scoped to the caller's own library, like every other /library route - or a public playlist
+        if (!media || !(await findLibraryEntry(userId, mediaId) || await isCustomCoverInPublicPlaylist(mediaId))) {
+            throw createError({ statusCode: 404, statusMessage: "Track not found in your library" });
+        }
+    } else {
+        // no (valid) login: only the covers of tracks in a public playlist, which anonymous visitors can view
+        if (!media || !await isCustomCoverInPublicPlaylist(mediaId)) {
+            throw createError({ statusCode: 401, statusMessage: token ? "Invalid or expired token" : "Not authenticated" });
+        }
     }
 
     const path = mediaCoverFilePath(mediaId);

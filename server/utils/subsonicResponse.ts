@@ -27,13 +27,23 @@ export function asList(nodes: SubsonicNode[]): SubsonicNode[] {
     return nodes.map((n) => ({ ...n, list: true }));
 }
 
-function xmlEscape(value: string): string {
+// XML 1.0 forbids most control characters (and lone surrogates) outright - even escaped. A tag value from a
+// download (a NUL, a stray \x1B, a broken surrogate) used to land in an attribute as-is, and an XML client's
+// parser then rejected the *whole* response: a sync died at the one album or song carrying it. They are dropped.
+// Tab/newline/CR are legal but an attribute parser folds them to a space, so they are written as references.
+const XML_ILLEGAL = /[^\x09\x0A\x0D\x20-\uD7FF\uE000-\uFFFD\u{10000}-\u{10FFFF}]/gu;
+
+export function xmlEscape(value: string): string {
     return value
+        .replace(XML_ILLEGAL, "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
-        .replace(/'/g, "&apos;");
+        .replace(/'/g, "&apos;")
+        .replace(/\t/g, "&#9;")
+        .replace(/\n/g, "&#10;")
+        .replace(/\r/g, "&#13;");
 }
 
 function nodeToXml(node: SubsonicNode): string {

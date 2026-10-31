@@ -6,13 +6,15 @@
 // so the client can show its placeholder and try again once the background fetch has landed.
 //
 // Authenticated like the uploaded-cover route (GET /library/{id}/cover): the URL goes into an <img src>, which
-// can't send an Authorization header, so the `nafynToken` cookie is accepted too. The params are a validated
+// can't send an Authorization header, so the `nafynToken` cookie is accepted too. Without a login, only the
+// covers of tracks in a public playlist are served (anonymous visitors can view those). The params are a validated
 // (type, uuid, size) triple, never a URL.
 import { sendStream } from "h3";
 import { verifyAuthToken } from "~~/server/utils/jwt";
 import { isUuid } from "~~/server/utils/ids";
 import { getClientIP } from "~~/server/utils/clientIp";
 import { consumeRateLimit } from "~~/server/utils/rateLimit";
+import { isCoverArtInPublicPlaylist } from "~~/server/core/playlists";
 import { getCachedCover, isCoverKind, isCoverSize } from "~~/server/utils/coverArtCache";
 
 defineRouteMeta({
@@ -43,17 +45,20 @@ const WINDOW_MS = 60 * 1000;
 export default defineEventHandler(async (event) => {
     const query = getQuery(event);
     const raw = getHeader(event, "Authorization") ?? (typeof query.token === "string" ? query.token : null) ?? getCookie(event, "nafynToken") ?? null;
-    if (!raw) throw createError({ statusCode: 401, statusMessage: "Not authenticated" });
 
-    const token = raw.startsWith("Bearer ") ? raw.slice("Bearer ".length).trim() : raw;
-    let userId: string;
-    try {
-        userId = (await verifyAuthToken(token)).sub;
-    } catch {
-        throw createError({ statusCode: 401, statusMessage: "Invalid or expired token" });
+    let userId: string | null = null;
+    if (raw) {
+        const token = raw.startsWith("Bearer ") ? raw.slice("Bearer ".length).trim() : raw;
+        try {
+            userId = (await verifyAuthToken(token)).sub;
+        } catch {
+            // a stale cookie must not lock a visitor out of a public playlist's covers: handled below
+            userId = null;
+        }
     }
 
-    const limit = consumeRateLimit(`art:${userId}:${getClientIP(event)}`, MAX_PER_WINDOW, WINDOW_MS);
+    const ip = getClientIP(event);
+    const limit = consumeRateLimit(userId ? `art:${userId}:${ip}` : `art-anon:${ip}`, MAX_PER_WINDOW, WINDOW_MS);
     if (!limit.allowed) {
         setResponseHeader(event, "Retry-After", limit.retryAfterSeconds);
         throw createError({ statusCode: 429, statusMessage: "Too many requests" });
@@ -64,6 +69,11 @@ export default defineEventHandler(async (event) => {
     const size = Number(getRouterParam(event, "size"));
     if (!isCoverKind(kind) || !isUuid(id) || !isCoverSize(size)) {
         throw createError({ statusCode: 400, statusMessage: "Invalid cover request" });
+    }
+
+    // no (valid) login: only the covers of tracks in a public playlist, which anonymous visitors can view
+    if (!userId && !await isCoverArtInPublicPlaylist(kind, id)) {
+        throw createError({ statusCode: 401, statusMessage: raw ? "Invalid or expired token" : "Not authenticated" });
     }
 
     const cover = await getCachedCover(kind, id, size);

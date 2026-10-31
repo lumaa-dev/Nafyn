@@ -182,7 +182,7 @@ export const DEFAULT_SEARCH_CONFIG: SearchConfig = {
     stopwordLanguages: ["en", "fr", "de", "es", "it", "pt", "ru"],
 
     coverArtTimeoutMs: 4000,
-    coverArtConcurrency: 4
+    coverArtConcurrency: 8
 };
 
 export function resolveSearchConfig(overrides: Partial<SearchConfig> = {}): SearchConfig {

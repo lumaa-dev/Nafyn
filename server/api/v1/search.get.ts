@@ -5,7 +5,7 @@ import { getSearchDeps } from "../../utils/catalogSearch";
 import { searchAlbums, searchTracks, type SearchInput } from "../../utils/search/engine";
 import type { SearchResult } from "../../utils/search/types";
 import { getAlbumContents, type AlbumContents } from "../../utils/albumContents";
-import { getLastfmArtistInfo } from "../../utils/lastfm";
+import { peekArtistImage } from "../../utils/artistImage";
 import { requireAuthToken } from "../../utils/requireAuth";
 import { consumeRateLimit } from "../../utils/rateLimit";
 import type { MediaInfo } from "../../entity/media/MediaInfo";
@@ -18,8 +18,6 @@ const MAX_LIMIT = 50;
 // otherwise use Nafyn as a free proxy to hammer those upstreams - and get Nafyn's own IP blocked there
 const MAX_SEARCHES = 60;
 
-// the most artists of an album that also get a Last.fm lookup (a compilation can credit hundreds)
-const MAX_ARTIST_IMAGES = 10;
 const SEARCH_WINDOW_MS = 60 * 1000;
 
 type Filter = "album" | "track" | "artist" | "all";
@@ -217,12 +215,12 @@ function toArtistInfo(artist: IArtist): ArtistInfo {
     };
 }
 
-// only applied to the top-level "artists" results (where ArtistBox.vue actually renders `image`) - not to
-// every album/track's artist credit too, which would multiply Last.fm calls for no visible benefit
-async function withLastfmImage(info: ArtistInfo): Promise<ArtistInfo> {
-    if (!info.musicbrainzId) return info;
-    const lastfm = await getLastfmArtistInfo(info.name, info.musicbrainzId);
-    return lastfm?.image ? { ...info, image: lastfm.image } : info;
+// The picture is only used where ArtistBox.vue renders it (the top-level "artists" results), and finding one
+// takes up to three upstream calls per artist - far too slow to hold a search for. So the response carries the
+// pictures already known and the page asks GET /artist/{aid}/image for the rest.
+function withKnownImage(info: ArtistInfo): ArtistInfo {
+    const image = info.musicbrainzId ? peekArtistImage(info.musicbrainzId) : null;
+    return image ? { ...info, image } : info;
 }
 
 function parseReleaseDate(date: string | null): Date | null {
@@ -374,12 +372,10 @@ export default defineEventHandler(async (event) => {
             const seen = new Set(onAlbum.map((track) => track.id));
             // the album's tracks are never cut by `limit`; the other matches fill what is left of it
             trackInfos = [...onAlbum, ...trackInfos.filter((track) => !seen.has(track.id))].slice(0, Math.max(limit, onAlbum.length));
-            artistInfos = await Promise.all(content.album.artists.map((artist, index): Promise<ArtistInfo> | ArtistInfo => {
-                const info: ArtistInfo = { name: artist.name, musicbrainzId: artist.id, description: artist.disambiguation, image: null };
-                return index < MAX_ARTIST_IMAGES ? withLastfmImage(info) : info;
-            }));
+            artistInfos = content.album.artists.map((artist) =>
+                withKnownImage({ name: artist.name, musicbrainzId: artist.id, description: artist.disambiguation, image: null }));
         } else {
-            artistInfos = artists ? await Promise.all(artists.artists.map(toArtistInfo).map(withLastfmImage)) : [];
+            artistInfos = artists ? artists.artists.map(toArtistInfo).map(withKnownImage) : [];
         }
 
         return {

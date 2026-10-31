@@ -11,9 +11,9 @@
 import { createReadStream } from "node:fs";
 import { open, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { fetchCoverArtResult } from "./coverArt";
+import { fetchCoverArtResult, type CoverFetchResult } from "./coverArt";
 import { isUuid } from "./ids";
-import { coverArchiveUrl, COVER_SIZES, type CoverKind, type CoverSize } from "./coverUrl";
+import { coverArchiveUrl, coverOriginalUrl, COVER_SIZES, type CoverKind, type CoverSize } from "./coverUrl";
 import { ensureDir } from "./ensureDir";
 
 export { COVER_SIZES, isCoverKind, isCoverSize, parseCoverArtUrl } from "./coverUrl";
@@ -113,16 +113,31 @@ function smallerSize(size: CoverSize): CoverSize | null {
     return index > 0 ? COVER_SIZES[index - 1]! : null;
 }
 
+// one attempt at a URL, plus one more after a pause when the answer was a transient error
+async function fetchWithRetry(url: string): Promise<CoverFetchResult> {
+    const result = await fetchCoverArtResult(url);
+    if (result.kind !== "error") return result;
+    await new Promise((resolve) => setTimeout(resolve, TRANSIENT_RETRY_DELAY_MS));
+    return fetchCoverArtResult(url);
+}
+
 async function fetchIntoCache(kind: CoverKind, id: string, size: CoverSize, cacheKey: string): Promise<boolean> {
-    const url = coverArchiveUrl(kind, id, size);
-    let result = await fetchCoverArtResult(url);
-    if (result.kind === "error") {
-        await new Promise((resolve) => setTimeout(resolve, TRANSIENT_RETRY_DELAY_MS));
-        result = await fetchCoverArtResult(url);
-    }
-    if (result.kind === "missing") {
-        rememberMissing(cacheKey);
-        return false;
+    let result = await fetchWithRetry(coverArchiveUrl(kind, id, size));
+    const sizedFailure = result.kind === "error" ? result.reason : "no such thumbnail";
+    if (result.kind !== "ok") {
+        // Some releases have no resized versions at all: the thumbnail 404s or errors while the image itself is
+        // there. Ask for the original instead of giving up; it is cached under the size that was asked for, so
+        // the next request is a disk hit and nobody asks the archive for the thumbnail again.
+        const original = await fetchCoverArtResult(coverOriginalUrl(kind, id));
+        if (original.kind === "ok") {
+            result = original;
+        } else if (original.kind === "missing") {
+            // neither exists: the release has no front cover
+            rememberMissing(cacheKey);
+            return false;
+        } else {
+            result = { kind: "error", reason: `${sizedFailure}; original: ${original.reason}` };
+        }
     }
     if (result.kind === "error") {
         // says nothing about whether the cover exists, so it is only backed off, never treated as missing

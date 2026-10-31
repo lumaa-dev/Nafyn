@@ -21,6 +21,7 @@ import {
     getAlbumSongsOfUser,
     getAlbumListOfUser,
     getArtistsOfUser,
+    countMediaOfUser,
     getArtistOfUser,
     getArtistAlbumsOfUser,
     getSongOfUser,
@@ -49,6 +50,7 @@ import { isAllowedCoverArtUrl, fetchCoverArt } from "~~/server/utils/coverArt";
 import { getCachedCover, parseCoverArtUrl } from "~~/server/utils/coverArtCache";
 import { mediaCoverFilePath } from "~~/server/utils/mediaCover";
 import { getLastfmArtistInfo } from "~~/server/utils/lastfm";
+import { resolveArtistImage } from "~~/server/utils/artistImage";
 import { authenticateSubsonic } from "~~/server/utils/subsonicAuth";
 import { sendSubsonicResponse, errorNode, SubsonicErrors, SubsonicApiError, el, asList, type SubsonicNode, type SubsonicFormat } from "~~/server/utils/subsonicResponse";
 import { songNode, albumNode, albumWithSongsNode, artistNode, artistWithAlbumsNode, playlistNode, playlistWithSongsNode, contentTypeFor } from "~~/server/utils/subsonicMapper";
@@ -219,15 +221,47 @@ const handlers: Record<string, Handler> = {
         // getArtistsOfUser/getArtistOfUser fall back to the artist's display name as `id` when no
         // MusicBrainz artist credit is known (see server/core/library.ts) - only pass a real mbid to Last.fm
         const mbid = artist.id !== artist.name ? artist.id : undefined;
-        const lastfm = await getLastfmArtistInfo(artist.name, mbid);
+        const [lastfm, picture] = await Promise.all([
+            getLastfmArtistInfo(artist.name, mbid),
+            mbid ? resolveArtistImage(mbid, artist.name) : Promise.resolve(null)
+        ]);
+        const image = picture ?? lastfm?.image ?? undefined;
 
         return [el("artistInfo2", {
             biography: lastfm?.bio ?? undefined,
-            smallImageUrl: lastfm?.image ?? undefined,
-            mediumImageUrl: lastfm?.image ?? undefined,
-            largeImageUrl: lastfm?.image ?? undefined
+            smallImageUrl: image,
+            mediumImageUrl: image,
+            largeImageUrl: image
         })];
     },
+
+    // The calls a client makes around a sync to learn what changed / what is starred / who it is. Nafyn has no
+    // scanner (a library only changes when a download finishes), no starring and no genres, and the answers
+    // say exactly that: the old "not found" aborted the sync of clients that ask for these first.
+    getScanStatus: async (_event, _query, user) => [el("scanStatus", { scanning: false, count: await countMediaOfUser(user.id) })],
+
+    getStarred2: async () => [el("starred2")],
+
+    getGenres: async () => [el("genres")],
+
+    getNowPlaying: async () => [el("nowPlaying")],
+
+    getUser: async (_event, _query, user) => [el("user", {
+        username: user.username,
+        scrobblingEnabled: true,
+        adminRole: false,
+        settingsRole: false,
+        downloadRole: true,
+        uploadRole: false,
+        playlistRole: true,
+        coverArtRole: false,
+        commentRole: false,
+        podcastRole: false,
+        streamRole: true,
+        jukeboxRole: false,
+        shareRole: false,
+        videoConversionRole: false
+    })],
 
     getAlbum: async (_event, query, user) => {
         const id = requireParam(query, "id");

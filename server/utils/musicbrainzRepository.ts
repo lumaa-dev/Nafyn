@@ -45,6 +45,12 @@ export interface RepositoryOptions {
     transport: Transport,
     /** Minimum spacing between two requests, across every caller. */
     minIntervalMs: number,
+    /**
+     * How many requests may leave back to back after a quiet spell (the average stays 1 per `minIntervalMs`,
+     * which is what MusicBrainz asks for - it tolerates short bursts, and the old client allowed 15 per 18 s).
+     * A search needs 5-8 requests, most of them independent: spaced out strictly it takes 8 s, in a burst ~2 s.
+     */
+    burst: number,
     /** An interactive request that would have to wait longer than this for its turn is refused. */
     maxQueueWaitMs: number,
     /** Same, for the bulk lane (pipeline, imports): nobody is staring at a spinner, so it may wait much longer. */
@@ -76,6 +82,7 @@ export const DEFAULT_REPOSITORY_OPTIONS: Omit<RepositoryOptions, "userAgent"> = 
     baseUrl: "https://musicbrainz.org/ws/2",
     transport: defaultTransport,
     minIntervalMs: 1100,
+    burst: 5,
     maxQueueWaitMs: 30_000,
     maxBulkQueueWaitMs: 15 * 60_000,
     timeoutMs: 15_000,
@@ -177,7 +184,8 @@ export class MusicBrainzRepository {
     private readonly cache = new Map<string, CacheEntry>();
     private readonly inFlight = new Map<string, { promise: Promise<unknown>, ticket: Ticket }>();
 
-    // rate limiter: the next instant a request may leave, and who is waiting for it - per lane, per key, in
+    // rate limiter (a GCRA: `nextSlot` is the theoretical arrival time of the next request, and a request may
+    // leave up to `burstTolerance` ahead of it): the next instant a request may leave, and who is waiting for it - per lane, per key, in
     // arrival order (a Map keeps insertion order, which is what makes the round-robin)
     private nextSlot = 0;
     private readonly queues: Record<Lane, Map<string, Waiter[]>> = { interactive: new Map(), bulk: new Map() };
@@ -291,16 +299,20 @@ export class MusicBrainzRepository {
      * lane keys take turns. A request whose turn is predictably further away than its lane allows is refused
      * up front; a bulk one overtaken by interactive traffic until its deadline passes is refused then.
      */
+    private get burstTolerance(): number {
+        return (Math.max(1, Math.floor(this.options.burst)) - 1) * this.options.minIntervalMs;
+    }
+
     private async takeTurn(ticket: Ticket): Promise<void> {
         const now = this.options.now();
-        if (now >= this.nextSlot && this.queued("interactive") + this.queued("bulk") === 0) {
-            this.nextSlot = now + this.options.minIntervalMs;
+        if (now >= this.nextSlot - this.burstTolerance && this.queued("interactive") + this.queued("bulk") === 0) {
+            this.nextSlot = Math.max(this.nextSlot, now) + this.options.minIntervalMs;
             return;
         }
 
         const ahead = this.queued("interactive") + (ticket.lane === "bulk" ? this.queued("bulk") : 0);
         const maxWait = ticket.lane === "bulk" ? this.options.maxBulkQueueWaitMs : this.options.maxQueueWaitMs;
-        const expectedWait = Math.max(0, this.nextSlot - now) + ahead * this.options.minIntervalMs;
+        const expectedWait = Math.max(0, this.nextSlot - this.burstTolerance - now) + ahead * this.options.minIntervalMs;
         if (expectedWait > maxWait) {
             throw new MusicBrainzError("MusicBrainz request queue is full, try again later", 503, true);
         }
@@ -322,13 +334,14 @@ export class MusicBrainzRepository {
         try {
             while (this.queued("interactive") + this.queued("bulk") > 0) {
                 let now = this.options.now();
-                if (now < this.nextSlot) {
-                    await this.options.sleep(this.nextSlot - now);
-                    now = Math.max(this.options.now(), this.nextSlot);
+                const opens = this.nextSlot - this.burstTolerance;
+                if (now < opens) {
+                    await this.options.sleep(opens - now);
+                    now = Math.max(this.options.now(), opens);
                 }
                 const waiter = this.dequeue(now);
                 if (!waiter) continue;
-                this.nextSlot = now + this.options.minIntervalMs;
+                this.nextSlot = Math.max(this.nextSlot, now) + this.options.minIntervalMs;
                 waiter.resolve();
             }
         } finally {
@@ -373,7 +386,7 @@ export class MusicBrainzRepository {
     // MusicBrainz said "slow down" (429/503): nobody leaves before it has had a breather, not just this caller
     private backOff(retryAfterSeconds: number | undefined): void {
         const pause = Math.max((retryAfterSeconds ?? 0) * 1000, this.options.minIntervalMs * 2);
-        this.nextSlot = Math.max(this.nextSlot, this.options.now() + pause);
+        this.nextSlot = Math.max(this.nextSlot, this.options.now() + pause + this.burstTolerance);
     }
 
     private assertBreakerClosed(): void {

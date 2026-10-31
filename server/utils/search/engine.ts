@@ -228,6 +228,14 @@ function creditDisplay(credits: RawArtistCredit[]): { name: string, id: string |
     return { name: credits.length > 1 ? name : credits[0]!.artist.name, id: credits[0]!.artist.id };
 }
 
+interface AngleSpec {
+    source: string,
+    build: (interpretation: Interpretation) => string | null,
+    kind?: "base" | "variant" | "joint",
+    limit?: number,
+    offset?: number
+}
+
 class Pipeline {
     private readonly normalized = new Map<string, NormalizedText>();
     private readonly failures: Error[] = [];
@@ -357,10 +365,13 @@ class Pipeline {
         if (existing.credits.length === 0) existing.credits = candidate.credits;
     }
 
-    /** One search angle over the interpretations of one kind: the plain readings, the other-script variants or the joint one. */
-    private async angle(pool: Map<string, Candidate>, source: string, build: (interpretation: Interpretation) => string | null, kind: "base" | "variant" | "joint" = "base", limit = limitTo(this.config), offset?: number): Promise<number> {
+    /**
+     * Starts one search angle over the interpretations of one kind (the plain readings, the other-script variants
+     * or the joint one): every query leaves at once, and each answer comes back as the step that adds it to the pool.
+     */
+    private startAngle(pool: Map<string, Candidate>, source: string, build: (interpretation: Interpretation) => string | null, kind: "base" | "variant" | "joint", limit: number, offset?: number): Array<Promise<() => number>> {
         const seen = new Set<string>();
-        let found = 0;
+        const started: Array<Promise<() => number>> = [];
         for (const interpretation of this.interpretations) {
             if ((interpretation.joint ? "joint" : interpretation.variant ? "variant" : "base") !== kind) continue;
             const query = build(interpretation);
@@ -368,24 +379,46 @@ class Pipeline {
             seen.add(query);
 
             if (this.kind === "album" && source !== "recording-release") {
-                const response = await this.request<ReleaseGroupSearch>("/release-group", query, limit, offset);
-                for (const group of response?.["release-groups"] ?? []) {
-                    this.add(pool, this.candidateFromGroup(group, source));
-                    found++;
-                }
-            } else {
-                const response = await this.request<RecordingSearch>("/recording", query, limit, offset);
-                for (const recording of response?.recordings ?? []) {
-                    if (this.kind === "track") {
-                        this.add(pool, this.candidateFromRecording(recording, source));
-                    } else {
-                        this.addGroupsOfRecording(pool, recording, source);
+                started.push(this.request<ReleaseGroupSearch>("/release-group", query, limit, offset).then((response) => () => {
+                    let found = 0;
+                    for (const group of response?.["release-groups"] ?? []) {
+                        this.add(pool, this.candidateFromGroup(group, source));
+                        found++;
                     }
-                    found++;
-                }
+                    return found;
+                }));
+            } else {
+                started.push(this.request<RecordingSearch>("/recording", query, limit, offset).then((response) => () => {
+                    let found = 0;
+                    for (const recording of response?.recordings ?? []) {
+                        if (this.kind === "track") {
+                            this.add(pool, this.candidateFromRecording(recording, source));
+                        } else {
+                            this.addGroupsOfRecording(pool, recording, source);
+                        }
+                        found++;
+                    }
+                    return found;
+                }));
             }
         }
-        return found;
+        return started;
+    }
+
+    /** One search angle; see `angles` for several that do not depend on each other. */
+    private async angle(pool: Map<string, Candidate>, source: string, build: (interpretation: Interpretation) => string | null, kind: "base" | "variant" | "joint" = "base", limit = limitTo(this.config), offset?: number): Promise<number> {
+        return (await this.angles(pool, [{ source, build, kind, limit, offset }]))[0]!;
+    }
+
+    /**
+     * Angles that do not depend on one another's answers go out together - MusicBrainz' limiter still spaces
+     * them, but a burst leaves at once instead of each waiting for the previous answer. The answers are added to
+     * the pool in the order the angles are given, so the result is the same as running them one after the other.
+     */
+    private async angles(pool: Map<string, Candidate>, specs: AngleSpec[]): Promise<number[]> {
+        const started = specs.map((spec) => this.startAngle(pool, spec.source, spec.build, spec.kind ?? "base", spec.limit ?? limitTo(this.config), spec.offset));
+        const settled = await Promise.all(started.map((requests) => Promise.all(requests)));
+        return settled.map((applies) => applies.reduce((found, apply) => found + apply(), 0));
     }
 
     // an album recalled through a recording: the release-groups its releases belong to
@@ -433,9 +466,11 @@ class Pipeline {
         const entity = this.kind === "album" ? "releasegroup" : "recording";
         const official = "status:official";
 
-        // wave 1: the quoted phrase, then the same words unquoted
-        await this.angle(pool, "phrase", (i) => this.join([this.fieldClause(entity, i.title, "phrase"), this.fieldClause("artist", i.artist, "phrase")], official));
-        await this.angle(pool, "terms", (i) => this.join([this.fieldClause(entity, i.title, "terms"), this.fieldClause("artist", i.artist, "terms")], official));
+        // wave 1: the quoted phrase and the same words unquoted, asked together (neither depends on the other)
+        await this.angles(pool, [
+            { source: "phrase", build: (i) => this.join([this.fieldClause(entity, i.title, "phrase"), this.fieldClause("artist", i.artist, "phrase")], official) },
+            { source: "terms", build: (i) => this.join([this.fieldClause(entity, i.title, "terms"), this.fieldClause("artist", i.artist, "terms")], official) }
+        ]);
         await this.deepen(pool, entity, official);
 
         // free text that may be an artist and a title in one string: the words are not all in either field, so
@@ -454,17 +489,19 @@ class Pipeline {
 
         // wave 2, only when wave 1 was not convincing: other angles (alias/artist, recordings on a release of that name)
         if (!this.convincing(pool)) {
-            const hasArtist = this.interpretations.some((i) => i.artist);
-            if (hasArtist) {
+            // the artist lookup and the recording-release search do not depend on each other: both go out now
+            const recordingRelease = this.kind === "album"
+                ? this.angle(pool, "recording-release", (i) => (i.title ? this.join([this.fieldClause("release", i.title, "phrase"), this.fieldClause("artist", i.artist, "phrase")], official) : null))
+                : Promise.resolve(0);
+            const aliasAngle = async () => {
+                if (!this.interpretations.some((i) => i.artist)) return;
                 const ids = await this.artistIds();
                 if (ids.length > 0) {
                     const arid = `arid:(${ids.join(" OR ")})`;
                     await this.angle(pool, "alias", (i) => (i.artist ? this.join([arid, this.fieldClause(entity, i.title, "terms")], official) : null));
                 }
-            }
-            if (this.kind === "album") {
-                await this.angle(pool, "recording-release", (i) => (i.title ? this.join([this.fieldClause("release", i.title, "phrase"), this.fieldClause("artist", i.artist, "phrase")], official) : null));
-            }
+            };
+            await Promise.all([aliasAngle(), recordingRelease]);
         }
 
         // wave 3: the title in another script or spelling. MusicBrainz indexes the transliterated title a
@@ -474,8 +511,10 @@ class Pipeline {
             await this.angle(pool, "title-alias", (i) => (i.title ? this.join([this.aliasClause(i.title, "phrase"), this.fieldClause("artist", i.artist, "phrase")], official) : null));
         }
         if (!this.convincing(pool)) {
-            await this.angle(pool, "title-fuzzy", (i) => (i.title ? this.join([this.aliasClause(i.title, "fuzzy", entity), this.fieldClause("artist", i.artist, "terms")], official) : null));
-            await this.angle(pool, "title-kana", (i) => (i.title ? this.join([this.fieldClause(entity, i.title, "phrase"), this.fieldClause("artist", i.artist, "phrase")], official) : null), "variant");
+            await this.angles(pool, [
+                { source: "title-fuzzy", build: (i) => (i.title ? this.join([this.aliasClause(i.title, "fuzzy", entity), this.fieldClause("artist", i.artist, "terms")], official) : null) },
+                { source: "title-kana", build: (i) => (i.title ? this.join([this.fieldClause(entity, i.title, "phrase"), this.fieldClause("artist", i.artist, "phrase")], official) : null), kind: "variant" }
+            ]);
         }
 
         // wave 4: the artist is known (a Latin spelling finds the artist through its aliases) but no title matched:
@@ -832,10 +871,15 @@ class Pipeline {
 
         const format = this.config.requireDigitalMedia ? ` AND format:${luceneQuote("Digital Media")}` : "";
 
-        for (let i = 0; i < ids.length; i += batchSize) {
-            const batch = ids.slice(i, i + batchSize);
-            const query = `${field}:(${batch.join(" OR ")}) AND status:official${format}`;
-            const response = await this.request<ReleaseSearch>("/release", query, 100);
+        const batches: string[][] = [];
+        for (let i = 0; i < ids.length; i += batchSize) batches.push(ids.slice(i, i + batchSize));
+
+        // the batches are independent: asked together, merged in order
+        const responses = await Promise.all(batches.map((batch) => this.request<ReleaseSearch>("/release", `${field}:(${batch.join(" OR ")}) AND status:official${format}`, 100)));
+
+        const crowded: string[] = [];
+        batches.forEach((batch, index) => {
+            const response = responses[index];
             const releases = response?.releases ?? [];
             for (const release of releases) {
                 const key = field === "rgid" ? release["release-group"]?.id : release.id;
@@ -844,15 +888,17 @@ class Pipeline {
                 list.push(release);
                 found.set(key, list);
             }
-
             // a full page may have crowded some groups out; ask for those one by one
             if (field === "rgid" && (response?.count ?? 0) > releases.length) {
-                for (const id of batch.filter((candidate) => !found.has(candidate))) {
-                    const single = await this.request<ReleaseSearch>("/release", `rgid:${id} AND status:official${format}`, 25);
-                    if (single?.releases?.length) found.set(id, single.releases);
-                }
+                crowded.push(...batch.filter((candidate) => !found.has(candidate)));
             }
-        }
+        });
+
+        const singles = await Promise.all(crowded.map((id) => this.request<ReleaseSearch>("/release", `rgid:${id} AND status:official${format}`, 25)));
+        crowded.forEach((id, index) => {
+            const single = singles[index];
+            if (single?.releases?.length) found.set(id, single.releases);
+        });
         return found;
     }
 

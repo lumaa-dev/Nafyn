@@ -27,7 +27,11 @@ export function assertMbid(value: unknown, what: string = "MusicBrainz ID"): str
 }
 
 // escapes the LIKE wildcards `%` and `_` in a user-supplied search term, so a query of "%" can't turn into
-// a full-table scan that matches every row (and so a search means what the user typed)
+// a full-table scan that matches every row (and so a search means what the user typed).
+// The escape character is `!`, paired with `ESCAPE '!'` in the query: a backslash can't be named in an ESCAPE
+// clause portably (`'\\'` is an unterminated string by default and two characters under NO_BACKSLASH_ESCAPES).
+export const LIKE_ESCAPE = "!";
+
 export function escapeLike(value: string): string {
-    return value.replace(/[\\%_]/g, (c) => `\\${c}`);
+    return value.replace(/[!%_]/g, (c) => `${LIKE_ESCAPE}${c}`);
 }

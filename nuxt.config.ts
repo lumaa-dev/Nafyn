@@ -38,6 +38,8 @@ export default defineNuxtConfig({
 
     acoustidApiKey: process.env.ACOUSTID_API_KEY || '',
     lastfmApiKey: process.env.LASTFM_API_KEY || '',
+    // TheAudioDB artist pictures; "2" is the free key TheAudioDB publishes for everyone (30 requests a minute)
+    theaudiodbApiKey: process.env.THEAUDIODB_API_KEY || '2',
 
     public: {
       // GDPR art. 13: the person running the instance is the data controller, and a privacy notice has to
