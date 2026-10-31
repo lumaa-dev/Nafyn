@@ -346,8 +346,8 @@ export async function initDatabases(): Promise<void> {
         );
 
         -- pins: albums, playlists and tracks a user keeps at hand (Library home, top of Tracks). refId is the
-        -- track's media id, the album's release-group MBID or the playlist id. No limit per user; a pin whose
-        -- target is gone is pruned the next time the list is read.
+        -- track's media id, the album's release-group MBID or the playlist id. No limit per user, and a pin whose
+        -- target is gone is pruned the next time the list is read. (No semicolons in these comments: exec() splits on them.)
         CREATE TABLE IF NOT EXISTS user_pins (
             id VARCHAR(36) PRIMARY KEY,
             userId VARCHAR(36) NOT NULL,
