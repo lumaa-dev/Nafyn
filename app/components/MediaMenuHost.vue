@@ -13,6 +13,10 @@ import MediaEditModal from '~/components/MediaEditModal.vue';
 import type { MediaRow } from '~~/server/core/library';
 
 const host = useMediaMenuHost();
+const pins = usePins();
+
+// the pin state the menus show; loaded up front so the first right click already knows it
+onMounted(() => { void pins.ensureLoaded(); });
 const menu = ref<InstanceType<typeof ContextMenu> | null>(null);
 
 watch(() => host.anchor.seq, () => {

@@ -353,12 +353,24 @@ export function useMediaMenu() {
     return items;
   }
 
-  /** the menu of one element; await it so the pin state is known before the menu appears */
+  // The menu appears at once. Whether something is pinned (Pin / Unpin) comes from a list that may not have
+  // loaded yet or may fail to load: the menu never waits for it, and rebuilds its items when it arrives.
+  function showWhenReady(anchor: { x: number, y: number }, build: () => ContextMenuItem[]) {
+    open(anchor, build());
+    if (!pins.loaded.value) {
+      const shownSeq = host.anchor.seq;
+      void pins.ensureLoaded().then(() => {
+        // only if that menu is still the one on screen
+        if (host.anchor.seq === shownSeq) host.items = build();
+      });
+    }
+  }
+
+  /** the menu of one element */
   async function openMenu(event: Event | { x: number, y: number }, subject: MenuSubject, options: MenuOptions = {}) {
     const anchor = menuAnchor(event);
-    await pins.ensureLoaded();
 
-    open(anchor, subject.kind === "track"
+    showWhenReady(anchor, () => subject.kind === "track"
       ? trackItems(subject, options)
       : subject.kind === "album"
         ? albumItems(subject, options)
@@ -368,8 +380,10 @@ export function useMediaMenu() {
   /** the same actions for several elements of one kind at once */
   async function openBulkMenu(anchor: { x: number, y: number }, subjects: MenuSubject[], options: MenuOptions = {}) {
     if (subjects.length === 0) return;
-    await pins.ensureLoaded();
+    showWhenReady(anchor, () => bulkItems(subjects, options));
+  }
 
+  function bulkItems(subjects: MenuSubject[], options: MenuOptions): ContextMenuItem[] {
     const kind = subjects[0]!.kind;
     const count = subjects.length;
     const items: ContextMenuItem[] = [];
@@ -491,7 +505,7 @@ export function useMediaMenu() {
       }
     }
 
-    open(anchor, items);
+    return items;
   }
 
   return { openMenu, openBulkMenu };

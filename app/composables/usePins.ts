@@ -9,6 +9,8 @@ export type { PinEntry, PinKind };
 export function usePins() {
   const { token } = useAuthToken();
   const pins = useState<PinEntry[]>("pins", () => []);
+  // taken now, in setup: refresh() runs later from event handlers
+  const { sendError } = useToast();
   const loaded = useState<boolean>("pins-loaded", () => false);
 
   async function refresh(): Promise<void> {
@@ -19,7 +21,7 @@ export function usePins() {
     } catch (e) {
       // the pins grid is decoration around the page's own content; a context menu that cannot tell whether
       // something is pinned just offers "Pin" - but a person who asked to see their pins is told
-      if (import.meta.client) useToast().sendError(null, e);
+      if (import.meta.client) sendError(null, e);
     }
   }
 
