@@ -5,7 +5,7 @@
 // surface reads from, and the tags embedded in the file on disk, which is what a third-party player sees
 // when the library is browsed directly or shared back out.
 import { randomUUID } from "node:crypto";
-import { rename, rm } from "node:fs/promises";
+import { rm } from "node:fs/promises";
 import { existsSync, statSync } from "node:fs";
 import { extname, join } from "node:path";
 import { tagAudioFile } from "../utils/audioTag";
@@ -19,6 +19,7 @@ import {
     type MediaRow
 } from "./library";
 import { ensureDir } from "../utils/ensureDir";
+import { moveFile } from "../utils/moveFile";
 
 const TMP_DIR = join(process.cwd(), ".data", "tmp");
 
@@ -55,7 +56,8 @@ async function retagFile(filePath: string, media: MediaRow): Promise<void> {
             date: media.releaseDate ? new Date(media.releaseDate * 1000) : null,
             label: media.label
         });
-        await rename(tempPath, filePath);
+        // .data/tmp and music/ are separate mounts in Docker, where a plain rename fails with EXDEV
+        await moveFile(tempPath, filePath);
     } catch (error) {
         // the row is already updated and is what Nafyn itself reads; a failed retag leaves the file's own
         // tags stale rather than losing the edit, so log it and carry on
