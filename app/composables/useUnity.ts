@@ -10,7 +10,7 @@
 // real <audio> engine is module-level state local to that one tab.
 import type { MediaRow } from "~~/server/core/library";
 import { usePlayer, type PlayerState, type PlayContext, type QueuePosition } from "./usePlayer";
-import { useUnitySettings, useUnitySessionOverride } from "./useUnitySettings";
+import { useUnitySettings, useUnitySessionOverride, syncUnitySettings } from "./useUnitySettings";
 import { useAuthToken } from "./useAuthToken";
 
 export type UnityRole = "master" | "slave";
@@ -195,6 +195,9 @@ export const useUnity = () => {
         socket.addEventListener("close", (e) => {
             connected.value = false;
             if (ws === socket) ws = null;
+            // 4002: Unity was turned off for the account from another device. Pick the setting up here too, so
+            // this device drops what it mirrored (the "playing on ..." status) instead of waiting to retry
+            if (e.code === 4002) void syncUnitySettings();
             scheduleReconnect(REFUSED_CLOSE_CODES.has(e.code));
         });
         socket.addEventListener("error", () => {});
@@ -214,18 +217,28 @@ export const useUnity = () => {
 
     function disconnect() {
         if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+        // say so before closing: a master that leaves on purpose ends its session now, not after the grace period
+        send({ type: "leave" });
         ws?.close();
         ws = null;
         connected.value = false;
         role.value = "slave";
         masterStatus.value = "empty";
         masterDeviceLabel.value = null;
+        // what a remote master last reported is no longer ours to show. A song this device plays itself is not
+        // Unity's and keeps its Now Playing as it is (that state lives in the local player, not in the mirror)
+        mirrorState.value = defaultMirrorState();
     }
 
     if (import.meta.client && !initialized) {
         initialized = true;
 
-        watch(shouldBeConnected, (should) => { if (should) connect(); else disconnect(); }, { immediate: true });
+        // A detached scope: this runs once, from whichever component happens to call useUnity() first, and a
+        // watcher created in that component's own scope dies with it. When that first component was a page, the
+        // first navigation stopped the watcher, and turning Unity off afterwards no longer disconnected anything.
+        effectScope(true).run(() => {
+            watch(shouldBeConnected, (should) => { if (should) connect(); else disconnect(); }, { immediate: true });
+        });
 
         setInterval(() => {
             if (role.value === "master" && connected.value) sendState();

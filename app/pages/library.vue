@@ -5,6 +5,7 @@
       <NuxtLink to="/l/tracks">{{ $t("sidebar.tracks") }}</NuxtLink>
       <NuxtLink to="/l/playlists">{{ $t("sidebar.playlists") }}</NuxtLink>
     </div>
+    <PinnedGrid />
     <h1 class="sp">{{ $t("library.recentlyPlayed") }}</h1>
     <RecentlyPlayed variant="grid" />
   </div>
@@ -12,6 +13,7 @@
 
 <script lang="ts" setup>
 import RecentlyPlayed from '~/components/RecentlyPlayed.vue';
+import PinnedGrid from '~/components/PinnedGrid.vue';
 </script>
 
 <style>

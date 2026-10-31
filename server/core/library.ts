@@ -78,6 +78,30 @@ export async function findLibraryEntry(userId: string, mediaId: string): Promise
     return row ?? null;
 }
 
+// A track the user may *play*: their own library entry, or - when they don't own it - a copy owned by someone
+// else that sits in a playlist they can see (they own it, were invited to it, or it is public). A playlist
+// entry references the shared `media` pool directly, so a collaborator can hold tracks they never downloaded;
+// without this, every such track 404s on stream/lyrics/cover for them. The returned entry's `userId` is the
+// *owner's* when the access came through a playlist - use it for the file, never to grant library rights.
+export async function findPlayableEntry(userId: string, mediaId: string): Promise<LibraryEntry | null> {
+    const own = await findLibraryEntry(userId, mediaId);
+    if (own) return own;
+
+    const row = await getLibrariesDb().prepare(`
+        SELECT le.* FROM library_entries le
+        WHERE le.mediaId = :mediaId AND EXISTS (
+            SELECT 1 FROM playlist_entries pe
+            JOIN playlists p ON p.id = pe.playlistId
+            LEFT JOIN playlist_members pm ON pm.playlistId = p.id AND pm.userId = :userId
+            WHERE pe.mediaId = :mediaId
+              AND (p.ownerId = :userId OR pm.id IS NOT NULL OR p.privacy = 'public')
+        )
+        ORDER BY le.addedAt ASC
+        LIMIT 1
+    `).get({ mediaId, userId }) as LibraryEntry | undefined;
+    return row ?? null;
+}
+
 // true when some user other than `userId` also has this media row in their library
 export async function isMediaSharedWithOthers(userId: string, mediaId: string): Promise<boolean> {
     const row = await getLibrariesDb()
@@ -371,6 +395,17 @@ export async function getSongOfUser(userId: string, mediaId: string): Promise<Su
     return row ?? null;
 }
 
+// like getSongOfUser, but also a song the user does not own that sits in a playlist they can see
+// (see findPlayableEntry): what a Subsonic client may stream, describe and fetch the cover of
+export async function getPlayableSongOfUser(userId: string, mediaId: string): Promise<SubsonicSong | null> {
+    const own = await getSongOfUser(userId, mediaId);
+    if (own) return own;
+
+    const shared = await findPlayableEntry(userId, mediaId);
+    const media = shared ? await getMediaId(mediaId) : undefined;
+    return shared && media ? { ...media, filePath: shared.filePath } : null;
+}
+
 export interface ArtistRow {
     id: string,
     name: string,
@@ -546,16 +581,16 @@ export async function getTotalMediaSize(): Promise<number> {
     return Number(row.total ?? 0);
 }
 
-// bytes owned per user, summed across their library entries (a shared track counts for each owner)
-export async function getStorageByUser(): Promise<{ userId: string, bytes: number }[]> {
+// bytes and tracks owned per user, summed across their library entries (a shared track counts for each owner)
+export async function getStorageByUser(): Promise<{ userId: string, bytes: number, tracks: number }[]> {
     const rows = await getLibrariesDb().prepare(`
-        SELECT library_entries.userId AS userId, SUM(media.fileSize) AS bytes
+        SELECT library_entries.userId AS userId, SUM(media.fileSize) AS bytes, COUNT(*) AS tracks
         FROM library_entries
         JOIN media ON media.id = library_entries.mediaId
         GROUP BY library_entries.userId
-    `).all() as { userId: string, bytes: string | number }[];
-    // see getTotalMediaSize: mysql2 returns SUM() as a string, cast before callers accumulate these
-    return rows.map((row) => ({ userId: row.userId, bytes: Number(row.bytes) }));
+    `).all() as { userId: string, bytes: string | number | null, tracks: string | number }[];
+    // see getTotalMediaSize: mysql2 returns SUM()/COUNT() as strings, cast before callers accumulate these
+    return rows.map((row) => ({ userId: row.userId, bytes: Number(row.bytes ?? 0), tracks: Number(row.tracks) }));
 }
 
 // fields a user is allowed to rewrite on a media row through PATCH /api/v1/library/{id}. Everything else on

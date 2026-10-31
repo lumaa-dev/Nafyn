@@ -1,5 +1,5 @@
 <template>
-  <div class="playlistpage" v-if="detail">
+  <div class="playlistpage bulk-page" v-if="detail">
     <div class="header">
       <div class="cover-field">
         <img
@@ -33,6 +33,9 @@
           <button v-if="viewer.isOwner" type="button" class="iconbtn" @click="showMembers = true" :title="$t('playlist.members.open')" :aria-label="$t('playlist.members.open')">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
           </button>
+          <button v-if="viewer.userId" type="button" class="iconbtn" @click="onPlaylistMenu" :title="$t('menu.more')" :aria-label="$t('menu.more')">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" /></svg>
+          </button>
           <button v-if="viewer.isOwner" type="button" class="iconbtn danger" @click="confirmDelete = true" :title="$t('playlist.delete.open')" :aria-label="$t('playlist.delete.open')">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18" /><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /></svg>
           </button>
@@ -59,11 +62,13 @@
         v-for="(entry, i) in displayEntries"
         :key="entry.entryId"
         :data-entry-index="i"
-        :class="{ playing: currentTrack?.id === entry.media.id, dragging: draggingIndex === i }"
+        :class="{ playing: currentTrack?.id === entry.media.id, dragging: draggingIndex === i, 'selectable-row': selecting, selected: isSelected(entry.entryId) }"
+        @click="selecting ? toggle(entry.entryId) : undefined"
         @contextmenu.prevent="onRowContextMenu($event, entry)"
       >
+        <input v-if="selecting" type="checkbox" class="select-box" :checked="isSelected(entry.entryId)" :aria-label="entry.media.title" tabindex="-1" @click.stop="toggle(entry.entryId)">
         <button
-          v-if="viewer.isOwner && sortMode === 'manual'"
+          v-if="viewer.isOwner && sortMode === 'manual' && !selecting"
           type="button"
           :class="{ draghandle: true, grabbing: draggingIndex === i }"
           :aria-label="$t('playlist.reorder')"
@@ -72,8 +77,8 @@
           <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><circle cx="9" cy="6" r="1.5" /><circle cx="15" cy="6" r="1.5" /><circle cx="9" cy="12" r="1.5" /><circle cx="15" cy="12" r="1.5" /><circle cx="9" cy="18" r="1.5" /><circle cx="15" cy="18" r="1.5" /></svg>
         </button>
 
-        <CoverImage :src="coverSrc(entry.media)" @click="playFrom(i)" />
-        <span class="col" @click="playFrom(i)">
+        <CoverImage :src="coverSrc(entry.media)" @click="selecting ? undefined : playFrom(i)" />
+        <span class="col" @click="selecting ? undefined : playFrom(i)">
           <span class="title">{{ entry.media.title }}</span>
           <span class="artist">{{ entry.media.artistName }}</span>
         </span>
@@ -81,7 +86,7 @@
         <span class="filesize" v-if="appearance.showFileSize">{{ entry.media.fileSize != null ? formatBytes(entry.media.fileSize) : '—' }}</span>
         <span class="duration" v-if="appearance.showDuration">{{ formatDuration(entry.media.duration) }}</span>
 
-        <button type="button" class="ellipsis" @click.stop="onRowEllipsis($event, entry)" :aria-label="$t('playlist.removeTrack')" v-if="viewer.userId">
+        <button type="button" class="ellipsis" @click.stop="onRowContextMenu($event, entry)" :aria-label="$t('menu.more')" v-if="viewer.userId && !selecting">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
         </button>
       </li>
@@ -90,7 +95,6 @@
     <div v-if="sortMode === 'manual'" ref="sentinel" class="scroll-sentinel" />
     <p class="loading-more" v-if="loadingMoreEntries">{{ $t('common.loadingMore') }}</p>
 
-    <ContextMenu ref="rowMenu" :items="rowMenuItems" v-if="viewer.userId" />
     <AddTracksModal v-model="showAddTracks" :playlist-id="pid" :existing-media-ids="tracks.map((t) => t.id)" @added="refresh" />
 
     <Modal v-model="showEdit" :title="$t('playlist.edit.open')">
@@ -135,13 +139,15 @@
         <button type="button" filled="hollow" @click="confirmDelete = false">{{ $t('playlist.picker.cancel') }}</button>
       </div>
     </Modal>
+
+    <BulkBar v-if="viewer.userId" :selecting="selecting" :count="count" :total="displayEntries.length" @start="start" @stop="stop" @select-all="toggleAll" @actions="onBulkActions" />
   </div>
 </template>
 
 <script lang="ts" setup>
 import type { MediaRow } from '~~/server/core/library';
 import noCover from '~/assets/no-cover.png';
-import ContextMenu, { type ContextMenuItem } from '~/components/ContextMenu.vue';
+import type { MenuChange } from '~/composables/useMediaMenu';
 import AddTracksModal from '~/components/AddTracksModal.vue';
 import Modal from '~/components/Modal.vue';
 import { useAppearanceSettings } from '~/composables/useAppearanceSettings';
@@ -169,6 +175,7 @@ interface PlaylistDetail {
     addedBy: CompactUser | null;
     position: number;
     addedAt: number;
+    inLibrary: boolean;
     media: MediaRow;
   }[];
   viewer: { userId: string | null; isOwner: boolean; isMember: boolean };
@@ -185,6 +192,8 @@ interface PlaylistEntry {
   addedBy: CompactUser | null;
   position: number;
   addedAt: number;
+  /** the viewer has this track in their own library */
+  inLibrary: boolean;
   media: MediaRow;
 }
 
@@ -318,7 +327,7 @@ const coverUrl = computed(() => {
   return img ? `/api/v1/playlist/${pid}/image?token=${encodeURIComponent(token)}&v=${img}` : noCover;
 });
 
-const { currentTrack, play, addToQueue } = useUnity();
+const { currentTrack, play } = useUnity();
 
 function playAll() {
   const ordered = displayEntries.value.map((e) => e.media);
@@ -342,43 +351,52 @@ function shuffleAll() {
 // add tracks
 const showAddTracks = ref(false);
 
-// context menu / row actions
-const rowMenu = ref<InstanceType<typeof ContextMenu> | null>(null);
-const rowMenuItems = ref<ContextMenuItem[]>([]);
+// context menu / row actions: the same menu as every other page (useMediaMenu), plus what is special here -
+// a track can be taken out of this playlist, and only the tracks the viewer owns offer edit / delete / pin
+const { openMenu, openBulkMenu } = useMediaMenu();
+const { selecting, selectedIds, count, isSelected, toggle, selectAll, clear, start, stop, retain } = useBulkSelect();
 
 function canRemove(entry: PlaylistEntry): boolean {
   return viewer.value.isOwner || entry.addedBy?.id === viewer.value.userId;
 }
 
-function buildRowMenu(entry: PlaylistEntry) {
-  const items: ContextMenuItem[] = [
-    { label: $t('player.playNext'), action: () => addToQueue(entry.media, "next") },
-    { label: $t('player.addToQueue'), action: () => addToQueue(entry.media, "end") }
-  ];
-  if (canRemove(entry)) {
-    items.push({ label: $t('playlist.removeTrack'), danger: true, action: () => removeEntry(entry.entryId) });
-  }
-  rowMenuItems.value = items;
+function onMenuChanged(change: MenuChange) {
+  // a removed or deleted track leaves the playlist, an edited one comes back rewritten; a pin changes nothing here
+  if (change.type !== "pinned") void refresh().then(() => retain(displayEntries.value.map((entry) => entry.entryId)));
 }
 
 function onRowContextMenu(e: MouseEvent, entry: PlaylistEntry) {
-  buildRowMenu(entry);
-  rowMenu.value?.openAt(e.clientX, e.clientY);
+  if (!viewer.value.userId || selecting.value) return;
+  void openMenu(e, { kind: "track", media: entry.media, owned: entry.inLibrary }, {
+    playlistEntry: { playlistId: pid, entryId: entry.entryId, canRemove: canRemove(entry) },
+    onChanged: onMenuChanged
+  });
 }
 
-function onRowEllipsis(e: MouseEvent, entry: PlaylistEntry) {
-  buildRowMenu(entry);
+// the playlist's own menu (play, queue, pin...) - the same one a playlist card shows elsewhere
+function onPlaylistMenu(e: MouseEvent) {
+  if (!detail.value) return;
+  void openMenu(e, {
+    kind: "playlist",
+    playlist: { id: pid, title: detail.value.playlist.title },
+    isOwner: viewer.value.isOwner,
+    isMember: viewer.value.isMember
+  }, { hideDetails: true, onChanged: (change) => { if (change.type === "deleted" || change.type === "left") void navigateTo("/l/playlists"); } });
+}
+
+function toggleAll() {
+  if (count.value >= displayEntries.value.length) clear();
+  else selectAll(displayEntries.value.map((entry) => entry.entryId));
+}
+
+function onBulkActions(e: MouseEvent) {
+  const chosen = new Set(selectedIds.value);
+  const picked = displayEntries.value.filter((entry) => chosen.has(entry.entryId));
   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-  rowMenu.value?.openAt(rect.left, rect.bottom);
-}
-
-async function removeEntry(entryId: string) {
-  try {
-    await $fetch(`/api/v1/playlist/${pid}/tracks/${entryId}`, { method: "DELETE", headers: { Authorization: token } });
-    await refresh();
-  } catch (e) {
-    sendError(e);
-  }
+  void openBulkMenu({ x: rect.left, y: rect.top }, picked.map((entry) => ({ kind: "track" as const, media: entry.media, owned: entry.inLibrary })), {
+    playlistEntries: { playlistId: pid, entries: picked.map((entry) => ({ mediaId: entry.media.id, entryId: entry.entryId, canRemove: canRemove(entry) })) },
+    onChanged: onMenuChanged
+  });
 }
 
 async function persistOrder(ordered: PlaylistEntry[]) {

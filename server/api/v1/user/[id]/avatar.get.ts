@@ -1,11 +1,10 @@
-// serves a user's avatar image; any authenticated user can view any other user's avatar (needed to show it around the app)
+// serves a user's avatar image; public, because it is part of the public profile page (see profile/[username].get.ts)
 import { createReadStream, existsSync } from "node:fs";
 import { avatarFilePath } from "~~/server/utils/avatar";
-import { verifyAuthToken } from "~~/server/utils/jwt";
 
 defineRouteMeta({
     openAPI: {
-        description: "Serve a user's avatar image. Any authenticated user can view any other user's avatar. Since <img> elements can't set custom headers, the token may be passed as a `?token=` query param instead",
+        description: "Serve a user's avatar image. Public (no login needed): it is shown on the user's public profile page and in its link previews. A `?token=` query param is accepted and ignored",
         tags: ["user"],
         operationId: "getUserAvatar",
         parameters: [
@@ -39,14 +38,6 @@ defineRouteMeta({
                     }
                 }
             },
-            "401": {
-                description: "Not authenticated",
-                content: {
-                    "application/json": {
-                        schema: { $ref: "#/components/schemas/NuxtError" }
-                    }
-                }
-            },
             "404": {
                 description: "User has no avatar",
                 content: {
@@ -60,23 +51,8 @@ defineRouteMeta({
 });
 
 export default defineEventHandler(async (event) => {
-    // <img> elements can't set custom headers, so accept the token as a query param fallback too
-    const authHeader = getHeader(event, "Authorization");
-    const query = getQuery(event);
-    let token = authHeader ?? (typeof query.token === "string" ? query.token : null);
-
-    if (!token) {
-        throw createError({ statusCode: 401, statusMessage: "Not authenticated" });
-    }
-
-    token = token.startsWith("Bearer ") ? token.slice("Bearer ".length).trim() : token;
-
-    try {
-        await verifyAuthToken(token);
-    } catch {
-        throw createError({ statusCode: 401, statusMessage: "Invalid or expired token" });
-    }
-
+    // Public: an avatar is part of a user's public profile page (`/u/<username>`), whose link previews are
+    // fetched by crawlers that are not logged in.
     const userId = getRouterParam(event, "id");
     if (!userId) {
         throw createError({ statusCode: 400, statusMessage: "Missing user ID" });
@@ -88,6 +64,6 @@ export default defineEventHandler(async (event) => {
     }
 
     setResponseHeader(event, "Content-Type", "image/webp");
-    setResponseHeader(event, "Cache-Control", "private, max-age=3600");
+    setResponseHeader(event, "Cache-Control", "public, max-age=3600");
     return sendStream(event, createReadStream(path));
 });

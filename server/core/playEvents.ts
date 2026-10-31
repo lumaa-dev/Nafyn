@@ -35,7 +35,7 @@ interface TrackMeta {
 
 /**
  * Resolves the album and artist for each track from the `media` table, and drops any event whose track the
- * user has no library entry for.
+ * user cannot play (not in their library, nor in a playlist they can see).
  *
  * Both halves matter for correctness *and* for security. A client that names its own album/artist could
  * otherwise fabricate a "top artist" out of nothing, so the server ignores whatever it sent and resolves
@@ -52,9 +52,17 @@ async function enrichEvents(userId: string, events: PlayEventInput[]): Promise<{
     const rows = await getLibrariesDb().prepare(`
         SELECT m.id, m.albumId, m.artistMbid, m.artistName, m.duration
         FROM media m
-        JOIN library_entries le ON le.mediaId = m.id AND le.userId = ?
         WHERE m.id IN (${placeholders})
-    `).all<TrackMeta>(userId, ...trackIds);
+          AND (
+            EXISTS (SELECT 1 FROM library_entries le WHERE le.mediaId = m.id AND le.userId = ?)
+            OR EXISTS (
+              SELECT 1 FROM playlist_entries pe
+              JOIN playlists p ON p.id = pe.playlistId
+              LEFT JOIN playlist_members pm ON pm.playlistId = p.id AND pm.userId = ?
+              WHERE pe.mediaId = m.id AND (p.ownerId = ? OR pm.id IS NOT NULL OR p.privacy = 'public')
+            )
+          )
+    `).all<TrackMeta>(...trackIds, userId, userId, userId);
 
     const byId = new Map(rows.map((r) => [r.id, r]));
 

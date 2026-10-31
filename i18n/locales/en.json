@@ -123,7 +123,16 @@
     "deleteBusy": "This request is being processed and can't be deleted.",
     "accepted": "Request accepted",
     "denied": "Request denied",
-    "deleted": "Request deleted"
+    "deleted": "Request deleted",
+    "open": "Open {title}",
+    "filter": {
+      "title": "Filter requests",
+      "all": "All",
+      "succeeded": "Succeeded",
+      "failed": "Failed",
+      "waiting": "Waiting",
+      "processing": "Processing"
+    }
   },
   "settings": {
     "title": "Settings",
@@ -152,7 +161,9 @@
       "save": "Save changes",
       "saved": "Saved",
       "error": "Couldn't save your profile",
-      "logout": "Log out"
+      "logout": "Log out",
+      "publicProfile": "View my public profile",
+      "publicProfileNote": "Your profile page is public: anyone with the link sees your name, avatar, the number of tracks in your library and your public playlists."
     },
     "accounts": {
       "title": "Accounts",
@@ -194,7 +205,11 @@
       "perUser": {
         "title": "Storage by user"
       },
-      "everyoneLibraryLink": "View everyone's library"
+      "everyoneLibraryLink": "View everyone's library",
+      "tracksPerUser": {
+        "title": "Library tracks by user",
+        "count": "{count} track | {count} tracks"
+      }
     },
     "subsonic": {
       "title": "Subsonic",
@@ -552,7 +567,7 @@
     "saved": "Metadata updated",
     "error": "Could not save the metadata.",
     "coverError": "Could not update the cover.",
-    "changeCover": "Change cover",
+    "changeCover": "Change cover art",
     "removeCover": "Remove uploaded cover",
     "trackTitle": "Title",
     "artist": "Artist",
@@ -569,7 +584,14 @@
     "lyricsFormat": "Lyrics format",
     "lyricsPlain": "Plain text",
     "lyricsLrc": "Timed (LRC)",
-    "lyricsPlaceholder": "Paste or type the lyrics. LRC format keeps them in sync with playback."
+    "lyricsPlaceholder": "Paste or type the lyrics. LRC format keeps them in sync with playback.",
+    "titleMany": "Edit {count} tracks",
+    "uploadCover": "Upload your own",
+    "coverGroup": "Album cover",
+    "coverCurrent": "Current cover",
+    "coversLoading": "Looking for covers...",
+    "coversNone": "No other covers found for this album.",
+    "mixed": "Different values - leave to keep"
   },
   "import": {
     "title": "Import music",
@@ -662,5 +684,43 @@
     "subscribed": "You'll be notified when it's out",
     "unsubscribed": "You won't be notified anymore",
     "error": "Couldn't update this release notification"
+  },
+  "menu": {
+    "more": "More actions",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "pinned": "Pinned",
+    "unpinned": "Unpinned",
+    "pinError": "Couldn't update the pin",
+    "viewAlbum": "View album",
+    "viewPlaylist": "View playlist",
+    "deleteAlbum": "Delete album",
+    "confirmDeleteTracks": "Delete {count} tracks from your library? This can't be undone.",
+    "confirmDeleteAlbums": "Delete {count} album(s) - {tracks} tracks - from your library? This can't be undone.",
+    "confirmDeletePlaylists": "Delete {count} playlist(s)? This can't be undone."
+  },
+  "bulk": {
+    "select": "Select",
+    "done": "Done",
+    "all": "Select all",
+    "none": "Select none",
+    "actions": "Actions",
+    "count": "{count} selected"
+  },
+  "pins": {
+    "title": "Pinned",
+    "kind": {
+      "track": "Track",
+      "album": "Album",
+      "playlist": "Playlist"
+    }
+  },
+  "profile": {
+    "tracks": "{count} track | {count} tracks",
+    "playlistCount": "{count} public playlist | {count} public playlists",
+    "playlistTracks": "{count} track | {count} tracks",
+    "playlists": "Public playlists",
+    "noPlaylists": "No public playlists yet.",
+    "embedOpen": "Open profile"
   }
 }

@@ -27,16 +27,17 @@ export function hasPermissions(permissions: number, requiredPermissions: Permiss
 }
 
 // true if `actorPerms` may edit `targetPerms`'s account (profile fields + permission bits):
-// nobody edits themselves through the accounts routes - not even an ADMIN. Editing yourself used to be allowed,
-// which let a MANAGE_ACCOUNTS user hand themselves any permission that isn't MANAGE_ACCOUNTS/ADMIN
-// (MANAGE_MUSIC, the AUTOACCEPT bits, ...), and let an ADMIN strip their own ADMIN bit by accident. Their own
-// display name and links live in Settings -> Profile (/user/profile), which needs no such power, and deleting
-// their own account has its own password-checked route.
-// Past that, ADMIN can edit anyone; MANAGE_ACCOUNTS can only edit accounts strictly below it - never another
-// MANAGE_ACCOUNTS holder or an ADMIN.
+// - nobody edits themselves through the accounts routes - not even an ADMIN. Their own display name and links
+//   live in Settings -> Profile (/user/profile), and deleting their own account has its own password-checked route.
+// - ADMIN edits anyone except another ADMIN (a MANAGE_ACCOUNTS holder included).
+// - MANAGE_ACCOUNTS edits only accounts holding neither MANAGE_ACCOUNTS nor ADMIN.
+// - anyone else edits nobody.
+// Granting or revoking MANAGE_ACCOUNTS / ADMIN stays ADMIN-only (users/[id].patch.ts).
+export const ACCOUNT_MANAGER_BITS = Permission.MANAGE_ACCOUNTS | Permission.ADMIN;
+
 export function canManageUser(actorId: string, actorPerms: number, targetId: string, targetPerms: number): boolean {
     if (actorId === targetId) return false;
-    if (actorPerms & Permission.ADMIN) return true;
-    if (!(actorPerms & Permission.MANAGE_ACCOUNTS)) return false;
-    return !(targetPerms & (Permission.MANAGE_ACCOUNTS | Permission.ADMIN));
+    if (actorPerms & Permission.ADMIN) return !(targetPerms & Permission.ADMIN);
+    if (actorPerms & Permission.MANAGE_ACCOUNTS) return !(targetPerms & ACCOUNT_MANAGER_BITS);
+    return false;
 }

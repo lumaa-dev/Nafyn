@@ -15,7 +15,7 @@ import { randomUUID } from "node:crypto";
 import { Readable } from "node:stream";
 import type { H3Event } from "h3";
 import {
-    findLibraryEntry,
+    findPlayableEntry,
     findAnyLibraryEntryForMedia,
     getAlbumOfUser,
     getAlbumSongsOfUser,
@@ -24,7 +24,7 @@ import {
     countMediaOfUser,
     getArtistOfUser,
     getArtistAlbumsOfUser,
-    getSongOfUser,
+    getPlayableSongOfUser,
     searchLibraryOfUser,
     type AlbumListSort
 } from "~~/server/core/library";
@@ -96,7 +96,7 @@ async function buildPlaylistNode(playlist: PlaylistRow): Promise<SubsonicNode> {
     const entries = await getEntries(playlist.id);
     // playlist entries reference the shared media pool directly (server/core/playlists.ts), not this
     // viewer's own library_entries, so filePath for display comes from whichever owner has the file -
-    // actual stream.view access is still gated per-viewer via findLibraryEntry, same as the rest of the app
+    // actual stream.view access is gated per-viewer via findPlayableEntry (own library, or a playlist they can see)
     const filePathByMediaId = new Map<string, string>();
     for (const entry of entries) {
         const source = await findAnyLibraryEntryForMedia(entry.media.id);
@@ -284,7 +284,7 @@ const handlers: Record<string, Handler> = {
 
     getSong: async (_event, query, user) => {
         const id = requireParam(query, "id");
-        const song = await getSongOfUser(user.id, id);
+        const song = await getPlayableSongOfUser(user.id, id);
         if (!song) throw new SubsonicApiError(SubsonicErrors.notFound);
         return [songNode(song)];
     },
@@ -447,7 +447,7 @@ const handlers: Record<string, Handler> = {
         // id alone (core/recentlyPlayed.ts). Recording an arbitrary id here let any account read the metadata
         // of tracks in other users' libraries back out of its own shelf - the same probe
         // POST /library/recently-played already refuses. Only the caller's own tracks are recorded.
-        const song = await getSongOfUser(user.id, id);
+        const song = await getPlayableSongOfUser(user.id, id);
         if (!song) throw new SubsonicApiError(SubsonicErrors.notFound);
 
         await recordRecentlyPlayed(user.id, "track", id);
@@ -479,7 +479,7 @@ const handlers: Record<string, Handler> = {
 // bytes/headers straight onto the response, so they're dispatched separately from `handlers` above
 async function handleStream(event: H3Event, query: Record<string, unknown>, user: NafynUser): Promise<void> {
     const id = requireParam(query, "id");
-    const entry = await findLibraryEntry(user.id, id);
+    const entry = await findPlayableEntry(user.id, id);
     if (!entry) throw new SubsonicApiError(SubsonicErrors.notFound);
 
     // see server/api/v1/library/[id]/stream.get.ts: a missing file is a 404, not an ENOENT 500 that would
@@ -534,7 +534,7 @@ async function handleCoverArt(event: H3Event, query: Record<string, unknown>, us
     let localFile: string | null = null;
 
     if (prefix === "mf") {
-        const song = await getSongOfUser(user.id, rawId);
+        const song = await getPlayableSongOfUser(user.id, rawId);
         // a cover the owner uploaded lives on disk, never in `coverArt` (see utils/mediaCover.ts), and takes
         // precedence over the Cover Art Archive URL the row may still carry
         if (song?.hasCustomCover && isUuid(rawId)) {
@@ -551,20 +551,23 @@ async function handleCoverArt(event: H3Event, query: Record<string, unknown>, us
         // id alone) and no id validation (so `pl-../../..` traversed out of the image directory). Gate it on
         // the same owner/member rule GET /api/v1/playlist/{pid}/image enforces, and let
         // playlistImageFilePath reject non-UUID ids.
-        if (!isUuid(rawId)) throw new SubsonicApiError(SubsonicErrors.notFound);
+        // `pl-<uuid>` or `pl-<uuid>-<version>` (see coverArtId.playlist): a UUID is exactly 36 characters
+        const playlistId = rawId.slice(0, 36);
+        if (!isUuid(playlistId)) throw new SubsonicApiError(SubsonicErrors.notFound);
 
-        const playlist = await getPlaylistById(rawId);
+        const playlist = await getPlaylistById(playlistId);
         if (!playlist) throw new SubsonicApiError(SubsonicErrors.notFound);
         if (playlist.privacy === "private" && playlist.ownerId !== user.id && !(await hasAccess(playlist, user.id))) {
             throw new SubsonicApiError(SubsonicErrors.notFound);
         }
 
-        const path = playlistImageFilePath(rawId);
+        const path = playlistImageFilePath(playlistId);
         if (existsSync(path)) localFile = path;
     }
 
     if (localFile) {
         setResponseHeader(event, "Content-Type", "image/webp");
+        setResponseHeader(event, "Content-Length", statSync(localFile).size);
         setResponseHeader(event, "Cache-Control", "private, max-age=3600");
         await sendStream(event, createReadStream(localFile));
         return;

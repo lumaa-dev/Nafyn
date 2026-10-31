@@ -16,6 +16,9 @@
                named for assistive tech and on hover -->
           <button type="button" filled="hollow" class="icon-only" :title="$t('playlist.addToPlaylist')" :aria-label="$t('playlist.addToPlaylist')" @click="openPicker"><img src="~/assets/icons/plus.svg" alt="" draggable="false" /></button>
           <button type="button" filled="hollow" class="icon-only" :title="$t('edit.title')" :aria-label="$t('edit.title')" @click="showEdit = true"><img src="~/assets/icons/edit.svg" alt="" draggable="false" /></button>
+          <button type="button" filled="hollow" class="icon-only" :title="$t('menu.more')" :aria-label="$t('menu.more')" @click="onMenu">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" /></svg>
+          </button>
         </div>
       </div>
     </div>
@@ -62,8 +65,21 @@ function playTrack() {
 const showPicker = ref(false);
 const showEdit = ref(false);
 
-function onEdited(updated: MediaRow) {
-  track.value = updated;
+function onEdited(updated: MediaRow[]) {
+  if (updated[0]) track.value = updated[0];
+}
+
+// the same menu as everywhere else (queue, pin, delete...); this is the details page, so no "View details"
+const { openMenu } = useMediaMenu();
+function onMenu(e: MouseEvent) {
+  if (!track.value) return;
+  void openMenu(e, { kind: "track", media: track.value }, {
+    hideDetails: true,
+    onChanged: (change) => {
+      if (change.type === "deleted") void navigateTo("/l/tracks");
+      else if (change.type === "edited" && change.media?.[0]) track.value = change.media[0];
+    }
+  });
 }
 
 function openPicker() {

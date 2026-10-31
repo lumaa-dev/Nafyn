@@ -96,7 +96,7 @@ export default defineEventHandler(async (event) => {
 
     const pagination = parsePagination(event);
     const [rows, total] = await Promise.all([
-        getEntries(playlist.id, pagination.limit, pagination.offset),
+        getEntries(playlist.id, pagination.limit, pagination.offset, userId ?? undefined),
         countEntries(playlist.id)
     ]);
 
@@ -108,6 +108,7 @@ export default defineEventHandler(async (event) => {
         addedBy: isInsider ? await getUserById(entry.addedBy, true) : null,
         position: entry.position,
         addedAt: entry.addedAt,
+        inLibrary: entry.inLibrary === true,
         media: entry.media
     })));
 

@@ -30,21 +30,18 @@
       <li v-if="discGroups.length > 1" class="disc" role="presentation">
         <h3>{{ group.label }}</h3>
       </li>
-      <li v-for="track in group.tracks" :key="`${track.discNumber}-${track.trackNumber}-${track.id}`" :class="{ unreleased: !track.released, playing: currentTrack?.id === track.mediaId, playable: track.mediaId }" @click="track.mediaId ? playTrack(track) : undefined" @contextmenu.prevent="track.mediaId ? onTrackContextMenu($event, track.mediaId) : undefined">
+      <li v-for="track in group.tracks" :key="`${track.discNumber}-${track.trackNumber}-${track.id}`" :class="{ unreleased: !track.released, playing: currentTrack?.id === track.mediaId, playable: track.mediaId }" @click="track.mediaId ? playTrack(track) : undefined" @contextmenu.prevent="track.mediaId ? onTrackMenu($event, track) : undefined">
         <span class="number">{{ track.trackNumber }}</span>
         <span class="title">{{ track.title }}</span>
         <ReleaseCountdown v-if="!track.released && track.releaseDate && album.released" compact :date="track.releaseDate" />
         <button filled="hollow" @click.stop="requestTrack(track)" :disabled="track.requested" v-if="track.released && !track.inLibrary"><img src="../../assets/icons/download.svg" draggable="false"></button>
-        <button type="button" class="ellipsis" v-if="track.mediaId" @click.stop="onTrackEllipsis($event, track.mediaId)">
+        <button type="button" class="ellipsis" v-if="track.mediaId" :aria-label="$t('menu.more')" @click.stop="onTrackMenu($event, track)">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
         </button>
         <span class="duration" v-if="track.duration > 0">{{ formatDuration(track.duration) }}</span>
       </li>
       </template>
     </ol>
-
-    <ContextMenu ref="trackMenu" :items="trackMenuItems" />
-    <PlaylistPickerModal v-model="showPicker" :media-ids="pickerMediaIds" />
 
     <p class="details">
       <span v-if="album.releaseDate">{{ formatDate(album.releaseDate) }}</span>
@@ -58,8 +55,7 @@
 import type { AlbumDetail } from '~~/server/entity/media/AlbumDetail';
 import type { TrackInfo } from '~~/server/entity/media/TrackInfo';
 import type { MediaRow } from '~~/server/core/library';
-import ContextMenu, { type ContextMenuItem } from '~/components/ContextMenu.vue';
-import PlaylistPickerModal from '~/components/PlaylistPickerModal.vue';
+import { menuAnchor } from '~/composables/useMediaMenu';
 import { useAuthToken } from '~/composables/useAuthToken';
 import ReleaseCountdown from '~/components/ReleaseCountdown.vue';
 
@@ -90,7 +86,8 @@ const discGroups = computed(() => {
 
 const albumMediaIds = computed(() => album.value?.tracks.map((t) => t.mediaId).filter((id): id is string => id !== null) ?? []);
 
-const { currentTrack, play, addToQueue } = useUnity();
+const { currentTrack, play } = useUnity();
+const { openMenu } = useMediaMenu();
 
 // tracks aren't fetched as full MediaRow rows on the album page (only display fields), so build one client-side
 // from data already on hand - just enough to stream/queue/show the track, matching what the actual media row holds
@@ -131,40 +128,22 @@ function playTrack(track: TrackInfo) {
   play(media, queue, { type: "album", refId: aid });
 }
 
-const showPicker = ref(false);
-const pickerMediaIds = ref<string[]>([]);
+// The same menu as the library pages (useMediaMenu). The row this page builds client-side is only enough to
+// queue and stream a track, so the real one is read first: the editor and the pin need the whole thing.
+async function onTrackMenu(e: MouseEvent, track: TrackInfo) {
+  if (!track.mediaId) return;
 
-function openPicker(mediaIds: string[]) {
-  pickerMediaIds.value = mediaIds;
-  showPicker.value = true;
-}
+  // the event is gone by the time the request returns, so the anchor is taken now
+  const anchor = menuAnchor(e);
+  const media = token.value
+    ? await $fetch<MediaRow>(`/api/v1/library/track/${track.mediaId}`, { headers: { Authorization: token.value } }).catch(() => null)
+    : null;
+  const row = media ?? toMediaRow(track);
+  if (!row) return;
 
-const trackMenu = ref<InstanceType<typeof ContextMenu> | null>(null);
-const trackMenuItems = ref<ContextMenuItem[]>([]);
-
-function buildTrackMenu(mediaId: string) {
-  const items: ContextMenuItem[] = [];
-  const media = album.value?.tracks.find((t) => t.mediaId === mediaId);
-  const row = media ? toMediaRow(media) : null;
-  if (row) {
-    items.push(
-      { label: $t('player.playNext'), action: () => addToQueue(row, "next") },
-      { label: $t('player.addToQueue'), action: () => addToQueue(row, "end") }
-    );
-  }
-  items.push({ label: $t('playlist.addToPlaylist'), action: () => openPicker([mediaId]) });
-  trackMenuItems.value = items;
-}
-
-function onTrackContextMenu(e: MouseEvent, mediaId: string) {
-  buildTrackMenu(mediaId);
-  trackMenu.value?.openAt(e.clientX, e.clientY);
-}
-
-function onTrackEllipsis(e: MouseEvent, mediaId: string) {
-  buildTrackMenu(mediaId);
-  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-  trackMenu.value?.openAt(rect.left, rect.bottom);
+  await openMenu(anchor, { kind: "track", media: row }, {
+    onChanged: (change) => { if (change.type === "deleted") void refreshNuxtData(`album-${aid}`); }
+  });
 }
 
 function formatDate(date: string | Date): string {

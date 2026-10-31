@@ -345,6 +345,19 @@ export async function initDatabases(): Promise<void> {
             INDEX idx_release_sub_due (notifiedAt, releaseAt)
         );
 
+        -- pins: albums, playlists and tracks a user keeps at hand (Library home, top of Tracks). refId is the
+        -- track's media id, the album's release-group MBID or the playlist id. No limit per user; a pin whose
+        -- target is gone is pruned the next time the list is read.
+        CREATE TABLE IF NOT EXISTS user_pins (
+            id VARCHAR(36) PRIMARY KEY,
+            userId VARCHAR(36) NOT NULL,
+            kind VARCHAR(16) NOT NULL,
+            refId VARCHAR(64) NOT NULL,
+            pinnedAt BIGINT NOT NULL,
+            UNIQUE KEY uq_user_pin (userId, kind, refId),
+            INDEX idx_user_pin_order (userId, pinnedAt)
+        );
+
         -- playlist imports: a list of tracks another service described, resolved to MusicBrainz and requested
         -- one by one in the background. imports.userId and the items' title/artist are personal data: both
         -- tables are in eraseAccount() and buildAccountExport(). No FK to users, items go with their import.

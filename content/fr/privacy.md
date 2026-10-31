@@ -1,7 +1,7 @@
 ---
 title: Politique de confidentialité
 description: Ce que cette instance Nafyn enregistre à votre sujet, pourquoi, et pendant combien de temps.
-updated: 2026-10-12
+updated: 2026-10-31
 ---
 
 Nafyn est un logiciel auto-hébergé : cette page décrit ce que le logiciel enregistre et pourquoi. La
@@ -37,6 +37,16 @@ Discogs que vous choisissez de lier. Nécessaire pour avoir un compte.
 
 *Conservé jusqu'à la suppression de votre compte.*
 
+### Votre profil public
+
+Votre page de profil (`/u/<nom d'utilisateur>`) est **publique** : toute personne disposant du lien, connectée ou
+non, voit votre nom affiché, votre avatar, les noms d'utilisateur Last.fm / Discogs que vous avez liés, le nombre
+de titres de votre bibliothèque et les playlists que vous possédez et qui sont publiques. Les aperçus de lien
+(Discord, réseaux sociaux) montrent la même chose. Vos playlists privées, la liste de vos titres et votre
+historique d'écoute n'en font jamais partie.
+
+*Visible tant que le compte existe. Passez une playlist en privé pour la retirer de la page.*
+
 ### Vos identifiants
 
 Votre mot de passe sous forme de hash bcrypt (jamais le mot de passe lui-même), les passkeys que vous
@@ -57,6 +67,12 @@ Les morceaux auxquels vous avez accès et leur date d'ajout. Les fichiers audio 
 utilisateurs de l'instance, pas dupliqués par personne.
 
 *Conservé jusqu'au retrait du morceau, ou jusqu'à la suppression de votre compte.*
+
+### Éléments épinglés
+
+Les albums, playlists et titres que vous avez épinglés, et la date. Vous seul·e les voyez.
+
+*Conservés jusqu'à ce que vous les désépingliez, ou que vous supprimiez votre compte.*
 
 ### Playlists
 

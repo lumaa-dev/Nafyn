@@ -123,7 +123,16 @@
     "deleteBusy": "Cette demande est en cours de traitement et ne peut pas être supprimée.",
     "accepted": "Demande acceptée",
     "denied": "Demande refusée",
-    "deleted": "Demande supprimée"
+    "deleted": "Demande supprimée",
+    "open": "Ouvrir {title}",
+    "filter": {
+      "title": "Filtrer les demandes",
+      "all": "Toutes",
+      "succeeded": "Réussies",
+      "failed": "Échouées",
+      "waiting": "En attente",
+      "processing": "En cours"
+    }
   },
   "settings": {
     "title": "Paramètres",
@@ -152,7 +161,9 @@
       "save": "Enregistrer",
       "saved": "Enregistré",
       "error": "Impossible d'enregistrer votre profil",
-      "logout": "Se déconnecter"
+      "logout": "Se déconnecter",
+      "publicProfile": "Voir mon profil public",
+      "publicProfileNote": "Votre profil est public : toute personne disposant du lien voit votre nom, votre avatar, le nombre de titres de votre bibliothèque et vos playlists publiques."
     },
     "accounts": {
       "title": "Comptes",
@@ -194,7 +205,11 @@
       "perUser": {
         "title": "Stockage par utilisateur"
       },
-      "everyoneLibraryLink": "Voir la bibliothèque de tous"
+      "everyoneLibraryLink": "Voir la bibliothèque de tous",
+      "tracksPerUser": {
+        "title": "Titres en bibliothèque par utilisateur",
+        "count": "{count} titre | {count} titres"
+      }
     },
     "subsonic": {
       "title": "Subsonic",
@@ -569,7 +584,14 @@
     "lyricsFormat": "Format des paroles",
     "lyricsPlain": "Texte simple",
     "lyricsLrc": "Synchronisées (LRC)",
-    "lyricsPlaceholder": "Collez ou saisissez les paroles. Le format LRC les synchronise avec la lecture."
+    "lyricsPlaceholder": "Collez ou saisissez les paroles. Le format LRC les synchronise avec la lecture.",
+    "titleMany": "Modifier {count} titres",
+    "uploadCover": "Importer la vôtre",
+    "coverGroup": "Pochette de l'album",
+    "coverCurrent": "Pochette actuelle",
+    "coversLoading": "Recherche des pochettes...",
+    "coversNone": "Aucune autre pochette trouvée pour cet album.",
+    "mixed": "Valeurs différentes - laisser pour conserver"
   },
   "import": {
     "title": "Importer de la musique",
@@ -662,5 +684,43 @@
     "subscribed": "Vous serez notifié à la sortie",
     "unsubscribed": "Vous ne serez plus notifié",
     "error": "Impossible de modifier cette notification de sortie"
+  },
+  "menu": {
+    "more": "Plus d'actions",
+    "pin": "Épingler",
+    "unpin": "Désépingler",
+    "pinned": "Épinglé",
+    "unpinned": "Désépinglé",
+    "pinError": "Impossible de modifier l'épingle",
+    "viewAlbum": "Voir l'album",
+    "viewPlaylist": "Voir la playlist",
+    "deleteAlbum": "Supprimer l'album",
+    "confirmDeleteTracks": "Supprimer {count} titres de votre bibliothèque ? Cette action est irréversible.",
+    "confirmDeleteAlbums": "Supprimer {count} album(s) - {tracks} titres - de votre bibliothèque ? Cette action est irréversible.",
+    "confirmDeletePlaylists": "Supprimer {count} playlist(s) ? Cette action est irréversible."
+  },
+  "bulk": {
+    "select": "Sélectionner",
+    "done": "Terminé",
+    "all": "Tout sélectionner",
+    "none": "Tout désélectionner",
+    "actions": "Actions",
+    "count": "{count} sélectionné(s)"
+  },
+  "pins": {
+    "title": "Épinglés",
+    "kind": {
+      "track": "Titre",
+      "album": "Album",
+      "playlist": "Playlist"
+    }
+  },
+  "profile": {
+    "tracks": "{count} titre | {count} titres",
+    "playlistCount": "{count} playlist publique | {count} playlists publiques",
+    "playlistTracks": "{count} titre | {count} titres",
+    "playlists": "Playlists publiques",
+    "noPlaylists": "Aucune playlist publique pour le moment.",
+    "embedOpen": "Ouvrir le profil"
   }
 }

@@ -1,5 +1,5 @@
 import { recordRecentlyPlayed, type RecentlyPlayedType } from "~~/server/core/recentlyPlayed";
-import { findLibraryEntry, userOwnsAlbum } from "~~/server/core/library";
+import { findPlayableEntry, userOwnsAlbum } from "~~/server/core/library";
 import { getPlaylistById, hasAccess } from "~~/server/core/playlists";
 
 const TYPES: RecentlyPlayedType[] = ["track", "album", "playlist"];
@@ -79,7 +79,7 @@ export default defineEventHandler(async (event) => {
 
     // only ever record media the requesting user can actually see, so recently-played can't be used to probe
     // other users' library/playlist contents
-    if (type === "track" && !await findLibraryEntry(userId, refId)) {
+    if (type === "track" && !await findPlayableEntry(userId, refId)) {
         throw createError({ statusCode: 404, statusMessage: "Track not found in your library" });
     }
     if (type === "album" && !await userOwnsAlbum(userId, refId)) {

@@ -1,7 +1,7 @@
 // serves an owned track's audio file with HTTP Range support, so <audio> can progressively buffer instead of downloading the whole file upfront
 import { createReadStream, statSync } from "node:fs";
 import { extname } from "node:path";
-import { findLibraryEntry } from "~~/server/core/library";
+import { findPlayableEntry } from "~~/server/core/library";
 import { verifyAuthToken } from "~~/server/utils/jwt";
 
 const MIME_TYPES: Record<string, string> = {
@@ -118,7 +118,7 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 400, statusMessage: "Missing media ID" });
     }
 
-    const entry = await findLibraryEntry(userId, mediaId);
+    const entry = await findPlayableEntry(userId, mediaId);
     if (!entry) {
         throw createError({ statusCode: 404, statusMessage: "Track not found in your library" });
     }

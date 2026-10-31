@@ -41,6 +41,9 @@
 
         <button type="button" filled :disabled="!canSave || saving" @click="save">{{ $t('settings.profile.save') }}</button>
 
+        <NuxtLink v-if="user" :to="`/u/${user.username}`" class="everyone-link">{{ $t('settings.profile.publicProfile') }}</NuxtLink>
+        <p v-if="user" class="subsonic-note">{{ $t('settings.profile.publicProfileNote') }}</p>
+
         <section class="subsection">
           <button type="button" filled="hollow" class="danger" @click="logout">{{ $t('settings.profile.logout') }}</button>
         </section>
@@ -185,6 +188,26 @@
               >
                 <span class="swatch" :style="{ background: paletteColor(i) }" />
                 {{ u.displayName ?? u.username }} — {{ formatBytes(u.bytes) }}
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- same users, same colours as the storage pie above: a user keeps their colour from one chart to the next -->
+        <section class="subsection" v-if="storage && storage.perUser.some((u) => u.tracks > 0)">
+          <h2>{{ $t('settings.storage.tracksPerUser.title') }}</h2>
+          <div class="pie-wrap">
+            <div class="pie" role="img" :aria-label="$t('settings.storage.tracksPerUser.title')" :style="{ background: tracksPieGradient }" @mousemove="onTracksPieHover" @mouseleave="hoveredTracksIndex = null" />
+            <ul class="legend">
+              <li
+                v-for="(u, i) in storage.perUser"
+                :key="u.userId"
+                :class="{ active: hoveredTracksIndex === i }"
+                @mouseenter="hoveredTracksIndex = i"
+                @mouseleave="hoveredTracksIndex = null"
+              >
+                <span class="swatch" :style="{ background: paletteColor(i) }" />
+                {{ u.displayName ?? u.username }} — {{ $t('settings.storage.tracksPerUser.count', { count: u.tracks }, u.tracks) }}
               </li>
             </ul>
           </div>
@@ -631,8 +654,8 @@ function isRestrictedBit(p: Permission): boolean {
   return p === Permission.MANAGE_ACCOUNTS || p === Permission.ADMIN;
 }
 
-// the same rule the server enforces (server/entity/Permission.ts): ADMIN edits anyone; MANAGE_ACCOUNTS only
-// accounts below it - not another MANAGE_ACCOUNTS holder, not an ADMIN, not itself
+// the same rule the server enforces (server/entity/Permission.ts): ADMIN edits anyone but another ADMIN;
+// MANAGE_ACCOUNTS only accounts holding neither MANAGE_ACCOUNTS nor ADMIN; nobody edits themselves
 // your own row is read-only here (server/entity/Permission.ts refuses it too): your profile is under Profile,
 // and nobody - an ADMIN included - gets to change their own permissions through the accounts list
 function isSelf(u: NafynUser): boolean {
@@ -746,7 +769,7 @@ interface StorageResponse {
   totalBytes: number,
   freeBytes: number,
   usedByNafynBytes: number,
-  perUser: { userId: string, username: string, displayName: string | null, bytes: number }[]
+  perUser: { userId: string, username: string, displayName: string | null, bytes: number, tracks: number }[]
 }
 
 const storage = ref<StorageResponse | null>(null);
@@ -775,43 +798,56 @@ function paletteColor(i: number): string {
   return PALETTE[i % PALETTE.length];
 }
 
-// percent-of-circle [start, end) for each perUser slice, in the same order as the conic-gradient stops
-const sliceBoundaries = computed(() => {
+// percent-of-circle [start, end) for each perUser slice, in the same order as the conic-gradient stops. Both pies
+// walk `perUser` in the same order, so index i is the same user - and the same colour - in each of them.
+function boundariesFor(value: (u: StorageResponse["perUser"][number]) => number): { start: number, end: number }[] {
   if (!storage.value || storage.value.perUser.length === 0) return [];
-  const total = storage.value.perUser.reduce((sum, u) => sum + u.bytes, 0);
+  const total = storage.value.perUser.reduce((sum, u) => sum + value(u), 0);
   if (total === 0) return [];
 
   let cumulative = 0;
   return storage.value.perUser.map((u) => {
     const start = (cumulative / total) * 100;
-    cumulative += u.bytes;
+    cumulative += value(u);
     const end = (cumulative / total) * 100;
     return { start, end };
   });
-});
+}
 
-const pieGradient = computed(() => {
-  if (!storage.value || sliceBoundaries.value.length === 0) return "none";
-  const stops = sliceBoundaries.value.map(({ start, end }, i) => `${paletteColor(i)} ${start}% ${end}%`);
+function gradientFor(boundaries: { start: number, end: number }[]): string {
+  if (boundaries.length === 0) return "none";
+  const stops = boundaries.map(({ start, end }, i) => `${paletteColor(i)} ${start}% ${end}%`);
   return `conic-gradient(${stops.join(", ")})`;
-});
+}
 
-const hoveredUserIndex = ref<number | null>(null);
-
-function onPieHover(e: MouseEvent) {
+// which slice a pointer is over: conic-gradient's 0% is straight up (12 o'clock), going clockwise; atan2 measures
+// clockwise from 3 o'clock (since screen y grows downward), so rotate by 90deg to line the two up
+function sliceAt(e: MouseEvent, boundaries: { start: number, end: number }[]): number | null {
   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-  const cx = rect.left + rect.width / 2;
-  const cy = rect.top + rect.height / 2;
-  const dx = e.clientX - cx;
-  const dy = e.clientY - cy;
+  const dx = e.clientX - (rect.left + rect.width / 2);
+  const dy = e.clientY - (rect.top + rect.height / 2);
 
-  // conic-gradient's 0% is straight up (12 o'clock), going clockwise; atan2 measures clockwise from
-  // 3 o'clock (since screen y grows downward), so rotate by 90deg to line the two up
   const angle = (Math.atan2(dy, dx) * 180 / Math.PI + 90 + 360) % 360;
   const percent = (angle / 360) * 100;
 
-  const index = sliceBoundaries.value.findIndex(({ start, end }) => percent >= start && percent < end);
-  hoveredUserIndex.value = index === -1 ? null : index;
+  const index = boundaries.findIndex(({ start, end }) => percent >= start && percent < end);
+  return index === -1 ? null : index;
+}
+
+const sliceBoundaries = computed(() => boundariesFor((u) => u.bytes));
+const pieGradient = computed(() => gradientFor(sliceBoundaries.value));
+const hoveredUserIndex = ref<number | null>(null);
+
+function onPieHover(e: MouseEvent) {
+  hoveredUserIndex.value = sliceAt(e, sliceBoundaries.value);
+}
+
+const trackBoundaries = computed(() => boundariesFor((u) => u.tracks));
+const tracksPieGradient = computed(() => gradientFor(trackBoundaries.value));
+const hoveredTracksIndex = ref<number | null>(null);
+
+function onTracksPieHover(e: MouseEvent) {
+  hoveredTracksIndex.value = sliceAt(e, trackBoundaries.value);
 }
 
 // -- appearance panel --

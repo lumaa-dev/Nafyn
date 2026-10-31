@@ -42,7 +42,9 @@ export function libraryRelativePath(filePath: string): string {
 export const coverArtId = {
     song: (mediaId: string) => `mf-${mediaId}`,
     album: (albumId: string) => `al-${albumId}`,
-    playlist: (playlistId: string) => `pl-${playlistId}`
+    // the image's version token rides along (pl-<uuid>-<version>): bytes always live at the same path, so a client
+    // that caches a cover by its id would otherwise keep the old one (or the placeholder) for ever
+    playlist: (playlistId: string, version?: string | null) => version ? `pl-${playlistId}-${version}` : `pl-${playlistId}`
 };
 
 function isoDate(msOrSec: number, isSeconds: boolean = false): string {
@@ -122,7 +124,7 @@ export function playlistNode(playlist: PlaylistRow, songCount: number, durationS
         duration: Math.round(durationSeconds),
         created: isoDate(playlist.createdAt),
         changed: isoDate(playlist.updatedAt),
-        coverArt: playlist.image ? coverArtId.playlist(playlist.id) : undefined
+        coverArt: playlist.image ? coverArtId.playlist(playlist.id, playlist.image) : undefined
     });
 }
 

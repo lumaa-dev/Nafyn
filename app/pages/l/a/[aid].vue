@@ -1,5 +1,5 @@
 <template>
-  <div class="libalbum" v-if="detail">
+  <div class="libalbum bulk-page" v-if="detail">
     <div class="head">
       <CoverImage class="cover" :src="coverSrc(detail.album)" eager />
       <div class="meta">
@@ -8,6 +8,9 @@
         <div class="actions">
           <button type="button" filled :disabled="tracks.length === 0" @click="playAll">{{ $t('playlist.play') }}</button>
           <button type="button" filled :disabled="tracks.length === 0" @click="shuffleAll">{{ $t('playlist.shuffle') }}</button>
+          <button type="button" filled="hollow" class="icon-only more" :title="$t('menu.more')" :aria-label="$t('menu.more')" @click="onAlbumMenu">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" /></svg>
+          </button>
         </div>
       </div>
     </div>
@@ -17,7 +20,8 @@
       <li v-if="discGroups.length > 1" class="disc" role="presentation">
         <h3>{{ group.label }}</h3>
       </li>
-      <li v-for="track in group.tracks" :key="track.id" :class="{ playing: currentTrack?.id === track.id }" @click="playFrom(track)" @contextmenu.prevent="onContextMenu($event, track)">
+      <li v-for="track in group.tracks" :key="track.id" :class="{ playing: currentTrack?.id === track.id, 'selectable-row': selecting, selected: isSelected(track.id) }" @click="selecting ? toggle(track.id) : playFrom(track)" @contextmenu.prevent="onContextMenu($event, track)">
+        <input v-if="selecting" type="checkbox" class="select-box" :checked="isSelected(track.id)" :aria-label="track.title" tabindex="-1" @click.stop="toggle(track.id)">
         <CoverImage :src="coverSrc(track)" />
         <span class="col">
           <span class="title">{{ track.title }}</span>
@@ -25,22 +29,20 @@
         </span>
         <span class="filesize" v-if="appearance.showFileSize">{{ track.fileSize != null ? formatBytes(track.fileSize) : '—' }}</span>
         <span class="duration" v-if="appearance.showDuration">{{ formatDuration(track.duration) }}</span>
-        <button type="button" class="ellipsis" @click.stop="onEllipsis($event, track)" :aria-label="$t('playlist.addToPlaylist')">
+        <button v-if="!selecting" type="button" class="ellipsis" @click.stop="onContextMenu($event, track)" :aria-label="$t('menu.more')">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
         </button>
       </li>
       </template>
     </ol>
 
-    <ContextMenu ref="trackMenu" :items="trackMenuItems" />
-    <PlaylistPickerModal v-model="showPicker" :media-ids="pickerMediaIds" />
+    <BulkBar :selecting="selecting" :count="count" :total="tracks.length" @start="start" @stop="stop" @select-all="toggleAll" @actions="onBulkActions" />
   </div>
 </template>
 
 <script lang="ts" setup>
 import type { MediaRow, AlbumRow } from '~~/server/core/library';
-import ContextMenu, { type ContextMenuItem } from '~/components/ContextMenu.vue';
-import PlaylistPickerModal from '~/components/PlaylistPickerModal.vue';
+import type { MenuChange } from '~/composables/useMediaMenu';
 import { useAppearanceSettings } from '~/composables/useAppearanceSettings';
 import { useAuthToken } from '~/composables/useAuthToken';
 
@@ -76,7 +78,7 @@ const discGroups = computed(() => {
   return [...groups.values()].map((group) => ({ ...group, label: group.title ?? $t('album.disc', { number: group.number }) }));
 });
 
-const { currentTrack, play, addToQueue } = useUnity();
+const { currentTrack, play } = useUnity();
 
 function playAll() {
   if (tracks.value.length === 0) return;
@@ -93,40 +95,40 @@ function shuffleAll() {
   play(shuffled[0]!, shuffled, { type: "album", refId: aid });
 }
 
-const showPicker = ref(false);
-const pickerMediaIds = ref<string[]>([]);
+const { openMenu, openBulkMenu } = useMediaMenu();
+const { selecting, selectedIds, count, isSelected, toggle, selectAll, clear, start, stop, retain } = useBulkSelect();
 
-const trackMenu = ref<InstanceType<typeof ContextMenu> | null>(null);
-const trackMenuItems = ref<ContextMenuItem[]>([]);
-
-function buildTrackMenu(track: MediaRow) {
-  trackMenuItems.value = [{
-    label: $t('player.playNext'),
-    action: () => addToQueue(track, "next")
-  }, {
-    label: $t('player.addToQueue'),
-    action: () => addToQueue(track, "end")
-  }, {
-    label: $t('track.viewDetails'),
-    action: () => navigateTo(`/l/t/${track.id}`)
-  }, {
-    label: $t('playlist.addToPlaylist'),
-    action: () => {
-      pickerMediaIds.value = [track.id];
-      showPicker.value = true;
-    }
-  }];
+function onChanged(change: MenuChange) {
+  if (change.type === "deleted" && change.ids.includes(aid)) {
+    // the whole album went
+    void navigateTo("/l/albums");
+  } else if (change.type !== "pinned") {
+    void refreshNuxtData(`library-album-${aid}`).then(() => {
+      retain(tracks.value.map((track) => track.id));
+      if (tracks.value.length === 0) void navigateTo("/l/albums");
+    });
+  }
 }
 
 function onContextMenu(e: MouseEvent, track: MediaRow) {
-  buildTrackMenu(track);
-  trackMenu.value?.openAt(e.clientX, e.clientY);
+  if (selecting.value) return;
+  void openMenu(e, { kind: "track", media: track }, { onChanged });
 }
 
-function onEllipsis(e: MouseEvent, track: MediaRow) {
-  buildTrackMenu(track);
+function onAlbumMenu(e: MouseEvent) {
+  if (!detail.value) return;
+  void openMenu(e, { kind: "album", album: detail.value.album }, { hideDetails: true, onChanged });
+}
+
+function toggleAll() {
+  if (count.value >= tracks.value.length) clear();
+  else selectAll(tracks.value.map((track) => track.id));
+}
+
+function onBulkActions(e: MouseEvent) {
+  const chosen = new Set(selectedIds.value);
   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-  trackMenu.value?.openAt(rect.left, rect.bottom);
+  void openBulkMenu({ x: rect.left, y: rect.top }, tracks.value.filter((track) => chosen.has(track.id)).map((media) => ({ kind: "track" as const, media })), { onChanged });
 }
 </script>
 

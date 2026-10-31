@@ -5,7 +5,7 @@ import type { NafynUser } from "~~/server/entity/NafynUser";
 
 defineRouteMeta({
     openAPI: {
-        description: "Update another user's account fields, including permissions. Requires ADMIN, or MANAGE_ACCOUNTS against a non-privileged target (see canManageUser). Only an ADMIN can grant/revoke MANAGE_ACCOUNTS or ADMIN itself",
+        description: "Update another user's account fields, including permissions. Requires ADMIN (any account except another ADMIN) or MANAGE_ACCOUNTS (only accounts holding neither MANAGE_ACCOUNTS nor ADMIN); see canManageUser. Nobody edits themselves here. Only an ADMIN can grant/revoke MANAGE_ACCOUNTS or ADMIN itself",
         tags: ["users"],
         operationId: "updateUser",
         parameters: [

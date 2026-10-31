@@ -4,7 +4,7 @@ import { eraseAccount } from "~~/server/core/accountErasure";
 
 defineRouteMeta({
     openAPI: {
-        description: "Permanently erase a user account and every piece of data attached to it: sessions, API tokens, passkeys, invites they issued, settings, library entries, their playlists, recently played and all listening data; download requests they made are kept as operational records with the requester removed. Requires ADMIN, or MANAGE_ACCOUNTS against a non-privileged target (see canManageUser)",
+        description: "Permanently erase a user account and every piece of data attached to it: sessions, API tokens, passkeys, invites they issued, settings, library entries, their playlists, recently played and all listening data; download requests they made are kept as operational records with the requester removed. Requires ADMIN (any account except another ADMIN) or MANAGE_ACCOUNTS (only accounts holding neither MANAGE_ACCOUNTS nor ADMIN); see canManageUser. Nobody edits themselves here",
         tags: ["users"],
         operationId: "deleteUser",
         parameters: [

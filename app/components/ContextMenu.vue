@@ -2,14 +2,20 @@
   <Teleport to="body">
     <div v-if="open" class="ctxmenu-backdrop" @click="close" @contextmenu.prevent="close">
       <ul ref="menuEl" class="ctxmenu" :style="{ top: `${y}px`, left: `${x}px` }" @click.stop>
-        <li
-          v-for="(item, i) in items"
-          :key="i"
-          :class="{ danger: item.danger }"
-          @click="trigger(item)"
-        >
-          {{ item.label }}
-        </li>
+        <template v-for="(item, i) in items" :key="i">
+          <li v-if="item.separator" class="sep" role="separator" />
+          <li
+            v-else
+            :class="{ danger: item.danger, checked: item.checked, disabled: item.disabled }"
+            :role="item.checked !== undefined ? 'menuitemcheckbox' : 'menuitem'"
+            :aria-checked="item.checked !== undefined ? item.checked : undefined"
+            :aria-disabled="item.disabled || undefined"
+            @click="trigger(item)"
+          >
+            <span v-if="item.checked !== undefined" class="tick" aria-hidden="true">{{ item.checked ? '✓' : '' }}</span>
+            {{ item.label }}
+          </li>
+        </template>
       </ul>
     </div>
   </Teleport>
@@ -18,8 +24,16 @@
 <script lang="ts" setup>
 export interface ContextMenuItem {
   label: string;
-  action: () => void;
+  action?: () => void;
   danger?: boolean;
+  /** a thin line between groups of items; no label or action */
+  separator?: boolean;
+  /** shown greyed out and ignored on click */
+  disabled?: boolean;
+  /** makes it a check item: true shows a tick */
+  checked?: boolean;
+  /** a check item that leaves the menu open, so several can be toggled in a row (filters) */
+  keepOpen?: boolean;
 }
 
 defineProps<{ items: ContextMenuItem[] }>();
@@ -53,8 +67,9 @@ function close() {
 }
 
 function trigger(item: ContextMenuItem) {
-  close();
-  item.action();
+  if (item.disabled) return;
+  if (!item.keepOpen) close();
+  item.action?.();
 }
 
 function onKeydown(e: KeyboardEvent) {
@@ -102,5 +117,32 @@ defineExpose({ openAt, close });
 
 .ctxmenu li.danger {
   color: #e06666;
+}
+
+.ctxmenu li.sep {
+  height: 1px;
+  padding: 0;
+  margin: 5px 6px;
+  border-radius: 0;
+  background: #333333;
+  cursor: default;
+}
+
+.ctxmenu li.sep:hover {
+  background: #333333;
+}
+
+.ctxmenu li.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ctxmenu li.disabled:hover {
+  background: none;
+}
+
+.ctxmenu li .tick {
+  display: inline-block;
+  width: 1.2em;
 }
 </style>

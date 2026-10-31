@@ -1,6 +1,6 @@
 <template>
   <div class="recent" :class="variant" v-if="recentlyPlayed.length > 0">
-    <NuxtLink v-for="item in recentlyPlayed" :key="`${item.type}-${item.refId}`" :to="item.href" class="recent-card">
+    <NuxtLink v-for="item in recentlyPlayed" :key="`${item.type}-${item.refId}`" :to="item.href" class="recent-card" @contextmenu.prevent="onMenu($event, item)">
       <CoverImage :src="entryCover(item)" />
       <p class="title">{{ item.title }}</p>
       <p class="subtitle" v-if="item.subtitle">{{ item.subtitle }}</p>
@@ -11,6 +11,8 @@
 
 <script lang="ts" setup>
 import type { RecentlyPlayedEntry } from '~~/server/core/recentlyPlayed';
+import type { MediaRow, AlbumRow } from '~~/server/core/library';
+import { menuAnchor } from '~/composables/useMediaMenu';
 import noCover from '~/assets/no-cover.png';
 import { useAuthToken } from '~/composables/useAuthToken';
 import { coverArtUrl } from '~/composables/useCover';
@@ -19,12 +21,39 @@ defineProps<{ variant: "grid" | "scroll" }>();
 
 const token = useAuthToken().token.value;
 
-const { data: recentlyPlayed, error } = await useAsyncData<RecentlyPlayedEntry[]>("recently-played", () => {
+const { data: recentlyPlayed, error, refresh } = await useAsyncData<RecentlyPlayedEntry[]>("recently-played", () => {
   return token
     ? $fetch("/api/v1/library/recently-played", { headers: { Authorization: token } })
     : Promise.resolve([]);
 }, { default: () => [] });
 useLoadErrorToast(error);
+
+// the same menu as the page the element lives on (useMediaMenu); the shelf only holds ids, so what the menu
+// needs is read first
+const { openMenu } = useMediaMenu();
+
+async function onMenu(e: MouseEvent, item: RecentlyPlayedEntry) {
+  if (!token) return;
+  const anchor = menuAnchor(e);
+  const headers = { Authorization: token };
+  const onChanged = () => void refresh();
+
+  try {
+    if (item.type === "track") {
+      const media = await $fetch<MediaRow>(`/api/v1/library/track/${item.refId}`, { headers });
+      await openMenu(anchor, { kind: "track", media }, { onChanged });
+    } else if (item.type === "album") {
+      const detail = await $fetch<{ album: AlbumRow }>(`/api/v1/library/album/${item.refId}`, { headers });
+      await openMenu(anchor, { kind: "album", album: detail.album }, { onChanged });
+    } else {
+      const detail = await $fetch<{ playlist: { id: string, title: string }, viewer: { isOwner: boolean, isMember: boolean } }>(`/api/v1/playlist/${item.refId}`, { headers, query: { limit: 1 } });
+      await openMenu(anchor, { kind: "playlist", playlist: detail.playlist, isOwner: detail.viewer.isOwner, isMember: detail.viewer.isMember }, { onChanged });
+    }
+  } catch (err) {
+    // the element can be gone since it was played (deleted track, playlist no longer shared)
+    useToast().sendError(item.title, err, $t('common.error'));
+  }
+}
 
 function entryCover(item: RecentlyPlayedEntry): string {
   if (item.type === "playlist") {

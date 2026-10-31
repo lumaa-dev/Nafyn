@@ -57,17 +57,17 @@ export function escapeDiscordMarkdown(text: string): string {
         .trim();
 }
 
-function clip(text: string, max: number): string {
+export function embedClip(text: string, max: number): string {
     const chars = Array.from(text);
     return chars.length <= max ? text : `${chars.slice(0, max - 1).join("").trimEnd()}…`;
 }
 
 // `<` must not be able to close the script element (`</script>`); written as an escape it still counts in full
-function scriptSafeJson(value: unknown): string {
+export function embedScriptSafeJson(value: unknown): string {
     return JSON.stringify(value).replace(/</g, "\\u003c");
 }
 
-function byteLength(text: string): number {
+export function embedByteLength(text: string): number {
     return new TextEncoder().encode(text).length;
 }
 
@@ -86,7 +86,7 @@ function previewImage(input: PlaylistEmbedInput): string | null {
 function plainDescription(input: PlaylistEmbedInput): string {
     const facts = [input.ownerName ? input.labels.owner : null, input.labels.trackCount].filter(Boolean).join(" · ");
     const text = input.description?.replace(/\s+/g, " ").trim();
-    return clip(text ? text : facts, MAX_DESCRIPTION);
+    return embedClip(text ? text : facts, MAX_DESCRIPTION);
 }
 
 function buildDiscordPayload(input: PlaylistEmbedInput, url: string, image: string | null, listed: number, descriptionMax: number): string {
@@ -95,8 +95,8 @@ function buildDiscordPayload(input: PlaylistEmbedInput, url: string, image: stri
     const description = descriptionMax > 0 ? input.description?.replace(/\s+/g, " ").trim() : null;
 
     const heading = [
-        `## ${escapeDiscordMarkdown(clip(input.title, 100))}`,
-        description ? escapeDiscordMarkdown(clip(description, descriptionMax)) : null,
+        `## ${escapeDiscordMarkdown(embedClip(input.title, 100))}`,
+        description ? escapeDiscordMarkdown(embedClip(description, descriptionMax)) : null,
         `-# ${escapeDiscordMarkdown(facts)}`
     ].filter(Boolean).join("\n");
 
@@ -108,7 +108,7 @@ function buildDiscordPayload(input: PlaylistEmbedInput, url: string, image: stri
 
     if (listed > 0) {
         const lines = input.tracks.slice(0, listed).map((track, i) => {
-            return `${i + 1}. **${escapeDiscordMarkdown(clip(track.title, 60))}** - ${escapeDiscordMarkdown(clip(track.artistName, 40))}`;
+            return `${i + 1}. **${escapeDiscordMarkdown(embedClip(track.title, 60))}** - ${escapeDiscordMarkdown(embedClip(track.artistName, 40))}`;
         });
         const left = input.trackTotal - lines.length;
         if (left > 0) lines.push(`-# ${escapeDiscordMarkdown(labels.more(left))}`);
@@ -118,10 +118,10 @@ function buildDiscordPayload(input: PlaylistEmbedInput, url: string, image: stri
 
     components.push({
         type: 1,
-        components: [{ type: 2, style: 5, label: clip(labels.open, 80), url }]
+        components: [{ type: 2, style: 5, label: embedClip(labels.open, 80), url }]
     });
 
-    return scriptSafeJson({ type: 17, components });
+    return embedScriptSafeJson({ type: 17, components });
 }
 
 export function buildPlaylistEmbed(input: PlaylistEmbedInput): PlaylistEmbed {
@@ -136,7 +136,7 @@ export function buildPlaylistEmbed(input: PlaylistEmbedInput): PlaylistEmbed {
     let discordEmbed = "";
     for (const [listed, descriptionMax] of attempts) {
         discordEmbed = buildDiscordPayload(input, url, image, listed, descriptionMax);
-        if (byteLength(discordEmbed) <= DISCORD_EMBED_MAX_BYTES) break;
+        if (embedByteLength(discordEmbed) <= DISCORD_EMBED_MAX_BYTES) break;
     }
 
     return { url, title: input.title, description: plainDescription(input), image, discordEmbed };

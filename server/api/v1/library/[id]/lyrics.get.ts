@@ -5,7 +5,7 @@ import {
 } from "~~/server/utils/lyrics/parser";
 import { fetchLrclibParagraphs, parseLrcSyncedLyrics, parsePlainLyrics } from "~~/server/utils/lyrics/lrclib";
 import { getMediaLyrics } from "~~/server/core/mediaLyrics";
-import { getMediaId, findLibraryEntry, type MediaRow } from "~~/server/core/library";
+import { getMediaId, findPlayableEntry, type MediaRow } from "~~/server/core/library";
 
 const lyricsService = new NafynLyrics();
 
@@ -186,7 +186,7 @@ export default defineEventHandler(async (event) => {
 	// SECURITY: scope this to the caller's own library like every other /library route. Serving lyrics for
 	// an arbitrary media ID let any account both read metadata it has no access to and probe which IDs
 	// exist across other users' libraries. A media row the caller can't see is reported as simply absent.
-	if (!media || !await findLibraryEntry(userId, media.id)) {
+	if (!media || !await findPlayableEntry(userId, media.id)) {
 		throw createError({
 			statusCode: 404,
 			statusMessage: "No media with ID " + id,

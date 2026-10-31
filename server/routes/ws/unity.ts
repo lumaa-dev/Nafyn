@@ -3,6 +3,7 @@
 // of `Authorization`, same as ws/downloads.ts).
 import { verifyAuthToken } from "../../utils/jwt";
 import { labelUserAgent } from "../../utils/userAgent";
+import { getUnitySettings } from "../../core/unitySettings";
 import {
     getSnapshot,
     registerConnection,
@@ -11,7 +12,8 @@ import {
     applyState,
     forwardCommand,
     handleClose,
-    connectionCount
+    connectionCount,
+    leaveUnity
 } from "../../utils/unityRegistry";
 
 const HEARTBEAT_INTERVAL_MS = 20_000;
@@ -66,6 +68,13 @@ export default defineWebSocketHandler({
             sessionId = payload.jti;
         } catch {
             peer.close(4001, "Invalid or expired token");
+            return;
+        }
+
+        // the account switched Unity off (Settings -> Privacy & Security): no device may join, whichever tab is
+        // still trying to reconnect with the old setting
+        if (!(await getUnitySettings(userId)).enabled) {
+            peer.close(4002, "Nafyn Unity is turned off for this account");
             return;
         }
 
@@ -133,6 +142,10 @@ export default defineWebSocketHandler({
                 peer.send(JSON.stringify(granted ? { type: "claim-granted" } : { type: "claim-rejected", reason: "A master is already active" }));
                 return;
             }
+            case "leave":
+                // this device turned Unity off for itself: a master ends its session now instead of after the grace period
+                leaveUnity(ctx.userId, peer);
+                return;
             case "takeover":
                 takeoverMaster(ctx.userId, peer, ctx.sessionId, ctx.deviceLabel);
                 return;

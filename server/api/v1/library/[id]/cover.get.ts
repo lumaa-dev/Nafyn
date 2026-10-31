@@ -5,7 +5,7 @@
 // takes a `?token=`). The token is still verified either way - a cover is library content, except for tracks in a public playlist, which anonymous visitors can view.
 import { createReadStream, existsSync } from "node:fs";
 import { verifyAuthToken } from "~~/server/utils/jwt";
-import { findLibraryEntry, getMediaId } from "~~/server/core/library";
+import { findPlayableEntry, getMediaId } from "~~/server/core/library";
 import { isCustomCoverInPublicPlaylist } from "~~/server/core/playlists";
 import { mediaCoverFilePath } from "~~/server/utils/mediaCover";
 
@@ -51,7 +51,7 @@ export default defineEventHandler(async (event) => {
     const media = await getMediaId(mediaId);
     if (userId) {
         // SECURITY: scoped to the caller's own library, like every other /library route - or a public playlist
-        if (!media || !(await findLibraryEntry(userId, mediaId) || await isCustomCoverInPublicPlaylist(mediaId))) {
+        if (!media || !(await findPlayableEntry(userId, mediaId) || await isCustomCoverInPublicPlaylist(mediaId))) {
             throw createError({ statusCode: 404, statusMessage: "Track not found in your library" });
         }
     } else {

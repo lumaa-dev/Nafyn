@@ -70,7 +70,8 @@ export default defineEventHandler(async (event) => {
             userId: row.userId,
             username: u?.username ?? "unknown",
             displayName: u?.displayName ?? null,
-            bytes: row.bytes
+            bytes: row.bytes,
+            tracks: row.tracks
         };
     });
 

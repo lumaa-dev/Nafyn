@@ -1,4 +1,5 @@
 import { setUnitySettings } from "~~/server/core/unitySettings";
+import { disableUnityForUser } from "~~/server/utils/unityRegistry";
 
 defineRouteMeta({
     openAPI: {
@@ -34,5 +35,9 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 400, statusMessage: "Missing `enabled`" });
     }
 
-    return await setUnitySettings(userId, body.enabled);
+    const settings = await setUnitySettings(userId, body.enabled);
+    // switching it off ends the live session now: every device is disconnected and the Now Playing status the
+    // Apple devices were following goes with it
+    if (!settings.enabled) disableUnityForUser(userId);
+    return settings;
 });

@@ -25,6 +25,7 @@ import { listReplayYears, getReplayMix } from "./replayMix";
 import { listPlaylistsOwnedBy, listMembershipsOfUser } from "./playlists";
 import { listRequestsByUser } from "./requests";
 import { listSubscriptionExportForUser } from "./releaseSubscriptions";
+import { listPinExportForUser } from "./pins";
 import { listImportExportForUser } from "./imports";
 import { listWebhookExportForUser } from "../utils/webhook";
 import { listDeviceExportForUser } from "../utils/apn";
@@ -111,6 +112,8 @@ export async function buildAccountExport(userId: string): Promise<Record<string,
         listSubscriptionExportForUser(userId)
     ]);
 
+    const pins = await listPinExportForUser(userId);
+
     // playlist imports: the tracks that were in each imported playlist and what became of them
     const playlistImports = await listImportExportForUser(userId);
 
@@ -163,6 +166,7 @@ export async function buildAccountExport(userId: string): Promise<Record<string,
             entriesAddedToOthersPlaylists: entriesAddedElsewhere
         },
         requests,
+        pins,
         playlistImports,
         notifications: {
             webhooks,

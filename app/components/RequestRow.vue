@@ -1,19 +1,20 @@
 <template>
   <div class="reqrow" v-if="props.request.info != null">
-    <div class="reqrow-main">
-      <div class="colssm" style="gap: 25px">
+    <div class="reqrow-main" @click="onRowClick">
+      <!-- the cover and title lead to the requested album / track; the rest of the row (buttons) does not -->
+      <NuxtLink class="colssm reqlink" style="gap: 25px" :to="musicHref" :aria-label="$t('requests.open', { title: props.request.info.title })">
         <CoverImage v-if="props.request.info.coverArt" :src="props.request.info.coverArt" />
         <span class="info small">
           <p class="title">{{ props.request.info.title }}</p>
           <p class="artist">{{ props.request.info.artist }}</p>
         </span>
-      </div>
+      </NuxtLink>
       <div class="cols">
         <div class="col">
-          <span class="info big">
+          <NuxtLink class="info big reqlink" :to="musicHref">
             <p class="title">{{ props.request.info.title }}</p>
             <p class="artist">{{ props.request.info.artist }}</p>
-          </span>
+          </NuxtLink>
           <span class="data" v-if="!isCompact">
             <p v-if="typeof props.request.requestedBy != 'string'">{{ $t('requests.requestedBy', { name: props.request.requestedBy.displayName ?? props.request.requestedBy.username }) }}</p>
             <p>{{ $t('requests.createdOn', { date: formatDate(props.request.createdAt) }) }}</p>
@@ -63,6 +64,7 @@
 </template>
 
 <script lang="ts" setup>
+
 import { isRequestActive, type NafynRequest, type RequestStatus } from '~~/server/entity/NafynRequest';
 import { Permission } from '~~/server/entity/Permission';
 import { useAuthToken } from '~/composables/useAuthToken';
@@ -84,6 +86,15 @@ interface DownloadProgressEvent {
 
 const props = defineProps<{ request: NafynRequest, isCompact: boolean; }>();
 const emit = defineEmits<{ deleted: [id: string] }>();
+
+// where a request leads: its album / track page (the catalogue page, which shows "In library" once it landed)
+const musicHref = computed(() => `${props.request.type === "album" ? "/a" : "/t"}/${props.request.musicbrainzId}`);
+
+// the whole row opens the music, except what has a job of its own (the accept / deny / delete buttons, a link)
+function onRowClick(e: MouseEvent) {
+  if ((e.target as HTMLElement).closest("a, button, input, select")) return;
+  void navigateTo(musicHref.value);
+}
 
 const { locale } = useI18n();
 
@@ -257,6 +268,24 @@ onUnmounted(disconnect);
   display: flex;
   flex-direction: row;
   gap: 20px;
+  cursor: pointer;
+}
+
+.reqrow a.reqlink {
+  color: inherit;
+  text-decoration: none;
+}
+
+.reqrow a.reqlink:hover .title {
+  text-decoration: underline;
+}
+
+.reqrow a.colssm {
+  display: block;
+}
+
+.reqrow .reqrow-main button {
+  cursor: pointer;
 }
 
 .reqrow img {
@@ -425,7 +454,7 @@ onUnmounted(disconnect);
     display: none;
   }
 
-  .reqrow .colssm {
+  .reqrow a.colssm {
     display: flex;
     flex-direction: row;
     justify-content: space-between;

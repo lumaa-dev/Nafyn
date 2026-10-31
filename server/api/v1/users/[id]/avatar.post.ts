@@ -4,7 +4,7 @@ import { saveAvatar } from "~~/server/utils/avatar";
 
 defineRouteMeta({
     openAPI: {
-        description: "Upload/replace another user's avatar. Requires ADMIN, or MANAGE_ACCOUNTS against a non-privileged target (see canManageUser)",
+        description: "Upload/replace another user's avatar. Requires ADMIN (any account except another ADMIN) or MANAGE_ACCOUNTS (only accounts holding neither MANAGE_ACCOUNTS nor ADMIN); see canManageUser. Nobody edits themselves here",
         tags: ["users"],
         operationId: "setUserAvatar",
         parameters: [

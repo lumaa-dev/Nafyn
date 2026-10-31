@@ -1,8 +1,15 @@
 <template>
-  <div class="libtracks">
+  <div class="libtracks bulk-page">
     <h1>{{ $t('library.all.title') }}</h1>
     <ol class="tracks" v-if="tracks.length > 0">
-      <li v-for="track in tracks" :key="track.id" @contextmenu.prevent="onContextMenu($event, track)">
+      <li
+        v-for="track in tracks"
+        :key="track.id"
+        :class="{ 'selectable-row': selecting, selected: isSelected(track.id) }"
+        @click="selecting ? toggle(track.id) : undefined"
+        @contextmenu.prevent="onContextMenu($event, track)"
+      >
+        <input v-if="selecting" type="checkbox" class="select-box" :checked="isSelected(track.id)" :aria-label="track.title" tabindex="-1" @click.stop="toggle(track.id)">
         <CoverImage :src="coverSrc(track)" />
         <span class="col">
           <span class="title">{{ track.title }}</span>
@@ -12,7 +19,7 @@
         <NuxtLink v-if="track.album" :to="`/a/${track.albumId}`" class="album" @click.stop>{{ track.album }}</NuxtLink>
         <span class="filesize" v-if="appearance.showFileSize">{{ track.fileSize != null ? formatBytes(track.fileSize) : '—' }}</span>
         <span class="duration" v-if="appearance.showDuration">{{ formatDuration(track.duration) }}</span>
-        <button type="button" class="ellipsis" @click.stop="onEllipsis($event, track)" :aria-label="$t('playlist.addToPlaylist')">
+        <button v-if="!selecting" type="button" class="ellipsis" @click.stop="onContextMenu($event, track)" :aria-label="$t('menu.more')">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
         </button>
       </li>
@@ -21,31 +28,22 @@
     <div ref="sentinel" class="scroll-sentinel" />
     <p class="loading-more" v-if="loadingMore">{{ $t('common.loadingMore') }}</p>
 
-    <ContextMenu ref="trackMenu" :items="trackMenuItems" />
-    <PlaylistPickerModal v-model="showPicker" :media-ids="pickerMediaIds" admin />
+    <BulkBar :selecting="selecting" :count="count" :total="tracks.length" @start="start" @stop="stop" @select-all="toggleAll" @actions="onBulkActions" />
   </div>
 </template>
 
 <script lang="ts" setup>
-import ContextMenu, { type ContextMenuItem } from '~/components/ContextMenu.vue';
-import PlaylistPickerModal from '~/components/PlaylistPickerModal.vue';
+import type { MediaRow } from '~~/server/core/library';
+import type { MenuChange } from '~/composables/useMediaMenu';
 import { useAppearanceSettings } from '~/composables/useAppearanceSettings';
 import { useAuthToken } from '~/composables/useAuthToken';
 
-interface AllMediaRow {
-  id: string;
-  title: string;
-  artistName: string;
-  album: string | null;
-  albumId: string;
-  coverArt: string | null;
-  duration: number;
-  fileSize: number | null;
-  owners: { userId: string; username: string }[];
-}
+type AllMediaRow = MediaRow & { owners: { userId: string; username: string }[] };
 
 const { token } = useAuthToken();
 const appearance = useAppearanceSettings();
+const { user: me, ensureLoaded } = useCurrentUser();
+await ensureLoaded();
 
 const { items: tracks, initialLoading, loadingMore, sentinel, loadMore, reset } = useInfiniteList<AllMediaRow>((page, limit) => {
   return token.value
@@ -54,58 +52,35 @@ const { items: tracks, initialLoading, loadingMore, sentinel, loadMore, reset } 
 });
 await loadMore();
 
-const { sendError } = useToast();
+const { openMenu, openBulkMenu } = useMediaMenu();
+const { selecting, selectedIds, count, isSelected, toggle, selectAll, clear, start, stop, retain } = useBulkSelect();
 
-const showPicker = ref(false);
-const pickerMediaIds = ref<string[]>([]);
+// the same menu as everywhere, in the admin flavour: every owner's library can be cleaned separately, the picker
+// lists every playlist, and a music manager can edit what they don't own
+function subjectOf(track: AllMediaRow) {
+  return { kind: "track" as const, media: track, owned: track.owners.some((owner) => owner.userId === me.value?.id), canEdit: true };
+}
 
-const trackMenu = ref<InstanceType<typeof ContextMenu> | null>(null);
-const trackMenuItems = ref<ContextMenuItem[]>([]);
-
-function buildTrackMenu(track: AllMediaRow) {
-  const items: ContextMenuItem[] = [{
-    label: $t('playlist.addToPlaylist'),
-    action: () => {
-      pickerMediaIds.value = [track.id];
-      showPicker.value = true;
-    }
-  }];
-
-  for (const owner of track.owners) {
-    items.push({
-      label: $t('library.all.removeFrom', { username: owner.username }),
-      danger: true,
-      action: () => deleteTrack(track, owner.userId)
-    });
+function onChanged(change: MenuChange) {
+  if (change.type === "edited" || change.type === "deleted") {
+    void reset().then(() => retain(tracks.value.map((track) => track.id)));
   }
+}
 
-  trackMenuItems.value = items;
+function toggleAll() {
+  if (count.value >= tracks.value.length) clear();
+  else selectAll(tracks.value.map((track) => track.id));
 }
 
 function onContextMenu(e: MouseEvent, track: AllMediaRow) {
-  buildTrackMenu(track);
-  trackMenu.value?.openAt(e.clientX, e.clientY);
+  if (selecting.value) return;
+  void openMenu(e, subjectOf(track), { owners: track.owners, pickerAdmin: true, onChanged });
 }
 
-function onEllipsis(e: MouseEvent, track: AllMediaRow) {
-  buildTrackMenu(track);
+function onBulkActions(e: MouseEvent) {
+  const chosen = new Set(selectedIds.value);
   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-  trackMenu.value?.openAt(rect.left, rect.bottom);
-}
-
-async function deleteTrack(track: AllMediaRow, ownerId: string) {
-  if (!token.value) return;
-
-  try {
-    await $fetch(`/api/v1/library/${track.id}/${ownerId}`, {
-      headers: { Authorization: token.value },
-      method: "DELETE",
-    });
-  } catch (e) {
-    return sendError(track.title, e, $t('track.deleteError'));
-  }
-
-  return reset();
+  void openBulkMenu({ x: rect.left, y: rect.top }, tracks.value.filter((track) => chosen.has(track.id)).map(subjectOf), { owners: [], pickerAdmin: true, onChanged });
 }
 </script>
 

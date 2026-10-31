@@ -41,6 +41,8 @@ export interface PlaylistEntryWithMedia {
     addedBy: string,
     position: number,
     addedAt: number,
+    /** only meaningful when the entries were read for a viewer (getEntries' `viewerId`) */
+    inLibrary?: boolean,
     media: MediaRow
 }
 
@@ -167,88 +169,56 @@ export async function removeMember(playlistId: string, userId: string): Promise<
     return result.changes > 0;
 }
 
-interface EntryMediaJoinRow {
+type EntryMediaJoinRow = MediaRow & {
     entryId: string,
-    playlistId: string,
-    addedBy: string,
-    position: number,
-    addedAt: number,
-    mediaId: string,
-    musicbrainzId: string,
-    title: string,
-    artistName: string,
-    artistMbid: string,
-    album: string | null,
-    albumId: string,
-    albumType: "album" | "ep" | null,
-    coverArt: string | null,
-    releaseDate: number | null,
-    duration: number,
-    label: string | null,
-    fingerprint: string | null,
-    amId: string | null,
-    mediaAddedAt: number
-}
+    entryPlaylistId: string,
+    entryAddedBy: string,
+    entryPosition: number,
+    entryAddedAt: number,
+    inLibrary?: number | string
+};
 
-export async function getEntries(playlistId: string, limit?: number, offset?: number): Promise<PlaylistEntryWithMedia[]> {
+// The entries of a playlist, each with its whole media row (file size, disc, uploaded cover... - a playlist row
+// must look like the same track anywhere else it is shown). With `viewerId`, each also says whether that user
+// has the track in their own library: a collaborator's playlist holds tracks they never downloaded, and the
+// client uses the flag to offer only what applies (no "delete from my library" for a track that isn't).
+export async function getEntries(playlistId: string, limit?: number, offset?: number, viewerId?: string): Promise<PlaylistEntryWithMedia[]> {
+    const inLibrary = viewerId
+        ? `EXISTS (SELECT 1 FROM library_entries le WHERE le.mediaId = media.id AND le.userId = ?) AS inLibrary`
+        : `0 AS inLibrary`;
     let sql = `
         SELECT
             playlist_entries.id AS entryId,
-            playlist_entries.playlistId AS playlistId,
-            playlist_entries.addedBy AS addedBy,
-            playlist_entries.position AS position,
-            playlist_entries.addedAt AS addedAt,
-            media.id AS mediaId,
-            media.musicbrainzId AS musicbrainzId,
-            media.title AS title,
-            media.artistName AS artistName,
-            media.artistMbid AS artistMbid,
-            media.album AS album,
-            media.albumId AS albumId,
-            media.albumType AS albumType,
-            media.coverArt AS coverArt,
-            media.releaseDate AS releaseDate,
-            media.duration AS duration,
-            media.label AS label,
-            media.fingerprint AS fingerprint,
-            media.amId AS amId,
-            media.addedAt AS mediaAddedAt
+            playlist_entries.playlistId AS entryPlaylistId,
+            playlist_entries.addedBy AS entryAddedBy,
+            playlist_entries.position AS entryPosition,
+            playlist_entries.addedAt AS entryAddedAt,
+            ${inLibrary},
+            media.*
         FROM playlist_entries
         JOIN media ON media.id = playlist_entries.mediaId
         WHERE playlist_entries.playlistId = ?
         ORDER BY playlist_entries.position ASC
     `;
-    const params: unknown[] = [playlistId];
+    const params: unknown[] = viewerId ? [viewerId, playlistId] : [playlistId];
     if (limit !== undefined) {
         sql += ` LIMIT ${sqlInt(limit)} OFFSET ${sqlInt(offset ?? 0)}`;
     }
 
     const rows = await getLibrariesDb().prepare(sql).all(...params) as EntryMediaJoinRow[];
 
-    return rows.map((row) => ({
-        entryId: row.entryId,
-        playlistId: row.playlistId,
-        addedBy: row.addedBy,
-        position: row.position,
-        addedAt: row.addedAt,
-        media: {
-            id: row.mediaId,
-            musicbrainzId: row.musicbrainzId,
-            title: row.title,
-            artistName: row.artistName,
-            artistMbid: row.artistMbid,
-            album: row.album,
-            albumId: row.albumId,
-            albumType: row.albumType,
-            coverArt: row.coverArt,
-            releaseDate: row.releaseDate,
-            duration: row.duration,
-            label: row.label,
-            fingerprint: row.fingerprint,
-            amId: row.amId,
-            addedAt: row.mediaAddedAt
-        }
-    }));
+    return rows.map((row) => {
+        const { entryId, entryPlaylistId, entryAddedBy, entryPosition, entryAddedAt, inLibrary: owned, ...media } = row;
+        return {
+            entryId,
+            playlistId: entryPlaylistId,
+            addedBy: entryAddedBy,
+            position: entryPosition,
+            addedAt: Number(entryAddedAt),
+            inLibrary: Number(owned) === 1,
+            media: media as MediaRow
+        };
+    });
 }
 
 export async function countEntries(playlistId: string): Promise<number> {
@@ -365,4 +335,26 @@ export async function isCustomCoverInPublicPlaylist(mediaId: string): Promise<bo
         LIMIT 1
     `).get(mediaId);
     return !!row;
+}
+
+export interface PublicPlaylistSummary {
+    id: string,
+    title: string,
+    description: string | null,
+    image: string | null,
+    trackCount: number,
+    updatedAt: number
+}
+
+// the public playlists a user owns, for their public profile page (playlists they only collaborate on are not
+// theirs to advertise)
+export async function listPublicPlaylistsOwnedBy(ownerId: string): Promise<PublicPlaylistSummary[]> {
+    const rows = await getLibrariesDb().prepare(`
+        SELECT p.id, p.title, p.description, p.image, p.updatedAt,
+               (SELECT COUNT(*) FROM playlist_entries e WHERE e.playlistId = p.id) AS trackCount
+        FROM playlists p
+        WHERE p.ownerId = ? AND p.privacy = 'public'
+        ORDER BY p.updatedAt DESC, p.id ASC
+    `).all(ownerId) as (Omit<PublicPlaylistSummary, "trackCount"> & { trackCount: string | number })[];
+    return rows.map((row) => ({ ...row, trackCount: Number(row.trackCount), updatedAt: Number(row.updatedAt) }));
 }

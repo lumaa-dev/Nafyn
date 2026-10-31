@@ -44,6 +44,7 @@ import { deleteApnDataForUser } from "../utils/apn";
 import { deleteWebhooksForUser } from "../utils/webhook";
 import { deleteReleaseSubscriptionsForUser } from "./releaseSubscriptions";
 import { deleteImportsForUser } from "./imports";
+import { deletePinsForUser } from "./pins";
 
 export interface ErasureReport {
     removed: boolean,
@@ -54,6 +55,7 @@ export interface ErasureReport {
     appleDevices: number,
     webhooks: number,
     releaseSubscriptions: number,
+    pins: number,
     playlistImports: number,
     playlistsDeleted: number,
     membershipsRemoved: number,
@@ -87,6 +89,7 @@ export async function eraseAccount(userId: string): Promise<ErasureReport> {
     await deletePlaybackSettings(userId);
     await deleteUnitySettings(userId);
     const releaseSubscriptions = await deleteReleaseSubscriptionsForUser(userId);
+    const pins = await deletePinsForUser(userId);
     // playlist imports name the tracks someone had in another service's playlists (a running one stops: its
     // worker finds no item left)
     const playlistImports = await deleteImportsForUser(userId);
@@ -130,6 +133,7 @@ export async function eraseAccount(userId: string): Promise<ErasureReport> {
         appleDevices,
         webhooks,
         releaseSubscriptions,
+        pins,
         playlistImports,
         playlistsDeleted: owned.length,
         membershipsRemoved,

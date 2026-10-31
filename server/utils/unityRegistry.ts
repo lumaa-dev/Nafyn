@@ -219,3 +219,55 @@ export function dropUnitySession(userId: string): void {
     sessions.delete(userId);
     void nowPlayingEnd(userId);
 }
+
+// The account turned Nafyn Unity off (Settings -> Privacy & Security): every device is disconnected at once and
+// the session is dropped, which also ends the Now Playing session Apple devices were following. Without this the
+// sockets that were already open kept relaying - the master kept broadcasting its state and the Apple devices
+// kept showing a "playing" status for a feature the account had switched off. A song a device plays on its own
+// (the master's local audio, the phone's native player) is not Unity's and is left alone.
+export function disableUnityForUser(userId: string): void {
+    const session = sessions.get(userId);
+    if (!session) {
+        void nowPlayingEnd(userId);
+        return;
+    }
+
+    // clear the registry first: the close handlers that fire below find nothing left to put in a grace period
+    sessions.delete(userId);
+    if (session.graceTimer) clearTimeout(session.graceTimer);
+
+    const peers = [session.master?.peer, ...[...session.slaves.values()].map((slave) => slave.peer)];
+    session.slaves.clear();
+    session.master = null;
+    session.lastState = null;
+
+    for (const peer of peers) {
+        try {
+            peer?.close(4002, "Nafyn Unity was turned off");
+        } catch {
+            // already gone
+        }
+    }
+    void nowPlayingEnd(userId);
+}
+
+// A device left Unity on purpose (it turned Unity off for this session). A master that just disappears is given
+// the 30 s grace period in case it reconnects; one that *chose* to leave is not coming back, so its session
+// ends now and the other devices are told straight away.
+export function leaveUnity(userId: string, peer: Peer): void {
+    const session = sessions.get(userId);
+    if (!session) return;
+
+    if (session.master?.peer === peer) {
+        if (session.graceTimer) { clearTimeout(session.graceTimer); session.graceTimer = null; }
+        session.master = null;
+        session.lastState = null;
+        session.status = "empty";
+        broadcastToSlaves(session, { type: "master-cleared" });
+        void nowPlayingEnd(userId);
+    } else {
+        session.slaves.delete(peer);
+    }
+
+    cleanupIfEmpty(userId, session);
+}

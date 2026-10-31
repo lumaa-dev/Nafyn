@@ -1,13 +1,22 @@
 <template>
-  <div class="libtracks">
+  <div class="libtracks bulk-page">
     <div class="title-row">
       <h1>{{ $t('library.tracks.title') }}</h1>
       <NuxtLink to="/l/import" class="add-track" :aria-label="$t('library.tracks.add')" :title="$t('library.tracks.add')">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
       </NuxtLink>
     </div>
+    <!-- on a phone the pins live on the Library home only -->
+    <div class="pins-desktop-only"><PinnedGrid /></div>
     <ol class="tracks" v-if="tracks.length > 0">
-      <li v-for="track in tracks" :key="track.id" :class="{ playing: currentTrack?.id === track.id }" @click="play(track, tracks, { type: 'track', refId: track.id })" @contextmenu.prevent="onContextMenu($event, track)">
+      <li
+        v-for="track in tracks"
+        :key="track.id"
+        :class="{ playing: currentTrack?.id === track.id, 'selectable-row': selecting, selected: isSelected(track.id) }"
+        @click="onRowClick(track)"
+        @contextmenu.prevent="onContextMenu($event, track)"
+      >
+        <input v-if="selecting" type="checkbox" class="select-box" :checked="isSelected(track.id)" :aria-label="track.title" tabindex="-1" @click.stop="toggle(track.id)">
         <CoverImage :src="coverSrc(track)" />
         <span class="col">
           <span class="title">{{ track.title }}</span>
@@ -16,7 +25,7 @@
         <NuxtLink v-if="track.album" :to="`/l/a/${track.albumId}`" class="album" @click.stop>{{ track.album }}</NuxtLink>
         <span class="filesize" v-if="appearance.showFileSize">{{ track.fileSize != null ? formatBytes(track.fileSize) : '—' }}</span>
         <span class="duration" v-if="appearance.showDuration">{{ formatDuration(track.duration) }}</span>
-        <button type="button" class="ellipsis" @click.stop="onEllipsis($event, track)" :aria-label="$t('playlist.addToPlaylist')">
+        <button v-if="!selecting" type="button" class="ellipsis" @click.stop="onContextMenu($event, track)" :aria-label="$t('menu.more')">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
         </button>
       </li>
@@ -25,102 +34,62 @@
     <div ref="sentinel" class="scroll-sentinel" />
     <p class="loading-more" v-if="loadingMore">{{ $t('common.loadingMore') }}</p>
 
-    <ContextMenu ref="trackMenu" :items="trackMenuItems" />
-    <PlaylistPickerModal v-model="showPicker" :media-ids="pickerMediaIds" />
-    <MediaEditModal v-model="showEdit" :media="editing" @saved="onEdited" />
+    <BulkBar :selecting="selecting" :count="count" :total="tracks.length" @start="start" @stop="stop" @select-all="toggleAll" @actions="onBulkActions" />
   </div>
 </template>
 
 <script lang="ts" setup>
 import type { MediaRow } from '~~/server/core/library';
-import ContextMenu, { type ContextMenuItem } from '~/components/ContextMenu.vue';
-import PlaylistPickerModal from '~/components/PlaylistPickerModal.vue';
-import MediaEditModal from '~/components/MediaEditModal.vue';
+import type { MenuChange } from '~/composables/useMediaMenu';
 import { useAppearanceSettings } from '~/composables/useAppearanceSettings';
 import { useAuthToken } from '~/composables/useAuthToken';
 
 const { token } = useAuthToken();
 const appearance = useAppearanceSettings();
 
-const { items: tracks, initialLoading, loadingMore, sentinel, loadMore, reset } = useInfiniteList<MediaRow>((page, limit) => {
+const { items: tracks, initialLoading, loadingMore, sentinel, loadMore } = useInfiniteList<MediaRow>((page, limit) => {
   return token.value
     ? $fetch("/api/v1/library/tracks", { headers: { Authorization: token.value }, query: { page, limit } })
     : Promise.resolve({ items: [], page, limit, total: 0, hasMore: false });
 });
 await loadMore();
 
-const { currentTrack, play, addToQueue } = useUnity();
-const { sendError } = useToast();
+const { currentTrack, play } = useUnity();
+const { openMenu, openBulkMenu } = useMediaMenu();
+const { selecting, selectedIds, count, isSelected, toggle, selectAll, clear, start, stop, retain } = useBulkSelect();
 
-const showPicker = ref(false);
-const pickerMediaIds = ref<string[]>([]);
-
-const showEdit = ref(false);
-const editing = ref<MediaRow | null>(null);
-
-// patch the edited row in place rather than refetching the whole (infinitely scrolled) list, which would
-// throw away every page after the first
-function onEdited(updated: MediaRow) {
-  const index = tracks.value.findIndex((track) => track.id === updated.id);
-  if (index >= 0) tracks.value[index] = updated;
+function onRowClick(track: MediaRow) {
+  if (selecting.value) return toggle(track.id);
+  play(track, tracks.value, { type: "track", refId: track.id });
 }
 
-const trackMenu = ref<InstanceType<typeof ContextMenu> | null>(null);
-const trackMenuItems = ref<ContextMenuItem[]>([]);
+function toggleAll() {
+  if (count.value >= tracks.value.length) clear();
+  else selectAll(tracks.value.map((track) => track.id));
+}
 
-function buildTrackMenu(track: MediaRow) {
-  trackMenuItems.value = [{
-    label: $t('player.playNext'),
-    action: () => addToQueue(track, "next")
-  }, {
-    label: $t('player.addToQueue'),
-    action: () => addToQueue(track, "end")
-  }, {
-    label: $t('track.viewDetails'),
-    action: () => navigateTo(`/l/t/${track.id}`)
-  }, {
-    label: $t('playlist.addToPlaylist'),
-    action: () => {
-      pickerMediaIds.value = [track.id];
-      showPicker.value = true;
+// patch the list in place rather than refetching it, which would throw away every page after the first
+function onChanged(change: MenuChange) {
+  if (change.type === "edited" && change.media) {
+    for (const row of change.media) {
+      const index = tracks.value.findIndex((track) => track.id === row.id);
+      if (index >= 0) tracks.value[index] = row;
     }
-  }, {
-    label: $t("edit.title"),
-    action: () => {
-      editing.value = track;
-      showEdit.value = true;
-    }
-  }, {
-    label: $t("track.delete"),
-    danger: true,
-    action: () => deleteTrack(track)
-  }];
+  } else if (change.type === "deleted" || change.type === "removed") {
+    const gone = new Set(change.ids);
+    tracks.value = tracks.value.filter((track) => !gone.has(track.id));
+    retain(tracks.value.map((track) => track.id));
+  }
 }
 
 function onContextMenu(e: MouseEvent, track: MediaRow) {
-  buildTrackMenu(track);
-  trackMenu.value?.openAt(e.clientX, e.clientY);
+  void openMenu(e, { kind: "track", media: track }, { onChanged });
 }
 
-function onEllipsis(e: MouseEvent, track: MediaRow) {
-  buildTrackMenu(track);
+function onBulkActions(e: MouseEvent) {
+  const chosen = new Set(selectedIds.value);
   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-  trackMenu.value?.openAt(rect.left, rect.bottom);
-}
-
-async function deleteTrack(track: MediaRow) {
-  if (!token.value) return;
-
-  try {
-    await $fetch(`/api/v1/library/${track.id}`, {
-      headers: { Authorization: token.value },
-      method: "DELETE",
-    });
-  } catch (e) {
-    return sendError(track.title, e, $t('track.deleteError'));
-  }
-
-  return reset();
+  void openBulkMenu({ x: rect.left, y: rect.top }, tracks.value.filter((track) => chosen.has(track.id)).map((media) => ({ kind: "track" as const, media })), { onChanged });
 }
 </script>
 
@@ -254,6 +223,10 @@ async function deleteTrack(track: MediaRow) {
 }
 
 @media screen and (max-width: 800px) {
+  .libtracks .pins-desktop-only {
+    display: none;
+  }
+
   .libtracks {
     margin: calc(15vh - 10px) auto;
     width: 90vw;

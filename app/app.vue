@@ -7,6 +7,7 @@
 			<ToastPill v-for="(toast, index) in tState.toasts.slice(0, 3)" :key="toast.id" :toast="toast" :underLast="tState.lastToast?.id !== toast.id" :style="`top: ${index * -40}px; scale: ${index * -0.2 + 1}; z-index: ${-index + 3}`" />
 		</TransitionGroup>
 		<NowPlaying v-if="hasToken && route.path !== '/now-playing'" />
+		<MediaMenuHost v-if="hasToken" />
 	</div>
 </template>
 
@@ -30,7 +31,7 @@
 	font-style: normal;
 	font-weight: 400;
 	font-display: swap;
-	size-adjust: 85%;
+	size-adjust: 72%;
 	src: url("./assets/fonts/OpenDyslexic-Regular.otf") format("opentype");
 }
 
@@ -39,7 +40,7 @@
 	font-style: italic;
 	font-weight: 400;
 	font-display: swap;
-	size-adjust: 85%;
+	size-adjust: 72%;
 	src: url("./assets/fonts/OpenDyslexic-Italic.otf") format("opentype");
 }
 
@@ -48,7 +49,7 @@
 	font-style: normal;
 	font-weight: 700;
 	font-display: swap;
-	size-adjust: 85%;
+	size-adjust: 72%;
 	src: url("./assets/fonts/OpenDyslexic-Bold.otf") format("opentype");
 }
 
@@ -57,7 +58,7 @@
 	font-style: italic;
 	font-weight: 700;
 	font-display: swap;
-	size-adjust: 85%;
+	size-adjust: 72%;
 	src: url("./assets/fonts/OpenDyslexic-BoldItalic.otf") format("opentype");
 }
 
@@ -215,6 +216,52 @@ button[filled].danger:hover:not(:disabled), a[filled].danger:hover:not(:disabled
 	color: #ffffff;
 }
 
+/* "over" buttons: a translucent grey pill with a blurred backdrop, for controls that float over content (the
+   bulk-select button at the bottom corner of a page, and whatever floats next). Not a `filled` button on
+   purpose - it has to let what scrolls beneath it show through. The grey is dark enough (and the blur flattens
+   the content under it) for white text to stay at AAA contrast on any cover or page background. */
+button.over, a.over {
+	background: rgba(58, 58, 54, 0.72);
+	-webkit-backdrop-filter: blur(16px) saturate(140%);
+	backdrop-filter: blur(16px) saturate(140%);
+	border: 1px solid rgba(255, 255, 255, 0.28);
+	border-radius: 250px;
+	color: #ffffff;
+	font-family: var(--font-discy);
+	font-size: 0.7em;
+	text-decoration: none;
+	padding: 0.7em clamp(0.9em, 2.4vw, 1.6em);
+	white-space: nowrap;
+	max-width: 100%;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	box-shadow: 0 6px 22px rgba(0, 0, 0, 0.35);
+	transition: background 0.2s ease-out, border-color 0.2s ease-out, transform 0.15s ease-out;
+}
+
+button.over:hover:not(:disabled), a.over:hover:not(:disabled) {
+	background: rgba(84, 84, 78, 0.82);
+	border-color: rgba(255, 255, 255, 0.5);
+}
+
+button.over:active:not(:disabled) {
+	transform: scale(0.97);
+}
+
+/* a pressed/active toggle (select mode on) reads by more than colour: the border thickens too */
+button.over[aria-pressed="true"] {
+	background: rgba(255, 255, 255, 0.9);
+	border-color: #ffffff;
+	color: #000000;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	button.over, a.over {
+		transition: none;
+	}
+}
+
 /* icon-only buttons (a symbol instead of a label, where a row of text buttons would not fit): a 44px circle
    (WCAG 2.5.5), the icon SVGs are black so they are inverted to white until the hover fills the button.
    Always give one an aria-label - there is no text to name it. */
@@ -365,7 +412,9 @@ function redirectIfLoggedOut() {
 	// hands over data, so bouncing a logged-out visitor off it would defeat its whole purpose
 	const isNotLogging = route.path !== "/login" && route.path !== "/register" && route.path !== "/privacy";
 	const isViewingPlaylist = route.path.includes("/l/playlist");
-	if (isNotLogging && !isViewingPlaylist && !hasToken.value) {
+	// a user's profile (/u/<username>) is public, like a public playlist
+	const isViewingProfile = route.path.startsWith("/u/");
+	if (isNotLogging && !isViewingPlaylist && !isViewingProfile && !hasToken.value) {
 		useRouter().push(`/login`);
 	}
 }

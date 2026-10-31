@@ -1,7 +1,7 @@
 ---
 title: Privacy notice
 description: What this Nafyn instance stores about you, why, and for how long.
-updated: 2026-10-12
+updated: 2026-10-31
 ---
 
 Nafyn is self-hosted software: this notice describes what the software stores and why. The person or
@@ -34,6 +34,15 @@ usernames you choose to link. Needed to have an account at all.
 
 *Kept until you delete your account.*
 
+### Your public profile
+
+Your profile page (`/u/<username>`) is **public**: anyone with the link, signed in or not, sees your display
+name, your avatar, the Last.fm / Discogs usernames you linked, how many tracks your library holds, and the
+playlists you own that are set to public. Link previews (Discord, social networks) show the same. Your
+private playlists, your track list and your listening history are never part of it.
+
+*Visible as long as the account exists. Set a playlist to private to take it off the page.*
+
 ### Your credentials
 
 Your password as a bcrypt hash (never the password itself), any passkeys you register, and any API tokens
@@ -54,6 +63,12 @@ Which tracks you have access to, and when they were added. Audio files themselve
 of this instance, not duplicated per person.
 
 *Kept until you remove the track, or delete your account.*
+
+### Pinned items
+
+The albums, playlists and tracks you pinned, and when. Only you see them.
+
+*Kept until you unpin them, or delete your account.*
 
 ### Playlists
 
