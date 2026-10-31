@@ -25,7 +25,8 @@ export function apiErrorMessage(e: unknown, fallback?: string): string {
   for (const candidate of [err?.data?.statusMessage, err?.data?.message, err?.statusMessage]) {
     if (typeof candidate === "string" && candidate.trim()) return candidate;
   }
-  return fallback ?? $t('common.error');
+  // not `$t`: that global exists inside .vue files only, and this runs from plain functions after awaits
+  return fallback ?? useNuxtApp().$i18n.t('common.error');
 }
 
 export const useToast = () => {
