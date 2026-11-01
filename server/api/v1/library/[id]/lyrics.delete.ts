@@ -1,5 +1,5 @@
 // DELETE /api/v1/library/{id}/lyrics - drop the user-supplied lyrics, so the track falls back to the
-// fetched providers again (Cider, LRCLIB)
+// fetched providers again (Better Lyrics, Unison, Cider, LRCLIB)
 import { requireAuthToken } from "~~/server/utils/requireAuth";
 import { requireEditableMedia } from "~~/server/utils/mediaAccess";
 import { deleteMediaLyrics } from "~~/server/core/mediaLyrics";

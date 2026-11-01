@@ -1,7 +1,7 @@
 // PUT /api/v1/library/{id}/lyrics - store lyrics the user supplies for one of their tracks.
 //
 // Whatever is stored here wins over every fetched provider in lyrics.get.ts, and for a manually imported
-// track it is the only source there is (Cider/LRCLIB have never heard of it). The content is saved exactly
+// track it is the only source there is (no provider has ever heard of it). The content is saved exactly
 // as submitted - Nafyn neither authors nor rewrites it.
 import { requireAuthToken } from "~~/server/utils/requireAuth";
 import { requireEditableMedia } from "~~/server/utils/mediaAccess";

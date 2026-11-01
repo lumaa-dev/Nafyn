@@ -4,26 +4,32 @@ import {
 	type LyricParagraphs,
 } from "~~/server/utils/lyrics/parser";
 import { fetchLrclibParagraphs, parseLrcSyncedLyrics, parsePlainLyrics } from "~~/server/utils/lyrics/lrclib";
+import { fetchBetterLyricsParagraphs } from "~~/server/utils/lyrics/betterlyrics";
+import { fetchUnisonParagraphs } from "~~/server/utils/lyrics/unison";
+import type { TrackLookup } from "~~/server/utils/lyrics/match";
 import { getMediaLyrics } from "~~/server/core/mediaLyrics";
 import { getMediaId, findPlayableEntry, type MediaRow } from "~~/server/core/library";
 
 const lyricsService = new NafynLyrics();
 
-// What the providers said for a track, kept so replaying (or merely loading the page of) a track doesn't ask
-// Cider and LRCLIB again each time. "Nothing found" is cached too, for less. User-supplied lyrics are not
-// cached here: they are one cheap database read and an edit must show immediately. Capped, oldest first.
-const FOUND_TTL_MS = 60 * 60 * 1000;
-const MISSING_TTL_MS = 10 * 60 * 1000;
+// What the providers said for a track, kept for 20 minutes so replaying (or merely loading the page of) a track
+// doesn't ask any provider again; once the entry has expired the next request fetches and caches afresh.
+// "Nothing found" is cached for as long, so a song no provider has costs one round of calls per 20 minutes, not
+// one per play. User-supplied lyrics are not cached here: they are one cheap database read and an edit must show
+// immediately. The key carries what the providers are asked (title, artist, album, length), so an edit of the
+// track's metadata is never answered with lyrics fetched for the old one. Capped, oldest first.
+const LYRICS_CACHE_TTL_MS = 20 * 60 * 1000;
 const MAX_CACHED_TRACKS = 500;
 const providerCache = new Map<string, { result: { provider: Provider, paragraphs: LyricParagraphs } | null, expiresAtMs: number }>();
 const providerInFlight = new Map<string, Promise<{ provider: Provider, paragraphs: LyricParagraphs } | null>>();
 
 function lookupProviders(media: MediaRow): Promise<{ provider: Provider, paragraphs: LyricParagraphs } | null> {
-	const cached = providerCache.get(media.id);
+	const key = [media.id, media.title, media.artistName, media.album ?? "", media.duration, media.amId ?? ""].join("\u0000");
+	const cached = providerCache.get(key);
 	if (cached && cached.expiresAtMs > Date.now()) return Promise.resolve(cached.result);
 
 	// two players asking for the same track at once share one round of provider calls
-	let running = providerInFlight.get(media.id);
+	let running = providerInFlight.get(key);
 	if (!running) {
 		running = (async () => {
 			let result: { provider: Provider, paragraphs: LyricParagraphs } | null = null;
@@ -36,17 +42,17 @@ function lookupProviders(media: MediaRow): Promise<{ provider: Provider, paragra
 			}
 
 			if (providerCache.size >= MAX_CACHED_TRACKS) providerCache.delete(providerCache.keys().next().value!);
-			providerCache.set(media.id, { result, expiresAtMs: Date.now() + (result ? FOUND_TTL_MS : MISSING_TTL_MS) });
+			providerCache.set(key, { result, expiresAtMs: Date.now() + LYRICS_CACHE_TTL_MS });
 			return result;
-		})().finally(() => providerInFlight.delete(media.id));
-		providerInFlight.set(media.id, running);
+		})().finally(() => providerInFlight.delete(key));
+		providerInFlight.set(key, running);
 	}
 	return running;
 }
 
 defineRouteMeta({
 	openAPI: {
-		description: "Get synced lyrics for a library track: user-supplied lyrics first, then the fetched providers (Cider, LRCLIB) in order until one has a match. Pass `?source=1` to get the stored user-supplied lyrics verbatim instead.",
+		description: "Get synced lyrics for a library track: user-supplied lyrics first, then the fetched providers (Better Lyrics, Unison, Cider, LRCLIB) in that order until one has a match; provider answers are cached for 20 minutes. Pass `?source=1` to get the stored user-supplied lyrics verbatim instead.",
 		tags: ["library"],
 		operationId: "getLyrics",
 		parameters: [
@@ -67,7 +73,7 @@ defineRouteMeta({
 							type: "object",
 							required: ["provider", "paragraphs"],
 							properties: {
-								provider: { type: "string", enum: ["appleMusic", "cider", "lrclib", "cache"] },
+								provider: { type: "string", enum: ["manual", "betterLyrics", "unison", "cider", "lrclib", "cache"] },
 								paragraphs: {
 									type: "array",
 									items: {
@@ -151,23 +157,33 @@ interface LyricsProvider {
 	fetch: (media: MediaRow) => Promise<LyricParagraphs | null>;
 }
 
-function fetchLrclibByMedia(media: MediaRow): Promise<LyricParagraphs | null> {
-	return fetchLrclibParagraphs({
+function lookupOf(media: MediaRow): TrackLookup {
+	return {
 		trackName: media.title,
 		artistName: media.artistName,
 		albumName: media.album ?? undefined,
 		duration: media.duration || undefined,
-	});
+	};
 }
 
+// in this order: the word-timed community providers first, then Cider (needs the track's catalogue id), then
+// LRCLIB, which has the widest coverage but mostly line-timed lyrics
 const LYRICS_PROVIDERS: LyricsProvider[] = [
+	{
+		provider: Provider.BetterLyrics,
+		fetch: (media) => fetchBetterLyricsParagraphs(lookupOf(media)),
+	},
+	{
+		provider: Provider.Unison,
+		fetch: (media) => fetchUnisonParagraphs(lookupOf(media)),
+	},
 	{
 		provider: Provider.Cider,
 		fetch: (media) => media.amId ? lyricsService.fetchCiderParagraphs(media.amId) : Promise.resolve(null),
 	},
 	{
 		provider: Provider.Lrclib,
-		fetch: (media) => fetchLrclibByMedia(media),
+		fetch: (media) => fetchLrclibParagraphs(lookupOf(media)),
 	},
 ];
 

@@ -1,6 +1,10 @@
 <template>
   <div class="libalbums bulk-page">
-    <h1>{{ $t('library.albums.title') }}</h1>
+    <!-- a div, not a <header>: Header.vue's unscoped bare `header {}` rule would turn it into a second fixed bar -->
+    <div class="title-row">
+      <h1>{{ $t('library.albums.title') }}</h1>
+      <LibraryToolbar v-model:query="search" v-model:sort="sort" :placeholder="$t('library.search.albums')" />
+    </div>
     <div class="grid" v-if="albums.length > 0">
       <NuxtLink
         v-for="album in albums"
@@ -15,7 +19,7 @@
         <span v-if="selecting" class="check" :class="{ on: isSelected(album.id) }" aria-hidden="true">{{ isSelected(album.id) ? '✓' : '' }}</span>
       </NuxtLink>
     </div>
-    <p class="empty" v-else-if="!initialLoading">{{ $t('library.albums.empty') }}</p>
+    <p class="empty" v-else-if="!initialLoading">{{ search ? $t('library.search.noResults') : $t('library.albums.empty') }}</p>
     <div ref="sentinel" class="scroll-sentinel" />
     <p class="loading-more" v-if="loadingMore">{{ $t('common.loadingMore') }}</p>
 
@@ -29,18 +33,29 @@ import type { AlbumRow } from '~~/server/core/library';
 import type { MediaInfo } from '~~/server/entity/media/MediaInfo';
 import type { MenuChange } from '~/composables/useMediaMenu';
 import { useAuthToken } from '~/composables/useAuthToken';
+import LibraryToolbar from '~/components/LibraryToolbar.vue';
+import type { LibrarySort } from '~~/server/utils/libraryList';
 
 const { token } = useAuthToken();
 
+// the search text and the order; changing either starts the list over from the server
+const search = ref("");
+const sort = ref<LibrarySort>("added");
+
 const { items: albums, initialLoading, loadingMore, sentinel, loadMore, reset } = useInfiniteList<AlbumRow>((page, limit) => {
   return token.value
-    ? $fetch("/api/v1/library/albums", { headers: { Authorization: token.value }, query: { page, limit } })
+    ? $fetch("/api/v1/library/albums", { headers: { Authorization: token.value }, query: { page, limit, q: search.value || undefined, sort: sort.value } })
     : Promise.resolve({ items: [], page, limit, total: 0, hasMore: false });
 });
 await loadMore();
 
 const { openMenu, openBulkMenu } = useMediaMenu();
 const { selecting, selectedIds, count, isSelected, toggle, selectAll, clear, start, stop, retain } = useBulkSelect();
+
+watch([search, sort], async () => {
+  await reset();
+  retain(albums.value.map((album) => album.id));
+});
 
 function onCardClick(e: MouseEvent, album: AlbumRow) {
   // in select mode a click picks the album instead of opening it
@@ -101,6 +116,13 @@ function toMediaInfo(album: AlbumRow): MediaInfo {
   width: 70vw;
   max-width: 1200px;
   margin: calc(15vh - 10px) auto;
+}
+
+.libalbums .title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
 }
 
 .libalbums .empty {

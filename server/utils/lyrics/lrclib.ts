@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 // LRCLIB client (https://lrclib.net/docs)
 //
-// Unlike Apple Music / Cider, LRCLIB has no concept of an Apple Music id —
+// Unlike Cider, LRCLIB has no catalogue id —
 // tracks are looked up by title/artist/(album)/(duration) instead. This
 // module only implements fetching, not `/api/publish` (submitting lyrics).
 // ---------------------------------------------------------------------------

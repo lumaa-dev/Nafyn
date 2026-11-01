@@ -32,6 +32,10 @@ export interface MediaEdit {
     duration?: number,
     label?: string | null,
     trackNumber?: number | null,
+    /** Set when a track is moved to another album (core/mediaAlbum.ts); the metadata PATCH never sends these. */
+    albumId?: string,
+    discNumber?: number | null,
+    discTitle?: string | null,
     /** Cover Art Archive URL, or null to clear it. User-uploaded covers go through PUT .../cover instead. */
     coverArt?: string | null
 }
@@ -77,7 +81,7 @@ export async function applyMediaEdit(mediaId: string, edit: MediaEdit): Promise<
     // album grouping keys off `albumId`. For a manual row that id is derived from album + artist, so a
     // renamed album has to be re-derived or the track stays grouped under its old album. Rows that came
     // from MusicBrainz keep their release-group MBID: it identifies the release, not the display title.
-    if (existing.source === "manual" && (edit.album !== undefined || edit.artistName !== undefined)) {
+    if (existing.source === "manual" && edit.albumId === undefined && (edit.album !== undefined || edit.artistName !== undefined)) {
         const album = edit.album !== undefined ? edit.album : existing.album;
         const artistName = edit.artistName !== undefined ? edit.artistName : existing.artistName;
         patch.albumId = manualAlbumId(album, artistName);

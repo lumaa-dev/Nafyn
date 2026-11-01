@@ -35,7 +35,8 @@
       "orPrefix": "ou",
       "loginLink": "connectez-vous à votre compte",
       "submit": "Créer un compte",
-      "error": "Impossible de créer votre compte"
+      "error": "Impossible de créer votre compte",
+      "usernameRule": "3 à 20 caractères : lettres minuscules (a-z), chiffres (0-9), tirets bas (_) et points (.)."
     },
     "privacyPrefix": "En créant un compte, vous acceptez que cette instance enregistre les données décrites dans sa",
     "privacyLink": "politique de confidentialité",
@@ -62,6 +63,18 @@
       "track": "Titre",
       "album": "Album",
       "playlist": "Playlist"
+    },
+    "search": {
+      "tracks": "Rechercher dans vos titres",
+      "albums": "Rechercher dans vos albums",
+      "noResults": "Rien dans votre bibliothèque ne correspond à votre recherche."
+    },
+    "sort": {
+      "label": "Trier",
+      "added": "Ajoutés récemment",
+      "title": "Ordre alphabétique A-Z",
+      "artist": "Artiste A-Z",
+      "released": "Date de sortie"
     }
   },
   "album": {
@@ -71,7 +84,23 @@
     "requested": "Demandé",
     "viewInMusicbrainz": "Voir dans MusicBrainz",
     "alreadyRequested": "Demandé",
-    "inLibrary": "Dans la bibliothèque"
+    "inLibrary": "Dans la bibliothèque",
+    "change": {
+      "menu": "Changer d'album",
+      "title": "Changer d'album",
+      "intro": "Choisissez l'album auquel appartient « {title} » de {artist}.",
+      "search": "Rechercher un album",
+      "placeholder": "Album ou artiste",
+      "searching": "Recherche…",
+      "none": "Aucun album trouvé.",
+      "current": "Actuel",
+      "confirm": "« {title} » sera déplacé vers « {album} ». L'album qu'il quitte disparaît s'il n'a plus d'autre titre.",
+      "move": "Déplacer",
+      "moving": "Déplacement…",
+      "moved": "« {title} » est maintenant sur « {album} »",
+      "error": "Impossible de changer l'album",
+      "searchError": "Impossible de rechercher des albums"
+    }
   },
   "track": {
     "request": "Demander",

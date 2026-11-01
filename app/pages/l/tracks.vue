@@ -5,6 +5,7 @@
       <NuxtLink to="/l/import" class="add-track" :aria-label="$t('library.tracks.add')" :title="$t('library.tracks.add')">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14" /></svg>
       </NuxtLink>
+      <LibraryToolbar v-model:query="search" v-model:sort="sort" :placeholder="$t('library.search.tracks')" />
     </div>
     <!-- on a phone the pins live on the Library home only -->
     <div class="pins-desktop-only"><PinnedGrid /></div>
@@ -30,7 +31,7 @@
         </button>
       </li>
     </ol>
-    <p class="empty" v-else-if="!initialLoading">{{ $t('library.tracks.empty') }}</p>
+    <p class="empty" v-else-if="!initialLoading">{{ search ? $t('library.search.noResults') : $t('library.tracks.empty') }}</p>
     <div ref="sentinel" class="scroll-sentinel" />
     <p class="loading-more" v-if="loadingMore">{{ $t('common.loadingMore') }}</p>
 
@@ -43,13 +44,19 @@ import type { MediaRow } from '~~/server/core/library';
 import type { MenuChange } from '~/composables/useMediaMenu';
 import { useAppearanceSettings } from '~/composables/useAppearanceSettings';
 import { useAuthToken } from '~/composables/useAuthToken';
+import LibraryToolbar from '~/components/LibraryToolbar.vue';
+import type { LibrarySort } from '~~/server/utils/libraryList';
 
 const { token } = useAuthToken();
 const appearance = useAppearanceSettings();
 
-const { items: tracks, initialLoading, loadingMore, sentinel, loadMore } = useInfiniteList<MediaRow>((page, limit) => {
+// the search text and the order; changing either starts the list over from the server
+const search = ref("");
+const sort = ref<LibrarySort>("added");
+
+const { items: tracks, initialLoading, loadingMore, sentinel, loadMore, reset } = useInfiniteList<MediaRow>((page, limit) => {
   return token.value
-    ? $fetch("/api/v1/library/tracks", { headers: { Authorization: token.value }, query: { page, limit } })
+    ? $fetch("/api/v1/library/tracks", { headers: { Authorization: token.value }, query: { page, limit, q: search.value || undefined, sort: sort.value } })
     : Promise.resolve({ items: [], page, limit, total: 0, hasMore: false });
 });
 await loadMore();
@@ -57,6 +64,11 @@ await loadMore();
 const { currentTrack, play } = useUnity();
 const { openMenu, openBulkMenu } = useMediaMenu();
 const { selecting, selectedIds, count, isSelected, toggle, selectAll, clear, start, stop, retain } = useBulkSelect();
+
+watch([search, sort], async () => {
+  await reset();
+  retain(tracks.value.map((track) => track.id));
+});
 
 function onRowClick(track: MediaRow) {
   if (selecting.value) return toggle(track.id);
@@ -104,6 +116,7 @@ function onBulkActions(e: MouseEvent) {
 .libtracks .title-row {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 14px;
 }
 

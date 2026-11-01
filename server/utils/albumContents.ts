@@ -21,7 +21,12 @@ export interface AlbumContents {
         artist: { name: string, id: string | null },
         /** Milliseconds. */
         length: number | null,
-        releaseDate: string | null
+        releaseDate: string | null,
+        /** Position within its disc (MusicBrainz `track.position`), so a two-disc album repeats the numbers. */
+        position: number | null,
+        /** The disc (medium position) it is on, and the disc's own title when it has one. */
+        discNumber: number,
+        discTitle: string | null
     }>,
     /** In order of appearance, the album's artist first. */
     artists: Array<{ id: string, name: string, disambiguation: string | null }>
@@ -62,7 +67,7 @@ export async function getAlbumContents(client: Pick<MusicBrainzRepository, "look
     addCredits(releaseGroup["artist-credit"]);
 
     const tracks: AlbumContents["tracks"] = [];
-    for (const medium of release.media ?? []) {
+    for (const [mediumIndex, medium] of (release.media ?? []).entries()) {
         for (const track of medium.tracks ?? []) {
             if (!track.recording?.id) continue;
             // the credit the track carries on this release, else its recording's
@@ -74,7 +79,10 @@ export async function getAlbumContents(client: Pick<MusicBrainzRepository, "look
                 title: track.title,
                 artist: creditText(credits),
                 length: track.length ?? track.recording.length ?? null,
-                releaseDate: track.recording["first-release-date"] || null
+                releaseDate: track.recording["first-release-date"] || null,
+                position: track.position ?? null,
+                discNumber: medium.position ?? mediumIndex + 1,
+                discTitle: medium.title?.trim() || null
             });
         }
     }

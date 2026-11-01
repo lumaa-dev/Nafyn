@@ -2,12 +2,14 @@
 import { randomUUID, UUID } from "node:crypto";
 import { closeSync, openSync } from "node:fs";
 import { rm, rmdir } from "node:fs/promises";
-import { dirname, join, resolve } from "node:path";
+import { dirname, extname, join, resolve } from "node:path";
 import { getLibrariesDb, withTransaction, sqlInt } from "./db";
 import { deleteMediaCover } from "../utils/mediaCover";
 import { isSameSongByMetadata, type RecordingIdentity } from "../utils/mediaIdentity";
 import { sanitizePathSegment } from "../utils/pathSegment";
 import { ensureDirSync } from "../utils/ensureDir";
+import { moveFile } from "../utils/moveFile";
+import { likePattern, searchWords, type LibraryListOptions, type LibrarySort } from "../utils/libraryList";
 
 export interface MediaRow {
     id: string,
@@ -278,33 +280,86 @@ export async function userOwnsAlbum(userId: string, albumId: string): Promise<bo
     return !!row;
 }
 
-export async function getMediaOfUser(userId: string, limit?: number, offset?: number): Promise<MediaRow[]> {
-    // secondary `id` tiebreaker: addedAt alone isn't unique (rows added in the same batch/millisecond
-    // sort arbitrarily against each other), so without it repeated LIMIT/OFFSET calls - e.g. a Subsonic
-    // client re-syncing - can return overlapping/duplicate pages instead of a stable partition
+// every word of the search has to appear in the track's title, artist or album
+function trackSearchClause(options: LibraryListOptions | undefined, params: unknown[]): string {
+    let clause = "";
+    for (const word of searchWords(options?.query)) {
+        clause += ` AND (media.title LIKE ? OR media.artistName LIKE ? OR media.album LIKE ?)`;
+        const pattern = likePattern(word);
+        params.push(pattern, pattern, pattern);
+    }
+    return clause;
+}
+
+// the final `media.id` is the tiebreaker: none of these keys is unique (rows added in the same batch share an
+// addedAt, an artist has many tracks), so without it repeated LIMIT/OFFSET calls - e.g. a Subsonic client
+// re-syncing - can return overlapping/duplicate pages instead of a stable partition
+const TRACK_ORDER: Record<LibrarySort, string> = {
+    added: `media.addedAt DESC, media.id ASC`,
+    title: `media.title ASC, media.artistName ASC, media.id ASC`,
+    artist: `media.artistName ASC, media.album ASC, COALESCE(media.discNumber, 1) ASC, media.trackNumber ASC, media.title ASC, media.id ASC`,
+    // newest first, tracks without a date last
+    released: `media.releaseDate IS NULL ASC, media.releaseDate DESC, media.addedAt DESC, media.id ASC`
+};
+
+export async function getMediaOfUser(userId: string, limit?: number, offset?: number, options?: LibraryListOptions): Promise<MediaRow[]> {
+    const params: unknown[] = [userId];
     let sql = `
         SELECT media.*
         FROM library_entries
         JOIN media ON media.id = library_entries.mediaId
-        WHERE library_entries.userId = ?
-        ORDER BY media.addedAt DESC, media.id ASC
+        WHERE library_entries.userId = ?${trackSearchClause(options, params)}
+        ORDER BY ${TRACK_ORDER[options?.sort ?? "added"]}
     `;
-    const params: unknown[] = [userId];
     if (limit !== undefined) {
         sql += ` LIMIT ${sqlInt(limit)} OFFSET ${sqlInt(offset ?? 0)}`;
     }
     return await getLibrariesDb().prepare(sql).all(...params) as MediaRow[];
 }
 
-export async function countMediaOfUser(userId: string): Promise<number> {
-    const row = await getLibrariesDb().prepare(`SELECT COUNT(*) AS count FROM library_entries WHERE userId = ?`).get(userId) as { count: number };
+export async function countMediaOfUser(userId: string, options?: LibraryListOptions): Promise<number> {
+    const params: unknown[] = [userId];
+    const row = await getLibrariesDb().prepare(`
+        SELECT COUNT(*) AS count
+        FROM library_entries
+        JOIN media ON media.id = library_entries.mediaId
+        WHERE library_entries.userId = ?${trackSearchClause(options, params)}
+    `).get(...params) as { count: number };
     return Number(row.count);
 }
+
+const ALBUM_FROM_WHERE = `
+        FROM library_entries
+        JOIN media ON media.id = library_entries.mediaId
+        WHERE library_entries.userId = ? AND media.album IS NOT NULL AND media.albumId IS NOT NULL AND media.albumId != 'unknown-album'`;
+
+// a search runs on the finished groups (HAVING), not on their rows: a WHERE would drop the tracks that did not
+// match and the album would come back with a short track count and duration. Every word has to be in the
+// album's title or in the artist of at least one of its tracks.
+function albumSearchHaving(options: LibraryListOptions | undefined, params: unknown[]): string {
+    const words = searchWords(options?.query);
+    if (words.length === 0) return "";
+
+    const conditions = words.map((word) => {
+        const pattern = likePattern(word);
+        params.push(pattern, pattern);
+        return `(MIN(media.album) LIKE ? OR SUM(media.artistName LIKE ?) > 0)`;
+    });
+    return `HAVING ${conditions.join(" AND ")}`;
+}
+
+const ALBUM_ORDER: Record<LibrarySort, string> = {
+    added: `MAX(media.addedAt) DESC, media.albumId ASC`,
+    title: `MIN(media.album) ASC, media.albumId ASC`,
+    artist: `MIN(media.artistName) ASC, MIN(media.album) ASC, media.albumId ASC`,
+    released: `MIN(media.releaseDate) IS NULL ASC, MIN(media.releaseDate) DESC, MAX(media.addedAt) DESC, media.albumId ASC`
+};
 
 // one AlbumRow per distinct albumId (release-group MBID) owned by the user, aggregated from their media rows;
 // grouping must key off albumId (not the display title) since SQLite returns an arbitrary row's value for any
 // selected column that isn't in GROUP BY or wrapped in an aggregate, which made `id`/`mbId` nondeterministic
-export async function getAlbumsOfUser(userId: string, limit?: number, offset?: number): Promise<AlbumRow[]> {
+export async function getAlbumsOfUser(userId: string, limit?: number, offset?: number, options?: LibraryListOptions): Promise<AlbumRow[]> {
+    const params: unknown[] = [userId];
     let sql = `
         SELECT
             media.albumId AS id,
@@ -318,13 +373,11 @@ export async function getAlbumsOfUser(userId: string, limit?: number, offset?: n
             SUM(media.duration) AS duration,
             COUNT(*) AS trackCount,
             MIN(media.addedAt) AS addedAt
-        FROM library_entries
-        JOIN media ON media.id = library_entries.mediaId
-        WHERE library_entries.userId = ? AND media.album IS NOT NULL AND media.albumId IS NOT NULL AND media.albumId != 'unknown-album'
+        ${ALBUM_FROM_WHERE}
         GROUP BY media.albumId
-        ORDER BY MAX(media.addedAt) DESC, media.albumId ASC
+        ${albumSearchHaving(options, params)}
+        ORDER BY ${ALBUM_ORDER[options?.sort ?? "added"]}
     `;
-    const params: unknown[] = [userId];
     if (limit !== undefined) {
         sql += ` LIMIT ${sqlInt(limit)} OFFSET ${sqlInt(offset ?? 0)}`;
     }
@@ -334,13 +387,16 @@ export async function getAlbumsOfUser(userId: string, limit?: number, offset?: n
     return rows.map((row) => ({ ...row, duration: Number(row.duration) }));
 }
 
-export async function countAlbumsOfUser(userId: string): Promise<number> {
+export async function countAlbumsOfUser(userId: string, options?: LibraryListOptions): Promise<number> {
+    const params: unknown[] = [userId];
     const row = await getLibrariesDb().prepare(`
-        SELECT COUNT(DISTINCT media.albumId) AS count
-        FROM library_entries
-        JOIN media ON media.id = library_entries.mediaId
-        WHERE library_entries.userId = ? AND media.album IS NOT NULL AND media.albumId IS NOT NULL AND media.albumId != 'unknown-album'
-    `).get(userId) as { count: number };
+        SELECT COUNT(*) AS count FROM (
+            SELECT media.albumId
+            ${ALBUM_FROM_WHERE}
+            GROUP BY media.albumId
+            ${albumSearchHaving(options, params)}
+        ) AS matching_albums
+    `).get(...params) as { count: number };
     return Number(row.count);
 }
 
@@ -608,12 +664,14 @@ export interface MediaMetadataPatch {
     duration?: number,
     label?: string | null,
     trackNumber?: number | null,
+    discNumber?: number | null,
+    discTitle?: string | null,
     amId?: string | null
 }
 
 const EDITABLE_MEDIA_COLUMNS = [
     "title", "artistName", "artistMbid", "album", "albumId", "albumType",
-    "coverArt", "releaseDate", "duration", "label", "trackNumber", "amId"
+    "coverArt", "releaseDate", "duration", "label", "trackNumber", "discNumber", "discTitle", "amId"
 ] as const;
 
 // applies a partial metadata edit. Column names come from the hard-coded list above, never from the
@@ -711,6 +769,41 @@ export function libraryFilePath(album: string | null, artistName: string, title:
             if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
         }
     }
+}
+
+// Moves a track's file to the folder its (new) album gives it and points every library entry at it. The file is one
+// copy shared by all the entries, so it is one move. The folder it leaves is removed when that was the last file
+// in it - an album with no tracks left has no reason to keep a folder. Returns the new path (the old one when
+// nothing had to move).
+export async function relocateMediaFile(mediaId: string): Promise<string | null> {
+    const media = await getMediaId(mediaId);
+    const entry = await findAnyLibraryEntryForMedia(mediaId);
+    if (!media || !entry) return null;
+
+    const oldPath = entry.filePath;
+    const newPath = libraryFilePath(media.album, media.artistName, media.title, extname(oldPath));
+
+    // the placeholder libraryFilePath() reserved is not needed when the file already is in the right folder
+    if (dirname(newPath) === dirname(oldPath)) {
+        await rm(newPath, { force: true });
+        return oldPath;
+    }
+
+    try {
+        await moveFile(oldPath, newPath);
+    } catch (error) {
+        await rm(newPath, { force: true }).catch(() => {});
+        throw error;
+    }
+
+    await getLibrariesDb().prepare(`UPDATE library_entries SET filePath = ? WHERE mediaId = ?`).run(newPath, mediaId);
+
+    // never the music root itself, only a folder directly below it; rmdir refuses a folder that still has files
+    const oldDir = dirname(oldPath);
+    if (dirname(oldDir) === resolve(process.cwd(), "music")) {
+        await rmdir(oldDir).catch(() => {});
+    }
+    return newPath;
 }
 
 // revokes every library entry a user has, used when an account is deleted so no orphaned entries linger

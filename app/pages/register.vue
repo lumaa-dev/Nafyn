@@ -4,7 +4,8 @@
       <h1>{{ $t('auth.register.title') }}</h1>
       <p class="description">{{ $t('auth.register.subtitle') }}</p>
     </span>
-    <input v-model="username" type="text" name="username" id="username" :placeholder="$t('auth.login.usernamePlaceholder')">
+    <input v-model="username" type="text" name="username" id="username" maxlength="20" autocapitalize="none" autocomplete="username" spellcheck="false" :title="$t('auth.register.usernameRule')" :placeholder="$t('auth.login.usernamePlaceholder')" @input="cleanUsername">
+    <p class="register">{{ $t('auth.register.usernameRule') }}</p>
     <input v-model="password" type="password" name="password" id="password" :placeholder="$t('auth.login.passwordPlaceholder')">
     <p class="register">{{ $t('auth.register.orPrefix') }} <NuxtLink to="/login">{{ $t('auth.register.loginLink') }}</NuxtLink>.</p>
     <!-- GDPR art. 13: the notice has to be reachable before an account exists, not after -->
@@ -28,6 +29,11 @@ if (!allowed.value) {
 
 const username = ref("");
 const password = ref("");
+
+// a new account is lowercase a-z, 0-9, "_" and "." only (the server enforces it; this keeps the field from ever showing anything else)
+function cleanUsername() {
+  username.value = username.value.toLowerCase().replace(/[^a-z0-9_.]/g, "");
+}
 
 interface RegisterResponse {
   user: NafynUser,

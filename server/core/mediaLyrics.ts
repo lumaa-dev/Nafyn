@@ -1,6 +1,6 @@
 // user-supplied lyrics for a media row.
 //
-// Nafyn already fetches lyrics from Cider/LRCLIB at read time (GET /api/v1/library/{id}/lyrics). This table
+// Nafyn already fetches lyrics from Better Lyrics/Unison/Cider/LRCLIB at read time (GET /api/v1/library/{id}/lyrics). This table
 // is the manual override: whatever a user typed or pasted in for a track wins over every provider, and is
 // the only lyric source a manually imported track (which no provider knows about) ever has.
 //

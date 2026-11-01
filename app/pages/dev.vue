@@ -56,7 +56,7 @@ async function unPeuDeLyricsPlease(mediaId: string) {
         const { error } = await useAsyncData<LyricsResponse>(`lyrics-${mediaId}`, () => {
             return token.value
                 ? $fetch(`/api/v1/library/${mediaId}/lyrics`, { headers: { Authorization: token.value }, timeout: 120_000 })
-                : Promise.resolve({ provider: Provider.AppleMusic, paragraphs: [] });
+                : Promise.resolve({ provider: Provider.Cache, paragraphs: [] });
         });
         let isError: boolean = typeof error.value !== "undefined";
 

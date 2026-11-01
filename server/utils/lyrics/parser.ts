@@ -51,9 +51,10 @@ export interface LyricParagraph {
 export type LyricParagraphs = LyricParagraph[];
 
 export enum Provider {
-	AppleMusic = "appleMusic",
 	/** Lyrics a Nafyn user wrote or pasted in themselves; they override every fetched provider. */
 	Manual = "manual",
+	BetterLyrics = "betterLyrics",
+	Unison = "unison",
 	Cider = "cider",
 	Lrclib = "lrclib",
 	Cache = "cache",
@@ -61,10 +62,12 @@ export enum Provider {
 
 export function providerLocalized(provider: Provider): string {
 	switch (provider) {
-		case Provider.AppleMusic:
-			return "Apple Music";
 		case Provider.Manual:
 			return "Nafyn";
+		case Provider.BetterLyrics:
+			return "Better Lyrics";
+		case Provider.Unison:
+			return "Unison";
 		case Provider.Cider:
 			return "Cider Lyrics Studio";
 		case Provider.Lrclib:
@@ -188,7 +191,7 @@ function formatSrtTime(seconds: number): string {
 /**
  * Flattens a run of word-by-word segments into display text, inserting a
  * space only where `endsWord` says the source actually had one. This
- * matters for lines like "you're" or "animal" that Apple Music TTML
+ * matters for lines like "you're" or "animal" that TTML
  * sometimes splits into adjacent, whitespace-less spans (e.g. "you'" +
  * "re") purely to drive word-by-word highlighting timing — naively
  * joining every segment with a space would wrongly render "you' re".
@@ -405,7 +408,7 @@ export function convert(
 // Minimal SAX-style XML tokenizer (no DOM dependency)
 // ---------------------------------------------------------------------------
 //
-// TTML from Apple Music / Cider Lyrics Studio is well-formed, simple XML:
+// TTML from Better Lyrics / Unison / Cider Lyrics Studio is well-formed, simple XML:
 // no nested CDATA-heavy content, no unusual namespaces beyond qualified
 // attribute/element names like `ttm:agent`. That makes a small hand-rolled
 // tokenizer entirely sufficient, and it avoids pulling in a full XML
@@ -563,8 +566,19 @@ function parseXML(xml: string, handler: XmlTokenHandler): void {
 // ---------------------------------------------------------------------------
 
 /**
- * Parses TTML lyrics (Apple Music beat-by-beat, or legacy paragraph-based
- * / Cider Lyrics Studio) into `LyricParagraphs`.
+ * Drops what TTML carries beside the lyrics - songwriter lists, translations, transliterations. They hold `<span>`s
+ * and text of their own that the line parser would otherwise take for the first line's words.
+ */
+export function stripTtmlSideData(ttml: string): string {
+	return ttml
+		.replace(/<(?:\w+:)?iTunesMetadata\b[^>]*?(?:\/>|>[\s\S]*?<\/(?:\w+:)?iTunesMetadata>)/gi, "")
+		.replace(/<(transliterations|translations)\b[^>]*?(?:\/>|>[\s\S]*?<\/\1>)/gi, "");
+}
+
+/**
+ * Parses TTML lyrics (word-by-word "beat-by-beat", line-synced, or legacy
+ * paragraph-based; Better Lyrics, Unison and Cider Lyrics Studio all send it)
+ * into `LyricParagraphs`.
  *
  * No DOM dependency — safe to call from Nuxt components, composables, or
  * Nitro server routes alike.
@@ -598,7 +612,7 @@ export class TTMLParser {
 		this.paragraphs = [];
 
 		try {
-			parseXML(this.ttml, {
+			parseXML(stripTtmlSideData(this.ttml), {
 				onStartElement: (name, attrs, selfClosing) => {
 					this.didStartElement(name, attrs);
 					if (selfClosing) {
@@ -818,87 +832,241 @@ export class TTMLParser {
 }
 
 // ---------------------------------------------------------------------------
-// Fetch layer (ports the `AmberLyrics` static fetch functions)
+// QRC (word-timed karaoke lyrics, as sent by Better Lyrics' QQ provider)
 //
-// MusicKit / MusanovaKit / LyricsStudioKit have no JS/TS equivalent, so
-// this is expressed against small injectable interfaces instead of a
-// literal 1:1 port. Implement these against MusicKit JS, your backend,
-// and/or the Cider Lyrics Studio API.
+// Spec: https://docs.betterlyrics.org/docs/qrc-format
+//
+//   [ti:Title]  [ar:Artist]  [al:Album]  [by:]  [offset:0]        <- header tags, no lyrics
+//   [1000,1200]Sample (1000,300)line (1300,400)here(1700,500)      <- [lineStartMs,lineDurationMs] then
+//                                                                     each word followed by (startMs,durationMs)
+//
+// Word times are absolute (from the start of the song). The result is the same model the TTML parser builds -
+// a paragraph per line, segments per word, `endsWord` from the whitespace the source had - so it exports
+// through `convert()` (TTML / SRT / LRC) and plays through the same panel as every other format.
 // ---------------------------------------------------------------------------
 
-interface CiderTokenResponse {
-	token: string;
-	expires_at: string;
+/** Credit labels QRC files time like lyrics ("Lyrics by：Max Martin"); such lines are not part of the song. */
+const QRC_CREDIT_RE = new RegExp(
+	"^\\s*(?:" +
+		[
+			"lyrics?\\s+by", "lyricist", "written\\s+by", "words\\s+by", "music\\s+by", "composed\\s+by", "composer",
+			"arranged\\s+by", "arranger", "produced\\s+by", "producer", "co-producer", "executive\\s+producer",
+			"mixed\\s+by", "mixing(?:\\s+engineer)?", "mastered\\s+by", "mastering(?:\\s+engineer)?",
+			"recorded\\s+by", "recording(?:\\s+engineer)?", "engineer(?:ed\\s+by)?", "programming", "published\\s+by",
+			"publisher", "vocals?", "background\\s+vocals?", "guitars?", "bass", "drums", "piano", "keyboards?",
+			"strings", "chorus", "op", "sp", "isrc", "original\\s+publisher", "sub-publisher",
+			"作词", "作詞", "作曲", "编曲", "編曲", "制作人", "製作人", "监制", "監製", "混音", "母带", "母帶", "录音", "錄音",
+			"和声", "和聲", "吉他", "贝斯", "貝斯", "鼓", "钢琴", "鋼琴", "弦乐", "弦樂", "出品", "发行", "發行", "版权", "版權",
+			"词", "詞", "曲", "编", "編", "演唱", "原唱", "歌手",
+		].join("|") +
+		")\\s*[:：]",
+	"i",
+);
+
+export interface ParseQrcOptions {
+	/** The track's title/artist; also read from the `[ti:]` / `[ar:]` header tags when not given. */
+	title?: string;
+	artist?: string;
+	/** The track's length in milliseconds - the end of the last line when QRC gives it a duration of 0. */
+	durationMs?: number;
 }
 
-let cachedPrivilegedToken: { token: string; expiresAtMs: number } | null = null;
-let privilegedTokenInFlight: Promise<string> | null = null;
-// refreshed this long before it actually expires, so a request never carries a token that dies mid-flight
-const TOKEN_EXPIRY_MARGIN_MS = 60_000;
+/** Pulls the QRC body out of the QQ provider's XML envelope; a bare QRC body is returned as is. */
+export function extractQrcBody(input: string): string {
+	if (!/<\s*(?:QrcInfos|LyricInfo|Lyric_\d+)\b/i.test(input)) return input;
 
-/** Ports Swift's fetchPrivilegedToken(): grab + cache Apple Music dev token from Cider's relay. */
-async function fetchPrivilegedToken(): Promise<string> {
-	if (cachedPrivilegedToken && cachedPrivilegedToken.expiresAtMs - TOKEN_EXPIRY_MARGIN_MS > Date.now()) {
-		return cachedPrivilegedToken.token;
+	// the attribute value can hold raw `"` (lyrics with quotes), so it ends at the first `"/>`, not the first `"`
+	const match = /LyricContent="([\s\S]*?)"\s*\/>/.exec(input);
+	return match ? decodeXmlEntities(match[1]!) : "";
+}
+
+/** The `[ti:]` / `[ar:]` / `[al:]` header tags of a QRC file (empty ones are left out). */
+export function qrcHeader(input: string): { title?: string; artist?: string; album?: string } {
+	const result: { title?: string; artist?: string; album?: string } = {};
+	for (const raw of extractQrcBody(input).split(/\r?\n/)) {
+		const match = /^\s*\[(ti|ar|al):(.*)\]\s*$/i.exec(raw);
+		const value = match?.[2]?.trim();
+		if (!match || !value) continue;
+		const key = ({ ti: "title", ar: "artist", al: "album" } as const)[match[1]!.toLowerCase() as "ti" | "ar" | "al"];
+		result[key] ??= value;
+	}
+	return result;
+}
+
+function foldQrcText(text: string): string {
+	return text.normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+}
+
+/**
+ * Parses QRC lyrics into `LyricParagraphs`, or `null` when the text holds no timed line at all.
+ *
+ * Dropped, as the spec asks: header tags, credit lines ("Lyrics by：…", 作词 …) and the opening lines that only
+ * repeat the title / artist. A leading "Name：" (full-width colon) is a singer, not lyrics: it is cut from the
+ * text and the lines under it, up to the next prefix, get that singer - the second singer to appear is the
+ * "alt" voice, like an even `ttm:agent` in TTML.
+ */
+export function parseQRC(input: string, options: ParseQrcOptions = {}): LyricParagraphs | null {
+	const body = extractQrcBody(input);
+
+	let title = options.title ?? "";
+	let artist = options.artist ?? "";
+	interface RawLine { start: number; duration: number; words: { text: string; start: number; duration: number }[] }
+	const rawLines: RawLine[] = [];
+
+	for (const raw of body.split(/\r?\n/)) {
+		const line = raw.trim();
+		if (line.length === 0) continue;
+
+		const header = /^\[([a-zA-Z]+):(.*)\]$/.exec(line);
+		if (header) {
+			const value = header[2]!.trim();
+			if (!title && header[1]!.toLowerCase() === "ti") title = value;
+			if (!artist && header[1]!.toLowerCase() === "ar") artist = value;
+			continue;
+		}
+
+		const lineHead = /^\[(\d+),(\d+)\]/.exec(line);
+		if (!lineHead) continue;
+
+		// a word's text is everything between the end of the previous token and its own `(start,duration)`
+		const words: RawLine["words"] = [];
+		const wordRe = /\((\d+),(\d+)\)/g;
+		const rest = line.slice(lineHead[0].length);
+		let cursor = 0;
+		let m: RegExpExecArray | null;
+		while ((m = wordRe.exec(rest)) !== null) {
+			words.push({ text: rest.slice(cursor, m.index), start: Number(m[1]), duration: Number(m[2]) });
+			cursor = m.index + m[0].length;
+		}
+		// a line without word tokens is a plain timed line: one "word" spanning it
+		if (words.length === 0 && rest.trim().length > 0) {
+			words.push({ text: rest, start: Number(lineHead[1]), duration: Number(lineHead[2]) });
+		}
+		if (words.length === 0) continue;
+
+		rawLines.push({ start: Number(lineHead[1]), duration: Number(lineHead[2]), words });
 	}
 
-	// concurrent callers share one fetch instead of each asking the relay
-	privilegedTokenInFlight ??= (async () => {
-		try {
-			const res = await fetch("https://rise.cider.sh/api/v1/token/current", { signal: AbortSignal.timeout(8_000) });
-			if (!res.ok) {
-				throw new Error(`Failed to fetch privileged token: HTTP ${res.status}`);
-			}
+	const foldedTitle = foldQrcText(title);
+	const foldedArtist = foldQrcText(artist);
+	const isMetadataLine = (text: string): boolean => {
+		const folded = foldQrcText(text);
+		if (!folded) return false;
+		return folded === foldedTitle
+			|| (foldedTitle !== "" && foldedArtist !== "" && (folded === `${foldedTitle} ${foldedArtist}` || folded === `${foldedArtist} ${foldedTitle}`));
+	};
 
-			const token = (await res.json()) as CiderTokenResponse;
-			const expiresAtMs = new Date(token.expires_at).getTime();
-			if (!(expiresAtMs > Date.now())) {
-				throw new Error("Privileged token fetched expired");
-			}
+	const singers: string[] = [];
+	let currentSinger = 0;
+	const lines: { raw: RawLine; text: string; singer: number; segments: LyricSegment[] }[] = [];
+	let sawLyric = false;
 
-			// the token used to be kept for the life of the process: once it expired, every Apple Music lookup
-			// failed until a restart
-			cachedPrivilegedToken = { token: token.token, expiresAtMs };
-			return token.token;
-		} finally {
-			privilegedTokenInFlight = null;
+	for (const raw of rawLines) {
+		let words = raw.words;
+		const fullText = words.map((w) => w.text).join("");
+
+		if (QRC_CREDIT_RE.test(fullText)) continue;
+		// the title / artist restated at the top - only before the first real line, a chorus can say its own title
+		if (!sawLyric && isMetadataLine(fullText.replace(/\s*[-–—]\s*/g, " - "))) continue;
+
+		// "Name：" opens a singer; only the full-width colon, an ASCII one is a sentence ("I'll tell you why: ...")
+		const prefix = /^\s*([^:：]{1,24})：\s*/.exec(fullText);
+		if (prefix) {
+			const name = prefix[1]!.trim();
+			let index = singers.indexOf(name);
+			if (index < 0) {
+				// lines sung before the first named singer belong to an unnamed first voice
+				if (singers.length === 0 && lines.length > 0) singers.push("");
+				singers.push(name);
+				index = singers.length - 1;
+			}
+			currentSinger = index;
+
+			// drop the words that make up the prefix
+			let consumed = 0;
+			const kept: typeof words = [];
+			for (const word of words) {
+				if (consumed >= prefix[0].length) {
+					kept.push(word);
+				} else if (consumed + word.text.length > prefix[0].length) {
+					kept.push({ ...word, text: word.text.slice(prefix[0].length - consumed) });
+				}
+				consumed += word.text.length;
+			}
+			words = kept;
+			if (words.length === 0) continue;
 		}
-	})();
-	return privilegedTokenInFlight;
+
+		const segments: LyricSegment[] = [];
+		for (const word of words) {
+			const trimmed = word.text.trim();
+			if (trimmed.length === 0) {
+				// a timed space: it only says the previous word ended there
+				if (segments.length > 0) segments[segments.length - 1]!.endsWord = true;
+				continue;
+			}
+			if (/^\s/.test(word.text) && segments.length > 0) segments[segments.length - 1]!.endsWord = true;
+
+			segments.push({
+				id: uuid(),
+				text: trimmed,
+				startTime: word.start / 1000,
+				endTime: (word.start + word.duration) / 1000,
+				endsWord: /\s$/.test(word.text),
+			});
+		}
+		if (segments.length === 0) continue;
+		// like the TTML parser: the line's last word closes the line
+		segments[segments.length - 1]!.endsWord = true;
+
+		const text = joinSegments(segments);
+		if (text.length === 0) continue;
+
+		sawLyric = true;
+		lines.push({ raw, text, singer: currentSinger, segments });
+	}
+
+	if (lines.length === 0) return null;
+
+	const paragraphs: LyricParagraphs = [];
+	for (let i = 0; i < lines.length; i++) {
+		const { raw, text, singer, segments } = lines[i]!;
+		const next = lines[i + 1];
+
+		const lineStart = raw.start / 1000;
+		// a duration of 0 happens: the line then lasts until the next one starts (the song's end for the last)
+		const declaredEnd = raw.duration > 0
+			? (raw.start + raw.duration) / 1000
+			: next ? next.raw.start / 1000 : options.durationMs ? options.durationMs / 1000 : segments[segments.length - 1]!.endTime;
+
+		// a word with no length of its own lasts until the next word starts (the line's end for the last)
+		for (let s = 0; s < segments.length; s++) {
+			const seg = segments[s]!;
+			if (seg.endTime <= seg.startTime) {
+				seg.endTime = Math.max(seg.startTime, segments[s + 1]?.startTime ?? declaredEnd);
+			}
+		}
+
+		const end = Math.max(declaredEnd, segments[segments.length - 1]!.endTime);
+		// singer 0 is the main voice; the next one is "v2" (alt), the one after "v3" (main again)...
+		const alt = (singer + 1) % 2 === 0;
+		paragraphs.push({
+			id: uuid(),
+			lines: [createLyricLine(text, lineStart, end, { kind: "main", alt }, segments)],
+		});
+	}
+
+	log(`[QRC] ${paragraphs.length} lyrics parsed successfully`);
+	return paragraphs;
 }
+
+// ---------------------------------------------------------------------------
+// Fetch layer (the Cider Lyrics Studio community lyrics, keyed on the song's catalogue id)
+//
+// Better Lyrics, Unison and LRCLIB are looked up by title/artist and live in their own modules next to this one.
+// ---------------------------------------------------------------------------
 
 export class NafynLyrics {
-	async fetchAppleMusicTTML(songId: string): Promise<string | null> {
-		try {
-			const ttml = await fetchAppleMusicTTML(
-				songId,
-				await fetchPrivilegedToken(),
-			);
-			
-			log(
-				`[NafynLyrics] ${ttml != null ? "Fetched lyrics successfully" : "Failed to fetch lyrics"}`,
-			);
-			return ttml;
-		} catch (e) {
-			logError(e);
-			return null;
-		}
-	}
-
-	/** Apple Music TTML, parsed into `LyricParagraphs`. */
-	async fetchAppleMusicParagraphs(
-		songId: string,
-	): Promise<LyricParagraphs | null> {
-		const ttml = await this.fetchAppleMusicTTML(songId);
-		if (ttml == null) return null;
-
-		const parsed = new TTMLParser(ttml).parse();
-		log(
-			`[NafynLyrics] ${parsed && parsed.length > 0 ? `${parsed.length} lyrics parsed successfully` : "Failed to parse lyrics"}`,
-		);
-		return parsed;
-	}
-
 	/** Best available Cider community lyrics response for a song id. */
 	async fetchCiderResponse(
 		songId: string,
@@ -925,39 +1093,5 @@ export class NafynLyrics {
 			`[NafynLyrics] ${parsed && parsed.length > 0 ? `${parsed.length} lyrics parsed successfully` : "Failed to parse lyrics"}`,
 		);
 		return parsed;
-	}
-
-	/**
-	 * Fetches Apple Music's lyrics, but prefers Cider's community lyrics
-	 * when they're a better fit (e.g. Apple Music's are static/unsynced
-	 * but Cider's are time-synced).
-	 */
-	async fetchWithCider(
-		songId: string,
-	): Promise<{ paragraphs: LyricParagraphs; provider: Provider } | null> {
-		const amParagraphs = await this.fetchAppleMusicParagraphs(songId);
-
-		if (amParagraphs && isBeatByBeat(amParagraphs)) {
-			log("[NafynLyrics] B-by-B AM paragraphs");
-			return { paragraphs: amParagraphs, provider: Provider.AppleMusic };
-		}
-
-		const ciderParagraphs = await this.fetchCiderParagraphs(songId);
-		if (ciderParagraphs) {
-			const amIsStatic = amParagraphs ? isStatic(amParagraphs) : true;
-			if (!isStatic(ciderParagraphs) || amIsStatic) {
-				log("[NafynLyrics] Active Cider paragraphs");
-				return { paragraphs: ciderParagraphs, provider: Provider.Cider };
-			} else {
-				log("[NafynLyrics] AM paragraphs");
-				return {
-					paragraphs: amParagraphs as LyricParagraphs,
-					provider: Provider.AppleMusic,
-				};
-			}
-		}
-
-		if (!amParagraphs) return null;
-		return { paragraphs: amParagraphs, provider: Provider.AppleMusic };
 	}
 }

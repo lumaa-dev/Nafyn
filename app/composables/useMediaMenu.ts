@@ -51,7 +51,9 @@ interface HostState {
   anchor: { x: number, y: number, seq: number },
   picker: { open: boolean, mediaIds: string[], admin: boolean },
   edit: { open: boolean, targets: MediaRow[] },
-  onEdited: ((rows: MediaRow[]) => void) | null
+  onEdited: ((rows: MediaRow[]) => void) | null,
+  changeAlbum: { open: boolean, media: MediaRow | null },
+  onAlbumChanged: ((row: MediaRow) => void) | null
 }
 
 // client-only and module-level on purpose: closures don't belong in useState (it is serialised into the page)
@@ -60,7 +62,9 @@ const host = reactive<HostState>({
   anchor: { x: 0, y: 0, seq: 0 },
   picker: { open: false, mediaIds: [], admin: false },
   edit: { open: false, targets: [] },
-  onEdited: null
+  onEdited: null,
+  changeAlbum: { open: false, media: null },
+  onAlbumChanged: null
 });
 
 export function useMediaMenuHost() {
@@ -178,6 +182,12 @@ export function useMediaMenu() {
     host.edit = { open: true, targets };
   }
 
+  function openChangeAlbum(media: MediaRow, onChanged?: MenuOptions["onChanged"]) {
+    // the track now sits on another album: to a list that is an edit (new album, cover, date, position)
+    host.onAlbumChanged = (row) => onChanged?.({ type: "edited", ids: [row.id], media: [row] });
+    host.changeAlbum = { open: true, media };
+  }
+
   async function togglePin(kind: PinKind, refId: string, onChanged?: MenuOptions["onChanged"]) {
     const nowPinned = await pins.toggle(kind, refId);
     sendToast({ title: null, content: nowPinned ? t("menu.pinned") : t("menu.unpinned"), icon: null, tint: "green" });
@@ -232,6 +242,7 @@ export function useMediaMenu() {
     }
     if (subject.canEdit ?? owned) {
       items.push({ label: t("edit.title"), action: () => openEdit([media], options.onChanged) });
+      items.push({ label: t("album.change.menu"), action: () => openChangeAlbum(media, options.onChanged) });
     }
 
     const entry = options.playlistEntry;

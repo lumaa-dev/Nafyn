@@ -58,7 +58,7 @@ const CIDER_LYRICS_BASE_URL = "https://exp-rise.cider.sh/api/v1/lyrics/user";
  * Fetches all of Cider Lyrics Studio's community lyric submissions for a
  * song id.
  *
- * @param id - The song's Apple Music id (Swift's `MusicItemID.rawValue`).
+ * @param id - The song's catalogue id (`media.amId`), which Cider keys its submissions on.
  * @param options.signal - Optional external `AbortSignal` to cancel the
  *   request early; combined with the built-in 20s timeout, whichever
  *   fires first wins.

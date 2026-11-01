@@ -7,7 +7,7 @@ import { signAuthToken } from "../../../utils/jwt";
 import { Permission } from "../../../entity/Permission";
 import { isRegistrationOpen } from "../../../core/appSettings";
 import { validateRegisterToken, claimRegisterToken, releaseRegisterToken } from "../../../core/registerTokens";
-import { assertValidUsername } from "../../../utils/validation";
+import { assertValidNewUsername } from "../../../utils/validation";
 import { createSession } from "../../../core/sessions";
 
 const SESSION_LIFETIME_MS = 7 * 24 * 60 * 60 * 1000; // mirrors signAuthToken's own "7d" expiresIn
@@ -33,7 +33,9 @@ defineRouteMeta({
                         required: ["username", "password"],
                         properties: {
                             username: {
-                                type: "string"
+                                type: "string",
+                                pattern: "^[a-z0-9_.]{3,20}$",
+                                description: "3-20 characters: lowercase letters (a-z), numbers (0-9), underscores and dots"
                             },
                             password: {
                                 type: "string"
@@ -152,7 +154,7 @@ export default defineEventHandler(async (event) => {
         }
     }
 
-    assertValidUsername(username);
+    assertValidNewUsername(username);
 
     if (password.length < MIN_PASSWORD_LENGTH) {
         throw createError({ statusCode: 400, statusMessage: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` });

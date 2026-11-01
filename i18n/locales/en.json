@@ -35,7 +35,8 @@
       "orPrefix": "or",
       "loginLink": "log in your account",
       "submit": "Create account",
-      "error": "Couldn't create your account"
+      "error": "Couldn't create your account",
+      "usernameRule": "3-20 characters: lowercase letters (a-z), numbers (0-9), underscores (_) and dots (.)."
     },
     "privacyPrefix": "By creating an account you accept that this instance stores the data described in its",
     "privacyLink": "privacy notice",
@@ -62,6 +63,18 @@
       "track": "Track",
       "album": "Album",
       "playlist": "Playlist"
+    },
+    "search": {
+      "tracks": "Search your tracks",
+      "albums": "Search your albums",
+      "noResults": "Nothing in your library matches your search."
+    },
+    "sort": {
+      "label": "Sort",
+      "added": "Recently added",
+      "title": "Alphabetical A-Z",
+      "artist": "Artist A-Z",
+      "released": "Release date"
     }
   },
   "album": {
@@ -71,7 +84,23 @@
     "requested": "Requested successfully",
     "viewInMusicbrainz": "View in MusicBrainz",
     "alreadyRequested": "Requested",
-    "inLibrary": "In library"
+    "inLibrary": "In library",
+    "change": {
+      "menu": "Change album",
+      "title": "Change album",
+      "intro": "Choose the album “{title}” by {artist} belongs to.",
+      "search": "Search an album",
+      "placeholder": "Album or artist",
+      "searching": "Searching…",
+      "none": "No album found.",
+      "current": "Current",
+      "confirm": "“{title}” will be moved to “{album}”. The album it leaves disappears if it has no other track.",
+      "move": "Move",
+      "moving": "Moving…",
+      "moved": "“{title}” is now on “{album}”",
+      "error": "Couldn't change the album",
+      "searchError": "Couldn't search albums"
+    }
   },
   "track": {
     "request": "Request",

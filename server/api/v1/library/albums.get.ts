@@ -1,4 +1,5 @@
 import { getAlbumsOfUser, countAlbumsOfUser } from "~~/server/core/library";
+import { parseLibraryListQuery, libraryListQueryParams } from "~~/server/utils/libraryListQuery";
 import { parsePagination, paginated, paginationQueryParams, paginatedResponseSchema } from "~~/server/utils/pagination";
 
 defineRouteMeta({
@@ -6,7 +7,7 @@ defineRouteMeta({
         description: "List every album the requesting user owns at least one track from, aggregated from their library, paginated",
         tags: ["library"],
         operationId: "getLibraryAlbums",
-        parameters: paginationQueryParams,
+        parameters: [...paginationQueryParams, ...libraryListQueryParams],
         responses: {
             "200": {
                 description: "",
@@ -53,10 +54,11 @@ defineRouteMeta({
 export default defineEventHandler(async (event) => {
   const { sub: userId } = await requireAuthToken(event);
   const pagination = parsePagination(event);
+  const options = parseLibraryListQuery(event);
 
   const [items, total] = await Promise.all([
-    getAlbumsOfUser(userId, pagination.limit, pagination.offset),
-    countAlbumsOfUser(userId)
+    getAlbumsOfUser(userId, pagination.limit, pagination.offset, options),
+    countAlbumsOfUser(userId, options)
   ]);
   return paginated(items, total, pagination);
 })

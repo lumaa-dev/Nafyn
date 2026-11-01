@@ -1,4 +1,5 @@
 import { getMediaOfUser, countMediaOfUser } from "~~/server/core/library";
+import { parseLibraryListQuery, libraryListQueryParams } from "~~/server/utils/libraryListQuery";
 import { parsePagination, paginated, paginationQueryParams, paginatedResponseSchema } from "~~/server/utils/pagination";
 
 defineRouteMeta({
@@ -6,7 +7,7 @@ defineRouteMeta({
         description: "List every track in the requesting user's library, paginated",
         tags: ["library"],
         operationId: "getLibraryTracks",
-        parameters: paginationQueryParams,
+        parameters: [...paginationQueryParams, ...libraryListQueryParams],
         responses: {
             "200": {
                 description: "",
@@ -59,10 +60,11 @@ defineRouteMeta({
 export default defineEventHandler(async (event) => {
   const { sub: userId } = await requireAuthToken(event);
   const pagination = parsePagination(event);
+  const options = parseLibraryListQuery(event);
 
   const [items, total] = await Promise.all([
-    getMediaOfUser(userId, pagination.limit, pagination.offset),
-    countMediaOfUser(userId)
+    getMediaOfUser(userId, pagination.limit, pagination.offset, options),
+    countMediaOfUser(userId, options)
   ]);
   return paginated(items, total, pagination);
 })
