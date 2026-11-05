@@ -220,34 +220,46 @@ export function useMediaMenu() {
 
   // ---- menus -----------------------------------------------------------------------------------------------
 
+  // DESIGN.md sorts every menu into categories, most used first, with a divider and no header between them:
+  // 1 playback, 2 "view" and playlists, 3 modifications, 4 destructive. Each builder fills its own four lists and
+  // this joins the ones that are not empty, so a menu never starts, ends or doubles up on a divider.
+  function categories(...groups: ContextMenuItem[][]): ContextMenuItem[] {
+    return groups
+      .filter((group) => group.length > 0)
+      .flatMap((group, i) => i === 0 ? group : [{ label: "", separator: true }, ...group]);
+  }
+
   function trackItems(subject: TrackSubject, options: MenuOptions): ContextMenuItem[] {
     const { media } = subject;
     const owned = subject.owned !== false;
-    const items: ContextMenuItem[] = [
+
+    const playback: ContextMenuItem[] = [
       { label: t("player.playNext"), action: () => void addToQueue(media, "next") },
       { label: t("player.addToQueue"), action: () => void addToQueue(media, "end") }
     ];
 
+    const view: ContextMenuItem[] = [];
     if (!options.hideDetails && owned) {
-      items.push({ label: t("track.viewDetails"), action: () => void navigateTo(`/l/t/${media.id}`) });
+      view.push({ label: t("track.viewDetails"), action: () => void navigateTo(`/l/t/${media.id}`) });
     }
-
-    items.push({ label: t("playlist.addToPlaylist"), action: () => openPicker([media.id], options.pickerAdmin) });
-
+    view.push({ label: t("playlist.addToPlaylist"), action: () => openPicker([media.id], options.pickerAdmin) });
     if (owned) {
-      items.push({
+      view.push({
         label: pins.isPinned("track", media.id) ? t("menu.unpin") : t("menu.pin"),
         action: guarded(media.title, t("menu.pinError"), () => togglePin("track", media.id, options.onChanged))
       });
     }
+
+    const modify: ContextMenuItem[] = [];
     if (subject.canEdit ?? owned) {
-      items.push({ label: t("edit.title"), action: () => openEdit([media], options.onChanged) });
-      items.push({ label: t("album.change.menu"), action: () => openChangeAlbum(media, options.onChanged) });
+      modify.push({ label: t("edit.title"), action: () => openEdit([media], options.onChanged) });
+      modify.push({ label: t("album.change.menu"), action: () => openChangeAlbum(media, options.onChanged) });
     }
 
+    const destructive: ContextMenuItem[] = [];
     const entry = options.playlistEntry;
     if (entry?.canRemove) {
-      items.push({
+      destructive.push({
         label: t("playlist.removeTrack"),
         danger: true,
         action: guarded(media.title, t("playlist.picker.error"), async () => {
@@ -260,7 +272,7 @@ export function useMediaMenu() {
     if (options.owners) {
       // the admin view: the track is removed from one named account's library at a time
       for (const owner of options.owners) {
-        items.push({
+        destructive.push({
           label: t("library.all.removeFrom", { username: owner.username }),
           danger: true,
           action: guarded(media.title, t("track.deleteError"), async () => {
@@ -270,7 +282,7 @@ export function useMediaMenu() {
         });
       }
     } else if (owned) {
-      items.push({
+      destructive.push({
         label: t("track.delete"),
         danger: true,
         action: async () => {
@@ -280,7 +292,7 @@ export function useMediaMenu() {
       });
     }
 
-    return items;
+    return categories(playback, view, modify, destructive);
   }
 
   function albumItems(subject: AlbumSubject, options: MenuOptions): ContextMenuItem[] {
@@ -288,23 +300,29 @@ export function useMediaMenu() {
     const withTracks = (fn: (tracks: MediaRow[]) => void | Promise<void>) =>
       guarded(album.title, t("common.error"), async () => fn(await albumTracks(album.id)));
 
-    const items: ContextMenuItem[] = [
+    const playback: ContextMenuItem[] = [
       { label: t("playlist.play"), action: withTracks((tracks) => playMany(tracks, { type: "album", refId: album.id })) },
       { label: t("player.playNext"), action: withTracks((tracks) => queueMany(tracks, "next")) },
       { label: t("player.addToQueue"), action: withTracks((tracks) => queueMany(tracks, "end")) }
     ];
 
+    const view: ContextMenuItem[] = [];
     if (!options.hideDetails) {
-      items.push({ label: t("menu.viewAlbum"), action: () => void navigateTo(`/l/a/${album.id}`) });
+      view.push({ label: t("menu.viewAlbum"), action: () => void navigateTo(`/l/a/${album.id}`) });
     }
-
-    items.push(
+    view.push(
       { label: t("playlist.addToPlaylist"), action: withTracks((tracks) => openPicker(tracks.map((track) => track.id), options.pickerAdmin)) },
       {
         label: pins.isPinned("album", album.id) ? t("menu.unpin") : t("menu.pin"),
         action: guarded(album.title, t("menu.pinError"), () => togglePin("album", album.id, options.onChanged))
-      },
-      { label: t("edit.title"), action: withTracks((tracks) => openEdit(tracks, options.onChanged)) },
+      }
+    );
+
+    const modify: ContextMenuItem[] = [
+      { label: t("edit.title"), action: withTracks((tracks) => openEdit(tracks, options.onChanged)) }
+    ];
+
+    const destructive: ContextMenuItem[] = [
       {
         label: t("menu.deleteAlbum"),
         danger: true,
@@ -315,9 +333,9 @@ export function useMediaMenu() {
           if (deleted.length === tracks.length) options.onChanged?.({ type: "deleted", ids: [album.id] });
         })
       }
-    );
+    ];
 
-    return items;
+    return categories(playback, view, modify, destructive);
   }
 
   function playlistItems(subject: PlaylistSubject, options: MenuOptions): ContextMenuItem[] {
@@ -325,23 +343,24 @@ export function useMediaMenu() {
     const withTracks = (fn: (tracks: MediaRow[]) => void | Promise<void>) =>
       guarded(playlist.title, t("common.error"), async () => fn(await playlistTracks(playlist.id)));
 
-    const items: ContextMenuItem[] = [
+    const playback: ContextMenuItem[] = [
       { label: t("playlist.play"), action: withTracks((tracks) => playMany(tracks, { type: "playlist", refId: playlist.id })) },
       { label: t("player.playNext"), action: withTracks((tracks) => queueMany(tracks, "next")) },
       { label: t("player.addToQueue"), action: withTracks((tracks) => queueMany(tracks, "end")) }
     ];
 
+    const view: ContextMenuItem[] = [];
     if (!options.hideDetails) {
-      items.push({ label: t("menu.viewPlaylist"), action: () => void navigateTo(`/l/playlist/${playlist.id}`) });
+      view.push({ label: t("menu.viewPlaylist"), action: () => void navigateTo(`/l/playlist/${playlist.id}`) });
     }
-
-    items.push({
+    view.push({
       label: pins.isPinned("playlist", playlist.id) ? t("menu.unpin") : t("menu.pin"),
       action: guarded(playlist.title, t("menu.pinError"), () => togglePin("playlist", playlist.id, options.onChanged))
     });
 
+    const destructive: ContextMenuItem[] = [];
     if (subject.isOwner) {
-      items.push({
+      destructive.push({
         label: t("playlist.delete.open"),
         danger: true,
         action: guarded(playlist.title, t("common.error"), async () => {
@@ -352,7 +371,7 @@ export function useMediaMenu() {
         })
       });
     } else if (subject.isMember) {
-      items.push({
+      destructive.push({
         label: t("playlist.leave"),
         danger: true,
         action: guarded(playlist.title, t("common.error"), async () => {
@@ -363,7 +382,7 @@ export function useMediaMenu() {
       });
     }
 
-    return items;
+    return categories(playback, view, [], destructive);
   }
 
   // The menu appears at once. Whether something is pinned (Pin / Unpin) comes from a list that may not have
@@ -399,9 +418,12 @@ export function useMediaMenu() {
   function bulkItems(subjects: MenuSubject[], options: MenuOptions): ContextMenuItem[] {
     const kind = subjects[0]!.kind;
     const count = subjects.length;
-    const items: ContextMenuItem[] = [];
-    const label = t("bulk.count", { count });
-    items.push({ label, disabled: true }, { label: "", separator: true });
+    // how many are selected: a title for the menu, not a category (those carry no header)
+    const heading: ContextMenuItem[] = [{ label: t("bulk.count", { count }), disabled: true }];
+    const playback: ContextMenuItem[] = [];
+    const view: ContextMenuItem[] = [];
+    const modify: ContextMenuItem[] = [];
+    const destructive: ContextMenuItem[] = [];
 
     if (kind === "track") {
       const tracks = subjects as TrackSubject[];
@@ -409,27 +431,27 @@ export function useMediaMenu() {
       const editable = tracks.filter((subject) => subject.canEdit ?? subject.owned !== false).map((subject) => subject.media);
       const all = tracks.map((subject) => subject.media);
 
-      items.push(
+      playback.push(
         { label: t("player.playNext"), action: () => void queueMany(all, "next") },
-        { label: t("player.addToQueue"), action: () => void queueMany(all, "end") },
-        { label: t("playlist.addToPlaylist"), action: () => openPicker(all.map((media) => media.id), options.pickerAdmin) }
+        { label: t("player.addToQueue"), action: () => void queueMany(all, "end") }
       );
+      view.push({ label: t("playlist.addToPlaylist"), action: () => openPicker(all.map((media) => media.id), options.pickerAdmin) });
 
       if (owned.length > 0) {
         const pinItems = owned.map((media) => ({ kind: "track" as const, refId: media.id }));
-        items.push({
+        view.push({
           label: pinItems.every((item) => pins.isPinned("track", item.refId)) ? t("menu.unpin") : t("menu.pin"),
           action: guarded(null, t("menu.pinError"), () => togglePinMany(pinItems, options.onChanged))
         });
       }
       if (editable.length > 0) {
-        items.push({ label: t("edit.title"), action: () => openEdit(editable, options.onChanged) });
+        modify.push({ label: t("edit.title"), action: () => openEdit(editable, options.onChanged) });
       }
 
       const removable = options.playlistEntries?.entries.filter((entry) => entry.canRemove) ?? [];
       if (options.playlistEntries && removable.length > 0) {
         const { playlistId } = options.playlistEntries;
-        items.push({
+        destructive.push({
           label: t("playlist.removeTrack"),
           danger: true,
           action: guarded(null, t("playlist.picker.error"), async () => {
@@ -444,7 +466,7 @@ export function useMediaMenu() {
       }
 
       if (owned.length > 0 && !options.owners) {
-        items.push({
+        destructive.push({
           label: t("track.delete"),
           danger: true,
           action: async () => {
@@ -460,48 +482,50 @@ export function useMediaMenu() {
         guarded(null, t("common.error"), async () => fn(await expand(subjects)));
       const pinItems = albums.map((album) => ({ kind: "album" as const, refId: album.id }));
 
-      items.push(
+      playback.push(
         { label: t("player.playNext"), action: withTracks((tracks) => queueMany(tracks, "next")) },
-        { label: t("player.addToQueue"), action: withTracks((tracks) => queueMany(tracks, "end")) },
+        { label: t("player.addToQueue"), action: withTracks((tracks) => queueMany(tracks, "end")) }
+      );
+      view.push(
         { label: t("playlist.addToPlaylist"), action: withTracks((tracks) => openPicker(tracks.map((track) => track.id), options.pickerAdmin)) },
         {
           label: pinItems.every((item) => pins.isPinned("album", item.refId)) ? t("menu.unpin") : t("menu.pin"),
           action: guarded(null, t("menu.pinError"), () => togglePinMany(pinItems, options.onChanged))
-        },
-        { label: t("edit.title"), action: withTracks((tracks) => openEdit(tracks, options.onChanged)) },
-        {
-          label: t("menu.deleteAlbum"),
-          danger: true,
-          action: guarded(null, t("track.deleteError"), async () => {
-            const tracks = await expand(subjects);
-            if (!confirmed(t("menu.confirmDeleteAlbums", { count: albums.length, tracks: tracks.length }))) return;
-            const deleted = new Set(await deleteTracks(tracks));
-            // an album is gone only when every one of its tracks is
-            const gone = (await mapLimited(albums, async (album) => ({ album, tracks: await albumTracks(album.id).catch(() => [] as MediaRow[]) })))
-              .filter((entry) => entry.tracks.length === 0 || entry.tracks.every((track) => deleted.has(track.id)))
-              .map((entry) => entry.album.id);
-            if (gone.length > 0) options.onChanged?.({ type: "deleted", ids: gone });
-          })
         }
       );
+      modify.push({ label: t("edit.title"), action: withTracks((tracks) => openEdit(tracks, options.onChanged)) });
+      destructive.push({
+        label: t("menu.deleteAlbum"),
+        danger: true,
+        action: guarded(null, t("track.deleteError"), async () => {
+          const tracks = await expand(subjects);
+          if (!confirmed(t("menu.confirmDeleteAlbums", { count: albums.length, tracks: tracks.length }))) return;
+          const deleted = new Set(await deleteTracks(tracks));
+          // an album is gone only when every one of its tracks is
+          const gone = (await mapLimited(albums, async (album) => ({ album, tracks: await albumTracks(album.id).catch(() => [] as MediaRow[]) })))
+            .filter((entry) => entry.tracks.length === 0 || entry.tracks.every((track) => deleted.has(track.id)))
+            .map((entry) => entry.album.id);
+          if (gone.length > 0) options.onChanged?.({ type: "deleted", ids: gone });
+        })
+      });
     } else {
       const playlists = subjects as PlaylistSubject[];
       const pinItems = playlists.map((subject) => ({ kind: "playlist" as const, refId: subject.playlist.id }));
       const withTracks = (fn: (tracks: MediaRow[]) => void | Promise<void>) =>
         guarded(null, t("common.error"), async () => fn(await expand(subjects)));
 
-      items.push(
+      playback.push(
         { label: t("player.playNext"), action: withTracks((tracks) => queueMany(tracks, "next")) },
-        { label: t("player.addToQueue"), action: withTracks((tracks) => queueMany(tracks, "end")) },
-        {
-          label: pinItems.every((item) => pins.isPinned("playlist", item.refId)) ? t("menu.unpin") : t("menu.pin"),
-          action: guarded(null, t("menu.pinError"), () => togglePinMany(pinItems, options.onChanged))
-        }
+        { label: t("player.addToQueue"), action: withTracks((tracks) => queueMany(tracks, "end")) }
       );
+      view.push({
+        label: pinItems.every((item) => pins.isPinned("playlist", item.refId)) ? t("menu.unpin") : t("menu.pin"),
+        action: guarded(null, t("menu.pinError"), () => togglePinMany(pinItems, options.onChanged))
+      });
 
       const owned = playlists.filter((subject) => subject.isOwner);
       if (owned.length > 0) {
-        items.push({
+        destructive.push({
           label: t("playlist.delete.open"),
           danger: true,
           action: guarded(null, t("common.error"), async () => {
@@ -518,7 +542,7 @@ export function useMediaMenu() {
       }
     }
 
-    return items;
+    return categories(heading, playback, view, modify, destructive);
   }
 
   return { openMenu, openBulkMenu };
