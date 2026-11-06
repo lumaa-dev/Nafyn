@@ -22,6 +22,8 @@
       </li>
       <li v-for="track in group.tracks" :key="track.id" :class="{ playing: currentTrack?.id === track.id, 'selectable-row': selecting, selected: isSelected(track.id) }" @click="selecting ? toggle(track.id) : playFrom(track)" @contextmenu.prevent="onContextMenu($event, track)">
         <input v-if="selecting" type="checkbox" class="select-box" :checked="isSelected(track.id)" :aria-label="track.title" tabindex="-1" @click.stop="toggle(track.id)">
+        <!-- the track number, unless the track has none -->
+        <span v-if="track.trackNumber" class="number">{{ track.trackNumber }}</span>
         <CoverImage :src="coverSrc(track)" />
         <span class="col">
           <span class="title">{{ track.title }}</span>
@@ -38,6 +40,7 @@
 
     <BulkBar :selecting="selecting" :count="count" :total="tracks.length" @start="start" @stop="stop" @select-all="toggleAll" @actions="onBulkActions" />
   </div>
+  <LoadError v-else :error="error" />
 </template>
 
 <script lang="ts" setup>
@@ -60,7 +63,6 @@ const { data: detail, error } = await useAsyncData<LibraryAlbumDetail>(`library-
     ? $fetch(`/api/v1/library/album/${aid}`, { headers: { Authorization: token.value } })
     : Promise.reject(new Error("Not authenticated"));
 });
-useLoadErrorToast(error);
 
 const tracks = computed<MediaRow[]>(() => detail.value?.tracks ?? []);
 
@@ -130,6 +132,9 @@ function onBulkActions(e: MouseEvent) {
   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
   void openBulkMenu({ x: rect.left, y: rect.top }, tracks.value.filter((track) => chosen.has(track.id)).map((media) => ({ kind: "track" as const, media })), { onChanged });
 }
+
+// the screen takes the cover's colour
+useCoverTint(() => detail.value?.album as (AlbumRow & { imageColors?: string[], textColor?: string }) | undefined);
 </script>
 
 <style scoped>
@@ -185,6 +190,15 @@ function onBulkActions(e: MouseEvent) {
   cursor: pointer;
 }
 
+.libalbum .tracks li .number {
+  min-width: 1.6em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-discy);
+  font-size: 0.8em;
+  flex-shrink: 0;
+}
+
 .libalbum .tracks li.playing .title {
   color: #ffffff;
   font-weight: 700;
@@ -202,7 +216,7 @@ function onBulkActions(e: MouseEvent) {
 }
 
 .libalbum .tracks li:not(:last-child) {
-  border-bottom: 1px solid #666666;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 75%, transparent);
 }
 
 .libalbum .tracks img {
@@ -228,18 +242,18 @@ function onBulkActions(e: MouseEvent) {
 
 .libalbum .tracks .artist {
   font-size: 0.85em;
-  color: #666666;
+  color: color-mix(in srgb, currentColor 75%, transparent);
 }
 
 .libalbum .tracks .filesize {
-  color: #666666;
+  color: color-mix(in srgb, currentColor 75%, transparent);
   font-variant-numeric: tabular-nums;
   font-family: var(--font-discy);
   font-size: 0.7em;
 }
 
 .libalbum .tracks .duration {
-  color: #666666;
+  color: color-mix(in srgb, currentColor 75%, transparent);
   font-variant-numeric: tabular-nums;
   font-family: var(--font-discy);
   font-size: 0.7em;
@@ -251,7 +265,7 @@ function onBulkActions(e: MouseEvent) {
   justify-content: center;
   background: none;
   border: none;
-  color: #666666;
+  color: color-mix(in srgb, currentColor 75%, transparent);
   cursor: pointer;
   padding: 4px;
 }

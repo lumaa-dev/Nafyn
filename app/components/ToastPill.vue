@@ -31,7 +31,7 @@ const props = defineProps<{ toast: Toast, underLast: boolean; }>();
 }
 
 .toast[nafyn-tint="green"] {
-  background: #93c47d4d;
+  background: #66e0864d;
 }
 
 .toast[nafyn-tint="red"] {

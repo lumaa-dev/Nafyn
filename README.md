@@ -318,6 +318,8 @@ bun run openapi   # write the OpenAPI spec to openapi/nafyn.openapi.json (--out 
 
 Tests (`bun run test`) need no network. Lint with `bunx eslint .` (the config is generated: run `nuxt prepare` first if it is missing). The server layout and the conventions behind it are written down in [`CLAUDE.md`](CLAUDE.md); page route prefixes in [`app/pages/README.md`](app/pages/README.md).
 
+Nafyn's look and behaviour follow a set of design guidelines, [`DESIGN.md`](DESIGN.md), which apply to the web app and to the [iOS app](https://github.com/lumaa-dev/NafynApp) alike. It is written and edited by hand by the maintainer: read it before changing anything users see or touch, follow it over what the code currently does.
+
 Built on Nuxt 4.4.8. See [Nuxt docs](https://nuxt.com/docs/getting-started/introduction) for framework details.
 
 ## License

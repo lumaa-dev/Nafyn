@@ -29,6 +29,7 @@
     </div>
     <p class="empty" v-else>{{ $t('profile.noPlaylists') }}</p>
   </div>
+  <LoadError v-else :error="error" />
 </template>
 
 <script lang="ts" setup>
@@ -50,7 +51,6 @@ interface PublicProfile {
 const username = useRoute().params.username as string;
 
 const { data: profile, error } = await useAsyncData<PublicProfile>(`profile-${username}`, () => $fetch(`/api/v1/profile/${encodeURIComponent(username)}`));
-useLoadErrorToast(error);
 
 const name = computed(() => profile.value?.displayName ?? profile.value?.username ?? username);
 const avatarStyle = computed(() => profile.value?.avatar

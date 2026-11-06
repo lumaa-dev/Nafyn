@@ -4,6 +4,7 @@
     "unknownAlbum": "Unknown Album",
     "loadingMore": "Loading more...",
     "cancel": "Cancel",
+    "close": "Close",
     "error": "Something went wrong"
   },
   "sidebar": {
@@ -57,7 +58,7 @@
       "title": "Albums",
       "empty": "No albums in your library yet."
     },
-    "recentlyPlayed": "Recently played",
+    "recentlyPlayed": "Recently Played",
     "recentlyPlayedEmpty": "Nothing played yet.",
     "recentType": {
       "track": "Track",
@@ -192,7 +193,7 @@
       "error": "Couldn't save your profile",
       "logout": "Log out",
       "publicProfile": "View my public profile",
-      "publicProfileNote": "Your profile page is public: anyone with the link sees your name, avatar, the number of tracks in your library and your public playlists."
+      "publicProfileNote": "Your profile is public: anyone with the link sees your name, avatar, the number of tracks in your library and your public playlists."
     },
     "accounts": {
       "title": "Accounts",
@@ -339,7 +340,9 @@
       "fileSizeLocked": "Only available to accounts with the Manage music permission.",
       "duration": "Show track duration in track lists",
       "dyslexicFont": "Use the OpenDyslexic font",
-      "dyslexicFontNote": "Replaces every font in Nafyn with OpenDyslexic, made to be easier to read with dyslexia. Saved in this browser only."
+      "dyslexicFontNote": "Replaces every font in Nafyn with OpenDyslexic, made to be easier to read with dyslexia. Saved in this browser only.",
+      "lyricsSansSerif": "Show lyrics in sans-serif",
+      "lyricsSansSerifNote": "Switches the lyrics from Instrument Serif to the default sans-serif font. Saved in this browser only."
     },
     "playback": {
       "title": "Playback",
@@ -470,6 +473,7 @@
     "unmute": "Unmute",
     "volume": "Volume",
     "showQueue": "Show queue",
+    "song": "Song",
     "queue": "Queue",
     "lyrics": "Lyrics",
     "queueEmpty": "Queue is empty.",
@@ -570,6 +574,7 @@
       "play": "Play highlight reel",
       "close": "Close",
       "tapHint": "Tap to continue",
+      "clickHint": "Click to continue",
       "intro": "Your music year",
       "minutes": "Minutes listened",
       "uniqueTracks": "Different tracks",

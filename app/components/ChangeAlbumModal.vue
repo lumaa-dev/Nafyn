@@ -1,5 +1,8 @@
 <template>
-  <Modal v-model="open" :title="$t('album.change.title')">
+  <Modal v-model="open" size="large" :title="$t('album.change.title')">
+    <template #toolbar>
+      <button type="button" filled :disabled="!selected || selected.id === media?.albumId || moving" @click="move">{{ moving ? $t('album.change.moving') : $t('album.change.move') }}</button>
+    </template>
     <div class="change-album">
       <p v-if="media" class="intro">{{ $t('album.change.intro', { title: media.title, artist: media.artistName }) }}</p>
 
@@ -25,11 +28,6 @@
       </ul>
 
       <p v-if="selected" class="warn">{{ $t('album.change.confirm', { title: media?.title ?? '', album: selected.title }) }}</p>
-
-      <div class="actions">
-        <button type="button" filled="hollow" @click="open = false">{{ $t('common.cancel') }}</button>
-        <button type="button" filled :disabled="!selected || selected.id === media?.albumId || moving" @click="move">{{ moving ? $t('album.change.moving') : $t('album.change.move') }}</button>
-      </div>
     </div>
   </Modal>
 </template>
@@ -229,10 +227,4 @@ async function move() {
   font-weight: 700;
 }
 
-.change-album .actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 10px;
-}
 </style>

@@ -29,6 +29,7 @@
       <span> &middot; <a :href="`https://musicbrainz.org/recording/${track.id}`">{{ $t('track.viewInMusicbrainz') }}</a></span>
     </p>
   </div>
+  <LoadError v-else :error="error" />
 </template>
 
 <script lang="ts" setup>
@@ -54,7 +55,6 @@ const { data: track, error } = await useAsyncData<TrackDetail>(`track-${tid}`, (
     ? $fetch(`/api/v1/track/${tid}`, { headers: { Authorization: token.value } })
     : Promise.reject(new Error("Not authenticated"));
 }, { deep: true });
-useLoadErrorToast(error);
 
 function formatDate(date: string | Date): string {
   return new Date(date).toLocaleDateString(locale.value, { year: "numeric", month: "long", day: "numeric" });
@@ -91,6 +91,9 @@ async function requestTrack() {
   current.requested = true;
   if (!await request(current.id, "track", current.title)) current.requested = false;
 }
+
+// the screen takes the cover's colour
+useCoverTint(() => track.value);
 </script>
 
 <style scoped>
@@ -143,7 +146,7 @@ async function requestTrack() {
   font-size: 0.75em;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #666666;
+  color: color-mix(in srgb, currentColor 75%, transparent);
 }
 
 .track .upcoming .value {
@@ -166,7 +169,7 @@ async function requestTrack() {
 
 .track .album-link {
   font-size: 0.85em;
-  color: #666666;
+  color: color-mix(in srgb, currentColor 75%, transparent);
   text-decoration: none;
   margin-top: 4px;
 }
@@ -177,7 +180,7 @@ async function requestTrack() {
 
 .track .details {
   font-size: 0.85em;
-  color: #666666;
+  color: color-mix(in srgb, currentColor 75%, transparent);
   margin: 1em 0;
 }
 

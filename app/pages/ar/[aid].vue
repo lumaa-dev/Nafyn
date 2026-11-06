@@ -22,6 +22,7 @@
       <a :href="`https://musicbrainz.org/artist/${artist.id}`">{{ $t('artist.viewInMusicbrainz') }}</a>
     </p>
   </div>
+  <LoadError v-else :error="error" />
 </template>
 
 <script lang="ts" setup>
@@ -37,7 +38,6 @@ const { data: artist, error } = await useAsyncData<ArtistDetail>(`artist-${aid}`
     ? $fetch(`/api/v1/artist/${aid}`, { headers: { Authorization: token.value } })
     : Promise.reject(new Error("Not authenticated"));
 });
-useLoadErrorToast(error);
 </script>
 
 <style scoped>

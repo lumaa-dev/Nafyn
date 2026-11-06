@@ -23,6 +23,7 @@
       </NuxtLink>
     </div>
     <p class="empty" v-else-if="!initialLoading">{{ $t('playlist.empty') }}</p>
+    <LoadError :error="listError" />
     <div ref="sentinel" class="scroll-sentinel" />
     <p class="loading-more" v-if="loadingMore">{{ $t('common.loadingMore') }}</p>
 
@@ -69,7 +70,7 @@ interface PlaylistRow {
 const { token: tokenRef } = useAuthToken();
 const token = tokenRef.value ?? "";
 
-const { items: playlists, initialLoading, loadingMore, sentinel, loadMore, reset } = useInfiniteList<PlaylistRow>((page, limit) => {
+const { items: playlists, error: listError, initialLoading, loadingMore, sentinel, loadMore, reset } = useInfiniteList<PlaylistRow>((page, limit) => {
   return token
     ? $fetch("/api/v1/playlist", { headers: { Authorization: token }, query: { page, limit } })
     : Promise.resolve({ items: [], page, limit, total: 0, hasMore: false });

@@ -2,6 +2,7 @@
   <div class="search">
     <!-- <h1>"{{ route.query.q }}"</h1> -->
     <p v-if="searching" class="status" role="status">{{ $t('search.loading') }}</p>
+    <LoadError :error="searchError" />
 
     <!-- the search engine's confident top match: above everything -->
     <span class="results best" v-if="best">
@@ -69,7 +70,6 @@ const { data: results, status: searchStatus, error: searchError } = useLazyAsync
     ? $fetch<SearchResponse>("/api/v1/search", { headers: { Authorization: token.value }, query: { q } })
     : Promise.resolve(emptyResponse());
 }, { server: false, default: emptyResponse, watch: [() => route.query.q] });
-useLoadErrorToast(searchError);
 
 // Artist pictures are not part of the search response (finding one can take three upstream calls): the ones the
 // server already knew come with it, the others are fetched here a few at a time and fill in as they arrive.

@@ -14,6 +14,7 @@
     <div class="err" v-else-if="!initialLoading">
       <p>{{ $t('requests.empty') }}</p>
     </div>
+    <LoadError :error="listError" />
     <div ref="sentinel" class="scroll-sentinel" />
     <p class="loading-more" v-if="loadingMore">{{ $t('common.loadingMore') }}</p>
   </div>
@@ -38,7 +39,7 @@ function filterQuery(): Record<string, string> {
   return Object.fromEntries(GROUPS.filter((group) => !filters.value.includes(group)).map((group) => [group, "false"]));
 }
 
-const { items: requests, initialLoading, loadingMore, sentinel, loadMore, reset } = useInfiniteList<NafynRequest>((page, limit) => {
+const { items: requests, error: listError, initialLoading, loadingMore, sentinel, loadMore, reset } = useInfiniteList<NafynRequest>((page, limit) => {
   return token.value
     ? $fetch("/api/v1/requests", { headers: { Authorization: token.value }, query: { page, limit, ...filterQuery() } })
     : Promise.resolve({ items: [], page, limit, total: 0, hasMore: false });

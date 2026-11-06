@@ -1,6 +1,8 @@
 <template>
-  <div ref="scrollContainer" class="lyrics-panel np-quiet-scroll">
+  <div ref="scrollContainer" class="lyrics-panel np-quiet-scroll" :class="{ sans: sansSerif }">
     <p v-if="loading" class="status">{{ $t('player.lyricsLoading') }}</p>
+    <!-- a failed request (anything but 200 / 404) is told where the lyrics should have been, not as a toast -->
+    <p v-else-if="errorMessage" class="status" role="alert">{{ errorMessage }}</p>
     <p v-else-if="!paragraphs || !kind" class="status">{{ $t('player.lyricsUnavailable') }}</p>
 
     <pre v-else-if="kind === 'static'" class="static">{{ staticText }}</pre>
@@ -40,6 +42,8 @@ interface FlatLine extends LyricLine {
 type LyricsKind = 'static' | 'paragraph' | 'beat';
 
 const { currentTrack, state } = useUnity();
+const sansSerif = useLyricsSansSerif();
+const errorMessage = ref<string | null>(null);
 
 const paragraphs = ref<LyricParagraphs | null>(null);
 const loading = ref(false);
@@ -179,6 +183,7 @@ async function loadLyrics(id: string | null) {
   observer?.disconnect();
   lineRefs = [];
   paragraphs.value = null;
+  errorMessage.value = null;
   autoScrollEnabled.value = true;
 
   if (!id) return;
@@ -195,8 +200,9 @@ async function loadLyrics(id: string | null) {
   } catch (e) {
     if (seq !== requestSeq) return;
     paragraphs.value = null;
-    // a 404 is the normal "no lyrics for this track"; anything else (rate limit, provider down, timeout) is a failure worth saying
-    if ((e as { statusCode?: number })?.statusCode !== 404) useToast().sendError(null, e);
+    // a 404 is the normal "no lyrics for this track"; anything else (rate limit, provider down, timeout) is a failure
+    // worth saying - in the panel itself, since the screen change (the lyrics) is what didn't happen
+    if ((e as { statusCode?: number })?.statusCode !== 404) errorMessage.value = apiErrorMessage(e);
   } finally {
     if (seq === requestSeq) loading.value = false;
   }
@@ -227,6 +233,12 @@ onUnmounted(() => {
   overflow-y: auto;
   height: 100%;
   mask-image: linear-gradient(to bottom, transparent 0, #000 30px, #000 calc(100% - 30px), transparent 100%);
+}
+
+/* Lyrics are Instrument Serif; the setting switches them to the default sans-serif */
+.lyrics-panel.sans,
+.lyrics-panel.sans .static {
+  font-family: sans-serif;
 }
 
 .lyrics-panel .status {

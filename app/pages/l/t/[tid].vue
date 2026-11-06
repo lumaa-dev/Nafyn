@@ -34,6 +34,7 @@
     <PlaylistPickerModal v-model="showPicker" :media-ids="track ? [track.id] : []" />
     <MediaEditModal v-model="showEdit" :media="track ?? null" @saved="onEdited" />
   </div>
+  <LoadError v-else :error="error" />
 </template>
 
 <script lang="ts" setup>
@@ -53,7 +54,6 @@ const { data: track, error } = await useAsyncData<MediaRow>(`library-track-${tid
     ? $fetch(`/api/v1/library/track/${tid}`, { headers: { Authorization: token.value } })
     : Promise.reject(new Error("Not authenticated"));
 });
-useLoadErrorToast(error);
 
 const { play } = useUnity();
 
@@ -91,6 +91,9 @@ function formatDate(date: string | number | Date): string {
   return new Date(date).toLocaleDateString(locale.value, { year: "numeric", month: "long", day: "numeric" });
 }
 
+
+// the screen takes the cover's colour
+useCoverTint(() => track.value as (MediaRow & { imageColors?: string[], textColor?: string }) | null);
 </script>
 
 <style scoped>
@@ -144,7 +147,8 @@ function formatDate(date: string | number | Date): string {
 
 .track .actions {
   display: flex;
-  align-items: center;
+  /* buttons side by side are the same height (DESIGN.md "Buttons"), the icon-only ones included */
+  align-items: stretch;
   gap: 10px;
   margin: 1.2em 0;
 }

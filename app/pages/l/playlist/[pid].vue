@@ -92,12 +92,16 @@
       </li>
     </ol>
     <p class="empty" v-else>{{ $t('playlist.tracksEmpty') }}</p>
+    <LoadError :error="listError" />
     <div v-if="sortMode === 'manual'" ref="sentinel" class="scroll-sentinel" />
     <p class="loading-more" v-if="loadingMoreEntries">{{ $t('common.loadingMore') }}</p>
 
     <AddTracksModal v-model="showAddTracks" :playlist-id="pid" :existing-media-ids="tracks.map((t) => t.id)" @added="refresh" />
 
-    <Modal v-model="showEdit" :title="$t('playlist.edit.open')">
+    <Modal v-model="showEdit" size="large" :title="$t('playlist.edit.open')">
+      <template #toolbar>
+        <button type="button" filled :disabled="!editTitle.trim()" @click="saveEdit">{{ $t('playlist.edit.save') }}</button>
+      </template>
       <div class="modalform">
         <label for="etitle">{{ $t('playlist.form.title') }}</label>
         <input id="etitle" v-model="editTitle" type="text" maxlength="100">
@@ -111,8 +115,6 @@
           <option value="public">{{ $t('playlist.privacy.public') }}</option>
         </select>
 
-        <button type="button" filled :disabled="!editTitle.trim()" @click="saveEdit">{{ $t('playlist.edit.save') }}</button>
-        <button type="button" filled="hollow" @click="showEdit = false">{{ $t('playlist.picker.cancel') }}</button>
       </div>
     </Modal>
 
@@ -128,20 +130,21 @@
         <label for="inviteName">{{ $t('playlist.members.inviteLabel') }}</label>
         <input id="inviteName" v-model="inviteUsername" type="text" :placeholder="$t('playlist.members.invitePlaceholder')">
         <button type="button" filled :disabled="!inviteUsername.trim()" @click="invite">{{ $t('playlist.members.invite') }}</button>
-        <button type="button" filled="hollow" @click="showMembers = false">{{ $t('playlist.picker.cancel') }}</button>
       </div>
     </Modal>
 
     <Modal v-model="confirmDelete" :title="$t('playlist.delete.confirmTitle')">
+      <template #toolbar>
+        <button type="button" filled class="danger" @click="deletePlaylist">{{ $t('playlist.delete.open') }}</button>
+      </template>
       <div class="modalform">
         <p>{{ $t('playlist.delete.confirmMessage') }}</p>
-        <button type="button" filled class="danger" @click="deletePlaylist">{{ $t('playlist.delete.open') }}</button>
-        <button type="button" filled="hollow" @click="confirmDelete = false">{{ $t('playlist.picker.cancel') }}</button>
       </div>
     </Modal>
 
     <BulkBar v-if="viewer.userId" :selecting="selecting" :count="count" :total="displayEntries.length" @start="start" @stop="stop" @select-all="toggleAll" @actions="onBulkActions" />
   </div>
+  <LoadError v-else :error="error" />
 </template>
 
 <script lang="ts" setup>
@@ -202,7 +205,6 @@ interface PlaylistEntry {
 const { data: detail, refresh, error } = await useAsyncData<(PlaylistDetail & { entriesTotal: number; entriesHasMore: boolean }) | null>(`playlist-${pid}`, () => {
   return $fetch(`/api/v1/playlist/${pid}`, { headers: token ? { Authorization: token } : {} });
 });
-useLoadErrorToast(error);
 
 const viewer = computed(() => detail.value?.viewer ?? { userId: null, isOwner: false, isMember: false });
 
@@ -253,7 +255,7 @@ useHead(() => ({
 }));
 
 // entries page further beyond what's embedded in the playlist detail response (server/api/v1/playlist/[pid]/tracks)
-const { items: entries, page: entriesPage, hasMore: entriesHasMore, loadingMore: loadingMoreEntries, sentinel, loadMore: loadMoreEntries } = useInfiniteList<PlaylistEntry>((page, limit) => {
+const { items: entries, error: listError, page: entriesPage, hasMore: entriesHasMore, loadingMore: loadingMoreEntries, sentinel, loadMore: loadMoreEntries } = useInfiniteList<PlaylistEntry>((page, limit) => {
   return $fetch(`/api/v1/playlist/${pid}/tracks`, { headers: token ? { Authorization: token } : {}, query: { page, limit } });
 });
 
@@ -621,8 +623,12 @@ function sendError(e: unknown) {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
+  /* buttons side by side are the same height: this takes its siblings' (stretch) and stays a circle */
+  width: auto;
+  height: auto;
+  min-width: 44px;
+  min-height: 44px;
+  aspect-ratio: 1 / 1;
   padding: 0;
   border-radius: 50%;
   border: 1px solid #ffffffae;
@@ -645,7 +651,8 @@ function sendError(e: unknown) {
   align-items: center;
   justify-content: center;
   width: 54px;
-  height: 38px;
+  height: auto;
+  min-height: 44px;
   padding: 0;
   border-radius: 12px;
   border: 1px solid #333333;

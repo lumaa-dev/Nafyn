@@ -25,6 +25,7 @@
       </li>
     </ol>
     <p class="empty" v-else-if="!initialLoading">{{ $t('library.all.empty') }}</p>
+    <LoadError :error="listError" />
     <div ref="sentinel" class="scroll-sentinel" />
     <p class="loading-more" v-if="loadingMore">{{ $t('common.loadingMore') }}</p>
 
@@ -45,7 +46,7 @@ const appearance = useAppearanceSettings();
 const { user: me, ensureLoaded } = useCurrentUser();
 await ensureLoaded();
 
-const { items: tracks, initialLoading, loadingMore, sentinel, loadMore, reset } = useInfiniteList<AllMediaRow>((page, limit) => {
+const { items: tracks, error: listError, initialLoading, loadingMore, sentinel, loadMore, reset } = useInfiniteList<AllMediaRow>((page, limit) => {
   return token.value
     ? $fetch("/api/v1/library/all", { headers: { Authorization: token.value }, query: { page, limit } })
     : Promise.resolve({ items: [], page, limit, total: 0, hasMore: false });

@@ -120,9 +120,11 @@ function onMenu(event: MouseEvent, pin: PinEntry) {
   white-space: nowrap;
 }
 
+/* DESIGN.md "Library": pinned elements are always a 3-column grid; on a narrow screen a card shows its cover and
+   name only */
 @media screen and (max-width: 520px) {
-  .pinned-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .pin-sub {
+    display: none;
   }
 }
 </style>

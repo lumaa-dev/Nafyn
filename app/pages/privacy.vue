@@ -1,5 +1,6 @@
 <template>
   <article class="privacy">
+    <LoadError :error="error" />
     <!-- deliberately a div: Header.vue's style block is global, so a semantic header element here would
          pick up its fixed 15vh bar styling and sit on top of the real Header (see CLAUDE.md) -->
     <div class="intro">
@@ -64,7 +65,6 @@ const contact = config.public.privacyContact as string;
 const { data: doc, error } = await useFetch<PrivacyDoc | null>("/api/v1/privacy", {
     query: { locale }
 });
-useLoadErrorToast(error);
 
 useHead(() => ({ title: `Nafyn - ${doc.value?.title ?? "Privacy"}` }));
 </script>

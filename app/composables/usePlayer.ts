@@ -792,6 +792,19 @@ export const usePlayer = () => {
         state.value.repeat = state.value.repeat === "off" ? "queue" : state.value.repeat === "queue" ? "track" : "off";
     }
 
+    // reorders what plays after the current track, at random (Fisher-Yates); the current track, the tracks before
+    // it and the history stay where they are
+    function shuffleQueue() {
+        const s = state.value;
+        const start = upcomingStart(s);
+        for (let i = s.queue.length - 1; i > start; i--) {
+            const j = start + Math.floor(Math.random() * (i - start + 1));
+            const a = s.queue[i]!;
+            s.queue[i] = s.queue[j]!;
+            s.queue[j] = a;
+        }
+    }
+
     function setRepeat(mode: RepeatMode) {
         state.value.repeat = mode;
     }
@@ -914,6 +927,7 @@ export const usePlayer = () => {
         clearHistory,
         restoreSession,
         cycleRepeat,
+        shuffleQueue,
         setRepeat
     };
 }

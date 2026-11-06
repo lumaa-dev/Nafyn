@@ -24,7 +24,7 @@
     <div class="body">
       <span ref="controls" class="controls">
         <button :filled="state.repeat !== 'off' ? '' : 'hollow'" @click="cycleRepeat()">{{ repeatTitle }}</button>
-        <button filled="hollow" disabled>{{ $t('player.shuffle') }}</button>
+        <button filled="hollow" :disabled="displayed.length < 2" @click="shuffleQueue()">{{ $t('player.shuffle') }}</button>
       </span>
 
       <p v-if="displayed.length === 0" class="empty">{{ $t('player.queueEmpty') }}</p>
@@ -64,7 +64,7 @@ interface QueueEntry {
 }
 
 const { t } = useI18n();
-const { state, playFromQueue, playFromHistory, removeFromQueue, moveInQueue, cycleRepeat } = useUnity();
+const { state, playFromQueue, playFromHistory, removeFromQueue, moveInQueue, cycleRepeat, shuffleQueue } = useUnity();
 const historyEnabled = useHistoryEnabled();
 // unique per instance: the page panel and the player bar's dropdown can both be mounted
 const hintId = useId();
@@ -292,6 +292,11 @@ function focusRow(pos: number) {
   /* the history above is kept in place by hand (see the watcher), the browser must not adjust on top of it */
   overflow-anchor: none;
   color: var(--np-text, #ffffff);
+  /* DESIGN.md "Now Playing": a small smooth gradient on the top and bottom edges, so the rows fade out instead of
+     being cut off. The padding keeps the first and last row clear of the fade at rest. */
+  padding-block: 24px;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
 }
 
 .queue-panel .heading {

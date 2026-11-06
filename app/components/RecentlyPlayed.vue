@@ -6,6 +6,7 @@
       <p class="subtitle" v-if="item.subtitle">{{ item.subtitle }}</p>
     </NuxtLink>
   </div>
+  <LoadError v-else-if="error" :error="error" />
   <p class="recent-empty" v-else>{{ $t("library.recentlyPlayedEmpty") }}</p>
 </template>
 
@@ -26,7 +27,6 @@ const { data: recentlyPlayed, error, refresh } = await useAsyncData<RecentlyPlay
     ? $fetch("/api/v1/library/recently-played", { headers: { Authorization: token } })
     : Promise.resolve([]);
 }, { default: () => [] });
-useLoadErrorToast(error);
 
 // the same menu as the page the element lives on (useMediaMenu); the shelf only holds ids, so what the menu
 // needs is read first
@@ -65,7 +65,7 @@ function entryCover(item: RecentlyPlayedEntry): string {
 
 <style>
 .recent-empty {
-  color: #666666;
+  color: color-mix(in srgb, currentColor 80%, transparent);
 }
 
 .recent.scroll {
@@ -79,8 +79,8 @@ function entryCover(item: RecentlyPlayedEntry): string {
 
 .recent.grid {
   display: grid;
-  /* container caps at 1200px (see library-home/index), so a 200px min column naturally tops out at 5 columns */
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  /* DESIGN.md "Library": recently played media is a 2-column grid */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
 }
 
@@ -96,8 +96,8 @@ function entryCover(item: RecentlyPlayedEntry): string {
 }
 
 .recent.grid .recent-card {
-  min-width: 100px;
-  width: fit-content;
+  min-width: 0;
+  width: 100%;
 }
 
 .recent-card img {
@@ -122,20 +122,12 @@ function entryCover(item: RecentlyPlayedEntry): string {
 
 .recent-card .subtitle {
   font-size: 0.85em;
-  color: #666666;
+  color: color-mix(in srgb, currentColor 80%, transparent);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 @media screen and (max-width: 800px) {
-  .recent.grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  }
-
-  .recent-card img {
-    width: 150px;
-    height: 150px;
-  }
 }
 </style>

@@ -20,6 +20,7 @@
       </NuxtLink>
     </div>
     <p class="empty" v-else-if="!initialLoading">{{ search ? $t('library.search.noResults') : $t('library.albums.empty') }}</p>
+    <LoadError :error="listError" />
     <div ref="sentinel" class="scroll-sentinel" />
     <p class="loading-more" v-if="loadingMore">{{ $t('common.loadingMore') }}</p>
 
@@ -42,7 +43,7 @@ const { token } = useAuthToken();
 const search = ref("");
 const sort = ref<LibrarySort>("added");
 
-const { items: albums, initialLoading, loadingMore, sentinel, loadMore, reset } = useInfiniteList<AlbumRow>((page, limit) => {
+const { items: albums, error: listError, initialLoading, loadingMore, sentinel, loadMore, reset } = useInfiniteList<AlbumRow>((page, limit) => {
   return token.value
     ? $fetch("/api/v1/library/albums", { headers: { Authorization: token.value }, query: { page, limit, q: search.value || undefined, sort: sort.value } })
     : Promise.resolve({ items: [], page, limit, total: 0, hasMore: false });

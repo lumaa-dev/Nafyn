@@ -1,6 +1,10 @@
 <template>
-  <Modal v-model="open" :title="isBulk ? $t('edit.titleMany', { count: list.length }) : $t('edit.title')">
-    <form class="media-edit" @submit.prevent="save">
+  <Modal v-model="open" size="large" :title="isBulk ? $t('edit.titleMany', { count: list.length }) : $t('edit.title')">
+    <!-- the primary action sits in the sheet's toolbar (DESIGN.md "Toolbars"); `form` ties it to the form below -->
+    <template #toolbar>
+      <button type="submit" form="media-edit-form" filled :disabled="saving">{{ saving ? $t('edit.saving') : $t('edit.save') }}</button>
+    </template>
+    <form id="media-edit-form" class="media-edit" @submit.prevent="save">
       <div class="cover-field">
         <img :src="coverPreview" @error="($event.target as HTMLImageElement).src = noCoverImage" draggable="false" />
         <button type="button" class="change-cover" :aria-expanded="showCovers" @click="toggleCovers">{{ $t('edit.changeCover') }}</button>
@@ -60,11 +64,6 @@
           <textarea v-model="form.lyrics" rows="8" :placeholder="$t('edit.lyricsPlaceholder')" />
         </label>
       </template>
-
-      <div class="actions">
-        <button type="button" filled="hollow" @click="open = false">{{ $t('common.cancel') }}</button>
-        <button type="submit" filled :disabled="saving">{{ saving ? $t('edit.saving') : $t('edit.save') }}</button>
-      </div>
     </form>
   </Modal>
 </template>
@@ -513,15 +512,4 @@ async function save() {
   align-self: center;
 }
 
-.media-edit .actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-}
-
-.media-edit .actions button {
-  flex-shrink: 1;
-  min-width: 0;
-  padding: 0.6em 1.6em;
-}
 </style>

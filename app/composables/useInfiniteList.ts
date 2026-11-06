@@ -14,6 +14,8 @@ export function useInfiniteList<T>(fetchPage: (page: number, limit: number) => P
   const hasMore = ref(true);
   const loadingMore = ref(false);
   const initialLoading = ref(true);
+  // the last failure: shown by the page where the list should have continued (<LoadError>), not as a toast
+  const error = ref<unknown>(null);
 
   // bumped by reset(): a page that was already in flight when the list was reset belongs to the old query, and
   // must neither land in the new list nor flip its loading flags
@@ -22,6 +24,7 @@ export function useInfiniteList<T>(fetchPage: (page: number, limit: number) => P
   async function loadMore() {
     if (loadingMore.value || !hasMore.value) return;
     loadingMore.value = true;
+    error.value = null;
     const mine = generation;
 
     try {
@@ -32,11 +35,9 @@ export function useInfiniteList<T>(fetchPage: (page: number, limit: number) => P
       hasMore.value = result.hasMore;
     } catch (e) {
       if (mine !== generation) return;
-      // stop paging: the scroll sentinel would otherwise retry on every intersection, a toast per attempt.
-      // reset() starts over. Server-side the failure isn't toasted (it would be serialised into the page
-      // state without its dismiss timer) - the client repeats this same load while hydrating and reports it.
+      // stop paging: the scroll sentinel would otherwise retry on every intersection. reset() starts over.
       hasMore.value = false;
-      if (import.meta.client) useToast().sendError(null, e);
+      error.value = e;
     } finally {
       if (mine === generation) {
         loadingMore.value = false;
@@ -75,5 +76,5 @@ export function useInfiniteList<T>(fetchPage: (page: number, limit: number) => P
   watch(sentinel, (el) => observe(el));
   onUnmounted(() => observer?.disconnect());
 
-  return { items, page, hasMore, loadingMore, initialLoading, loadMore, reset, sentinel };
+  return { items, page, hasMore, loadingMore, initialLoading, error, loadMore, reset, sentinel };
 }

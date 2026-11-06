@@ -1,5 +1,5 @@
 <template>
-  <Modal :model-value="modelValue" @update:model-value="emit('update:modelValue', $event)" :title="$t('playlist.addTracks.title')">
+  <Modal :model-value="modelValue" size="large" @update:model-value="emit('update:modelValue', $event)" :title="$t('playlist.addTracks.title')">
     <p v-if="availableTracks.length === 0" class="picker-empty">{{ $t('playlist.addTracks.empty') }}</p>
     <ul v-else class="plist">
       <li v-for="track in availableTracks" :key="track.id" @click="addTrack(track.id)">
@@ -10,8 +10,6 @@
         </span>
       </li>
     </ul>
-
-    <button type="button" filled="hollow" @click="close">{{ $t('playlist.picker.cancel') }}</button>
   </Modal>
 </template>
 

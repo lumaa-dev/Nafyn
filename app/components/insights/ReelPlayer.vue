@@ -20,7 +20,7 @@
         <p v-if="slide.value && slide.kind === 'outro'" class="big">{{ slide.value }}</p>
       </div>
 
-      <p class="hint">{{ $t('insights.reel.tapHint') }}</p>
+      <p class="hint">{{ $t(hasPointer ? 'insights.reel.clickHint' : 'insights.reel.tapHint') }}</p>
     </div>
   </Teleport>
 </template>
@@ -30,6 +30,10 @@ import noCover from '~/assets/no-cover.png';
 import { setTrackingSuppressed } from '~/composables/usePlayTracking';
 import type { ReelSlide } from '~/composables/useInsights';
 import { useAuthToken } from '~/composables/useAuthToken';
+
+// "Click" on a device with a pointer, "Tap" on a touch screen - never the other way round (DESIGN.md "Buttons")
+const hasPointer = ref(false);
+onMounted(() => { hasPointer.value = window.matchMedia('(pointer: fine)').matches; });
 
 // The in-app highlight reel: a tap-through story of the year's headline numbers, with a short excerpt of
 // each top track playing underneath its slide.

@@ -1,11 +1,12 @@
 <template>
   <div class="library-home">
+    <!-- DESIGN.md "Library": pinned elements (3 columns), the navigation buttons, then recently played (2 columns) -->
+    <PinnedGrid />
     <div class="links">
       <NuxtLink to="/l/albums">{{ $t("sidebar.albums") }}</NuxtLink>
       <NuxtLink to="/l/tracks">{{ $t("sidebar.tracks") }}</NuxtLink>
       <NuxtLink to="/l/playlists">{{ $t("sidebar.playlists") }}</NuxtLink>
     </div>
-    <PinnedGrid />
     <h1 class="sp">{{ $t("library.recentlyPlayed") }}</h1>
     <RecentlyPlayed variant="grid" />
   </div>
@@ -35,16 +36,16 @@ import PinnedGrid from '~/components/PinnedGrid.vue';
 .links > a::before {
   content: ">";
   font-family: "Instrument-Serif";
-  color: #666666;
+  color: color-mix(in srgb, currentColor 80%, transparent);
   position: relative;
-  left: 64vw;
+  left: min(64vw, 900px);
   top: 0;
 }
 
+/* this element IS `.view` (app.vue): its margin clears the Header and the sidebar column, so only the size is set */
 .library-home {
-  width: 70vw;
   max-width: 1200px;
-  margin: calc(20vh - 10px) auto;
+  padding-top: 40px;
 }
 
 .sp {
@@ -52,10 +53,6 @@ import PinnedGrid from '~/components/PinnedGrid.vue';
 }
 
 @media screen and (max-width: 800px) {
-  .library-home {
-    width: 90vw;
-  }
-
   .links > a::before {
     left: calc(95vw - 1em);
   }

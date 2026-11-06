@@ -32,6 +32,7 @@
       </li>
     </ol>
     <p class="empty" v-else-if="!initialLoading">{{ search ? $t('library.search.noResults') : $t('library.tracks.empty') }}</p>
+    <LoadError :error="listError" />
     <div ref="sentinel" class="scroll-sentinel" />
     <p class="loading-more" v-if="loadingMore">{{ $t('common.loadingMore') }}</p>
 
@@ -54,7 +55,7 @@ const appearance = useAppearanceSettings();
 const search = ref("");
 const sort = ref<LibrarySort>("added");
 
-const { items: tracks, initialLoading, loadingMore, sentinel, loadMore, reset } = useInfiniteList<MediaRow>((page, limit) => {
+const { items: tracks, error: listError, initialLoading, loadingMore, sentinel, loadMore, reset } = useInfiniteList<MediaRow>((page, limit) => {
   return token.value
     ? $fetch("/api/v1/library/tracks", { headers: { Authorization: token.value }, query: { page, limit, q: search.value || undefined, sort: sort.value } })
     : Promise.resolve({ items: [], page, limit, total: 0, hasMore: false });

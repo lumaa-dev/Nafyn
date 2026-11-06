@@ -4,6 +4,7 @@
     "unknownAlbum": "Album inconnu",
     "loadingMore": "Chargement...",
     "cancel": "Annuler",
+    "close": "Fermer",
     "error": "Une erreur est survenue"
   },
   "sidebar": {
@@ -339,7 +340,9 @@
       "fileSizeLocked": "Réservé aux comptes disposant de la permission Gérer la musique.",
       "duration": "Afficher la durée des titres dans les listes de titres",
       "dyslexicFont": "Utiliser la police OpenDyslexic",
-      "dyslexicFontNote": "Remplace toutes les polices de Nafyn par OpenDyslexic, conçue pour faciliter la lecture en cas de dyslexie. Enregistré dans ce navigateur uniquement."
+      "dyslexicFontNote": "Remplace toutes les polices de Nafyn par OpenDyslexic, conçue pour faciliter la lecture en cas de dyslexie. Enregistré dans ce navigateur uniquement.",
+      "lyricsSansSerif": "Afficher les paroles en sans-serif",
+      "lyricsSansSerifNote": "Remplace Instrument Serif par la police sans-serif par défaut pour les paroles. Enregistré dans ce navigateur uniquement."
     },
     "playback": {
       "title": "Lecture",
@@ -470,6 +473,7 @@
     "unmute": "Rétablir le son",
     "volume": "Volume",
     "showQueue": "Afficher la file d'attente",
+    "song": "Titre",
     "queue": "File d'attente",
     "lyrics": "Paroles",
     "queueEmpty": "La file d'attente est vide.",
@@ -570,6 +574,7 @@
       "play": "Lancer la rétrospective",
       "close": "Fermer",
       "tapHint": "Touchez pour continuer",
+      "clickHint": "Cliquez pour continuer",
       "intro": "Votre année musicale",
       "minutes": "Minutes écoutées",
       "uniqueTracks": "Titres différents",

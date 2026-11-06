@@ -1,42 +1,57 @@
 <template>
-  <div v-if="currentTrack" class="npp np-surface" :style="surfaceVars">
+  <div v-if="currentTrack" class="npp np-surface" :class="{ info: showInfo }" :style="surfaceVars">
     <div class="np-bg" aria-hidden="true">
       <span v-for="(color, i) in bgColors" :key="i" :ref="setBlobRef(i)" class="blob" :style="{ background: color }" />
       <span class="scrim" />
     </div>
 
+    <!-- left panel: the primary song information. It cannot be changed. On a small or vertical screen the song info
+         becomes one of the toggles and the playback controls stay attached at the bottom (DESIGN.md "Now Playing") -->
     <div class="left">
-      <CoverImage class="cover" :src="coverSrc(currentTrack, 500)" eager />
+      <div class="song-info">
+        <CoverImage class="cover" :src="coverSrc(currentTrack, 500)" eager />
 
-      <div class="meta">
-        <h1 class="title">{{ currentTrack.title }}</h1>
-        <p class="artist">{{ currentTrack.artistName }}</p>
+        <div class="meta">
+          <h1 class="title">{{ currentTrack.title }}</h1>
+          <p class="artist">{{ currentTrack.artistName }}</p>
+        </div>
       </div>
 
-      <div class="seek">
-        <span class="time">{{ formatDuration(state.currentTime) }}</span>
-        <input type="range" min="0" :max="state.duration || 0" step="1" :value="state.currentTime" :aria-label="$t('player.seek')" @input="seek(($event.target as HTMLInputElement).valueAsNumber)" />
-        <span class="time">{{ formatDuration(state.duration) }}</span>
-      </div>
+      <div class="transport">
+        <div class="seek">
+          <span class="time">{{ formatDuration(state.currentTime) }}</span>
+          <input type="range" min="0" :max="state.duration || 0" step="1" :value="state.currentTime" :aria-label="$t('player.seek')" @input="seek(($event.target as HTMLInputElement).valueAsNumber)" />
+          <span class="time">{{ formatDuration(state.duration) }}</span>
+        </div>
 
-      <div class="controls">
-        <button filled="hollow" class="round" :disabled="!hasPrev && state.currentTime <= 3" :aria-label="$t('player.previous')" @click="prev()"><img src="../assets/icons/prev.svg" alt="" draggable="false" /></button>
-        <button filled class="round big" :aria-label="state.isPlaying ? $t('player.pause') : $t('player.play')" @click="togglePlay()">
-          <img v-if="state.isPlaying" src="../assets/icons/pause.svg" alt="" draggable="false" />
-          <img v-else src="../assets/icons/play.svg" alt="" draggable="false" />
-        </button>
-        <button filled="hollow" class="round" :disabled="!hasNext" :aria-label="$t('player.next')" @click="next()"><img src="../assets/icons/next.svg" alt="" draggable="false" /></button>
-      </div>
+        <div class="controls">
+          <button filled="hollow" class="round" :disabled="!hasPrev && state.currentTime <= 3" :aria-label="$t('player.previous')" @click="prev()"><img src="../assets/icons/prev.svg" alt="" draggable="false" /></button>
+          <button filled class="round big" :aria-label="state.isPlaying ? $t('player.pause') : $t('player.play')" @click="togglePlay()">
+            <img v-if="state.isPlaying" src="../assets/icons/pause.svg" alt="" draggable="false" />
+            <img v-else src="../assets/icons/play.svg" alt="" draggable="false" />
+          </button>
+          <button filled="hollow" class="round" :disabled="!hasNext" :aria-label="$t('player.next')" @click="next()"><img src="../assets/icons/next.svg" alt="" draggable="false" /></button>
+        </div>
 
-      <div v-if="isRemoteControlled" class="unity-badge">
-        <p>{{ $t('player.unity.playingOn', { device: masterDeviceLabel }) }}</p>
-        <button type="button" filled="hollow" class="unity-takeover" @click="takeover()">{{ $t('player.unity.playHere') }}</button>
+        <div class="volume">
+          <button filled="hollow" class="round" :aria-label="state.muted || state.volume === 0 ? $t('player.unmute') : $t('player.mute')" @click="toggleMute()">
+            <img v-if="state.muted || state.volume === 0" src="../assets/icons/volume-mute.svg" alt="" draggable="false" />
+            <img v-else src="../assets/icons/volume.svg" alt="" draggable="false" />
+          </button>
+          <input type="range" min="0" max="1" step="0.01" :value="state.muted ? 0 : state.volume" :aria-label="$t('player.volume')" @input="setVolume(($event.target as HTMLInputElement).valueAsNumber)" />
+        </div>
+
+        <div v-if="isRemoteControlled" class="unity-badge">
+          <p>{{ $t('player.unity.playingOn', { device: masterDeviceLabel }) }}</p>
+          <button type="button" filled="hollow" class="unity-takeover" @click="takeover()">{{ $t('player.unity.playHere') }}</button>
+        </div>
       </div>
     </div>
 
     <div class="right">
       <div class="tabs">
-        <button v-for="panel in nowPlayingPanels" :key="panel.id" :filled="activePanelId === panel.id ? '' : 'hollow'" :aria-pressed="activePanelId === panel.id" @click="activePanelId = panel.id">{{ $t(panel.label) }}</button>
+        <button class="tab-song" :filled="showInfo ? '' : 'hollow'" :aria-pressed="showInfo" @click="showInfo = true">{{ $t('player.song') }}</button>
+        <button v-for="panel in nowPlayingPanels" :key="panel.id" :filled="!showInfo && activePanelId === panel.id ? '' : 'hollow'" :aria-pressed="!showInfo && activePanelId === panel.id" @click="activePanelId = panel.id; showInfo = false">{{ $t(panel.label) }}</button>
       </div>
 
       <div class="panel np-quiet-scroll">
@@ -53,12 +68,14 @@
 <script lang="ts" setup>
 import { nowPlayingPanels } from '~/composables/useNowPlayingPanels';
 
-const { state, currentTrack, hasNext, hasPrev, role, masterStatus, masterDeviceLabel, takeover, togglePlay, next, prev, seek } = useUnity();
+const { state, currentTrack, hasNext, hasPrev, role, masterStatus, masterDeviceLabel, takeover, togglePlay, next, prev, seek, setVolume, toggleMute } = useUnity();
 const { bgColors, surfaceVars, setBlobRef } = useCoverMeshGradient();
 
 const isRemoteControlled = computed(() => role.value === "slave" && masterStatus.value === "active");
 
 const activePanelId = ref(nowPlayingPanels[0]?.id);
+// only used on a small or vertical screen, where the song info is a panel of its own (the toggles replace the tabs)
+const showInfo = ref(false);
 const activePanel = computed(() => nowPlayingPanels.find(p => p.id === activePanelId.value));
 
 // The queue ran out (or was stopped) while this page was open: there is nothing left to show, and the page would
@@ -85,7 +102,6 @@ function formatDuration(seconds: number): string {
   display: flex;
   flex-direction: row;
   gap: clamp(24px, 4vw, 60px);
-  max-width: 1100px;
   /* margin-top + height + margin-bottom of `.view` add up to exactly the viewport, so the document is never taller
      than 100vh; dvh so a mobile browser's collapsing toolbar can't push the controls off-screen */
   height: calc(100dvh - (15vh - 10px) - 1.2em);
@@ -138,15 +154,28 @@ function formatDuration(seconds: number): string {
   transition: background 0.6s ease;
 }
 
+/* two panels of 50% each on a large horizontal screen; the left one is the song information */
 .npp .left {
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* follows the height, not just the width: on a short laptop screen a 380px cover plus its controls is taller
-     than the page, and the artist and the transport buttons are what got cut off */
-  width: clamp(260px, 40vh, 380px);
+  justify-content: center;
+  flex: 1 1 0;
   min-width: 0;
-  flex-shrink: 0;
+  min-height: 0;
+  gap: clamp(10px, 2.2vh, 25px);
+}
+
+/* follows the height, not just the width: on a short laptop screen a 380px cover plus its controls is taller
+   than the page, and the artist and the transport buttons are what got cut off */
+.npp .song-info,
+.npp .transport {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: clamp(260px, 40vh, 380px);
+  max-width: 100%;
+  min-width: 0;
   gap: clamp(10px, 2.2vh, 25px);
 }
 
@@ -237,6 +266,24 @@ function formatDuration(seconds: number): string {
   gap: 20px;
 }
 
+.npp .volume {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.npp .volume input[type="range"] {
+  flex: 1;
+  min-width: 0;
+}
+
+.npp .volume .round {
+  width: max(2em, 44px);
+  height: max(2em, 44px);
+}
+
 /* icon-only buttons: at least 44px square (WCAG 2.5.5) at any font size */
 .npp .round {
   width: max(2.4em, 44px);
@@ -292,6 +339,11 @@ function formatDuration(seconds: number): string {
   overflow-y: auto;
 }
 
+/* the song info is a toggle only where the panels stack */
+.npp .tab-song {
+  display: none;
+}
+
 /* short laptop screens (13" at default scaling is ~700-800px of viewport) */
 @media screen and (max-height: 800px) and (min-width: 801px) {
   .npp .title {
@@ -308,38 +360,77 @@ function formatDuration(seconds: number): string {
   }
 }
 
-@media screen and (max-width: 800px) {
+/* small screens and large vertical screens: one panel at a time, the toggles replace the tabs, and the page itself
+   never scrolls - only the contents of a panel do. The playback controls are not part of any panel: they stay
+   attached at the bottom, compact. `display: contents` lets the song info, the panels and the transport be
+   ordered as siblings. */
+@media screen and (max-width: 800px), screen and (orientation: portrait) {
   .npp {
     flex-direction: column;
     align-items: center;
-    gap: 30px;
-    /* stacked: the page itself scrolls, nothing is held to the viewport height */
-    height: auto;
-    max-height: none;
+    gap: 14px;
+    /* `.view` clears a taller Header here (20vh) */
+    height: calc(100dvh - (20vh - 10px) - 1.2em);
+    max-height: calc(100dvh - (20vh - 10px) - 1.2em);
   }
 
-  .npp .cover {
-    width: 80%;
-    aspect-ratio: 1 / 1;
-  }
-
-  .npp .seek {
-    width: 90%;
-  }
-
-  .npp .left {
-    width: 90%;
-    max-width: 380px;
-  }
-
+  .npp .left,
   .npp .right {
-    width: 90%;
+    display: contents;
   }
 
-  /* a definite height (not max-height): the panel inside is the scroll container, and it needs something to
-     measure itself against */
+  .npp .tab-song {
+    display: inline-block;
+  }
+
+  .npp .tabs {
+    order: 0;
+    justify-content: center;
+  }
+
+  .npp .song-info {
+    order: 1;
+    flex: 1 1 0;
+    width: min(100%, 520px);
+    min-height: 0;
+    justify-content: center;
+  }
+
+  /* as wide as the space allows, never taller than it */
+  .npp .cover {
+    width: auto;
+    max-width: 100%;
+    flex: 0 1 auto;
+    min-height: 0;
+    max-height: 100%;
+    height: min(100%, 100vw);
+  }
+
   .npp .panel {
-    height: 60dvh;
+    order: 1;
+    flex: 1 1 0;
+    width: min(100%, 520px);
+    min-height: 0;
+    height: auto;
+  }
+
+  .npp .transport {
+    order: 2;
+    width: min(100%, 520px);
+    gap: 8px;
+  }
+
+  .npp.info .panel {
+    display: none;
+  }
+
+  .npp:not(.info) .song-info {
+    display: none;
+  }
+
+  .npp .round.big {
+    width: max(2.7em, 52px);
+    height: max(2.7em, 52px);
   }
 }
 </style>

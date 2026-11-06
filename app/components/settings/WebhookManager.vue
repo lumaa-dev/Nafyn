@@ -172,7 +172,8 @@ onMounted(load);
 
 .webhook-list .actions {
   display: flex;
-  align-items: center;
+  /* buttons side by side are the same height (DESIGN.md "Buttons") */
+  align-items: stretch;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 8px;

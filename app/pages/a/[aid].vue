@@ -31,7 +31,7 @@
         <h3>{{ group.label }}</h3>
       </li>
       <li v-for="track in group.tracks" :key="`${track.discNumber}-${track.trackNumber}-${track.id}`" :class="{ unreleased: !track.released, playing: currentTrack?.id === track.mediaId, playable: track.mediaId }" @click="track.mediaId ? playTrack(track) : undefined" @contextmenu.prevent="track.mediaId ? onTrackMenu($event, track) : undefined">
-        <span class="number">{{ track.trackNumber }}</span>
+        <span v-if="track.trackNumber" class="number">{{ track.trackNumber }}</span>
         <span class="title">{{ track.title }}</span>
         <ReleaseCountdown v-if="!track.released && track.releaseDate && album.released" compact :date="track.releaseDate" />
         <button filled="hollow" @click.stop="requestTrack(track)" :disabled="track.requested" v-if="track.released && !track.inLibrary"><img src="../../assets/icons/download.svg" draggable="false"></button>
@@ -49,6 +49,7 @@
       <span> &middot; <a :href="`https://musicbrainz.org/release/${album.releaseId}`">{{ $t('album.viewInMusicbrainz') }}</a></span>
     </p>
   </div>
+  <LoadError v-else :error="error" />
 </template>
 
 <script lang="ts" setup>
@@ -70,7 +71,6 @@ const { data: album, error } = await useAsyncData<AlbumDetail>(`album-${aid}`, (
     ? $fetch(`/api/v1/album/${aid}`, { headers: { Authorization: token.value } })
     : Promise.reject(new Error("Not authenticated"));
 }, { deep: true });
-useLoadErrorToast(error);
 
 // tracks per disc, in order; the template only draws a disc header when there is more than one. An unnamed
 // disc reads "Disc N".
@@ -190,6 +190,9 @@ async function requestTrack(track: TrackInfo) {
   track.requested = true;
   if (!await request(track.id, "track", track.title)) track.requested = false;
 }
+
+// the screen takes the cover's colour
+useCoverTint(() => album.value);
 </script>
 
 <style scoped>
@@ -243,7 +246,7 @@ async function requestTrack(track: TrackInfo) {
   font-size: 0.75em;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #666666;
+  color: color-mix(in srgb, currentColor 75%, transparent);
 }
 
 .album .upcoming .value {
@@ -254,7 +257,7 @@ async function requestTrack(track: TrackInfo) {
 .album .tracks li .ellipsis {
   background: none;
   border: none;
-  color: #666666;
+  color: color-mix(in srgb, currentColor 75%, transparent);
   cursor: pointer;
   font-size: 1.2em;
   width: auto;
@@ -280,14 +283,14 @@ async function requestTrack(track: TrackInfo) {
 
 .album .details {
   font-size: 0.85em;
-  color: #666666;
+  color: color-mix(in srgb, currentColor 75%, transparent);
   margin: 1em 0;
 }
 
 .album .description {
   margin-top: 15px;
   font-size: 0.85em;
-  color: #666666;
+  color: color-mix(in srgb, currentColor 75%, transparent);
 }
 
 .album .tracks {
@@ -306,7 +309,7 @@ async function requestTrack(track: TrackInfo) {
 }
 
 .album .tracks li:not(:last-child) {
-  border-bottom: 1px solid #666666;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 75%, transparent);
 }
 
 .album .tracks li.disc,
@@ -356,7 +359,7 @@ async function requestTrack(track: TrackInfo) {
 }
 
 .album .tracks li.unreleased .number {
-  color: #666666;
+  color: color-mix(in srgb, currentColor 75%, transparent);
 }
 
 .album .tracks .title {
@@ -365,19 +368,19 @@ async function requestTrack(track: TrackInfo) {
 
 .album .tracks .status {
   font-size: 0.75em;
-  color: #666666;
+  color: color-mix(in srgb, currentColor 75%, transparent);
   text-transform: uppercase;
 }
 
 .album .tracks .duration {
-  color: #666666;
+  color: color-mix(in srgb, currentColor 75%, transparent);
   font-variant-numeric: tabular-nums;
   font-family: var(--font-discy);
   font-size: 0.7em;
 }
 
 .album .tracks li.unreleased .title {
-  color: #666666;
+  color: color-mix(in srgb, currentColor 75%, transparent);
 }
 
 @media screen and (max-width: 800px) {

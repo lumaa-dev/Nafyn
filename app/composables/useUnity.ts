@@ -283,6 +283,7 @@ export const useUnity = () => {
         playFromHistory: wrapMutator("playFromHistory", (index: number, trackId: string) => realPlayer.playFromHistory(index, trackId)),
         clearHistory,
         cycleRepeat: wrapMutator("cycleRepeat", () => realPlayer.cycleRepeat()),
+        shuffleQueue: wrapMutator("shuffleQueue", () => realPlayer.shuffleQueue()),
         setRepeat: wrapMutator("setRepeat", (mode: PlayerState["repeat"]) => realPlayer.setRepeat(mode))
     };
 };

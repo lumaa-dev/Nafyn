@@ -99,6 +99,8 @@ body {
 	font-size: 1.5em;
 	max-width: 100%;
 	overflow: hidden scroll;
+	/* micro-animation between states (DESIGN.md "Interface"): a detail screen tints the body with its cover's colour */
+	transition: background 0.4s ease-out, color 0.4s ease-out;
 }
 
 a {
@@ -190,7 +192,9 @@ button[filled], a[filled], p[filled] {
 
 button[filled="hollow"], p[filled="hollow"] {
 	background: #ffffff00;
-	color: #ffffffae;
+	/* --tint-fg is set while a detail screen is tinted with its cover (useCoverTint): black or white for contrast */
+	color: var(--tint-fg, #ffffffae);
+	border-color: var(--tint-fg, #ffffffae);
 }
 
 button[filled]:hover:not(:disabled), a[filled]:hover:not(:disabled) {
@@ -202,17 +206,29 @@ button[filled="hollow"]:hover:not(:disabled), a[filled="hollow"]:hover:not(:disa
 	color: #000000;
 }
 
-/* destructive: white on this red is ~10:1 (AAA). The hover rule has to restate `color`: the hollow hover
-   above is more specific than a plain `.danger` and would turn the label black. */
+/* destructive (DESIGN.md "Colors": red is #e06666ae). Filled: red fill and border; hollow: red border and label.
+   The label on a red fill is white (the hover rule above is more specific than a plain `.danger`, so every
+   state restates `color`). */
 button[filled].danger, a[filled].danger {
-	background: #b3261e;
-	border: #b3261e 1px solid;
+	background: #e06666ae;
+	border: #e06666ae 1px solid;
 	color: #ffffff;
 }
 
+button[filled="hollow"].danger, a[filled="hollow"].danger {
+	background: #e0666600;
+	color: #e06666ae;
+}
+
 button[filled].danger:hover:not(:disabled), a[filled].danger:hover:not(:disabled) {
-	background: #8c1d18;
-	border: #8c1d18 1px solid;
+	background: #e06666d0;
+	border: #e06666d0 1px solid;
+	color: #ffffff;
+}
+
+button[filled="hollow"].danger:hover:not(:disabled), a[filled="hollow"].danger:hover:not(:disabled) {
+	background: #e06666ae;
+	border: #e06666ae 1px solid;
 	color: #ffffff;
 }
 
@@ -266,8 +282,12 @@ button.over[aria-pressed="true"] {
    (WCAG 2.5.5), the icon SVGs are black so they are inverted to white until the hover fills the button.
    Always give one an aria-label - there is no text to name it. */
 button.icon-only {
-	width: 44px;
-	height: 44px;
+	/* at least 44px; in a row it takes the height of its siblings (stretch) and stays a circle through the ratio */
+	width: auto;
+	height: auto;
+	min-width: 44px;
+	min-height: 44px;
+	aspect-ratio: 1 / 1;
 	padding: 0;
 	border-radius: 50%;
 	display: inline-flex;
@@ -299,9 +319,11 @@ input:focus-visible, textarea:focus-visible {
 	outline-offset: 2px;
 }
 
+/* DESIGN.md "Buttons": a disabled control is at 174/255 opacity. A filled / hollow button already carries 174 in its
+   own colour (#ffffffae), so the two add up on top of each other (118/255 in all) - no special case needed. */
 *:disabled {
 	cursor: not-allowed !important;
-	opacity: 0.7;
+	opacity: calc(174 / 255);
 }
 
 .hd.out button {
@@ -383,6 +405,10 @@ input:focus-visible, textarea:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
+	body {
+		transition: none;
+	}
+
 	.sb {
 		transition: none !important;
 	}

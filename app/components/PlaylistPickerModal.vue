@@ -7,8 +7,6 @@
         <span>{{ playlist.title }}</span>
       </li>
     </ul>
-
-    <button type="button" filled="hollow" @click="close">{{ $t('playlist.picker.cancel') }}</button>
   </Modal>
 </template>
 

@@ -1,5 +1,6 @@
 <template>
   <div class="settings">
+    <LoadError :error="meError" />
     <nav class="settings-nav">
       <h2>{{ $t('settings.title') }}</h2>
       <button
@@ -73,6 +74,14 @@
             {{ $t('settings.appearance.dyslexicFont') }}
           </label>
           <p class="subsonic-note">{{ $t('settings.appearance.dyslexicFontNote') }}</p>
+        </section>
+
+        <section class="subsection">
+          <label class="switch-row">
+            <input type="checkbox" v-model="lyricsSansSerif">
+            {{ $t('settings.appearance.lyricsSansSerif') }}
+          </label>
+          <p class="subsonic-note">{{ $t('settings.appearance.lyricsSansSerifNote') }}</p>
         </section>
       </div>
 
@@ -157,6 +166,7 @@
               </div>
             </li>
           </ul>
+          <LoadError :error="usersError" />
           <div ref="usersSentinel" class="scroll-sentinel" />
           <p class="loading-more" v-if="usersLoadingMore">{{ $t('common.loadingMore') }}</p>
         </section>
@@ -399,6 +409,7 @@ import type { RegisterTokenRow } from '~~/server/core/registerTokens';
 import type { ApiTokenSummary, ApiTokenRow } from '~~/server/core/apiTokens';
 import { syncHistorySetting, useHistoryEnabled, setHistoryEnabledState } from '~/composables/usePlayTracking';
 import { useDyslexicFont } from '~/composables/useDyslexicFont';
+import { useLyricsSansSerif } from '~/composables/useLyricsFont';
 import { useAppearanceSettings, syncAppearanceSettings, setAppearanceSetting } from '~/composables/useAppearanceSettings';
 import { usePlaybackSettings, syncPlaybackSettings, setPlaybackSetting } from '~/composables/usePlaybackSettings';
 import { useUnitySettings, syncUnitySettings, setUnitySetting, useUnitySessionOverride, setUnityDisabledThisSession } from '~/composables/useUnitySettings';
@@ -531,7 +542,6 @@ const initial = computed(() => (displayName.value || user.value?.username || "?"
 const canSave = computed(() => displayName.value.trim().length >= 1 && displayName.value.trim().length <= 20);
 
 const { data, error: meError } = await useFetch<NafynUser>("/api/v1/user/me", { headers: { Authorization: token } });
-useLoadErrorToast(meError);
 if (data.value) {
   applyUser(data.value);
 }
@@ -641,7 +651,7 @@ function formatDate(date: string | number | Date): string {
 const registerOpen = ref(true);
 const generatingToken = ref(false);
 const activeTokens = ref<RegisterTokenRow[]>([]);
-const { items: users, loadingMore: usersLoadingMore, sentinel: usersSentinel, loadMore: loadMoreUsers } = useInfiniteList<NafynUser>((page, limit) => {
+const { items: users, loadingMore: usersLoadingMore, error: usersError, sentinel: usersSentinel, loadMore: loadMoreUsers } = useInfiniteList<NafynUser>((page, limit) => {
   return $fetch("/api/v1/users", { headers: { Authorization: token }, query: { page, limit } });
 });
 const editingId = ref<string | null>(null);
@@ -854,6 +864,7 @@ function onTracksPieHover(e: MouseEvent) {
 
 const appearance = useAppearanceSettings();
 const dyslexicFont = useDyslexicFont();
+const lyricsSansSerif = useLyricsSansSerif();
 
 async function loadAppearancePanel() {
   await syncAppearanceSettings();
