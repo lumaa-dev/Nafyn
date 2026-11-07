@@ -35,7 +35,7 @@ const props = defineProps<{ toast: Toast, underLast: boolean; }>();
 }
 
 .toast[nafyn-tint="red"] {
-  background: #e066664d;
+  background: #a02c2ee6;
 }
 
 .toast .title {

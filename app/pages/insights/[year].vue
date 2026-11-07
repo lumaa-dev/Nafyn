@@ -367,7 +367,7 @@ onUnmounted(() => {
 }
 
 .year-package .note { font-size: 0.75em; color: #666666; }
-.year-package .error { font-size: 0.75em; color: #e06666; }
+.year-package .error { font-size: 0.75em; color: var(--danger-text); }
 .year-package .empty { font-size: 0.8em; color: #666666; }
 .year-package .mix-link { font-size: 0.85em; margin-top: 10px; }
 

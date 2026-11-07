@@ -292,7 +292,7 @@ defineExpose({ openAt, close });
 
 /* destructive actions: red text that still clears 7:1 on the dark menu */
 .ctxmenu li.danger {
-  color: #ff9a9a;
+  color: var(--danger-text);
 }
 
 .ctxmenu li.sep {

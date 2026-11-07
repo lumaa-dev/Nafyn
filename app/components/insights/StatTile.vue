@@ -52,5 +52,5 @@ defineProps<{
 }
 
 .stat-tile .delta.up { color: #93c47d; }
-.stat-tile .delta.down { color: #e06666; }
+.stat-tile .delta.down { color: var(--danger-text); }
 </style>

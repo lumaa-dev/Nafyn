@@ -1296,7 +1296,7 @@ watch(activeCategory, async (cat) => {
 }
 
 .panel .error {
-  color: #e06666;
+  color: var(--danger-text);
   font-size: 0.7em;
 }
 

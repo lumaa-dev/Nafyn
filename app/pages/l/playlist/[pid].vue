@@ -642,8 +642,8 @@ function sendError(e: unknown) {
 }
 
 .playlistpage .actions .iconbtn.danger {
-  color: #e06666;
-  border: 1px solid #e06666ae;
+  color: var(--danger-text);
+  border: 1px solid var(--danger-text);
 }
 
 .playlistpage .actions .leavebtn {
@@ -657,7 +657,7 @@ function sendError(e: unknown) {
   border-radius: 12px;
   border: 1px solid #333333;
   background: none;
-  color: #e06666;
+  color: var(--danger-text);
   cursor: pointer;
 }
 
@@ -802,7 +802,7 @@ function sendError(e: unknown) {
 }
 
 .modalform .danger {
-  color: #e06666;
+  color: var(--danger-text);
 }
 
 .modalform .memberlist {

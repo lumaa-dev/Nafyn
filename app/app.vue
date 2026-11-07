@@ -68,6 +68,12 @@
    variable; there is no "Discy" family to ask for. */
 :root {
 	--font-discy: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "SF Pro", Arial, "Helvetica Neue", sans-serif;
+	/* DESIGN.md "Contrast" (WCAG AAA): the palette red #e06666ae cannot carry text at 7:1 either way round, so
+	   destructive UI uses a deeper red of the same hue as a fill (white label: 7.2:1, 8:1 hovered) and a light
+	   red for red text, symbols and borders on dark surfaces (7.2:1 on #2a2a27). */
+	--danger-fill: #a02c2e;
+	--danger-fill-hover: #8f2527;
+	--danger-text: #ff9e9e;
 }
 
 /* Settings -> Appearance -> OpenDyslexic: every font on the page, whatever its place or purpose (serif
@@ -206,29 +212,30 @@ button[filled="hollow"]:hover:not(:disabled), a[filled="hollow"]:hover:not(:disa
 	color: #000000;
 }
 
-/* destructive (DESIGN.md "Colors": red is #e06666ae). Filled: red fill and border; hollow: red border and label.
-   The label on a red fill is white (the hover rule above is more specific than a plain `.danger`, so every
-   state restates `color`). */
+/* destructive (DESIGN.md "Colors" + "Contrast"). Filled: deep red fill and border, white label; hollow: light red
+   border and label, filling with the deep red on hover. The label on a red fill is white (the hover rule above is
+   more specific than a plain `.danger`, so every state restates `color`). */
 button[filled].danger, a[filled].danger {
-	background: #e06666ae;
-	border: #e06666ae 1px solid;
+	background: var(--danger-fill);
+	border: var(--danger-fill) 1px solid;
 	color: #ffffff;
 }
 
 button[filled="hollow"].danger, a[filled="hollow"].danger {
-	background: #e0666600;
-	color: #e06666ae;
+	background: transparent;
+	border-color: var(--danger-text);
+	color: var(--danger-text);
 }
 
 button[filled].danger:hover:not(:disabled), a[filled].danger:hover:not(:disabled) {
-	background: #e06666d0;
-	border: #e06666d0 1px solid;
+	background: var(--danger-fill-hover);
+	border: var(--danger-fill-hover) 1px solid;
 	color: #ffffff;
 }
 
 button[filled="hollow"].danger:hover:not(:disabled), a[filled="hollow"].danger:hover:not(:disabled) {
-	background: #e06666ae;
-	border: #e06666ae 1px solid;
+	background: var(--danger-fill);
+	border: var(--danger-fill) 1px solid;
 	color: #ffffff;
 }
 

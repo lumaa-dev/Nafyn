@@ -189,7 +189,7 @@ onMounted(load);
 }
 
 .webhook-list .failure {
-  color: #e06666;
+  color: var(--danger-text);
 }
 
 .webhook-form .events {
