@@ -321,7 +321,7 @@ export async function initDatabases(): Promise<void> {
             token VARCHAR(255) NOT NULL,
             environment VARCHAR(16) NOT NULL,
             createdAt BIGINT NOT NULL,
-            -- last time the activity was registered or pushed to; a request activity idle for 15 minutes is stale
+            -- last registration or push, a request activity idle for 15 minutes is stale
             updatedAt BIGINT NULL,
             UNIQUE KEY uq_apn_activity (kind, refId, sessionId),
             INDEX idx_apn_activity_userId (userId)
