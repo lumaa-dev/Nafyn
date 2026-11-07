@@ -36,7 +36,7 @@ import PinnedGrid from '~/components/PinnedGrid.vue';
 .links > a::before {
   content: ">";
   font-family: "Instrument-Serif";
-  color: color-mix(in srgb, currentColor 80%, transparent);
+  color: currentColor;
   position: relative;
   left: min(64vw, 900px);
   top: 0;

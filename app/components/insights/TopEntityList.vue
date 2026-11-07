@@ -81,7 +81,7 @@ function metricFor(entity: RankedEntity): string {
 .top-entities .rank {
   font-family: var(--font-discy);
   font-size: 0.7em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   width: 22px;
   flex-shrink: 0;
   text-align: right;
@@ -124,7 +124,7 @@ function metricFor(entity: RankedEntity): string {
 }
 
 .top-entities .title { font-size: 0.85em; }
-.top-entities .artist { font-size: 0.65em; color: #666666; }
+.top-entities .artist { font-size: 0.65em; color: var(--tint-fg, #ffffffae); }
 
 .top-entities .metric {
   font-family: var(--font-discy);

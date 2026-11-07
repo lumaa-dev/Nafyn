@@ -103,7 +103,7 @@ function pointsOf(values: number[]): string {
   padding: 0 8px;
   font-family: var(--font-discy);
   font-size: 0.6em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
 }
 
 .linechart .legend {

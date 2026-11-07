@@ -181,7 +181,7 @@ onMounted(load);
 
 .webhook-list .format {
   font-size: 0.75em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   border: 1px solid #66666680;
   border-radius: 250px;
   padding: 0.05em 0.6em;
@@ -204,7 +204,7 @@ onMounted(load);
 
 .webhook-form .events legend {
   font-size: 0.7em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   padding: 0 6px;
 }
 

@@ -105,6 +105,10 @@ function formatDuration(seconds: number): string {
   /* margin-top + height + margin-bottom of `.view` add up to exactly the viewport, so the document is never taller
      than 100vh; dvh so a mobile browser's collapsing toolbar can't push the controls off-screen */
   height: calc(100dvh - (15vh - 10px) - 1.2em);
+  /* never taller or wider than the screen (DESIGN.md "Now Playing"): nothing on this page scrolls, `.view` adds no
+     bottom margin, and the app's own page scrollbar is switched off for it (app.vue) */
+  width: 100%;
+  overflow: hidden;
   min-height: 0;
   max-height: calc(100dvh - (15vh - 10px) - 1.2em);
   padding-bottom: 0;
@@ -154,13 +158,20 @@ function formatDuration(seconds: number): string {
   transition: background 0.6s ease;
 }
 
-/* two panels of 50% each on a large horizontal screen; the left one is the song information */
+/* DESIGN.md "Now Playing": two panels on a large horizontal screen, each AT MOST half of the width - 50% is a ceiling,
+   not a size. The song information takes the width of its cover and controls; the right panel the width it asks for
+   (up to the same half). What is left over is air around them, not a wider panel. */
+.npp {
+  justify-content: center;
+}
+
 .npp .left {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  flex: 1 1 0;
+  flex: 0 1 auto;
+  max-width: 50%;
   min-width: 0;
   min-height: 0;
   gap: clamp(10px, 2.2vh, 25px);
@@ -315,7 +326,8 @@ function formatDuration(seconds: number): string {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  flex: 1;
+  flex: 0 1 560px;
+  max-width: 50%;
   min-width: 0;
   min-height: 0;
 }

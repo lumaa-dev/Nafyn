@@ -54,7 +54,7 @@ function pct(have: number, need: number): number {
 
 .gate p {
   font-size: 0.8em;
-  color: #999999;
+  color: var(--tint-fg, #ffffffae);
 }
 
 .gate .progress {
@@ -62,7 +62,7 @@ function pct(have: number, need: number): number {
   flex-direction: column;
   gap: 4px;
   font-size: 0.7em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
 }
 
 .gate .bar {

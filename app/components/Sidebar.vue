@@ -49,9 +49,21 @@ import SidebarProgressiveBlur from './SidebarProgressiveBlur.vue';
   height: 95%;
 }
 
+/* DESIGN.md "Header and Sidebar": the sidebar's buttons are always white, whatever the page behind it (a detail page
+   tints the body's own text colour with its cover) */
 .sidebar .actions > * {
   text-decoration: none;
   margin: 0 0 0 35px;
+  color: #ffffff;
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+}
+
+.sidebar .actions > *:hover {
+  opacity: 0.8;
+}
+
+.sidebar .actions > .router-link-active {
+  text-decoration: underline;
 }
 
 @media screen and (max-width: 800px) {

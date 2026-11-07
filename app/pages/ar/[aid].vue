@@ -43,7 +43,6 @@ const { data: artist, error } = await useAsyncData<ArtistDetail>(`artist-${aid}`
 <style scoped>
 .artist {
   max-width: 900px;
-  margin: calc(15vh - 10px) auto;
 }
 
 .artist .head {
@@ -71,14 +70,14 @@ const { data: artist, error } = await useAsyncData<ArtistDetail>(`artist-${aid}`
 
 .artist .listeners {
   font-size: 0.8em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   margin-top: 4px;
 }
 
 .artist .bio {
   margin-top: 15px;
   font-size: 0.85em;
-  color: #999999;
+  color: var(--tint-fg, #ffffffae);
   white-space: pre-line;
 }
 
@@ -99,14 +98,11 @@ const { data: artist, error } = await useAsyncData<ArtistDetail>(`artist-${aid}`
 
 .artist .details {
   font-size: 0.85em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   margin: 20px 0;
 }
 
 @media screen and (max-width: 800px) {
-  .artist {
-    margin: calc(15vh - 10px) 1.2em;
-  }
 
   .artist .head {
     flex-direction: column;

@@ -256,6 +256,20 @@ defineExpose({ openAt, close });
   box-shadow: 0 8px 24px #00000080;
   color: #ffffff;
   font-family: "Instrument-Serif";
+  /* DESIGN.md "Animations": a menu fades and moves slightly in */
+  animation: ctxmenu-in 0.16s ease-out;
+  transform-origin: top left;
+}
+
+@keyframes ctxmenu-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ctxmenu {
+    animation: none;
+  }
 }
 
 .ctxmenu.sub {

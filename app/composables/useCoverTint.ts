@@ -8,6 +8,51 @@ interface Tinted {
     textColor?: string | null
 }
 
+function channel(value: number): number {
+    const c = value / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+}
+
+function luminance([r, g, b]: [number, number, number]): number {
+    return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+}
+
+function contrast(a: number, b: number): number {
+    return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+}
+
+function parseHex(hex: string): [number, number, number] | null {
+    let value = hex.slice(1);
+    if (value.length === 3 || value.length === 4) value = [...value].map((c) => c + c).join("");
+    if (value.length !== 6 && value.length !== 8) return null;
+    const n = parseInt(value.slice(0, 6), 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+const AAA = 7.1;
+
+/**
+ * DESIGN.md "Contrast" (WCAG AAA, 7:1): the label is white or black, whichever contrasts more with the cover's primary
+ * colour - and when even that is short of 7:1 (every mid-tone is), the background is moved towards black (white label)
+ * or white (black label) until it is. The hue stays the cover's own, only its lightness gives way.
+ */
+export function readableTint(background: string): { background: string, text: string } {
+    const rgb = parseHex(background);
+    if (!rgb) return { background, text: "#ffffff" };
+
+    const lum = luminance(rgb);
+    const text = contrast(lum, 1) >= contrast(lum, 0) ? "#ffffff" : "#000000";
+    const target: [number, number, number] = text === "#ffffff" ? [0, 0, 0] : [255, 255, 255];
+    const textLum = text === "#ffffff" ? 1 : 0;
+
+    let mixed = rgb;
+    for (let step = 0; step <= 20 && contrast(luminance(mixed), textLum) < AAA; step++) {
+        const t = step / 20;
+        mixed = [0, 1, 2].map((i) => Math.round(rgb[i]! + (target[i]! - rgb[i]!) * t)) as [number, number, number];
+    }
+    return { background: `rgb(${mixed[0]}, ${mixed[1]}, ${mixed[2]})`, text };
+}
+
 export function useCoverTint(source: () => Tinted | null | undefined) {
     useHead({
         bodyAttrs: {
@@ -15,8 +60,8 @@ export function useCoverTint(source: () => Tinted | null | undefined) {
                 const tint = source();
                 const background = tint?.imageColors?.[0];
                 if (!background || !/^#[0-9a-f]{3,8}$/i.test(background)) return "";
-                const text = tint?.textColor === "#000000" ? "#000000" : "#ffffff";
-                return `background: ${background}; color: ${text}; --tint-fg: ${text};`;
+                const readable = readableTint(background);
+                return `background: ${readable.background}; color: ${readable.text}; --tint-fg: ${readable.text}; --icon-filter: ${readable.text === "#000000" ? "none" : "invert(1)"};`;
             })
         }
     });

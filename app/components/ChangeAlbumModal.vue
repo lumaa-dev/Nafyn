@@ -1,7 +1,7 @@
 <template>
   <Modal v-model="open" size="large" :title="$t('album.change.title')">
     <template #toolbar>
-      <button type="button" filled :disabled="!selected || selected.id === media?.albumId || moving" @click="move">{{ moving ? $t('album.change.moving') : $t('album.change.move') }}</button>
+      <IconButton toolbar symbol="check" :label="moving ? $t('album.change.moving') : $t('album.change.move')" :disabled="!selected || selected.id === media?.albumId || moving" @click="move" />
     </template>
     <div class="change-album">
       <p v-if="media" class="intro">{{ $t('album.change.intro', { title: media.title, artist: media.artistName }) }}</p>

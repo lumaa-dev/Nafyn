@@ -324,7 +324,7 @@ onUnmounted(disconnect);
 }
 
 .reqrow .info .artist, .reqrow .data {
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
 }
 
 .reqrow .status {
@@ -334,9 +334,10 @@ onUnmounted(disconnect);
   border: none;
 }
 
+/* statuses: the label is black or white, whichever clears 7:1 on its fill (DESIGN.md "Contrast") */
 .reqrow .status.completed {
   background: #44cf44;
-  color: #ffffffae;
+  color: #000000;
 }
 
 .reqrow .status.waiting {
@@ -345,7 +346,7 @@ onUnmounted(disconnect);
 
 .reqrow .status.searching, .reqrow .status.downloading, .reqrow .status.processing {
   background: #e18c46;
-  color: #ffffffae;
+  color: #000000;
 }
 
 .reqrow .actions {
@@ -353,19 +354,28 @@ onUnmounted(disconnect);
   justify-content: flex-end;
   gap: 8px;
   margin-top: 14px;
+  flex-wrap: wrap;
 }
 
 .reqrow .actions button {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.2em;
-  height: 2.2em;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  aspect-ratio: 1 / 1;
   padding: 0;
   border: 1px solid #ffffffae;
   border-radius: 50%;
   color: #ffffffae;
   transition: background 0.2s ease-out, border-color 0.2s ease-out, color 0.2s ease-out;
+}
+
+/* DESIGN.md "Icon-only buttons": 1:1, the symbol takes at least 90% of the width */
+.reqrow .actions button svg {
+  width: 90%;
+  height: 90%;
 }
 
 .reqrow .actions button:hover:not(:disabled) {
@@ -379,18 +389,19 @@ onUnmounted(disconnect);
 
 .reqrow .actions button.deny:hover:not(:disabled),
 .reqrow .actions button.remove:hover:not(:disabled) {
-  background: #cf4444;
-  border-color: #cf4444;
+  background: color-mix(in srgb, var(--danger-text) 20%, transparent);
+  border-color: var(--danger-text);
+  color: var(--danger-text);
 }
 
 .reqrow .status.failed {
-  background: #cf4444;
-  color: #ffffffae;
+  background: var(--danger-fill);
+  color: #ffffff;
 }
 
 .reqrow .status.denied {
-  border: #cf4444 1px solid;
-  color: #cf4444;
+  border: var(--danger-text) 1px solid;
+  color: var(--danger-text);
 }
 
 .reqrow .progress {
@@ -430,7 +441,7 @@ onUnmounted(disconnect);
   gap: 12px;
   font-family: var(--font-discy);
   font-size: 0.6em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
 }
 
 .reqrow .stats .message {

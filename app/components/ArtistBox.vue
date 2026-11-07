@@ -38,6 +38,6 @@ defineProps<{ artist: ArtistInfo }>()
 }
 
 .abox .description {
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
 }
 </style>

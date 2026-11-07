@@ -4,8 +4,8 @@
       <div ref="modalEl" class="modal" :class="`modal-${size}`" role="dialog" aria-modal="true" :aria-label="title" tabindex="-1" @keydown.tab="trapFocus">
         <!-- DESIGN.md "Modals / Sheets": every sheet has a Close button in its toolbar, on the top leading edge -->
         <div class="modal-toolbar">
-          <button type="button" class="modal-close" @click="close">{{ $t('common.close') }}</button>
-          <h2 v-if="title" class="modal-title">{{ title }}</h2>
+          <span class="modal-toolbar-start"><IconButton toolbar symbol="close" :label="$t('common.close')" @click="close" /></span>
+          <h2 class="modal-title">{{ title }}</h2>
           <span class="modal-toolbar-end"><slot name="toolbar" /></span>
         </div>
         <div class="modal-body">
@@ -109,16 +109,19 @@ defineExpose({ close });
   height: 80vh;
 }
 
+/* leading | title | trailing: the two outer columns share the space equally, so the title stays centred whatever
+   the toolbar holds (one button on the right, none, several) */
 .modal-toolbar {
   position: relative;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
   flex-shrink: 0;
   padding: 16px 0 12px;
 }
 
+.modal-toolbar-start,
 .modal-toolbar-end {
   display: flex;
   align-items: center;
@@ -126,32 +129,37 @@ defineExpose({ close });
   min-width: 0;
 }
 
-/* toolbar actions: the same height as Close, a label never wraps */
-.modal-toolbar-end button {
-  font-size: 0.8em;
-  padding-block: 0.6em;
+.modal-toolbar-end {
+  justify-content: flex-end;
 }
 
-.modal-close {
-  flex-shrink: 0;
-  font-size: 0.8em;
-  padding: 0.6em 1.2em;
+/* the one button type of a toolbar (every sheet): an icon-only circle. Only the colour differs, to show the action
+   type (`danger` is red). */
+.icon-btn.modal-close {
   border: 1px solid transparent;
-  border-radius: 250px;
   background: #ffffff20;
   color: #ffffffae;
-  transition: background 0.2s ease-out, color 0.2s ease-out;
 }
 
-.modal-close:hover {
+.icon-btn.modal-close:hover:not(:disabled) {
   background: #ffffffae;
   color: #000000;
+}
+
+.icon-btn.modal-close.danger {
+  background: var(--danger-fill);
+  color: #ffffff;
+}
+
+.icon-btn.modal-close.danger:hover:not(:disabled) {
+  background: var(--danger-fill-hover);
+  color: #ffffff;
 }
 
 .modal-title {
   font-size: 1em;
   margin: 0;
-  flex: 1 1 auto;
+  max-width: 100%;
   min-width: 0;
   text-align: center;
   overflow: hidden;

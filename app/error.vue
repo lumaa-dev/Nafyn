@@ -32,7 +32,7 @@ const props = defineProps<{ error: NuxtError }>()
 }
 
 .err .message {
-    color: #666666;
+    color: var(--tint-fg, #ffffffae);
     font-family: var(--font-discy);
     font-size: 0.85em;
 }

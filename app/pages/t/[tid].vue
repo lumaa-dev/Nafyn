@@ -99,7 +99,6 @@ useCoverTint(() => track.value);
 <style scoped>
 .track {
   max-width: 900px;
-  margin: calc(15vh - 10px) auto;
 }
 
 .track .head {
@@ -146,7 +145,7 @@ useCoverTint(() => track.value);
   font-size: 0.75em;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: color-mix(in srgb, currentColor 75%, transparent);
+  color: currentColor;
 }
 
 .track .upcoming .value {
@@ -169,7 +168,7 @@ useCoverTint(() => track.value);
 
 .track .album-link {
   font-size: 0.85em;
-  color: color-mix(in srgb, currentColor 75%, transparent);
+  color: currentColor;
   text-decoration: none;
   margin-top: 4px;
 }
@@ -180,14 +179,11 @@ useCoverTint(() => track.value);
 
 .track .details {
   font-size: 0.85em;
-  color: color-mix(in srgb, currentColor 75%, transparent);
+  color: currentColor;
   margin: 1em 0;
 }
 
 @media screen and (max-width: 800px) {
-  .track {
-    margin: calc(15vh - 10px) 1.2em;
-  }
 
   .track .type {
     font-size: 0.75em;

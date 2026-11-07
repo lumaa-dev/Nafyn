@@ -124,7 +124,6 @@ watch(() => route.params.year, load);
 
 <style>
 .replay {
-  margin: calc(15vh - 10px) auto;
   max-width: 900px;
   display: flex;
   flex-direction: column;
@@ -170,12 +169,13 @@ watch(() => route.params.year, load);
 .replay h1 { font-size: 2.2em; }
 .replay .artist { font-size: 0.85em; }
 .replay .refreshed,
-.replay .locked { font-size: 0.65em; color: #666666; }
+.replay .locked { font-size: 0.65em; color: var(--tint-fg, #ffffffae); }
 
 .replay .actions {
   display: flex;
   gap: 10px;
   margin-top: 12px;
+  flex-wrap: wrap;
 }
 
 .replay .archive {
@@ -223,7 +223,7 @@ watch(() => route.params.year, load);
 .replay .pos {
   font-family: var(--font-discy);
   font-size: 0.7em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   width: 26px;
   text-align: right;
   flex-shrink: 0;
@@ -253,12 +253,12 @@ watch(() => route.params.year, load);
 }
 
 .replay .title { font-size: 0.85em; }
-.replay .tracks .artist { font-size: 0.65em; color: #666666; }
+.replay .tracks .artist { font-size: 0.65em; color: var(--tint-fg, #ffffffae); }
 
 .replay .plays {
   font-family: var(--font-discy);
   font-size: 0.7em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   flex-shrink: 0;
 }
 
@@ -273,11 +273,11 @@ watch(() => route.params.year, load);
 
 .replay .gone {
   font-size: 0.6em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   flex-shrink: 0;
 }
 
-.replay .empty { font-size: 0.8em; color: #666666; }
+.replay .empty { font-size: 0.8em; color: var(--tint-fg, #ffffffae); }
 
 @media screen and (max-width: 800px) {
   .replay .head {

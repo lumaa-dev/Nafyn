@@ -76,6 +76,6 @@ function close() {
 
 .plist .artist {
   font-size: 0.85em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
 }
 </style>

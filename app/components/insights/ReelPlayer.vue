@@ -248,14 +248,14 @@ defineExpose({ start, close });
 
 .reel .subtitle {
   font-size: 0.9em;
-  color: #999999;
+  color: var(--tint-fg, #ffffffae);
 }
 
 .reel .hint {
   position: absolute;
   bottom: 26px;
   font-size: 0.65em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
 }
 
 @media screen and (max-width: 800px) {

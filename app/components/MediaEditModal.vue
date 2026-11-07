@@ -2,7 +2,7 @@
   <Modal v-model="open" size="large" :title="isBulk ? $t('edit.titleMany', { count: list.length }) : $t('edit.title')">
     <!-- the primary action sits in the sheet's toolbar (DESIGN.md "Toolbars"); `form` ties it to the form below -->
     <template #toolbar>
-      <button type="submit" form="media-edit-form" filled :disabled="saving">{{ saving ? $t('edit.saving') : $t('edit.save') }}</button>
+      <IconButton toolbar type="submit" form="media-edit-form" symbol="check" :label="saving ? $t('edit.saving') : $t('edit.save')" :disabled="saving" />
     </template>
     <form id="media-edit-form" class="media-edit" @submit.prevent="save">
       <div class="cover-field">
@@ -366,7 +366,7 @@ async function save() {
   flex-direction: column;
   gap: 4px;
   font-size: 0.85em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
 }
 
 .media-edit input[type="text"],
@@ -504,7 +504,7 @@ async function save() {
 .media-edit .link {
   background: none;
   border: none;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   cursor: pointer;
   font-size: 0.8em;
   text-decoration: underline;

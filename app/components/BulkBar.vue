@@ -80,17 +80,12 @@ const allSelected = computed(() => props.total > 0 && props.count >= props.total
   cursor: pointer;
 }
 
+/* DESIGN.md "Library": a selected row has no check box - a highlight and an outline say it, not colour alone */
 .selectable-row.selected {
-  background: #ffffff14;
-  box-shadow: inset 3px 0 0 #ffffff;
-}
-
-.select-box {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-  accent-color: #ffffff;
-  cursor: pointer;
+  background: #ffffff26;
+  outline: 2px solid #ffffff;
+  outline-offset: -2px;
+  border-radius: 8px;
 }
 
 @media screen and (max-width: 800px) {

@@ -284,7 +284,6 @@ onUnmounted(() => {
 
 <style>
 .year-package {
-  margin: calc(15vh - 10px) auto;
   max-width: 900px;
   display: flex;
   flex-direction: column;
@@ -313,7 +312,7 @@ onUnmounted(() => {
 
 .year-package .frozen {
   font-size: 0.7em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
 }
 
 .year-package .actions {
@@ -346,7 +345,7 @@ onUnmounted(() => {
   list-style: none;
   padding: 0;
   font-size: 0.75em;
-  color: #999999;
+  color: var(--tint-fg, #ffffffae);
 }
 
 .year-package .compare-rows li {
@@ -366,9 +365,9 @@ onUnmounted(() => {
   background: #000;
 }
 
-.year-package .note { font-size: 0.75em; color: #666666; }
+.year-package .note { font-size: 0.75em; color: var(--tint-fg, #ffffffae); }
 .year-package .error { font-size: 0.75em; color: var(--danger-text); }
-.year-package .empty { font-size: 0.8em; color: #666666; }
+.year-package .empty { font-size: 0.8em; color: var(--tint-fg, #ffffffae); }
 .year-package .mix-link { font-size: 0.85em; margin-top: 10px; }
 
 @media screen and (max-width: 800px) {

@@ -2,11 +2,11 @@
   <header ref="headerRef">
     <ProgressiveBlur class="backblur" height="80%" fade-color="#00000050" />
     <span>
-      <button v-show="!mobileSearchActive" @click="props.toggleSidebar()">
+      <button class="wordmark-btn" :class="{ 'search-open': mobileSearchActive }" aria-label="Nafyn" @click="props.toggleSidebar()">
         <Wordmark />
       </button>
       <button v-if="loggedIn" class="search-toggle" :class="{ active: mobileSearchActive }" @click="mobileSearchActive = !mobileSearchActive">
-        <img src="../assets/icons/search.svg" draggable="false" />
+        <img src="../assets/icons/search.svg" alt="" draggable="false" />
       </button>
       <input v-if="loggedIn" v-model="searchText" type="text" name="search" id="search" :class="{ 'mobile-active': mobileSearchActive }" :placeholder="$t('common.search')" :title="$t('search.hint')" :disabled="sidebarActive" @keydown.enter="search()">
     </span>
@@ -99,7 +99,7 @@ header .backblur {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100vw;
+  width: 100%;
   height: 15vh;
   z-index: 99;
 }
@@ -128,6 +128,12 @@ header .search-toggle {
   header button {
     padding: 0.2em 1.0em !important;
     /* margin-bottom: 20px; */
+  }
+
+  /* DESIGN.md "Header and Sidebar": on a small screen the wordmark gives way to the search field while it is open, and
+     is never hidden otherwise (this rule only exists below 800px, so a desktop header always shows it) */
+  header .wordmark-btn.search-open {
+    display: none;
   }
 
   header input {

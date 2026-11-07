@@ -9,6 +9,7 @@
 // before this one starts.
 import { claimDueActivities, claimDueReleases, refreshReleaseDates } from "~~/server/core/releaseSubscriptions";
 import { notifyReleaseOut, notifyReleaseSoon, startNotificationListeners } from "~~/server/core/notifications";
+import { sweepStaleRequestActivities } from "~~/server/utils/apn";
 
 const TICK_INTERVAL_MS = 60_000;
 // MusicBrainz dates move; pending subscriptions are re-resolved this often
@@ -35,6 +36,9 @@ export default defineNitroPlugin(() => {
             const now = Date.now();
             for (const sub of await claimDueActivities(now)) notifyReleaseSoon(sub);
             for (const sub of await claimDueReleases(now)) notifyReleaseOut(sub);
+            // a request Live Activity nobody has updated for 15 minutes comes off the lock screen
+            const stale = await sweepStaleRequestActivities(now);
+            if (stale > 0) console.info(`[notifications] ended ${stale} stale request Live Activit${stale === 1 ? "y" : "ies"}`);
 
             if (now - lastRefresh >= REFRESH_INTERVAL_MS) {
                 lastRefresh = now;

@@ -90,6 +90,9 @@ html {
 	/* the page scrollbar is always there (body is overflow-y: scroll); this stops the layout from shifting
 	   when a modal or panel briefly takes it away */
 	scrollbar-gutter: stable;
+	/* DESIGN.md "Layout of pages and views": nothing ever scrolls sideways, whatever sticks out of the viewport */
+	overflow-x: clip;
+	max-width: 100%;
 }
 
 * {
@@ -104,9 +107,23 @@ body {
 	font-family: "Instrument-Serif";
 	font-size: 1.5em;
 	max-width: 100%;
-	overflow: hidden scroll;
+	overflow-x: hidden;
+	overflow-y: scroll;
 	/* micro-animation between states (DESIGN.md "Interface"): a detail screen tints the body with its cover's colour */
 	transition: background 0.4s ease-out, color 0.4s ease-out;
+}
+
+/* the permanent sidebar column (above 800px, while the sidebar is shown): the pages sit in what is left of the
+   width, centred, instead of every page restating the clearance in its own margin */
+@media screen and (min-width: 801px) {
+	body:has(.sidebar:not(.hide)) {
+		padding-left: 220px;
+	}
+}
+
+/* Now Playing never scrolls, on any axis (DESIGN.md "Now Playing") - not even the page's own scrollbar */
+body:has(.npp:not(.empty)) {
+	overflow: hidden;
 }
 
 a {
@@ -122,49 +139,73 @@ code {
     font-family: monospace;
 }
 
-input[type="text"], input[type="password"] {
-	background: #00000050;
-	padding: 15px 30px;
-	border-radius: 250px;
+/* DESIGN.md "Text fields": every field is Nafyn's own, none uses the browser's default style. They share the header's
+   search field: a translucent background over a slightly blurred backdrop, rounded, the app's sans, a visible focus. */
+input:where(:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="submit"], [type="button"], [type="reset"], [type="image"], [type="hidden"])),
+textarea,
+select {
+	background: #ffffff20;
+	-webkit-backdrop-filter: blur(12px);
+	backdrop-filter: blur(12px);
+	border: 1px solid transparent;
 	outline: none;
-	border: none;
 	font-family: var(--font-discy);
 	font-size: 0.8em;
 	color: inherit;
+	max-width: 100%;
+	min-width: 0;
+	transition: background 0.2s ease-out, border-color 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+input:where(:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="submit"], [type="button"], [type="reset"], [type="image"], [type="hidden"])) {
+	padding: 0.8em 1.6em;
+	border-radius: 250px;
 }
 
 textarea {
-	background: #00000050;
-	padding: 15px 30px;
+	padding: 0.8em 1.6em;
 	border-radius: 20px;
-	outline: none;
-	border: none;
-	font-family: var(--font-discy);
-	font-size: 0.8em;
-	color: inherit;
 	resize: none !important;
 }
 
 select {
-	background: #1a1a1a;
-	border: 1px solid #333333;
-	border-radius: 50vw;
-	outline: none;
 	padding: 0.6em 1em;
-	font-family: var(--font-discy);
-	font-size: 0.8em;
-	color: inherit;
+	border-radius: 50vw;
 	cursor: pointer;
-	/* appearance: none; */
 }
 
-select:hover {
-	background: #232323;
+input:where(:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="submit"], [type="button"], [type="reset"], [type="image"], [type="hidden"])):hover:not(:disabled),
+textarea:hover:not(:disabled),
+select:hover:not(:disabled) {
+	background: #ffffff2e;
+}
+
+input:where(:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="submit"], [type="button"], [type="reset"], [type="image"], [type="hidden"])):focus,
+textarea:focus,
+select:focus {
+	background: #ffffff2e;
+	border-color: #ffffffae;
+}
+
+input::placeholder,
+textarea::placeholder {
+	color: #ffffffae;
+	opacity: 1;
+}
+
+input[type="search"]::-webkit-search-cancel-button {
+	-webkit-appearance: none;
+	appearance: none;
+}
+
+input[type="number"] {
+	-moz-appearance: textfield;
+	appearance: textfield;
 }
 
 select option {
 	background: #1a1a1a;
-	color: inherit;
+	color: #ffffffae;
 }
 
 button {
@@ -188,6 +229,13 @@ button[filled], a[filled], p[filled] {
 	   0.9em, from 3em), so a button in a narrow column loses air, not text. If it still doesn't fit, the
 	   label is cut with an ellipsis rather than spilling out of the button. */
 	padding: 0.6em clamp(0.9em, 3vw, 3em);
+	/* DESIGN.md "Filled & Hollow": the content is centred in the frame, both ways, and never clips out of it
+	   (`align-content` centres a block's lines vertically, so a button stretched taller than its text still
+	   shows the label in the middle, and the ellipsis below keeps working) */
+	display: inline-block;
+	text-align: center;
+	align-content: center;
+	line-height: 1.25;
 	white-space: nowrap;
 	max-width: 100%;
 	min-width: 0;
@@ -212,8 +260,9 @@ button[filled="hollow"]:hover:not(:disabled), a[filled="hollow"]:hover:not(:disa
 	color: #000000;
 }
 
-/* destructive (DESIGN.md "Colors" + "Contrast"). Filled: deep red fill and border, white label; hollow: light red
-   border and label, filling with the deep red on hover. The label on a red fill is white (the hover rule above is
+/* destructive (DESIGN.md "Colors" + "Contrast"). A destructive button is either filled (deep red fill, white label,
+   a darker fill on hover) or hollow (light red border and label, a faint red wash on hover) - never one that turns
+   into the other. The label on a red fill is white (the hover rule above is
    more specific than a plain `.danger`, so every state restates `color`). */
 button[filled].danger, a[filled].danger {
 	background: var(--danger-fill);
@@ -233,10 +282,11 @@ button[filled].danger:hover:not(:disabled), a[filled].danger:hover:not(:disabled
 	color: #ffffff;
 }
 
+/* a hollow destructive button stays hollow on hover: a faint wash of the red, the border and label do not change */
 button[filled="hollow"].danger:hover:not(:disabled), a[filled="hollow"].danger:hover:not(:disabled) {
-	background: var(--danger-fill);
-	border: var(--danger-fill) 1px solid;
-	color: #ffffff;
+	background: color-mix(in srgb, var(--danger-text) 20%, transparent);
+	border: var(--danger-text) 1px solid;
+	color: var(--danger-text);
 }
 
 /* "over" buttons: a translucent grey pill with a blurred backdrop, for controls that float over content (the
@@ -289,11 +339,14 @@ button.over[aria-pressed="true"] {
    (WCAG 2.5.5), the icon SVGs are black so they are inverted to white until the hover fills the button.
    Always give one an aria-label - there is no text to name it. */
 button.icon-only {
-	/* at least 44px; in a row it takes the height of its siblings (stretch) and stays a circle through the ratio */
-	width: auto;
-	height: auto;
-	min-width: 44px;
-	min-height: 44px;
+	/* a circle, always (DESIGN.md "Icon-only buttons"): a fixed square the height of a text button beside it
+	   (0.6em of padding twice + a 1.25 line + the border), never less than 44px. It must not stretch with its row:
+	   `align-self: center` keeps a flex row's `align-items: stretch` from making it taller than wide. */
+	width: max(44px, calc(2.45em + 2px));
+	height: max(44px, calc(2.45em + 2px));
+	min-width: 0;
+	min-height: 0;
+	align-self: center;
 	aspect-ratio: 1 / 1;
 	padding: 0;
 	border-radius: 50%;
@@ -303,16 +356,58 @@ button.icon-only {
 	flex-shrink: 0;
 }
 
+/* DESIGN.md "Icon-only buttons": the symbol takes at least 90% of the button's width */
+button.icon-only img,
+button.icon-only svg {
+	width: 70%;
+	height: 70%;
+}
+
+/* the icon FILES are black: white by default, and black again on a page whose labels are black (useCoverTint).
+   An inline <svg> draws in `currentColor` already (the ellipsis buttons), so inverting it too made it black. */
 button.icon-only img {
-	width: 1.1em;
-	height: 1.1em;
-	filter: invert(1);
+	filter: var(--icon-filter, invert(1));
 	transition: filter 0.15s ease-out;
+}
+
+button.icon-only svg {
+	color: inherit;
 }
 
 button.icon-only:hover:not(:disabled) img,
 button.icon-only[filled]:not([filled="hollow"]) img {
 	filter: none;
+}
+
+/* DESIGN.md "Animations": no state of any control jumps. Hover, focus, pressed, selected and disabled all
+   blend (the more specific rules above restate their own, longer, transitions where they have one). */
+:where(button, a, summary, select, textarea, input, label, li, [role="option"], [role="menuitem"]) {
+	transition-property: background-color, color, border-color, opacity, box-shadow, transform, filter, outline-color;
+	transition-duration: 0.2s;
+	transition-timing-function: ease-out;
+}
+
+:where(button:not(:disabled), [role="button"]):active {
+	transform: scale(0.97);
+}
+
+/* sheets and menus fade and move slightly in; the sheets' backdrop darkens progressively */
+.modal-backdrop {
+	animation: fade-in 0.2s ease-out;
+}
+
+.modal {
+	animation: sheet-pop 0.22s ease-out;
+}
+
+@keyframes fade-in {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+@keyframes sheet-pop {
+	from { opacity: 0; transform: translateY(12px) scale(0.98); }
+	to { opacity: 1; transform: none; }
 }
 
 /* keyboard focus is always visible (the resets above remove the browser's own ring) */
@@ -348,11 +443,16 @@ input:focus-visible, textarea:focus-visible {
 	pointer-events: none;
 }
 
-.view {
-	margin: calc(15vh - 10px) 1.2em;
-	/* sidebar is a permanent column above 800px (see Sidebar.vue), so content shifts right to sit clear of it */
-	margin-left: calc(220px + 1.2em);
-	padding-bottom: 6em;
+/* Every page's root IS `.view`: the margin is the clearance below the fixed Header (and its gradient), the side
+   padding is the gutter that keeps content off the edges of the display (DESIGN.md "Layout of pages and views"),
+   and the sidebar column is the body's own padding (above). `div.view` is more specific than a page's own
+   `.page {}` rule on purpose: a page sets `max-width` and `padding`, never its margin, so it can no longer slide
+   under the Header or the sidebar, nor touch the edges. */
+div.view {
+	margin: calc(15vh - 10px) auto 0;
+	padding: 0 1.2em 6em;
+	width: 100%;
+	min-width: 0;
 }
 
 .toasts {
@@ -405,15 +505,26 @@ input:focus-visible, textarea:focus-visible {
 @media screen and (max-width: 800px) {
 	/* sidebar is a toggled full-screen overlay below 800px (see Sidebar.vue), not a permanent column,
 	   so content isn't shifted here - back to the plain default margin */
-	.view {
-		margin: calc(20vh - 10px) 1.2em;
-		padding-bottom: 6em;
+	div.view {
+		margin-top: calc(20vh - 10px);
 	}
 }
 
 @media (prefers-reduced-motion: reduce) {
-	body {
-		transition: none;
+	body, button, a, input, textarea, select, label, li {
+		transition: none !important;
+	}
+
+	.modal-backdrop {
+		animation: fade-in 0.01s linear;
+	}
+
+	.modal {
+		animation: none !important;
+	}
+
+	button:active {
+		transform: none !important;
 	}
 
 	.sb {

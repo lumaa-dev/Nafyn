@@ -65,7 +65,7 @@ function entryCover(item: RecentlyPlayedEntry): string {
 
 <style>
 .recent-empty {
-  color: color-mix(in srgb, currentColor 80%, transparent);
+  color: currentColor;
 }
 
 .recent.scroll {
@@ -122,7 +122,7 @@ function entryCover(item: RecentlyPlayedEntry): string {
 
 .recent-card .subtitle {
   font-size: 0.85em;
-  color: color-mix(in srgb, currentColor 80%, transparent);
+  color: currentColor;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

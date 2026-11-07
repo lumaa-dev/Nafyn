@@ -342,7 +342,6 @@ onUnmounted(() => {
   display: flex;
   gap: 60px;
   align-items: flex-start;
-  margin: calc(15vh - 10px) auto;
   max-width: 900px;
 }
 
@@ -398,7 +397,7 @@ onUnmounted(() => {
 .insights .period {
   font-family: var(--font-discy);
   font-size: 0.75em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   margin-top: -12px;
 }
 
@@ -423,7 +422,7 @@ onUnmounted(() => {
 .insights .empty,
 .insights .notice {
   font-size: 0.8em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
 }
 
 .insights .year-switch {
@@ -469,6 +468,12 @@ onUnmounted(() => {
     padding-bottom: 4px;
     -webkit-overflow-scrolling: touch;
     align-items: center;
+  }
+
+  /* the Header is taller here and its gradient covers the top of the page: leave room so the nav is never blocked */
+  .insights-nav {
+    margin-top: 1.4em;
+    padding-block: 0.6em 4px;
   }
 
   .insights-nav h2 { display: none; }

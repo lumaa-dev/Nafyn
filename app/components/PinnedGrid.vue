@@ -1,9 +1,13 @@
 <template>
   <section v-if="visible.length > 0" class="pinned" :aria-label="$t('pins.title')">
     <h2 class="pinned-title">{{ $t('pins.title') }}</h2>
-    <ul class="pinned-grid">
+    <ul class="pinned-grid" :class="{ small }">
       <li v-for="pin in visible" :key="`${pin.kind}-${pin.refId}`">
-        <NuxtLink :to="pin.href" class="pin-card" @contextmenu.prevent="onMenu($event, pin)">
+        <!-- DESIGN.md "Library": on a small screen a pin is a MediaBox (cover, title, artist), in a grid that fits the width -->
+        <NuxtLink v-if="small" :to="pin.href" class="pin-box" @contextmenu.prevent="onMenu($event, pin)">
+          <MediaBox :media="pinMedia(pin)" />
+        </NuxtLink>
+        <NuxtLink v-else :to="pin.href" class="pin-card" @contextmenu.prevent="onMenu($event, pin)">
           <CoverImage :src="pinCover(pin)" />
           <span class="pin-text">
             <span class="pin-name">{{ pin.title }}</span>
@@ -22,6 +26,7 @@ import noCover from '~/assets/no-cover.png';
 import type { AlbumRow } from '~~/server/core/library';
 import { useAuthToken } from '~/composables/useAuthToken';
 import type { PinEntry, PinKind } from '~/composables/usePins';
+import type { MediaInfo } from '~~/server/entity/media/MediaInfo';
 
 const props = defineProps<{ kinds?: PinKind[] }>();
 
@@ -30,6 +35,33 @@ const { pins, ensureLoaded, refresh: refreshPins } = usePins();
 const { openMenu } = useMediaMenu();
 
 await ensureLoaded();
+
+// small screens (the sidebar becomes an overlay below 800px) show pins as MediaBoxes; decided on the client only,
+// so the server-rendered markup is always the wide one and hydration never disagrees
+const small = ref(false);
+onMounted(() => {
+  const query = window.matchMedia("(max-width: 800px)");
+  small.value = query.matches;
+  const sync = () => { small.value = query.matches; };
+  query.addEventListener("change", sync);
+  onUnmounted(() => query.removeEventListener("change", sync));
+});
+
+function pinMedia(pin: PinEntry): MediaInfo {
+  return {
+    id: pin.refId,
+    title: pin.title,
+    artist: pin.subtitle ?? $t(`pins.kind.${pin.kind}`),
+    album: null,
+    type: null,
+    coverArt: pinCover(pin),
+    releaseDate: null,
+    inLibrary: true,
+    duration: 0,
+    label: null,
+    relations: { amId: undefined }
+  };
+}
 
 const visible = computed(() => props.kinds ? pins.value.filter((pin) => props.kinds!.includes(pin.kind)) : pins.value);
 
@@ -120,11 +152,17 @@ function onMenu(event: MouseEvent, pin: PinEntry) {
   white-space: nowrap;
 }
 
-/* DESIGN.md "Library": pinned elements are always a 3-column grid; on a narrow screen a card shows its cover and
-   name only */
-@media screen and (max-width: 520px) {
-  .pin-sub {
-    display: none;
-  }
+.pin-box {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  font-family: "Instrument-Serif";
+  min-width: 0;
+}
+
+/* a small screen: MediaBoxes, two to a row */
+.pinned-grid.small {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
 }
 </style>

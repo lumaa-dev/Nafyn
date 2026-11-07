@@ -2,7 +2,7 @@
   <div class="libplaylists bulk-page">
     <div class="head">
       <h1>{{ $t('playlist.title') }}</h1>
-      <button type="button" filled @click="showCreate = true">{{ $t('playlist.create.open') }}</button>
+      <IconButton symbol="plus" :label="$t('playlist.create.open')" @click="showCreate = true" />
     </div>
 
     <div class="grid" v-if="playlists.length > 0">
@@ -29,28 +29,24 @@
 
     <BulkBar :selecting="selecting" :count="count" :total="playlists.length" @start="start" @stop="stop" @select-all="toggleAll" @actions="onBulkActions" />
 
-    <Teleport to="body">
-      <div v-if="showCreate" class="pmodal-backdrop" @click.self="showCreate = false">
-        <div class="pmodal">
-          <h2>{{ $t('playlist.create.open') }}</h2>
+    <Modal v-model="showCreate" :title="$t('playlist.create.open')">
+      <template #toolbar>
+        <IconButton toolbar symbol="check" :label="$t('playlist.create.submit')" :disabled="!newTitle.trim() || creating" @click="create" />
+      </template>
+      <div class="pform">
+        <label for="title">{{ $t('playlist.form.title') }}</label>
+        <input id="title" v-model="newTitle" type="text" maxlength="100">
 
-          <label for="title">{{ $t('playlist.form.title') }}</label>
-          <input id="title" v-model="newTitle" type="text" maxlength="100">
+        <label for="description">{{ $t('playlist.form.description') }}</label>
+        <textarea id="description" v-model="newDescription" maxlength="500" rows="3" />
 
-          <label for="description">{{ $t('playlist.form.description') }}</label>
-          <textarea id="description" v-model="newDescription" maxlength="500" rows="3" />
-
-          <label for="privacy">{{ $t('playlist.form.privacy') }}</label>
-          <select id="privacy" v-model="newPrivacy">
-            <option value="private">{{ $t('playlist.privacy.private') }}</option>
-            <option value="public">{{ $t('playlist.privacy.public') }}</option>
-          </select>
-
-          <button type="button" filled :disabled="!newTitle.trim() || creating" @click="create">{{ $t('playlist.create.submit') }}</button>
-          <button type="button" filled="hollow" @click="showCreate = false">{{ $t('playlist.picker.cancel') }}</button>
-        </div>
+        <label for="privacy">{{ $t('playlist.form.privacy') }}</label>
+        <select id="privacy" v-model="newPrivacy">
+          <option value="private">{{ $t('playlist.privacy.private') }}</option>
+          <option value="public">{{ $t('playlist.privacy.public') }}</option>
+        </select>
       </div>
-    </Teleport>
+    </Modal>
   </div>
 </template>
 
@@ -154,20 +150,27 @@ async function create() {
 
 <style>
 .libplaylists {
-  width: 70vw;
   max-width: 1200px;
-  margin: calc(15vh - 10px) auto;
 }
 
 .libplaylists .head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+/* two columns on a small screen (DESIGN.md "Library") */
+@media screen and (max-width: 800px) {
+  .libplaylists .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
 }
 
 .libplaylists .empty {
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
 }
 
 .libplaylists .scroll-sentinel {
@@ -176,7 +179,7 @@ async function create() {
 
 .libplaylists .loading-more {
   text-align: center;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   font-size: 0.8em;
   padding: 10px 0;
 }
@@ -237,43 +240,19 @@ async function create() {
 
 .libplaylists .pcard .privacy {
   font-size: 0.8em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   text-transform: capitalize;
 }
 
-.pmodal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  background: #00000080;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.pmodal {
-  background: #1a1a1a;
-  border-radius: 16px;
-  padding: 24px;
-  width: 320px;
+.pform {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.pmodal h2 {
-  font-size: 1em;
-  margin: 0 0 8px 0;
-}
-
-.pmodal label {
+.pform label {
   font-size: 0.7em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
 }
 
-@media screen and (max-width: 800px) {
-  .libplaylists {
-    margin: calc(15vh - 10px) 1.2em;
-  }
-}
 </style>

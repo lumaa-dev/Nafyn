@@ -25,7 +25,7 @@ const message = computed(() => {
 <style>
 /* secondary foreground: the page text, dimmed (still AAA against the background) */
 .load-error {
-  color: color-mix(in srgb, currentColor 80%, transparent);
+  color: currentColor;
   text-align: center;
   padding: 40px 1em 0;
 }

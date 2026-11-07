@@ -114,9 +114,7 @@ function toMediaInfo(album: AlbumRow): MediaInfo {
 
 <style>
 .libalbums {
-  width: 70vw;
   max-width: 1200px;
-  margin: calc(15vh - 10px) auto;
 }
 
 .libalbums .title-row {
@@ -124,10 +122,12 @@ function toMediaInfo(album: AlbumRow): MediaInfo {
   align-items: center;
   flex-wrap: wrap;
   gap: 14px;
+  /* DESIGN.md "Library": air between the page's header and its grid */
+  margin-bottom: 28px;
 }
 
 .libalbums .empty {
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
 }
 
 .libalbums .scroll-sentinel {
@@ -136,7 +136,7 @@ function toMediaInfo(album: AlbumRow): MediaInfo {
 
 .libalbums .loading-more {
   text-align: center;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   font-size: 0.8em;
   padding: 10px 0;
 }
@@ -145,6 +145,14 @@ function toMediaInfo(album: AlbumRow): MediaInfo {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 20px;
+}
+
+/* two columns on a small screen (DESIGN.md "Library") */
+@media screen and (max-width: 800px) {
+  .libalbums .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
 }
 
 .libalbums .grid a {
@@ -186,9 +194,4 @@ function toMediaInfo(album: AlbumRow): MediaInfo {
   background: #ffffff;
 }
 
-@media screen and (max-width: 800px) {
-  .libalbums {
-    margin: calc(15vh - 10px) 1.2em;
-  }
-}
 </style>

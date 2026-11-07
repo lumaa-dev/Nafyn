@@ -105,7 +105,7 @@ onBeforeUnmount(() => {
 
 .countdown.compact {
   font-size: 0.75em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   white-space: nowrap;
 }
 </style>

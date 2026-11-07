@@ -104,7 +104,7 @@ const gradient = computed(() => {
 
 .donutchart .caption {
   font-size: 0.6em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   text-align: center;
 }
 
@@ -143,7 +143,7 @@ const gradient = computed(() => {
 .donutchart .pct {
   font-family: var(--font-discy);
   font-size: 0.9em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   flex-shrink: 0;
 }
 </style>

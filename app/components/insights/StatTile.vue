@@ -34,7 +34,7 @@ defineProps<{
 
 .stat-tile .label {
   font-size: 0.65em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -48,7 +48,7 @@ defineProps<{
 .stat-tile .delta {
   font-family: var(--font-discy);
   font-size: 0.65em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
 }
 
 .stat-tile .delta.up { color: #93c47d; }

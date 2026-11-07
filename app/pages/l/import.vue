@@ -137,12 +137,10 @@ async function submit() {
 <style scoped>
 .import {
   max-width: 600px;
-  margin: calc(15vh - 10px) auto;
-  padding: 0 1.2em;
 }
 
 .import .hint {
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   font-size: 0.85em;
   margin-bottom: 1.5em;
 }
@@ -158,7 +156,7 @@ async function submit() {
   flex-direction: column;
   gap: 4px;
   font-size: 0.85em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
 }
 
 .import input[type="text"],

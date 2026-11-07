@@ -151,6 +151,7 @@ useCoverTint(() => track.value as (MediaRow & { imageColors?: string[], textColo
   align-items: stretch;
   gap: 10px;
   margin: 1.2em 0;
+  flex-wrap: wrap;
 }
 
 .track .details {

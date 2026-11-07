@@ -59,7 +59,16 @@ export async function indexExists(conn: PoolConnection, table: string, index: st
 // Empty on purpose at 1.0.0: every table and column that earlier development builds added through a migration
 // is now part of the base schema in db.ts (initDatabases) and insightsSchema.ts, so a fresh install gets the
 // final shape directly. The first schema change after 1.0.0 is the first entry here.
-const MIGRATIONS: Migration[] = [];
+const MIGRATIONS: Migration[] = [
+    {
+        // lets the stale sweep tell when a request Live Activity was last pushed to
+        id: "2026-11-apn-activity-updated-at",
+        up: async (conn) => {
+            if (await columnExists(conn, "apn_activity_tokens", "updatedAt")) return;
+            await conn.query(`ALTER TABLE apn_activity_tokens ADD COLUMN updatedAt BIGINT NULL`);
+        }
+    }
+];
 
 async function appliedIds(conn: PoolConnection): Promise<Set<string>> {
     const [rows] = await conn.query(`SELECT id FROM schema_migrations`);

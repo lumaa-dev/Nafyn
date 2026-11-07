@@ -61,7 +61,7 @@ function widthOf(value: number): number {
 .barchart .rank {
   font-family: var(--font-discy);
   font-size: 0.7em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   width: 22px;
   flex-shrink: 0;
   text-align: right;
@@ -84,7 +84,7 @@ function widthOf(value: number): number {
 
 .barchart .sublabel {
   font-size: 0.65em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

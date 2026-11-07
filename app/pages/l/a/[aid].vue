@@ -21,10 +21,8 @@
         <h3>{{ group.label }}</h3>
       </li>
       <li v-for="track in group.tracks" :key="track.id" :class="{ playing: currentTrack?.id === track.id, 'selectable-row': selecting, selected: isSelected(track.id) }" @click="selecting ? toggle(track.id) : playFrom(track)" @contextmenu.prevent="onContextMenu($event, track)">
-        <input v-if="selecting" type="checkbox" class="select-box" :checked="isSelected(track.id)" :aria-label="track.title" tabindex="-1" @click.stop="toggle(track.id)">
         <!-- the track number, unless the track has none -->
         <span v-if="track.trackNumber" class="number">{{ track.trackNumber }}</span>
-        <CoverImage :src="coverSrc(track)" />
         <span class="col">
           <span class="title">{{ track.title }}</span>
           <span class="artist">{{ track.artistName }}</span>
@@ -140,7 +138,6 @@ useCoverTint(() => detail.value?.album as (AlbumRow & { imageColors?: string[], 
 <style scoped>
 .libalbum {
   max-width: 900px;
-  margin: calc(15vh - 10px) auto;
 }
 
 .libalbum .head {
@@ -172,6 +169,7 @@ useCoverTint(() => detail.value?.album as (AlbumRow & { imageColors?: string[], 
   display: flex;
   gap: 10px;
   margin-top: 1.2em;
+  flex-wrap: wrap;
 }
 
 .libalbum .tracks {
@@ -242,18 +240,18 @@ useCoverTint(() => detail.value?.album as (AlbumRow & { imageColors?: string[], 
 
 .libalbum .tracks .artist {
   font-size: 0.85em;
-  color: color-mix(in srgb, currentColor 75%, transparent);
+  color: currentColor;
 }
 
 .libalbum .tracks .filesize {
-  color: color-mix(in srgb, currentColor 75%, transparent);
+  color: currentColor;
   font-variant-numeric: tabular-nums;
   font-family: var(--font-discy);
   font-size: 0.7em;
 }
 
 .libalbum .tracks .duration {
-  color: color-mix(in srgb, currentColor 75%, transparent);
+  color: currentColor;
   font-variant-numeric: tabular-nums;
   font-family: var(--font-discy);
   font-size: 0.7em;
@@ -265,15 +263,12 @@ useCoverTint(() => detail.value?.album as (AlbumRow & { imageColors?: string[], 
   justify-content: center;
   background: none;
   border: none;
-  color: color-mix(in srgb, currentColor 75%, transparent);
+  color: inherit;
   cursor: pointer;
   padding: 4px;
 }
 
 @media screen and (max-width: 800px) {
-  .libalbum {
-    margin: calc(15vh - 10px) 1.2em;
-  }
 
   .libalbum .head {
     flex-direction: column;

@@ -18,6 +18,7 @@ import { getUserDisplayName, listUserIdsWithPermission } from "./users";
 import type { DueSubscription } from "./releaseSubscriptions";
 import { sendGlobalWebhook, sendWebhookToUsers } from "../utils/webhook";
 import {
+    announceRequestActivityEnd,
     endReleaseActivity,
     endRequestActivity,
     sendNotificationToUsers,
@@ -179,6 +180,8 @@ export function notifyRequestDenied(request: NafynRequest, actorId: string): voi
 
 /** The download pipeline is done with a request, one way or the other. */
 export function notifyRequestFinished(requestId: string, outcome: "completed" | "failed", detail: string | null = null): void {
+    // synchronous on purpose: the next request the pipeline starts must already see this activity as finishing
+    announceRequestActivityEnd(requestId);
     fireAndForget(`request.${outcome}`, async () => {
         const request = await getRequestById(requestId);
         const ctx = request ? await requestContext(request) : null;

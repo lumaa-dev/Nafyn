@@ -48,6 +48,9 @@ export const RELEASE_ACTIVITY_TYPE = "NafynReleaseCountdownAttributes";
 // removed from the lock screen too (ending an activity hides its Dynamic Island presentation at once, so the
 // outcome goes out as an update first and the end follows after this)
 const REQUEST_ACTIVITY_OUTCOME_MS = 5_000;
+// a request Live Activity that was not updated for this long is stale: the sweep ends it and removes it from
+// the lock screen. That says nothing about the request, which may still be running (a stalled peer).
+export const REQUEST_ACTIVITY_STALE_MS = 15 * 60 * 1000;
 // how long the "out now" countdown stays up after release. iOS ends any Live Activity 8 hours after it
 // started; the countdown starts 3 hours before release, so this always fits inside that window.
 const RELEASE_ACTIVITY_LINGER_MS = 60 * 60 * 1000;
@@ -303,9 +306,9 @@ export async function deleteDevice(userId: string, id: string): Promise<boolean>
 /** Registers the update token of a running Live Activity / Now Playing session. Ownership of `refId` is the caller's job. */
 export async function registerActivityToken(userId: string, sessionId: string, input: { kind: ApnActivityKind, refId: string, token: string, environment: ApnEnvironment }): Promise<void> {
     await getUsersDb().prepare(`
-        INSERT INTO apn_activity_tokens (id, userId, sessionId, kind, refId, token, environment, createdAt)
-        VALUES (:id, :userId, :sessionId, :kind, :refId, :token, :environment, :createdAt)
-        ON DUPLICATE KEY UPDATE token = VALUES(token), environment = VALUES(environment), createdAt = VALUES(createdAt)
+        INSERT INTO apn_activity_tokens (id, userId, sessionId, kind, refId, token, environment, createdAt, updatedAt)
+        VALUES (:id, :userId, :sessionId, :kind, :refId, :token, :environment, :createdAt, :createdAt)
+        ON DUPLICATE KEY UPDATE token = VALUES(token), environment = VALUES(environment), createdAt = VALUES(createdAt), updatedAt = VALUES(updatedAt)
     `).run({
         id: randomUUID(),
         userId,
@@ -676,9 +679,9 @@ function liveActivityNotification(options: LiveActivityOptions): Notification {
 // ---------------------------------------------------------------------------------------------------------
 // request Live Activity pacing
 //
-// Every request has its own activity, but iOS budgets updates per *app*: ten requests at once, each pushing
-// stage/track changes at priority 10 plus progress, used to exhaust that budget and freeze every Live Activity
-// for minutes. So all pushes of one user go through one queue: one push per ACTIVITY_PUSH_MIN_GAP_MS, the
+// A user has at most ONE request activity (see startRequestActivity), but iOS budgets updates per *app*, and
+// the pushes of ten requests used to exhaust that budget and freeze every Live Activity for minutes. So all
+// pushes of one user go through one queue: one push per ACTIVITY_PUSH_MIN_GAP_MS, the
 // newest state per request replaces an older pending one, urgent jobs (start, outcome, end) go first, only
 // one priority 10 update per ACTIVITY_HIGH_PRIORITY_MIN_GAP_MS (the rest at priority 5), a hung push times out,
 // and a 429/503 from APNs pauses progress traffic with a growing backoff.
@@ -789,13 +792,105 @@ function pumpActivityJobs(userId: string, pacer: UserPacer): void {
 }
 
 // last update sent per request, to keep within Apple's Live Activity update budget
-// requests whose outcome is being shown (final update sent, end still pending)
-const finishingRequestActivities = new Set<string>();
 const requestActivityThrottle = new Map<string, { userId: string, sentAt: number, stage: string, trackIndex: number | null, trackCount: number | null }>();
 
-/** Starts a request's progress Live Activity on the requester's devices (push-to-start). */
+// One request Live Activity per user. `activeRequestByUser` is the request whose activity the user's devices
+// show; `finishingRequestActivities` holds the requests whose outcome is on screen (final update sent, end
+// still pending) with a promise that settles once that activity is gone, which is what the *next* request of
+// the same user waits for before it starts, so two activities never overlap on the lock screen.
+interface FinishingActivity { done: Promise<void>, settle: () => void }
+const finishingRequestActivities = new Map<string, FinishingActivity>();
+const activeRequestByUser = new Map<string, string>();
+
+function settleFinishing(requestId: string): void {
+    const finishing = finishingRequestActivities.get(requestId);
+    finishingRequestActivities.delete(requestId);
+    finishing?.settle();
+}
+
+/**
+ * Called synchronously the moment the pipeline is done with a request (before any await), so that whatever
+ * request the pipeline starts next already finds this one "finishing" and waits for its outcome to be shown
+ * instead of cutting it off. A no-op for a request that has no activity.
+ */
+export function announceRequestActivityEnd(requestId: string): void {
+    if (!apnEnabled() || finishingRequestActivities.has(requestId)) return;
+    if (![...activeRequestByUser.values()].includes(requestId)) return;
+    let settle!: () => void;
+    const done = new Promise<void>((resolve) => { settle = resolve; });
+    finishingRequestActivities.set(requestId, { done, settle });
+    // safety net: endRequestActivity settles it, but nothing may keep a user's next activity waiting forever
+    setTimeout(() => settleFinishing(requestId), REQUEST_ACTIVITY_OUTCOME_MS * 6).unref?.();
+}
+
+/** Records that a request activity was just pushed to; the stale sweep measures from here. */
+async function touchRequestActivity(requestId: string): Promise<void> {
+    await getUsersDb().prepare(`UPDATE apn_activity_tokens SET updatedAt = ? WHERE kind = 'request' AND refId = ?`).run(Date.now(), requestId);
+}
+
+/** Ends one request's activity right away (no outcome shown) and forgets its tokens. */
+async function endRequestActivityNow(userId: string, requestId: string): Promise<void> {
+    requestActivityThrottle.delete(requestId);
+    if (activeRequestByUser.get(userId) === requestId) activeRequestByUser.delete(userId);
+    const targets = await activityTargets("request", requestId);
+    if (targets.length > 0) {
+        const state: RequestActivityState = {
+            stage: "processing", message: null, trackTitle: null, trackIndex: null, trackCount: null, progress: null, etaSeconds: null
+        };
+        await enqueueActivityJob(userId, `end:${requestId}`, JOB_URGENT, () => send(targets, () => liveActivityNotification({
+            event: "end",
+            contentState: state,
+            dismissalDateMs: Date.now(),
+            priority: 10
+        }), "request activity end"));
+    }
+    await deleteActivityTokens("request", requestId);
+    settleFinishing(requestId);
+}
+
+/** Before a new request activity starts: wait out the previous outcome, then end anything else the user still has. */
+async function retireOtherRequestActivities(userId: string, keepRequestId: string): Promise<void> {
+    const previous = activeRequestByUser.get(userId);
+    const finishing = previous && previous !== keepRequestId ? finishingRequestActivities.get(previous) : undefined;
+    if (finishing) {
+        let guard: ReturnType<typeof setTimeout> | undefined;
+        await Promise.race([finishing.done, new Promise<void>((resolve) => { guard = setTimeout(resolve, REQUEST_ACTIVITY_OUTCOME_MS * 2); })]);
+        clearTimeout(guard);
+    }
+    const others = await getUsersDb().prepare(
+        `SELECT DISTINCT refId FROM apn_activity_tokens WHERE kind = 'request' AND userId = ? AND refId <> ?`
+    ).all(userId, keepRequestId) as { refId: string }[];
+    for (const { refId } of others) await endRequestActivityNow(userId, refId);
+}
+
+/**
+ * Ends every request Live Activity that has not been pushed to for REQUEST_ACTIVITY_STALE_MS and removes it
+ * from the lock screen. The request itself is left alone: it may well still be running. Activities whose
+ * outcome is on screen are skipped (their own end is already scheduled). Returns how many were ended.
+ */
+export async function sweepStaleRequestActivities(now = Date.now()): Promise<number> {
+    if (!apnEnabled()) return 0;
+    const rows = await getUsersDb().prepare(`
+        SELECT userId, refId FROM apn_activity_tokens WHERE kind = 'request'
+        GROUP BY userId, refId HAVING MAX(COALESCE(updatedAt, createdAt)) < ?
+    `).all(now - REQUEST_ACTIVITY_STALE_MS) as { userId: string, refId: string }[];
+    let ended = 0;
+    for (const { userId, refId } of rows) {
+        if (finishingRequestActivities.has(refId)) continue;
+        await endRequestActivityNow(userId, refId);
+        ended++;
+    }
+    return ended;
+}
+
+/**
+ * Starts the requester's request progress Live Activity (push-to-start). A user has at most one: the previous
+ * request's activity is waited for (its outcome is on screen for a few seconds) or ended first.
+ */
 export async function startRequestActivity(requesterId: string, attributes: RequestActivityAttributes): Promise<void> {
     if (!apnEnabled()) return;
+    await retireOtherRequestActivities(requesterId, attributes.requestId);
+    activeRequestByUser.set(requesterId, attributes.requestId);
     const targets = await deviceTargets([requesterId], "la-start:request");
     const state: RequestActivityState = {
         stage: "searching", message: null, trackTitle: null, trackIndex: null, trackCount: null, progress: null, etaSeconds: null
@@ -857,11 +952,13 @@ export async function updateRequestActivity(event: DownloadProgressEvent): Promi
         const sentAt = Date.now();
         const high = important && sentAt - (lastHighPriorityAt.get(userId) ?? 0) >= ACTIVITY_HIGH_PRIORITY_MIN_GAP_MS;
         if (high) lastHighPriorityAt.set(userId, sentAt);
-        return await send(current, () => liveActivityNotification({
+        const outcome = await send(current, () => liveActivityNotification({
             event: "update",
             contentState: state,
             priority: high ? 10 : 5
         }), "request activity update");
+        if (!outcome.throttled) await touchRequestActivity(event.requestId);
+        return outcome;
     });
 }
 
@@ -880,14 +977,18 @@ export async function endRequestActivity(requestId: string, outcome: "completed"
     requestActivityThrottle.delete(requestId);
     if (!apnEnabled()) return new Set();
     const targets = await activityTargetsWithUser("request", requestId);
-    if (targets.length === 0) return new Set();
+    if (targets.length === 0) {
+        for (const [id, active] of activeRequestByUser) if (active === requestId) activeRequestByUser.delete(id);
+        settleFinishing(requestId);
+        return new Set();
+    }
     const userId = targets[0]!.userId;
     const sessionIds = await activitySessionIds("request", requestId);
 
     const state: RequestActivityState = {
         stage: outcome, message, trackTitle: null, trackIndex: null, trackCount: null, progress: outcome === "completed" ? 1 : null, etaSeconds: null
     };
-    finishingRequestActivities.add(requestId);
+    announceRequestActivityEnd(requestId);
     await enqueueActivityJob(userId, `update:${requestId}`, JOB_URGENT, () => send(targets, () => liveActivityNotification({
         event: "update",
         contentState: state,
@@ -909,7 +1010,8 @@ export async function endRequestActivity(requestId: string, outcome: "completed"
         } catch (err) {
             console.error("[apn] request activity end failed:", err);
         } finally {
-            finishingRequestActivities.delete(requestId);
+            if (activeRequestByUser.get(userId) === requestId) activeRequestByUser.delete(userId);
+            settleFinishing(requestId);
         }
     }, REQUEST_ACTIVITY_OUTCOME_MS);
     timer.unref?.();

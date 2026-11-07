@@ -66,7 +66,6 @@
         @click="selecting ? toggle(entry.entryId) : undefined"
         @contextmenu.prevent="onRowContextMenu($event, entry)"
       >
-        <input v-if="selecting" type="checkbox" class="select-box" :checked="isSelected(entry.entryId)" :aria-label="entry.media.title" tabindex="-1" @click.stop="toggle(entry.entryId)">
         <button
           v-if="viewer.isOwner && sortMode === 'manual' && !selecting"
           type="button"
@@ -100,7 +99,7 @@
 
     <Modal v-model="showEdit" size="large" :title="$t('playlist.edit.open')">
       <template #toolbar>
-        <button type="button" filled :disabled="!editTitle.trim()" @click="saveEdit">{{ $t('playlist.edit.save') }}</button>
+        <IconButton toolbar symbol="check" :label="$t('playlist.edit.save')" :disabled="!editTitle.trim()" @click="saveEdit" />
       </template>
       <div class="modalform">
         <label for="etitle">{{ $t('playlist.form.title') }}</label>
@@ -135,7 +134,7 @@
 
     <Modal v-model="confirmDelete" :title="$t('playlist.delete.confirmTitle')">
       <template #toolbar>
-        <button type="button" filled class="danger" @click="deletePlaylist">{{ $t('playlist.delete.open') }}</button>
+        <IconButton toolbar danger symbol="trash" :label="$t('playlist.delete.open')" @click="deletePlaylist" />
       </template>
       <div class="modalform">
         <p>{{ $t('playlist.delete.confirmMessage') }}</p>
@@ -562,9 +561,7 @@ function sendError(e: unknown) {
 
 <style>
 .playlistpage {
-  width: 70vw;
   max-width: 1200px;
-  margin: calc(15vh - 10px) auto;
 }
 
 .playlistpage .header {
@@ -600,16 +597,16 @@ function sendError(e: unknown) {
 .playlistpage .privacy {
   font-size: 0.75em;
   text-transform: uppercase;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
 }
 
 .playlistpage .description {
-  color: #999999;
+  color: var(--tint-fg, #ffffffae);
 }
 
 .playlistpage .owner {
   font-size: 0.85em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
 }
 
 .playlistpage .actions {
@@ -674,7 +671,7 @@ function sendError(e: unknown) {
 }
 
 .playlistpage .empty {
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
 }
 
 .playlistpage .scroll-sentinel {
@@ -683,7 +680,7 @@ function sendError(e: unknown) {
 
 .playlistpage .loading-more {
   text-align: center;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   font-size: 0.8em;
   padding: 10px 0;
 }
@@ -723,7 +720,7 @@ function sendError(e: unknown) {
   flex-shrink: 0;
   background: none;
   border: none;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   cursor: grab;
   touch-action: none;
   padding: 4px;
@@ -758,23 +755,23 @@ function sendError(e: unknown) {
 
 .playlistpage .tracks .artist {
   font-size: 0.85em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
 }
 
 .playlistpage .tracks .addedBy {
   max-width: 150px;
   font-size: 0.85em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
 }
 
 .playlistpage .tracks .filesize {
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   font-variant-numeric: tabular-nums;
   font-size: 0.7em;
 }
 
 .playlistpage .tracks .duration {
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   font-variant-numeric: tabular-nums;
   font-size: 0.7em;
 }
@@ -785,7 +782,7 @@ function sendError(e: unknown) {
   justify-content: center;
   background: none;
   border: none;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   cursor: pointer;
   padding: 4px;
 }
@@ -798,7 +795,7 @@ function sendError(e: unknown) {
 
 .modalform label {
   font-size: 0.7em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
 }
 
 .modalform .danger {

@@ -34,7 +34,7 @@
         <span v-if="track.trackNumber" class="number">{{ track.trackNumber }}</span>
         <span class="title">{{ track.title }}</span>
         <ReleaseCountdown v-if="!track.released && track.releaseDate && album.released" compact :date="track.releaseDate" />
-        <button filled="hollow" @click.stop="requestTrack(track)" :disabled="track.requested" v-if="track.released && !track.inLibrary"><img src="../../assets/icons/download.svg" draggable="false"></button>
+        <button v-if="track.released && !track.inLibrary" filled="hollow" class="icon-only" :title="$t('album.request')" :aria-label="$t('album.request')" :disabled="track.requested" @click.stop="requestTrack(track)"><img src="../../assets/icons/download.svg" alt="" draggable="false"></button>
         <button type="button" class="ellipsis" v-if="track.mediaId" :aria-label="$t('menu.more')" @click.stop="onTrackMenu($event, track)">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
         </button>
@@ -198,7 +198,6 @@ useCoverTint(() => album.value);
 <style scoped>
 .album {
   max-width: 900px;
-  margin: calc(15vh - 10px) auto;
 }
 
 .album .head {
@@ -246,7 +245,7 @@ useCoverTint(() => album.value);
   font-size: 0.75em;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: color-mix(in srgb, currentColor 75%, transparent);
+  color: currentColor;
 }
 
 .album .upcoming .value {
@@ -257,7 +256,7 @@ useCoverTint(() => album.value);
 .album .tracks li .ellipsis {
   background: none;
   border: none;
-  color: color-mix(in srgb, currentColor 75%, transparent);
+  color: inherit;
   cursor: pointer;
   font-size: 1.2em;
   width: auto;
@@ -283,14 +282,14 @@ useCoverTint(() => album.value);
 
 .album .details {
   font-size: 0.85em;
-  color: color-mix(in srgb, currentColor 75%, transparent);
+  color: currentColor;
   margin: 1em 0;
 }
 
 .album .description {
   margin-top: 15px;
   font-size: 0.85em;
-  color: color-mix(in srgb, currentColor 75%, transparent);
+  color: currentColor;
 }
 
 .album .tracks {
@@ -332,23 +331,8 @@ useCoverTint(() => album.value);
   font-weight: 700;
 }
 
-.album .tracks li button {
-  width: 2em;
-  height: 2em;
+.album .tracks li button.icon-only {
   font-size: 0.8em;
-  padding: 0;
-}
-
-.album .tracks li button img {
-  transition: filter 0.15s ease-out;
-  filter: invert();
-  width: 1.2em;
-  height: 1.2em;
-  margin-top: 7px;
-}
-
-.album .tracks li button:hover img {
-  filter: none;
 }
 
 .album .tracks .number {
@@ -359,7 +343,7 @@ useCoverTint(() => album.value);
 }
 
 .album .tracks li.unreleased .number {
-  color: color-mix(in srgb, currentColor 75%, transparent);
+  color: currentColor;
 }
 
 .album .tracks .title {
@@ -368,25 +352,22 @@ useCoverTint(() => album.value);
 
 .album .tracks .status {
   font-size: 0.75em;
-  color: color-mix(in srgb, currentColor 75%, transparent);
+  color: currentColor;
   text-transform: uppercase;
 }
 
 .album .tracks .duration {
-  color: color-mix(in srgb, currentColor 75%, transparent);
+  color: currentColor;
   font-variant-numeric: tabular-nums;
   font-family: var(--font-discy);
   font-size: 0.7em;
 }
 
 .album .tracks li.unreleased .title {
-  color: color-mix(in srgb, currentColor 75%, transparent);
+  color: currentColor;
 }
 
 @media screen and (max-width: 800px) {
-  .album {
-    margin: calc(15vh - 10px) 1.2em;
-  }
 
   .album .type {
     font-size: 0.75em;

@@ -140,7 +140,7 @@ function onDeleted(id: string) {
 
 .loading-more {
   text-align: center;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   font-size: 0.8em;
   padding: 10px 0;
 }

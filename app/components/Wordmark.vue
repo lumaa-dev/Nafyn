@@ -2,13 +2,14 @@
 <template>
   <div
     class="hover-media"
-    @mouseenter="onHoverStart"
-    @mouseleave="onHoverEnd"
+    @pointerenter="onHoverStart"
+    @pointerleave="onHoverEnd"
   >
     <img
       v-show="!showVideo"
       src="../assets/brand/Wordmark.svg"
       class="hover-media__svg"
+      alt="Nafyn"
       draggable="false"
     />
 
@@ -20,6 +21,9 @@
       muted
       playsinline
       preload="auto"
+      aria-hidden="true"
+      @playing="showVideo = true"
+      @error="showVideo = false"
       @ended="onVideoEnded"
       @contextmenu.prevent
     />
@@ -27,14 +31,18 @@
 </template>
 
 <script setup lang="ts">
+// DESIGN.md "Header and Sidebar": the wordmark never disappears. The animated version only replaces the still one
+// once it is really playing (a browser that cannot play it, or has not loaded it, used to leave an empty header),
+// and only for a mouse: a tap fires a pointerenter with no pointerleave, which kept the video up (and the still
+// wordmark hidden) after tapping the wordmark or the search button.
 const videoRef = ref<HTMLVideoElement | null>(null)
 
 const showVideo = ref(false)
 const isHovered = ref(false)
 
-function onHoverStart() {
+function onHoverStart(event: PointerEvent) {
+  if (event.pointerType !== "mouse") return
   isHovered.value = true
-  showVideo.value = true
 
   const video = videoRef.value
   if (!video) return
@@ -43,7 +51,7 @@ function onHoverStart() {
   if (video.currentTime > 0) return
 
   video.currentTime = 0
-  video.play().catch(() => {})
+  video.play().catch(() => { showVideo.value = false })
 }
 
 function onHoverEnd() {
@@ -55,21 +63,18 @@ function onHoverEnd() {
 }
 
 function onVideoEnded() {
-  if (isHovered.value) {
-    const video = videoRef.value
-    if (video) {
-      video.loop = true
-      video.currentTime = 0
-      video.play().catch(() => {})
-    }
+  const video = videoRef.value
+  if (isHovered.value && video) {
+    video.loop = true
+    video.currentTime = 0
+    video.play().catch(() => { showVideo.value = false })
     return
-  } else {
-    const video = videoRef.value;
-    if (video) {
-        video.loop = false;
-        video.currentTime = 0;
-        video.pause();
-    }
+  }
+
+  if (video) {
+    video.loop = false
+    video.currentTime = 0
+    video.pause()
   }
 
   showVideo.value = false

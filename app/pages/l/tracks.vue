@@ -17,7 +17,6 @@
         @click="onRowClick(track)"
         @contextmenu.prevent="onContextMenu($event, track)"
       >
-        <input v-if="selecting" type="checkbox" class="select-box" :checked="isSelected(track.id)" :aria-label="track.title" tabindex="-1" @click.stop="toggle(track.id)">
         <CoverImage :src="coverSrc(track)" />
         <span class="col">
           <span class="title">{{ track.title }}</span>
@@ -108,13 +107,12 @@ function onBulkActions(e: MouseEvent) {
 
 <style>
 .libtracks {
-  width: 70vw;
   max-width: 1200px;
-  margin: calc(15vh - 10px) auto;
 }
 
 /* a div, not a <header>: Header.vue's unscoped bare `header {}` rule would turn it into a second fixed bar */
 .libtracks .title-row {
+  margin-bottom: 20px;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -140,7 +138,7 @@ function onBulkActions(e: MouseEvent) {
 }
 
 .libtracks .empty {
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
 }
 
 .libtracks .scroll-sentinel {
@@ -149,7 +147,7 @@ function onBulkActions(e: MouseEvent) {
 
 .libtracks .loading-more {
   text-align: center;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   font-size: 0.8em;
   padding: 10px 0;
 }
@@ -202,24 +200,24 @@ function onBulkActions(e: MouseEvent) {
 
 .libtracks .tracks .artist {
   font-size: 0.85em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
 }
 
 .libtracks .tracks .album {
   max-width: 200px;
   font-size: 0.85em;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
 }
 
 .libtracks .tracks .filesize {
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   font-variant-numeric: tabular-nums;
   font-family: var(--font-discy);
   font-size: 0.7em;
 }
 
 .libtracks .tracks .duration {
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   font-variant-numeric: tabular-nums;
   font-family: var(--font-discy);
   font-size: 0.7em;
@@ -231,7 +229,7 @@ function onBulkActions(e: MouseEvent) {
   justify-content: center;
   background: none;
   border: none;
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   cursor: pointer;
   padding: 4px;
 }
@@ -239,11 +237,6 @@ function onBulkActions(e: MouseEvent) {
 @media screen and (max-width: 800px) {
   .libtracks .pins-desktop-only {
     display: none;
-  }
-
-  .libtracks {
-    margin: calc(15vh - 10px) auto;
-    width: 90vw;
   }
 
   .libtracks .tracks .album,

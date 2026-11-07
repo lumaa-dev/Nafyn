@@ -86,7 +86,7 @@ useHead(() => ({ title: `Nafyn - ${doc.value?.title ?? "Privacy"}` }));
 }
 
 .privacy .updated {
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   font-family: "Instrument-Italic";
   font-size: 0.85em;
 }
@@ -130,7 +130,7 @@ useHead(() => ({ title: `Nafyn - ${doc.value?.title ?? "Privacy"}` }));
 /* retention lines are written as *emphasis* paragraphs in the markdown - a whole paragraph in <em> is the
    document saying "this is the aside", so it gets the muted treatment rather than italics mid-sentence */
 .privacy .prose p > em:only-child {
-  color: #666666;
+  color: var(--tint-fg, #ffffffae);
   font-style: normal;
   font-size: 0.95em;
 }

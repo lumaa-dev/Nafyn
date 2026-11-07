@@ -1,9 +1,8 @@
-// caps how many requests run through the Soulseek/MusicBrainz pipeline at once; the rest wait in FIFO order
-// and start as soon as a running one succeeds or fails. In-process, like downloadEvents.ts (one Nitro instance).
-import { getSetting, setSetting } from "./appSettings";
+// runs requests through the Soulseek/MusicBrainz pipeline one at a time; the rest wait in FIFO order
+// and start as soon as the running one succeeds or fails. In-process, like downloadEvents.ts (one Nitro instance).
+// The limit is fixed: no setting, no env var, no endpoint changes it.
 
-export const DEFAULT_MAX_CONCURRENT_DOWNLOADS = 10;
-const SETTING_KEY = "downloads.maxConcurrent";
+export const MAX_CONCURRENT_DOWNLOADS = 1;
 
 interface Waiter {
     requestId: string,
@@ -13,20 +12,8 @@ interface Waiter {
 let running = 0;
 const waiting: Waiter[] = [];
 
-export async function getMaxConcurrentDownloads(): Promise<number> {
-    const value = Number(await getSetting(SETTING_KEY));
-    return Number.isInteger(value) && value > 0 ? value : DEFAULT_MAX_CONCURRENT_DOWNLOADS;
-}
-
-export async function setMaxConcurrentDownloads(limit: number): Promise<void> {
-    await setSetting(SETTING_KEY, String(limit));
-    // a raised limit frees slots for requests that are already waiting
-    await drain();
-}
-
-async function drain(): Promise<void> {
-    const limit = await getMaxConcurrentDownloads();
-    while (running < limit && waiting.length > 0) {
+function drain(): void {
+    while (running < MAX_CONCURRENT_DOWNLOADS && waiting.length > 0) {
         running++;
         waiting.shift()!.start();
     }
@@ -37,17 +24,16 @@ async function drain(): Promise<void> {
  * position when it has to wait, and again whenever that position improves.
  */
 export async function acquireDownloadSlot(requestId: string, onQueued?: (position: number) => void): Promise<() => void> {
-    const limit = await getMaxConcurrentDownloads();
-
     let released = false;
     const release = () => {
         if (released) return;
         released = true;
         running--;
-        void drain().then(() => notifyPositions());
+        drain();
+        notifyPositions();
     };
 
-    if (running < limit && waiting.length === 0) {
+    if (running < MAX_CONCURRENT_DOWNLOADS && waiting.length === 0) {
         running++;
         return release;
     }
