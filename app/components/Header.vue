@@ -2,7 +2,7 @@
   <header ref="headerRef">
     <ProgressiveBlur class="backblur" height="80%" fade-color="#00000050" />
     <span>
-      <button class="wordmark-btn" :class="{ 'search-open': mobileSearchActive }" aria-label="Nafyn" @click="props.toggleSidebar()">
+      <button class="wordmark-btn" aria-label="Nafyn" @click="props.toggleSidebar()" v-if="!mobileSearchActive">
         <Wordmark />
       </button>
       <button v-if="loggedIn" class="search-toggle" :class="{ active: mobileSearchActive }" @click="mobileSearchActive = !mobileSearchActive">
