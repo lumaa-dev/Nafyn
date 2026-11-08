@@ -190,7 +190,7 @@
             <div class="pie" :style="{ background: pieGradient }" @mousemove="onPieHover" @mouseleave="hoveredUserIndex = null" />
             <ul class="legend">
               <li
-                v-for="(u, i) in storage.perUser"
+                v-for="(u, i) in storage.perUser.sort((a, b) => a.bytes < b.bytes)"
                 :key="u.userId"
                 :class="{ active: hoveredUserIndex === i }"
                 @mouseenter="hoveredUserIndex = i"
@@ -204,7 +204,7 @@
         </section>
 
         <!-- same users, same colours as the storage pie above: a user keeps their colour from one chart to the next -->
-        <section class="subsection" v-if="storage && storage.perUser.some((u) => u.tracks > 0)">
+        <section class="subsection" v-if="storage && storage.perUser.some((u) => u.tracks > 0).sort((a, b) => a.tracks < b.tracks)">
           <h2>{{ $t('settings.storage.tracksPerUser.title') }}</h2>
           <div class="pie-wrap">
             <div class="pie" role="img" :aria-label="$t('settings.storage.tracksPerUser.title')" :style="{ background: tracksPieGradient }" @mousemove="onTracksPieHover" @mouseleave="hoveredTracksIndex = null" />

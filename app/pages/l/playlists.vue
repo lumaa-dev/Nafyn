@@ -2,8 +2,9 @@
   <div class="libplaylists bulk-page">
     <div class="head">
       <h1>{{ $t('playlist.title') }}</h1>
-      <IconButton symbol="plus" :label="$t('playlist.create.open')" @click="showCreate = true" />
+      <IconButton symbol="plus" :label="$t('playlist.create.open')" :disabled="!hasLibraryTracks" @click="showCreate = true" />
     </div>
+    <LoadError :error="libraryError" />
 
     <div class="grid" v-if="playlists.length > 0">
       <NuxtLink
@@ -75,6 +76,22 @@ await loadMore();
 
 const { user: me, ensureLoaded: ensureUser } = useCurrentUser();
 await ensureUser();
+
+// a playlist needs at least one track in the viewer's own library (shared playlists' tracks don't count):
+// the count comes from the library itself, one row is enough to know whether there is any
+const libraryTotal = ref<number | null>(null);
+const libraryError = ref<unknown>(null);
+const hasLibraryTracks = computed(() => (libraryTotal.value ?? 0) > 0);
+async function loadLibraryTotal() {
+  if (!token) return;
+  try {
+    const page = await $fetch<{ total: number }>("/api/v1/library/tracks", { headers: { Authorization: token }, query: { page: 1, limit: 1 } });
+    libraryTotal.value = page.total;
+  } catch (e) {
+    libraryError.value = e;
+  }
+}
+await loadLibraryTotal();
 
 const { openMenu, openBulkMenu } = useMediaMenu();
 const { selecting, selectedIds, count, isSelected, toggle, selectAll, clear, start, stop, retain } = useBulkSelect();

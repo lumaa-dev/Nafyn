@@ -15,7 +15,7 @@
           <span v-else-if="album.releaseDate" class="value">{{ $t('upcoming.expected', { date: formatPartialDate(album.releaseDate, album.releaseDatePrecision) }) }}</span>
         </div>
         <span class="albumactions">
-          <button filled v-if="album.released" :disabled="album.requested || album.inLibrary" @click="requestAlbum">{{ album.inLibrary ? $t('album.inLibrary') : album.requested ? $t('album.alreadyRequested') : $t('album.request') }}</button>
+          <button filled v-if="album.released" :disabled="album.requested || album.inLibrary || !canRequestAlbums" @click="requestAlbum">{{ album.inLibrary ? $t('album.inLibrary') : album.requested ? $t('album.alreadyRequested') : $t('album.request') }}</button>
           <button v-else :filled="album.subscribed ? 'hollow' : ''" :disabled="subscriptionPending" @click="toggleSubscription">
             {{ album.subscribed ? $t('upcoming.following') : $t('upcoming.notifyMe') }}
           </button>
@@ -34,7 +34,7 @@
         <span v-if="track.trackNumber" class="number">{{ track.trackNumber }}</span>
         <span class="title">{{ track.title }}</span>
         <ReleaseCountdown v-if="!track.released && track.releaseDate && album.released" compact :date="track.releaseDate" />
-        <button v-if="track.released && !track.inLibrary" filled="hollow" class="icon-only" :title="$t('album.request')" :aria-label="$t('album.request')" :disabled="track.requested" @click.stop="requestTrack(track)"><img src="../../assets/icons/download.svg" alt="" draggable="false"></button>
+        <button v-if="track.released && !track.inLibrary" filled="hollow" class="icon-only" :title="$t('album.request')" :aria-label="$t('album.request')" :disabled="track.requested || !canRequestTracks" @click.stop="requestTrack(track)"><img src="../../assets/icons/download.svg" alt="" draggable="false"></button>
         <button type="button" class="ellipsis" v-if="track.mediaId" :aria-label="$t('menu.more')" @click.stop="onTrackMenu($event, track)">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
         </button>
@@ -58,6 +58,8 @@ import type { TrackInfo } from '~~/server/entity/media/TrackInfo';
 import type { MediaRow } from '~~/server/core/library';
 import { menuAnchor } from '~/composables/useMediaMenu';
 import { useAuthToken } from '~/composables/useAuthToken';
+import { useCurrentUser } from '~/composables/useCurrentUser';
+import { Permission } from '~~/server/entity/Permission';
 import ReleaseCountdown from '~/components/ReleaseCountdown.vue';
 
 const { locale } = useI18n();
@@ -172,6 +174,12 @@ function formatDuration(seconds: number): string {
 }
 
 const { request } = useMediaRequest();
+
+// the Request buttons only show what the account may do; the server re-checks REQUEST_ALBUMS / REQUEST_TRACKS
+const { can, ensureLoaded } = useCurrentUser();
+const canRequestAlbums = computed(() => can(Permission.REQUEST_ALBUMS));
+const canRequestTracks = computed(() => can(Permission.REQUEST_TRACKS));
+onMounted(() => { void ensureLoaded(); });
 
 // The button is disabled *before* the request goes out, and only comes back if it failed: a double click
 // used to queue the same album over and over. (It also comes back on the next visit once a manager denied

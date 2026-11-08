@@ -39,7 +39,7 @@
           <button v-if="viewer.isOwner" type="button" class="iconbtn danger" @click="confirmDelete = true" :title="$t('playlist.delete.open')" :aria-label="$t('playlist.delete.open')">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18" /><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /></svg>
           </button>
-          <button v-else-if="viewer.isMember" type="button" class="leavebtn danger" @click="leave" :title="$t('playlist.leave')" :aria-label="$t('playlist.leave')">
+          <button v-else-if="viewer.isMember" type="button" class="iconbtn danger" @click="leave" :title="$t('playlist.leave')" :aria-label="$t('playlist.leave')">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
           </button>
         </div>
@@ -641,25 +641,6 @@ function sendError(e: unknown) {
 .playlistpage .actions .iconbtn.danger {
   color: var(--danger-text);
   border: 1px solid var(--danger-text);
-}
-
-.playlistpage .actions .leavebtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 54px;
-  height: auto;
-  min-height: 44px;
-  padding: 0;
-  border-radius: 12px;
-  border: 1px solid #333333;
-  background: none;
-  color: var(--danger-text);
-  cursor: pointer;
-}
-
-.playlistpage .actions .leavebtn:hover {
-  background: #ffffff1a;
 }
 
 .playlistpage .sortbar {

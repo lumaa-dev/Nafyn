@@ -15,7 +15,7 @@
           <ReleaseCountdown v-if="track.releaseDate && track.releaseDatePrecision === 'day'" class="value" :date="track.releaseDate" @released="refreshNuxtData(`track-${tid}`)" />
           <span v-else-if="track.releaseDate" class="value">{{ $t('upcoming.expected', { date: formatPartialDate(track.releaseDate, track.releaseDatePrecision) }) }}</span>
         </div>
-        <button filled :disabled="track.requested || !!track.inLibrary" @click="requestTrack" v-if="track.released">{{ track.inLibrary ? $t('track.inLibrary') : track.requested ? $t('track.alreadyRequested') : $t('track.request') }}</button>
+        <button filled :disabled="track.requested || !!track.inLibrary || !canRequestTracks" @click="requestTrack" v-if="track.released">{{ track.inLibrary ? $t('track.inLibrary') : track.requested ? $t('track.alreadyRequested') : $t('track.request') }}</button>
         <button v-else-if="!track.released" :filled="track.subscribed ? 'hollow' : ''" :disabled="subscriptionPending" @click="toggleSubscription">
           {{ track.subscribed ? $t('upcoming.following') : $t('upcoming.notifyMe') }}
         </button>
@@ -35,6 +35,8 @@
 <script lang="ts" setup>
 import type { MediaInfo } from '~~/server/entity/media/MediaInfo';
 import { useAuthToken } from '~/composables/useAuthToken';
+import { useCurrentUser } from '~/composables/useCurrentUser';
+import { Permission } from '~~/server/entity/Permission';
 import ReleaseCountdown from '~/components/ReleaseCountdown.vue';
 
 type TrackDetail = MediaInfo & {
@@ -82,6 +84,11 @@ function formatDuration(seconds: number): string {
 }
 
 const { request } = useMediaRequest();
+
+// the Request button only shows what the account may do; the server re-checks REQUEST_TRACKS
+const { can, ensureLoaded } = useCurrentUser();
+const canRequestTracks = computed(() => can(Permission.REQUEST_TRACKS));
+onMounted(() => { void ensureLoaded(); });
 
 // disabled before the request goes out, re-enabled only if it failed (see a/[aid].vue)
 async function requestTrack() {

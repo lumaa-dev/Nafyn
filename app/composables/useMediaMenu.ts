@@ -242,8 +242,9 @@ export function useMediaMenu() {
     if (!options.hideDetails && owned) {
       view.push({ label: t("track.viewDetails"), action: () => void navigateTo(`/l/t/${media.id}`) });
     }
-    view.push({ label: t("playlist.addToPlaylist"), action: () => openPicker([media.id], options.pickerAdmin) });
+    // a track the viewer does not own (a shared playlist's) cannot be added to a playlist: it is not in their library
     if (owned) {
+      view.push({ label: t("playlist.addToPlaylist"), action: () => openPicker([media.id], options.pickerAdmin) });
       view.push({
         label: pins.isPinned("track", media.id) ? t("menu.unpin") : t("menu.pin"),
         action: guarded(media.title, t("menu.pinError"), () => togglePin("track", media.id, options.onChanged))
@@ -435,8 +436,10 @@ export function useMediaMenu() {
         { label: t("player.playNext"), action: () => void queueMany(all, "next") },
         { label: t("player.addToQueue"), action: () => void queueMany(all, "end") }
       );
-      view.push({ label: t("playlist.addToPlaylist"), action: () => openPicker(all.map((media) => media.id), options.pickerAdmin) });
-
+      // only the owned ones can go into a playlist: the rest (a shared playlist's) are not in the viewer's library
+      if (owned.length > 0) {
+        view.push({ label: t("playlist.addToPlaylist"), action: () => openPicker(owned.map((media) => media.id), options.pickerAdmin) });
+      }
       if (owned.length > 0) {
         const pinItems = owned.map((media) => ({ kind: "track" as const, refId: media.id }));
         view.push({
