@@ -80,6 +80,7 @@
   },
   "album": {
     "disc": "Disque {number}",
+    "releases": "Éditions",
     "trackList": "Liste des titres",
     "request": "Demander",
     "requested": "Demandé",
@@ -114,6 +115,7 @@
     "deleteError": "Impossible de supprimer le titre"
   },
   "artist": {
+    "category": { "album": "Albums", "ep": "EP", "single": "Singles", "compilation": "Compilations", "live": "En concert", "remix": "Remixes", "soundtrack": "Bandes originales", "other": "Autres" },
     "discography": "Discographie",
     "viewInMusicbrainz": "Voir dans MusicBrainz",
     "listeners": "{count} auditeurs sur Last.fm"
@@ -122,6 +124,7 @@
     "albums": "Albums",
     "artists": "Artistes",
     "tracks": "Titres",
+    "kind": { "track": "Titre", "album": "Album", "ep": "EP", "artist": "Artiste" },
     "best": "Meilleur résultat",
     "loading": "Recherche en cours…",
     "empty": "Aucun résultat.",

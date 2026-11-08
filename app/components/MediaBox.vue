@@ -2,14 +2,25 @@
   <div class="mbox" :mb-id="media.id">
     <CoverImage :src="media.coverArt" />
     <p class="title">{{ media.title }}</p>
-    <p class="artist">{{ typeof media.artist == "string" ? media.artist : media.artist.name }}</p>
+    <p class="artist">{{ line }}</p>
   </div>
 </template>
 
 <script lang="ts" setup>
-import type { MediaInfo } from '~~/server/entity/media/MediaInfo';
+import type { ArtistInfo } from '~~/server/entity/media/ArtistInfo';
 
-defineProps<{ media: MediaInfo }>()
+// a track, an album, or anything shaped like one (a release of an album); `subtitle` replaces the artist line
+// under the title when given - a release shows its disambiguation there
+const props = defineProps<{
+  media: { id: string, title: string, coverArt: string | null, artist?: ArtistInfo | string | null },
+  subtitle?: string | null
+}>();
+
+const line = computed(() => {
+  if (props.subtitle !== undefined) return props.subtitle ?? "";
+  const artist = props.media.artist;
+  return typeof artist === "string" ? artist : artist?.name ?? "";
+});
 </script>
 
 <style>

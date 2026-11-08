@@ -1,60 +1,33 @@
 <template>
   <div class="search">
-    <!-- <h1>"{{ route.query.q }}"</h1> -->
     <p v-if="searching" class="status" role="status">{{ $t('search.loading') }}</p>
     <LoadError :error="searchError" />
 
-    <!-- the search engine's confident top match: above everything -->
-    <span class="results best" v-if="best">
-      <h2>{{ $t('search.best') }}</h2>
-      <div class="xs one">
-        <NuxtLink class="trad" :to="best.type === 'track' ? `/t/${best.id}` : `/a/${best.id}`">
-          <MediaBox :media="best" />
-        </NuxtLink>
-      </div>
-    </span>
-    <span class="results" v-if="albums.length">
-      <h2>{{ $t('search.albums') }}</h2>
-      <div class="xs">
-        <NuxtLink class="trad" :to="`/a/${alb.id}`" v-for="alb in albums" :key="alb.id">
-          <MediaBox :media="alb" />
-        </NuxtLink>
-      </div>
-    </span>
-    <span class="results" v-if="results.artists?.length">
-      <h2>{{ $t('search.artists') }}</h2>
-      <div class="xs one">
-        <NuxtLink class="trad" :to="`/ar/${art.musicbrainzId}`" v-for="art in artists" :key="art.musicbrainzId">
-          <ArtistBox :artist="art" />
-        </NuxtLink>
-      </div>
-    </span>
-    <span class="results" v-if="tracks.length">
-      <h2>{{ $t('search.tracks') }}</h2>
-      <div class="xs">
-        <NuxtLink class="trad" v-for="trk in tracks" :key="trk.id" :to="`/t/${trk.id}`">
-          <MediaBox :media="trk" />
-        </NuxtLink>
-      </div>
-    </span>
+    <!-- one list: the most likely answer at the top, the least likely at the bottom -->
+    <ol class="list" v-if="entries.length">
+      <li v-for="entry in entries" :key="entryKey(entry)">
+        <SearchRow :entry="entry" />
+      </li>
+    </ol>
     <p v-if="nothingFound" class="status">{{ $t('search.empty') }}</p>
   </div>
 </template>
 
 <script lang="ts" setup>
-import MediaBox from '~/components/MediaBox.vue';
-import ArtistBox from '~/components/ArtistBox.vue';
+import SearchRow from '~/components/SearchRow.vue';
 import type { ArtistInfo } from '~~/server/entity/media/ArtistInfo';
 import type { MediaInfo } from '~~/server/entity/media/MediaInfo';
+import type { SearchEntry } from '~~/server/entity/media/SearchEntry';
 import { useAuthToken } from '~/composables/useAuthToken';
 
 interface SearchResponse {
+  results: SearchEntry[],
   albums: MediaInfo[],
   tracks: MediaInfo[],
   artists: ArtistInfo[]
 }
 
-const emptyResponse = (): SearchResponse => ({ albums: [], tracks: [], artists: [] });
+const emptyResponse = (): SearchResponse => ({ results: [], albums: [], tracks: [], artists: [] });
 
 const route = useRoute();
 const { token } = useAuthToken();
@@ -79,9 +52,16 @@ const artistImages = ref<Record<string, string>>({});
 const requestedPictures = new Set<string>();
 let pictureRun = 0;
 
-const artists = computed<ArtistInfo[]>(() =>
-  results.value.artists.map((artist) => ({ ...artist, image: artist.image ?? artistImages.value[artist.musicbrainzId] ?? null }))
+// the list as the server ranked it, with the pictures that arrived since
+const entries = computed<SearchEntry[]>(() =>
+  results.value.results.map((entry) => entry.kind === "artist" && entry.artist
+    ? { ...entry, artist: { ...entry.artist, image: entry.artist.image ?? artistImages.value[entry.artist.musicbrainzId] ?? null } }
+    : entry)
 );
+
+function entryKey(entry: SearchEntry): string {
+  return `${entry.kind}-${entry.kind === "artist" ? entry.artist?.musicbrainzId : entry.media?.id}`;
+}
 
 async function fetchArtistPictures(list: ArtistInfo[]) {
   if (!token.value) return;
@@ -103,66 +83,40 @@ async function fetchArtistPictures(list: ArtistInfo[]) {
   await Promise.all(Array.from({ length: MAX_PICTURE_REQUESTS }, worker));
 }
 
-watch(() => results.value.artists, (list) => { void fetchArtistPictures(list); }, { immediate: true });
+watch(() => results.value.results, (list) => {
+  void fetchArtistPictures(list.flatMap((entry) => entry.kind === "artist" && entry.artist ? [entry.artist] : []));
+}, { immediate: true });
 
 const searching = computed(() => searchStatus.value === "pending");
 
-// The engine flags at most one album and one track as `bestResult`. When both are, the more relevant one wins,
-// and it is lifted out of its list so it isn't shown twice.
-const best = computed<MediaInfo | null>(() => {
-  const flagged = [...results.value.albums, ...results.value.tracks].filter((media) => media.bestResult);
-  return flagged.sort((a, b) => (b.match?.relevance ?? 0) - (a.match?.relevance ?? 0))[0] ?? null;
-});
-const albums = computed(() => results.value.albums.filter((media) => media !== best.value));
-const tracks = computed(() => results.value.tracks.filter((media) => media !== best.value));
-
 // not while loading, and not after a failure (that one already has its toast)
-const nothingFound = computed(() =>
-  !searching.value && !searchError.value && !!route.query.q
-  && !best.value && !albums.value.length && !tracks.value.length && !results.value.artists.length
-);
+const nothingFound = computed(() => !searching.value && !searchError.value && !!route.query.q && entries.value.length === 0);
 </script>
 
 <style>
-.search h1 {
-  width: 100%;
-  text-align: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+/* `.view` leaves the first ~10px of the Header's gradient band uncovered: the list starts below it */
+.search {
+  max-width: 900px;
+  padding-top: 40px;
 }
 
-.results {
-  margin: 2.5em;
+.search .list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.search .list li {
+  min-width: 0;
+}
+
+.search .list li:not(:last-child) {
+  border-bottom: 1px solid #666666;
 }
 
 .search .status {
-  margin: 2.5em;
-}
-
-.xs::-webkit-scrollbar {
-  display: none;
-}
-
-.xs {
-  margin: 0 -1.2em;
-  padding: 0 1.2em;
-  display: grid;
-  grid-auto-flow: column;
-  grid-template-rows: repeat(2, calc(230px + 2em));
-  gap: 20px;
-  min-width: calc(100vw - 220px - 1.2em * 2);
-  overflow: scroll hidden;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.one {
-  grid-template-rows: repeat(1, calc(230px + 2em));
-}
-
-.trad {
-  font-family: "Instrument-Serif";
-  text-decoration: none;
+  color: var(--tint-fg, #ffffffae);
 }
 </style>

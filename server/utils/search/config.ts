@@ -85,6 +85,10 @@ export interface SearchConfig {
     deluxeKeywords: string[],
     /** Words that make a release a remaster. */
     remasterKeywords: string[],
+    /** Words (any supported language) that say "live": without one in the query, live albums and recordings are left out. */
+    liveKeywords: string[],
+    /** Words that say "remix": without one in the query, remix albums and remixed recordings are left out. */
+    remixKeywords: string[],
     /** Release-group secondary types that are never wanted. */
     excludedSecondaryTypes: string[],
 
@@ -140,6 +144,15 @@ export const DEFAULT_REMASTER_KEYWORDS: string[] = [
     "remasterisiert", "remasterizado", "リマスター", "重制", "重新母带", "리마스터", "ремастер", "ремастеринг"
 ];
 
+export const DEFAULT_LIVE_KEYWORDS: string[] = [
+    "live", "en direct", "en vivo", "dal vivo", "ao vivo", "im konzert", "konzert", "unplugged", "в прямом эфире", "концерт",
+    "ライブ", "らいぶ", "现场", "現場", "演唱会", "演唱會", "라이브"
+];
+
+export const DEFAULT_REMIX_KEYWORDS: string[] = [
+    "remix", "remixed", "remixes", "rmx", "rework", "リミックス", "混音", "리믹스", "ремикс"
+];
+
 export const DEFAULT_SEARCH_CONFIG: SearchConfig = {
     candidatePool: 40,
     maxVerified: 18,
@@ -176,6 +189,8 @@ export const DEFAULT_SEARCH_CONFIG: SearchConfig = {
     compilationKeywords: DEFAULT_COMPILATION_KEYWORDS,
     deluxeKeywords: DEFAULT_DELUXE_KEYWORDS,
     remasterKeywords: DEFAULT_REMASTER_KEYWORDS,
+    liveKeywords: DEFAULT_LIVE_KEYWORDS,
+    remixKeywords: DEFAULT_REMIX_KEYWORDS,
     excludedSecondaryTypes: ["compilation", "bootleg", "demo", "interview", "audiobook", "audio drama", "spokenword"],
 
     stopwords: DEFAULT_STOPWORDS,

@@ -119,6 +119,40 @@ describe("judge", () => {
         expect(verdict.matched).toBe(true);
     });
 
+    test("the same title carrying another VERSION is another song, not 'the same song entered twice'", () => {
+        for (const title of ["Blinding Lights (Live)", "Blinding Lights (Japanese ver.)", "Blinding Lights - Acoustic", "Blinding Lights (Instrumental)", "Blinding Lights [Sped Up]", "Blinding Lights (Remix)"]) {
+            const verdict = judged(answer(0.95, "44444444-4444-4444-4444-444444444444", title, "The Weeknd"));
+            expect(verdict.matched).toBe(false);
+            // and at that score it is a contradiction: the file is the live take, not the song
+            expect(verdict.confidentOther?.title).toBe(title);
+        }
+    });
+
+    test("an unmarked candidate stands for a request that names a version, and the version itself matches", () => {
+        const live: ExpectedRecording = { ...expected, title: "Blinding Lights (Live)" };
+        expect(judge(rankCandidates(answer(0.95, "44444444-4444-4444-4444-444444444444", "Blinding Lights (Live at Wembley)", "The Weeknd"), 200, config), live, config).matched).toBe(true);
+        expect(judge(rankCandidates(answer(0.95, "44444444-4444-4444-4444-444444444444", "Blinding Lights", "The Weeknd"), 200, config), live, config).matched).toBe(false);
+    });
+
+    test("an English marker is no different version from a request that names no language", () => {
+        expect(judged(answer(0.95, "44444444-4444-4444-4444-444444444444", "Blinding Lights (English ver.)", "The Weeknd")).matched).toBe(true);
+    });
+
+    test("a candidate whose own length is not the requested one is another recording, whatever its title", () => {
+        // 206 s: within the 5 s the measured audio allows (measured 205), but 6 s from the 200 s MusicBrainz has
+        const verdict = judged(answer(0.95, "44444444-4444-4444-4444-444444444444", "Blinding Lights", "The Weeknd", 206), undefined, 205);
+        expect(verdict.matched).toBe(false);
+        expect(verdict.confidentOther).not.toBeNull();
+        // a duplicate of the recording is a second or two off
+        expect(judged(answer(0.95, "44444444-4444-4444-4444-444444444444", "Blinding Lights", "The Weeknd", 202)).matched).toBe(true);
+    });
+
+    test("one title inside another is only the same song when it is a phrase", () => {
+        const single: ExpectedRecording = { ...expected, title: "Numéro", artistName: "Anyme023" };
+        expect(judge(rankCandidates(answer(0.95, "44444444-4444-4444-4444-444444444444", "Numéro Uno", "Anyme023"), 200, config), single, config).matched).toBe(false);
+        expect(judge(rankCandidates(answer(0.95, "44444444-4444-4444-4444-444444444444", "Numero", "Anyme023"), 200, config), single, config).matched).toBe(true);
+    });
+
     test("does not take title + artist agreement at a mediocre score", () => {
         const verdict = judged(answer(0.75, "44444444-4444-4444-4444-444444444444", "Blinding Lights", "The Weeknd"));
         expect(verdict.matched).toBe(false);

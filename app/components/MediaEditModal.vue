@@ -11,7 +11,7 @@
         <input ref="fileInput" type="file" accept="image/png,image/jpeg,image/webp" hidden @change="onCoverPick" />
       </div>
 
-      <!-- alternatives from the album's MusicBrainz release-group, next to uploading a picture of one's own -->
+      <!-- art that exists for the track (every release of its recording) or the album (its release-group), next to uploading one's own -->
       <div v-if="showCovers" class="cover-gallery" role="group" :aria-label="$t('edit.changeCover')">
         <p v-if="loadingCovers" class="hint">{{ $t('edit.coversLoading') }}</p>
         <ul>
@@ -215,21 +215,30 @@ watch(() => [props.modelValue, list.value.map((m) => m.id).join(",")], () => {
 
 const MBID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// "Change cover art": the alternatives of the album (its MusicBrainz release-group), plus uploading one's own
+// "Change cover art": one track offers the art of every release of its MusicBrainz recording (the single, the
+// album, a compilation... each has its own), several tracks edited as one album offer the album's (its
+// release-group); only art that exists is listed. Plus uploading one's own.
 async function toggleCovers() {
   showCovers.value = !showCovers.value;
   if (!showCovers.value || coversLoaded.value || loadingCovers.value) return;
 
-  // the tracks have to share one album for its covers to make sense for all of them
-  const albumId = common((m) => m.albumId);
-  if (!albumId || !MBID.test(albumId) || !token) {
+  let query: Record<string, string> | null = null;
+  if (!isBulk.value) {
+    const recordingId = first.value?.musicbrainzId;
+    if (recordingId && MBID.test(recordingId)) query = { recordingId };
+  } else {
+    // the tracks have to share one album for its covers to make sense for all of them
+    const albumId = common((m) => m.albumId);
+    if (albumId && MBID.test(albumId)) query = { albumId };
+  }
+  if (!query || !token) {
     coversLoaded.value = true;
     return;
   }
 
   loadingCovers.value = true;
   try {
-    const result = await $fetch<{ options: CoverOption[] }>("/api/v1/library/cover-options", { headers: { Authorization: token }, query: { albumId } });
+    const result = await $fetch<{ options: CoverOption[] }>("/api/v1/library/cover-options", { headers: { Authorization: token }, query });
     coverOptions.value = result.options;
   } catch (e) {
     useToast().sendError(null, e, $t('edit.coverError'));

@@ -40,7 +40,7 @@ for (const serverFilters of [true, false]) {
             expect(await find(world, { title: "Hits Of The Year", artist: "Band" }, serverFilters)).toEqual([]);
         });
 
-        test("demos, interviews and spoken word are dropped, live and remix kept", async () => {
+        test("demos, interviews and spoken word are dropped; live and remix works only when the query says so", async () => {
             const world = {
                 groups: [
                     album("demo", "Rough", "Band", { secondary: ["Demo"] }),
@@ -50,8 +50,27 @@ for (const serverFilters of [true, false]) {
             };
             const found = await find(world, { artist: "Band" }, serverFilters);
             expect(found).not.toContain("demo");
-            expect(found).toContain("live");
-            expect(found).toContain("remix");
+            expect(found).not.toContain("live");
+            expect(found).not.toContain("remix");
+
+            // asked for, they come back
+            expect(await find(world, { title: "Rough Live", artist: "Band" }, serverFilters)).toContain("live");
+            expect(await find(world, { title: "Rough Remixed", artist: "Band" }, serverFilters)).toContain("remix");
+            expect(await find(world, { q: "band live" }, serverFilters)).toContain("live");
+        });
+
+        test("a live album is recognised by its title too, but a studio album with the word is not", async () => {
+            const world = {
+                groups: [
+                    album("wembley", "Band: Live at Wembley", "Band"),
+                    album("through", "Live Through This", "Band"),
+                    album("alive", "Alive 2007", "Band")
+                ]
+            };
+            const found = await find(world, { artist: "Band" }, serverFilters);
+            expect(found).not.toContain("wembley");
+            expect(found).toContain("through");
+            expect(found).toContain("alive");
         });
 
         test("Deluxe and Remaster editions are excluded unless the query names them", async () => {
@@ -142,6 +161,52 @@ describe("track filters: a recording counts only through releases that pass", ()
         const [hit] = (await searchTracks({ title: "Song", artist: "Band" }, deps)).results;
         expect(hit?.releaseId).toBe("s1");
         expect(hit?.albumId).toBe("studio");
+    });
+});
+
+describe("track versions and Deluxe editions", () => {
+    const world: World = {
+        groups: [
+            album("std", "Record", "Band", { releases: [{ id: "std1", date: "2001" }] }),
+            album("dlx", "Record (Deluxe Edition)", "Band", { releases: [{ id: "dlx1", title: "Record (Deluxe Edition)", date: "2002" }] }),
+            album("liv", "Record Tour", "Band", { secondary: ["Live"], releases: [{ id: "liv1", date: "2003" }] })
+        ],
+        recordings: [
+            { id: "studio", title: "Song", artist: "Band", length: 200000, on: [{ group: "std", release: { id: "std1" } }, { group: "dlx", release: { id: "dlx1", title: "Record (Deluxe Edition)" } }] },
+            { id: "bonus", title: "Bonus Song", artist: "Band", length: 180000, on: [{ group: "dlx", release: { id: "dlx1", title: "Record (Deluxe Edition)" } }] },
+            { id: "live-take", title: "Song", disambiguation: "live, 2003: Wembley", artist: "Band", length: 260000, on: [{ group: "liv", release: { id: "liv1" } }] },
+            { id: "remix", title: "Song", disambiguation: "remix", artist: "Band", length: 240000, on: [{ group: "std", release: { id: "std1" } }] },
+            { id: "titled-live", title: "Song (Live)", artist: "Band", length: 261000, on: [{ group: "std", release: { id: "std1" } }] }
+        ]
+    };
+    const covered = ["std", "std1", "dlx", "dlx1", "liv", "liv1"];
+
+    test("a track that exists only on a Deluxe edition is found", async () => {
+        const deps = stubDeps(world, { covered });
+        const results = (await searchTracks({ title: "Bonus Song", artist: "Band" }, deps)).results;
+        expect(results[0]?.id).toBe("bonus");
+        expect(results[0]!.albumId).toBe("dlx");
+    });
+
+    test("a track on the standard and the Deluxe edition is shown on the standard one", async () => {
+        const deps = stubDeps(world, { covered });
+        const [hit] = (await searchTracks({ title: "Song", artist: "Band" }, deps)).results;
+        expect(hit?.id).toBe("studio");
+        expect(hit?.releaseId).toBe("std1");
+        expect(hit?.albumId).toBe("std");
+    });
+
+    test("live and remixed recordings need the query to say so", async () => {
+        const deps = stubDeps(world, { covered });
+        const plain = (await searchTracks({ title: "Song", artist: "Band" }, deps)).results.map((r) => r.id);
+        expect(plain).toEqual(["studio"]);
+
+        const live = (await searchTracks({ title: "Song live", artist: "Band" }, deps)).results.map((r) => r.id);
+        expect(live).toContain("live-take");
+        expect(live).not.toContain("remix");
+
+        const remix = (await searchTracks({ title: "Song remix", artist: "Band" }, deps)).results.map((r) => r.id);
+        expect(remix).toContain("remix");
     });
 });
 

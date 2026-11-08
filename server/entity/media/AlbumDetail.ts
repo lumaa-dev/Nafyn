@@ -7,9 +7,34 @@ export interface DiscInfo {
     title: string | null
 }
 
+// one release of the album's release-group (the standard edition, a Deluxe, another country, a reissue...): what
+// "change release" offers. Open one with `GET /api/v1/album/{id}?release=<id>`
+export interface AlbumRelease {
+    id: string,
+    title: string,
+    // MusicBrainz' own words for what sets it apart ("deluxe edition", "2011 remaster"); null when it has none
+    disambiguation: string | null,
+    // "2010-11-02", "2010-11" or "2010"; null when undated
+    date: string | null,
+    country: string | null,
+    // "Digital Media", "CD"... ("CD + DVD" for several)
+    format: string | null,
+    trackCount: number,
+    // the release's own front cover (Cover Art Archive URL); null when it has none
+    coverArt: string | null,
+    // the release this response shows
+    selected: boolean
+}
+
 export interface AlbumDetail {
     id: string,
+    // the release the tracklist, label and (when it has its own) cover are of
     releaseId: string,
+    // false when `?release=` picked a release other than the one the album is normally shown with - the album
+    // can then only be requested track by track: a request downloads the standard edition's tracklist
+    isDefaultRelease: boolean,
+    // every official release of the release-group, oldest first, to choose another one from
+    releases: AlbumRelease[],
     title: string,
     artist: ArtistInfo | string,
     type: "album" | "ep" | null,

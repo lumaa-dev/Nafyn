@@ -15,8 +15,8 @@
           <span v-else-if="album.releaseDate" class="value">{{ $t('upcoming.expected', { date: formatPartialDate(album.releaseDate, album.releaseDatePrecision) }) }}</span>
         </div>
         <span class="albumactions">
-          <button filled v-if="album.released" :disabled="album.requested || album.inLibrary || !canRequestAlbums" @click="requestAlbum">{{ album.inLibrary ? $t('album.inLibrary') : album.requested ? $t('album.alreadyRequested') : $t('album.request') }}</button>
-          <button v-else :filled="album.subscribed ? 'hollow' : ''" :disabled="subscriptionPending" @click="toggleSubscription">
+          <button filled v-if="album.released && album.isDefaultRelease" :disabled="album.requested || album.inLibrary || !canRequestAlbums" @click="requestAlbum">{{ album.inLibrary ? $t('album.inLibrary') : album.requested ? $t('album.alreadyRequested') : $t('album.request') }}</button>
+          <button v-else-if="!album.released" :filled="album.subscribed ? 'hollow' : ''" :disabled="subscriptionPending" @click="toggleSubscription">
             {{ album.subscribed ? $t('upcoming.following') : $t('upcoming.notifyMe') }}
           </button>
           <!-- <button filled="hollow" v-if="albumMediaIds.length > 0" @click="openPicker(albumMediaIds)">{{ $t('playlist.addToPlaylist') }}</button> -->
@@ -48,12 +48,25 @@
       <span v-if="album.label"> &middot; ℗ {{ album.label }}</span>
       <span> &middot; <a :href="`https://musicbrainz.org/release/${album.releaseId}`">{{ $t('album.viewInMusicbrainz') }}</a></span>
     </p>
+
+    <!-- change what release of the album is being viewed: the same grid as the artist's categories -->
+    <ReleaseGrid v-if="album.releases.length > 1" class="releases" :title="$t('album.releases')">
+      <NuxtLink
+        v-for="rel in album.releases"
+        :key="rel.id"
+        :to="{ path: `/a/${aid}`, query: { release: rel.id } }"
+        :aria-current="rel.selected ? 'true' : undefined"
+        replace
+      >
+        <MediaBox :media="rel" :subtitle="releaseDescription(rel)" />
+      </NuxtLink>
+    </ReleaseGrid>
   </div>
   <LoadError v-else :error="error" />
 </template>
 
 <script lang="ts" setup>
-import type { AlbumDetail } from '~~/server/entity/media/AlbumDetail';
+import type { AlbumDetail, AlbumRelease } from '~~/server/entity/media/AlbumDetail';
 import type { TrackInfo } from '~~/server/entity/media/TrackInfo';
 import type { MediaRow } from '~~/server/core/library';
 import { menuAnchor } from '~/composables/useMediaMenu';
@@ -61,18 +74,30 @@ import { useAuthToken } from '~/composables/useAuthToken';
 import { useCurrentUser } from '~/composables/useCurrentUser';
 import { Permission } from '~~/server/entity/Permission';
 import ReleaseCountdown from '~/components/ReleaseCountdown.vue';
+import MediaBox from '~/components/MediaBox.vue';
+import ReleaseGrid from '~/components/ReleaseGrid.vue';
 
 const { locale } = useI18n();
-const aid = useRoute().params.aid as string;
+const route = useRoute();
+const aid = route.params.aid as string;
 const { token } = useAuthToken();
 
 // deep: the page flips flags on the loaded album (subscribed, requested) and expects the buttons to follow;
 // Nuxt 4's useAsyncData data is a shallow ref by default, which would swallow those writes
+// `?release=` is the release being viewed (picked from the grid at the bottom); the key stays the same so every
+// `refreshNuxtData("album-...")` still finds it, and a change of release refetches through `watch`
+const releaseId = computed(() => typeof route.query.release === "string" ? route.query.release : undefined);
 const { data: album, error } = await useAsyncData<AlbumDetail>(`album-${aid}`, () => {
   return token.value
-    ? $fetch(`/api/v1/album/${aid}`, { headers: { Authorization: token.value } })
+    ? $fetch(`/api/v1/album/${aid}`, { headers: { Authorization: token.value }, query: { release: releaseId.value } })
     : Promise.reject(new Error("Not authenticated"));
-}, { deep: true });
+}, { deep: true, watch: [releaseId] });
+
+// what sets a release apart: MusicBrainz' disambiguation when there is one, else the year and country
+function releaseDescription(release: AlbumRelease): string {
+  if (release.disambiguation) return release.disambiguation;
+  return [release.date?.slice(0, 4), release.country].filter(Boolean).join(" · ");
+}
 
 // tracks per disc, in order; the template only draws a disc header when there is more than one. An unnamed
 // disc reads "Disc N".

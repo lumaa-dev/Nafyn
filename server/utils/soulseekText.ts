@@ -86,6 +86,19 @@ export function filenameVariants(name: string): string[] {
 
 const MIN_PHONETIC_KEY = 5;
 
+// a script without spaces between words: its title is looked for as a substring
+const UNSPACED = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u;
+
+/**
+ * `wanted` inside `key` (both `matchKey` forms). Whole words for a spaced script - "numero" is not in "numerology" or
+ * "numero uno" at a word's edge by accident - a plain substring for kana, hangul and hanzi.
+ */
+export function keyContains(key: string, wanted: string): boolean {
+    if (!wanted) return false;
+    if (UNSPACED.test(wanted)) return key.includes(wanted);
+    return ` ${key} `.includes(` ${wanted} `);
+}
+
 /**
  * Whether a filename (no folder, no extension) names one of the wanted titles. Same script: the title's words
  * appear in the name. Across scripts (a romanized filename for a Japanese title, or the reverse): the phonetic
@@ -97,7 +110,7 @@ export function nameMatchesAnyTitle(name: string, titles: string[]): boolean {
 
     for (const variant of filenameVariants(name)) {
         const key = matchKey(variant);
-        if (wanted.some((entry) => key.includes(entry.key))) return true;
+        if (wanted.some((entry) => keyContains(key, entry.key))) return true;
     }
 
     for (const variant of filenameVariants(name)) {

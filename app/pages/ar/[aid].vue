@@ -9,13 +9,13 @@
       </div>
     </div>
 
-    <template v-if="artist.albums.length > 0">
-      <h2>{{ $t('artist.discography') }}</h2>
-      <div class="grid">
-        <NuxtLink class="trad" :to="`/a/${alb.id}`" v-for="alb in artist.albums" :key="alb.id">
-          <MediaBox :media="alb" />
+    <!-- the discography by kind: Albums, EPs, Singles... newest first, each a grid that scrolls sideways -->
+    <template v-if="artist.categories.length > 0">
+      <ReleaseGrid v-for="category in artist.categories" :key="category.id" :title="$t(`artist.category.${category.id}`)">
+        <NuxtLink v-for="rel in category.releases" :key="`${rel.id}-${rel.releaseId ?? ''}`" :to="releaseLink(rel)">
+          <MediaBox :media="rel" />
         </NuxtLink>
-      </div>
+      </ReleaseGrid>
     </template>
 
     <p class="details">
@@ -26,8 +26,9 @@
 </template>
 
 <script lang="ts" setup>
-import type { ArtistDetail } from '~~/server/entity/media/ArtistDetail';
+import type { ArtistDetail, ArtistRelease } from '~~/server/entity/media/ArtistDetail';
 import MediaBox from '~/components/MediaBox.vue';
+import ReleaseGrid from '~/components/ReleaseGrid.vue';
 import { useAuthToken } from '~/composables/useAuthToken';
 
 const aid = useRoute().params.aid as string;
@@ -38,11 +39,16 @@ const { data: artist, error } = await useAsyncData<ArtistDetail>(`artist-${aid}`
     ? $fetch(`/api/v1/artist/${aid}`, { headers: { Authorization: token.value } })
     : Promise.reject(new Error("Not authenticated"));
 });
+
+// an edition (Deluxe, Remaster) opens its album on that release
+function releaseLink(release: ArtistRelease): string {
+  return release.releaseId ? `/a/${release.id}?release=${release.releaseId}` : `/a/${release.id}`;
+}
 </script>
 
 <style scoped>
 .artist {
-  max-width: 900px;
+  max-width: 1200px;
 }
 
 .artist .head {
@@ -79,21 +85,6 @@ const { data: artist, error } = await useAsyncData<ArtistDetail>(`artist-${aid}`
   font-size: 0.85em;
   color: var(--tint-fg, #ffffffae);
   white-space: pre-line;
-}
-
-.artist h2 {
-  margin-bottom: 20px;
-}
-
-.artist .grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
-}
-
-.artist .trad {
-  font-family: "Instrument-Serif";
-  text-decoration: none;
 }
 
 .artist .details {

@@ -1,7 +1,8 @@
 import type { IRelease, IReleaseGroup } from "musicbrainz-api";
 import { getMusicBrainzRepository, parseReleaseDate } from "~~/server/utils/musicbrainz";
-import { pickReleaseForGroup } from "~~/server/utils/release";
-import type { AlbumDetail, DiscInfo } from "~~/server/entity/media/AlbumDetail";
+import { hasFrontCover, isOfficialRelease, pickReleaseForGroup } from "~~/server/utils/release";
+import { sortableDate } from "~~/server/utils/search/filters";
+import type { AlbumDetail, AlbumRelease, DiscInfo } from "~~/server/entity/media/AlbumDetail";
 import type { TrackInfo } from "~~/server/entity/media/TrackInfo";
 import type { ArtistInfo } from "~~/server/entity/media/ArtistInfo";
 import { findMediaByIdentity, findOwnedMediaByIdentity } from "~~/server/core/library";
@@ -9,13 +10,13 @@ import { buildIdentity } from "~~/server/utils/mediaIdentity";
 import { hasActiveRequest } from "~~/server/core/requests";
 import { isSubscribed } from "~~/server/core/releaseSubscriptions";
 import { isReleased, normalizeReleaseDate } from "~~/server/utils/releaseDate";
-import { assertMbid } from "~~/server/utils/ids";
+import { assertMbid, isUuid } from "~~/server/utils/ids";
 import { getImageColors } from "~~/server/utils/imageColors";
 import { enforceUpstreamLookupLimit } from "~~/server/utils/rateLimit";
 
 defineRouteMeta({
     openAPI: {
-        description: "Get full album/EP details (tracklist, artist, cover art) from a MusicBrainz release-group ID, with per-track library/request status for the requesting user",
+        description: "Get full album/EP details (tracklist, artist, cover art) from a MusicBrainz release-group ID, with per-track library/request status for the requesting user. `releases` lists the other releases of the release-group (Deluxe, other countries, reissues) and `release` shows one of them",
         tags: ["album"],
         operationId: "getAlbum",
         parameters: [
@@ -24,6 +25,13 @@ defineRouteMeta({
                 in: "path",
                 required: true,
                 description: "MusicBrainz release-group ID",
+                schema: { type: "string" }
+            },
+            {
+                name: "release",
+                in: "query",
+                required: false,
+                description: "MusicBrainz release ID, one of `releases`: show that release (its tracklist, label, cover) instead of the standard edition. An ID that is not a release of this album is ignored",
                 schema: { type: "string" }
             }
         ],
@@ -100,12 +108,29 @@ defineRouteMeta({
                             title: { type: "string", nullable: true, description: "The disc's own title in MusicBrainz; null when it has none, in which case clients show \"Disc {number}\"" }
                         }
                     },
+                    AlbumRelease: {
+                        type: "object",
+                        required: ["id", "title", "disambiguation", "date", "country", "format", "trackCount", "coverArt", "selected"],
+                        properties: {
+                            id: { type: "string", description: "MusicBrainz release ID" },
+                            title: { type: "string" },
+                            disambiguation: { type: "string", nullable: true, description: "Shown as the description of the release" },
+                            date: { type: "string", nullable: true, description: "\"2010-11-02\", \"2010-11\" or \"2010\"" },
+                            country: { type: "string", nullable: true },
+                            format: { type: "string", nullable: true },
+                            trackCount: { type: "number" },
+                            coverArt: { type: "string", nullable: true, description: "The release's own front cover; null when it has none" },
+                            selected: { type: "boolean" }
+                        }
+                    },
                     AlbumDetail: {
                         type: "object",
-                        required: ["id", "releaseId", "title", "artist", "type", "coverArt", "imageColors", "textColor", "releaseDate", "releaseDatePrecision", "released", "subscribed", "requested", "inLibrary", "description", "label", "discs", "tracks"],
+                        required: ["id", "releaseId", "isDefaultRelease", "releases", "title", "artist", "type", "coverArt", "imageColors", "textColor", "releaseDate", "releaseDatePrecision", "released", "subscribed", "requested", "inLibrary", "description", "label", "discs", "tracks"],
                         properties: {
                             id: { type: "string", description: "MusicBrainz release-group ID" },
                             releaseId: { type: "string", description: "MusicBrainz release ID for the selected release" },
+                            isDefaultRelease: { type: "boolean", description: "false when `release` picked a release other than the standard one. The album can then only be requested track by track (an album request downloads the standard edition)" },
+                            releases: { type: "array", items: { $ref: "#/components/schemas/AlbumRelease" }, description: "Every official release of the release-group, oldest first; exactly one has `selected: true`" },
                             title: { type: "string" },
                             artist: {
                                 type: ["object", "string"],
@@ -143,6 +168,9 @@ defineRouteMeta({
     },
 });
 
+// a release-group can hold hundreds of regional reissues; the picker is not a catalogue
+const MAX_RELEASES = 60;
+
 export default defineEventHandler(async (event): Promise<AlbumDetail> => {
     const { sub: userId } = await requireAuthToken(event);
     enforceUpstreamLookupLimit(event, userId);
@@ -164,10 +192,15 @@ export default defineEventHandler(async (event): Promise<AlbumDetail> => {
     // every Nafyn surface that resolves a release group into a concrete release goes through
     // pickReleaseForGroup, so the tracklist shown here is exactly the one the download pipeline will tag
     // against - and it is the official standard edition, not a promo/bootleg or a +45-track digital deluxe
-    const release: IRelease | undefined = pickReleaseForGroup(releaseGroup, browsed.releases);
-    if (!release) {
+    const standard: IRelease | undefined = pickReleaseForGroup(releaseGroup, browsed.releases);
+    if (!standard) {
         throw createError({ statusCode: 404, message: "No release found for album " + aid });
     }
+    // `?release=` shows another release of the group; one that is not in it is ignored, not an error
+    const wanted = getQuery(event).release;
+    const chosen = isUuid(wanted) ? browsed.releases.find((candidate) => candidate.id === wanted.toLowerCase()) : undefined;
+    const release: IRelease = chosen ?? standard;
+    const isDefaultRelease = release.id === standard.id;
 
     const primaryType = releaseGroup["primary-type"]?.toLowerCase();
     const type = primaryType === "album" || primaryType === "ep" ? primaryType : null;
@@ -218,13 +251,34 @@ export default defineEventHandler(async (event): Promise<AlbumDetail> => {
         }
     }
 
-    const coverArt = `https://coverartarchive.org/release-group/${releaseGroup.id}/front-500`;
+    // the release's own cover when one was asked for and it has one, else the album's
+    const coverArt = chosen && !isDefaultRelease && hasFrontCover(release)
+        ? `https://coverartarchive.org/release/${release.id}/front-500`
+        : `https://coverartarchive.org/release-group/${releaseGroup.id}/front-500`;
     const { imageColors, textColor } = await getImageColors({ coverArtUrl: coverArt });
+
+    const releases: AlbumRelease[] = browsed.releases
+        .filter((candidate) => isOfficialRelease(candidate) || candidate.id === release.id)
+        .sort((a, b) => sortableDate(a.date).localeCompare(sortableDate(b.date)) || a.id.localeCompare(b.id))
+        .slice(0, MAX_RELEASES)
+        .map((candidate) => ({
+            id: candidate.id,
+            title: candidate.title,
+            disambiguation: candidate.disambiguation?.trim() || null,
+            date: candidate.date || null,
+            country: candidate.country || null,
+            format: [...new Set((candidate.media ?? []).map((medium) => medium.format).filter((format): format is string => !!format))].join(" + ") || null,
+            trackCount: (candidate.media ?? []).reduce((total, medium) => total + (medium["track-count"] ?? medium.tracks?.length ?? 0), 0),
+            coverArt: hasFrontCover(candidate) ? `https://coverartarchive.org/release/${candidate.id}/front-250` : null,
+            selected: candidate.id === release.id
+        }));
 
     return {
         id: releaseGroup.id,
         releaseId: release.id,
-        title: releaseGroup.title,
+        isDefaultRelease,
+        releases,
+        title: chosen && !isDefaultRelease && release.title?.trim() ? release.title : releaseGroup.title,
         artist,
         type,
         coverArt,
@@ -236,7 +290,7 @@ export default defineEventHandler(async (event): Promise<AlbumDetail> => {
         subscribed: released ? false : await isSubscribed(userId, releaseGroup.id),
         requested: await hasActiveRequest(userId, [aid, releaseGroup.id]),
         inLibrary: tracks.length > 0 && tracks.every((track) => track.inLibrary),
-        description: releaseGroup.disambiguation || null,
+        description: (chosen && !isDefaultRelease ? release.disambiguation : null) || releaseGroup.disambiguation || null,
         label,
         discs,
         tracks

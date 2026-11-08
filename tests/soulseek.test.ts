@@ -53,6 +53,12 @@ describe("matching a filename to a title", () => {
         expect(nameMatchesAnyTitle("Black Dog", ["Stairway to Heaven"])).toBe(false);
     });
 
+    test("whole words, not pieces of them", () => {
+        expect(nameMatchesAnyTitle("Numerology", ["Numero"])).toBe(false);
+        expect(nameMatchesAnyTitle("01 - Numero", ["Numéro"])).toBe(true);
+        expect(nameMatchesAnyTitle("Intro to Outro", ["Intro"])).toBe(true);
+    });
+
     test("katakana and hiragana are the same", () => {
         expect(nameMatchesAnyTitle("ゆめうつつ", ["ユメウツツ"])).toBe(true);
     });
@@ -187,18 +193,99 @@ describe("rankForTrack", () => {
         expect(isExcludedVersion("Blinding Lights - sped up", target)).toBe(true);
     });
 
-    test("the right length first, then a plain take before a remix, then the title in the filename", () => {
+    test("the right length first, then a plain take before an extended one, then the title in the filename", () => {
         expect(order([
             file("x/The Weeknd - Blinding Lights.mp3", { length: 260 }),
-            file("x/The Weeknd - Blinding Lights (Remix).mp3"),
+            file("x/The Weeknd - Blinding Lights (Extended).mp3"),
             file("The Weeknd - Blinding Lights/01.mp3"),
             file("x/01 - Blinding Lights.mp3")
         ])).toEqual([
             "x/01 - Blinding Lights.mp3",
             "The Weeknd - Blinding Lights/01.mp3",
-            "x/The Weeknd - Blinding Lights (Remix).mp3",
+            "x/The Weeknd - Blinding Lights (Extended).mp3",
             "x/The Weeknd - Blinding Lights.mp3"
         ]);
+    });
+
+    test("another version is never downloaded unless the request is for it: live, remix, acoustic, cover, demo...", () => {
+        for (const bad of [
+            "The Weeknd - Blinding Lights (Live).mp3",
+            "The Weeknd - Blinding Lights (Live at Wembley).mp3",
+            "The Weeknd - Blinding Lights - Remix.mp3",
+            "The Weeknd - Blinding Lights (Acoustic).mp3",
+            "The Weeknd - Blinding Lights (cover).mp3",
+            "The Weeknd - Blinding Lights demo.mp3",
+            "The Weeknd - Blinding Lights (Piano Version).mp3",
+            "The Weeknd - Blinding Lights (Japanese ver.).mp3"
+        ]) expect(order([file(bad)])).toEqual([]);
+        // the studio file stays
+        expect(order([file("The Weeknd - Blinding Lights.mp3"), file("The Weeknd - Blinding Lights (Live).mp3")])).toEqual(["The Weeknd - Blinding Lights.mp3"]);
+    });
+
+    test("...but is when it is: the title, the recording's disambiguation or the album says so", () => {
+        const live = { ...target, title: "Blinding Lights (Live)" };
+        expect(rankForTrack([file("The Weeknd - Blinding Lights (Live).mp3")], live)).toHaveLength(1);
+        const viaNote = { ...target, disambiguation: "live, 2021: Super Bowl" };
+        expect(rankForTrack([file("The Weeknd - Blinding Lights (Live at Super Bowl).mp3")], viaNote)).toHaveLength(1);
+        const viaAlbum = { ...target, album: "Live at SoFi Stadium" };
+        expect(rankForTrack([file("The Weeknd - Blinding Lights (Live).mp3")], viaAlbum)).toHaveLength(1);
+        // a remix is still not live
+        expect(rankForTrack([file("The Weeknd - Blinding Lights (Remix).mp3")], live)).toEqual([]);
+    });
+
+    test("the folder says it too: a live album, a studio album that merely has the word", () => {
+        expect(order([file("The Weeknd/Live at Wembley/Blinding Lights.mp3")])).toEqual([]);
+        expect(order([file("The Weeknd/MTV Unplugged/Blinding Lights.mp3")])).toEqual([]);
+        expect(order([file("The Weeknd/Live Through This/Blinding Lights.mp3")])).toEqual(["The Weeknd/Live Through This/Blinding Lights.mp3"]);
+    });
+
+    test("an artist whose name holds a version word is not that version", () => {
+        const live = { title: "Heart Attack", artistName: "Live", duration: 200 };
+        expect(rankForTrack([file("Live/Heart Attack.mp3")], live)).toHaveLength(1);
+    });
+
+    test("another language than the one requested: dropped; English is what an unmarked title is", () => {
+        const lifetime = { title: "Lifetime Showtime", artistName: "FUWAMOCO", duration: 200 };
+        const names = (...paths: string[]) => rankForTrack(paths.map((path) => file(path)), lifetime).map((entry) => entry.result.file);
+        expect(names("FUWAMOCO - Lifetime Showtime (Japanese Ver.).mp3")).toEqual([]);
+        expect(names("FUWAMOCO - Lifetime Showtime (日本語ver).mp3")).toEqual([]);
+        expect(names("FUWAMOCO/Lifetime Showtime (Korean Version)/01 Lifetime Showtime.mp3")).toEqual([]);
+        expect(names("FUWAMOCO - Lifetime Showtime (English Ver.).mp3")).toHaveLength(1);
+        expect(names("FUWAMOCO - Lifetime Showtime.mp3")).toHaveLength(1);
+
+        // a Japanese version that was asked for is the one wanted, and then English is the other language
+        const japanese = { ...lifetime, title: "Lifetime Showtime (Japanese ver.)" };
+        const only = (path: string) => rankForTrack([file(path)], japanese).length;
+        expect(only("FUWAMOCO - Lifetime Showtime (Japanese Ver.).mp3")).toBe(1);
+        expect(only("FUWAMOCO - Lifetime Showtime (English Ver.).mp3")).toBe(0);
+    });
+
+    test("a file with no trace of the title in its path is another song", () => {
+        const names = rankForTrack([
+            file("The Weeknd/After Hours/04 Heartless.mp3"),
+            file("The Weeknd/After Hours/09 Blinding Lights.mp3")
+        ], target).map((entry) => entry.result.file);
+        expect(names).toEqual(["The Weeknd/After Hours/09 Blinding Lights.mp3"]);
+    });
+
+    test("a short title shared by many songs needs the artist in the path", () => {
+        const numero = { title: "Numéro", artistName: "Anyme023", duration: 150 };
+        const names = rankForTrack([
+            file("Various/Latin Hits/Numero.mp3", { length: 150 }),
+            file("Random/Numero Uno.mp3", { length: 150 }),
+            file("Anyme023/Numéro.mp3", { length: 150 })
+        ], numero).map((entry) => entry.result.file);
+        expect(names).toEqual(["Anyme023/Numéro.mp3"]);
+    });
+
+    test("a title written two ways is found by either: the bracket holds the other spelling", () => {
+        const bts = { title: "작은 것들을 위한 시 (Boy With Luv)", artistName: "BTS", duration: 230 };
+        expect(rankForTrack([file("BTS/Map of the Soul Persona/Boy With Luv.mp3", { length: 230 })], bts)).toHaveLength(1);
+        expect(rankForTrack([file("BTS - 작은 것들을 위한 시.mp3", { length: 230 })], bts)).toHaveLength(1);
+        expect(rankForTrack([file("BTS - Boy With Luv (Japanese ver.).mp3", { length: 230 })], bts)).toEqual([]);
+        // and the soundtrack tag in a title is no part of the song's name
+        const villains = { title: "Calling All Villains (Soundtrack)", artistName: "ZAMination", duration: 180 };
+        expect(rankForTrack([file("ZAMination - Calling All Villains.mp3", { length: 180 })], villains)).toHaveLength(1);
     });
 
     test("a filename with words the title doesn't have comes after an exact one", () => {

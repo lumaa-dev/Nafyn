@@ -3,8 +3,10 @@ import { getMusicBrainzRepository } from "../../utils/musicbrainz";
 import { MusicBrainzError, escapeLucene } from "../../utils/musicbrainzRepository";
 import { getSearchDeps } from "../../utils/catalogSearch";
 import { searchAlbums, searchTracks, type SearchInput } from "../../utils/search/engine";
-import type { SearchResult } from "../../utils/search/types";
+import type { RawArtistHit, SearchResult } from "../../utils/search/types";
 import { getAlbumContents, type AlbumContents } from "../../utils/albumContents";
+import { artistRelevance, mergeByLikelihood, type RankedEntry } from "../../utils/search/mixed";
+import type { SearchEntry } from "../../entity/media/SearchEntry";
 import { peekArtistImage } from "../../utils/artistImage";
 import { requireAuthToken } from "../../utils/requireAuth";
 import { consumeRateLimit } from "../../utils/rateLimit";
@@ -24,7 +26,7 @@ type Filter = "album" | "track" | "artist" | "all";
 
 defineRouteMeta({
     openAPI: {
-        description: "Search MusicBrainz for albums, tracks, and/or artists. Albums and tracks are normalized, filtered (Official digital releases only, no bootlegs/compilations/deluxe/remasters unless asked for) and ranked; results with a front cover come first. At most one result has `bestResult: true`. Free text may name the artist and the title together, in any order, with words left out or misspelled (\"lovejoy one trick\"). When `filter` is `all` and the best result is an album, the response is about that album: `artists` is every artist credited on it (featurings included) and `tracks` starts with all of its tracks, in order (flagged `from_album`), followed by the other matching tracks.",
+        description: "Search MusicBrainz for albums, tracks, and/or artists. `results` is ONE list of all three kinds, the most likely answer first and the least likely last; `albums`, `tracks` and `artists` hold the same rows per kind. Albums and tracks are normalized, filtered (Official digital releases only, no bootlegs/compilations, and no Deluxe/Remaster/Live/Remix editions or versions unless the query says so - a track is still found on a Deluxe album) and ranked; results with a front cover come first within their kind. At most one result has `bestResult: true`. Free text may name the artist and the title together, in any order, with words left out or misspelled (\"lovejoy one trick\"). When `filter` is `all` and the best result is an album, the response is about that album: `artists` is every artist credited on it (featurings included) and `tracks` starts with all of its tracks, in order (flagged `from_album`), followed by the other matching tracks.",
         tags: ["search"],
         operationId: "search",
         parameters: [
@@ -92,8 +94,13 @@ defineRouteMeta({
                     "application/json": {
                         schema: {
                             type: "object",
-                            required: ["albums", "tracks", "artists"],
+                            required: ["results", "albums", "tracks", "artists"],
                             properties: {
+                                results: {
+                                    type: "array",
+                                    description: "Every kind in one ranking, most likely first. Honors `filter` (a single kind when it is not `all`)",
+                                    items: { $ref: "#/components/schemas/SearchEntry" }
+                                },
                                 albums: {
                                     type: "array",
                                     items: { $ref: "#/components/schemas/MediaInfo" }
@@ -139,6 +146,16 @@ defineRouteMeta({
         $global: {
             components: {
                 schemas: {
+                    SearchEntry: {
+                        type: "object",
+                        required: ["kind", "relevance", "media", "artist"],
+                        properties: {
+                            kind: { type: "string", enum: ["track", "album", "artist"] },
+                            relevance: { type: "number", description: "0..1 (above 1 with a UPC/ISRC match): how well the row matches the query, comparable across kinds" },
+                            media: { type: "object", nullable: true, description: "The track or album (a `MediaInfo`); null for an artist" },
+                            artist: { type: "object", nullable: true, description: "The artist (an `ArtistInfo`); null for a track or an album" }
+                        }
+                    },
                     MediaInfo: {
                         type: "object",
                         required: ["id", "title", "artist", "album", "type", "coverArt", "releaseDate", "inLibrary", "duration", "label"],
@@ -315,6 +332,10 @@ async function albumOfBestResult(albums: SearchResult[]): Promise<{ album: Album
     }
 }
 
+function round(value: number): number {
+    return Math.round(value * 10_000) / 10_000;
+}
+
 function param(value: unknown): string {
     return (typeof value === "string" ? value.trim() : "").slice(0, 200);
 }
@@ -365,21 +386,57 @@ export default defineEventHandler(async (event) => {
         // an album is the answer: what is on it is the answer too (first page only, `offset` pages through the rest)
         const content = filter === "all" && albums && offset === 0 ? await albumOfBestResult(albums.results) : null;
 
+        const albumInfos: SearchMediaInfo[] = albums ? albums.results.map(albumToMediaInfo) : [];
         let trackInfos: SearchMediaInfo[] = tracks ? tracks.results.map(trackToMediaInfo) : [];
         let artistInfos: ArtistInfo[];
+        let onAlbum: SearchMediaInfo[] = [];
+        // the artists in the order they are ranked, each with how well it matches
+        let rankedArtists: Array<RankedEntry<ArtistInfo>>;
         if (content) {
-            const onAlbum = content.album.tracks.map((track) => albumTrackToMediaInfo(track, content.album, content.best));
+            onAlbum = content.album.tracks.map((track) => albumTrackToMediaInfo(track, content.album, content.best));
             const seen = new Set(onAlbum.map((track) => track.id));
             // the album's tracks are never cut by `limit`; the other matches fill what is left of it
             trackInfos = [...onAlbum, ...trackInfos.filter((track) => !seen.has(track.id))].slice(0, Math.max(limit, onAlbum.length));
             artistInfos = content.album.artists.map((artist) =>
                 withKnownImage({ name: artist.name, musicbrainzId: artist.id, description: artist.disambiguation, image: null }));
+            // the album's own people: right behind the album and its tracks
+            rankedArtists = artistInfos.map((artist) => ({ kind: "artist", relevance: content.best.match.relevance * 0.9, item: artist }));
         } else {
-            artistInfos = artists ? artists.artists.map(toArtistInfo).map(withKnownImage) : [];
+            const hits = artists ? artists.artists : [];
+            artistInfos = hits.map(toArtistInfo).map(withKnownImage);
+            rankedArtists = hits
+                .map((hit, index) => ({ kind: "artist" as const, relevance: artistRelevance(artistText, hit as unknown as RawArtistHit, deps.config), item: artistInfos[index]! }))
+                // a typed name pulls in lots of look-alikes from MusicBrainz' artist search: in the list, only the real matches
+                .filter((entry) => filter === "artist" || entry.relevance >= deps.config.minRelevance);
+            // stable: look-alikes that score the same keep MusicBrainz' own order
+            rankedArtists.sort((a, b) => Math.round(b.relevance * 1000) - Math.round(a.relevance * 1000));
+            artistInfos = rankedArtists.map((entry) => entry.item);
         }
 
+        const rowOf = (media: SearchMediaInfo): RankedEntry<SearchEntry> => ({
+            kind: media.type === "track" ? "track" : "album",
+            relevance: media.match.relevance,
+            item: { kind: media.type === "track" ? "track" : "album", relevance: media.match.relevance, media, artist: null }
+        });
+        const artistRow = (entry: RankedEntry<ArtistInfo>): RankedEntry<SearchEntry> => ({
+            kind: "artist",
+            relevance: entry.relevance,
+            item: { kind: "artist", relevance: round(entry.relevance), media: null, artist: entry.item }
+        });
+
+        const onAlbumIds = new Set(onAlbum.map((track) => track.id));
+        const bestAlbum = content ? albumInfos.find((album) => album.id === content.best.id) ?? null : null;
+        const merged = mergeByLikelihood(
+            albumInfos.filter((album) => album !== bestAlbum).map(rowOf),
+            trackInfos.filter((track) => !onAlbumIds.has(track.id)).map(rowOf),
+            rankedArtists.map(artistRow)
+        );
+        // the best album is the answer, and what is on it is the answer too: they lead, whatever else matched
+        const lead: Array<RankedEntry<SearchEntry>> = bestAlbum ? [rowOf(bestAlbum), ...onAlbum.map(rowOf)] : [];
+
         return {
-            albums: albums ? albums.results.map(albumToMediaInfo) : [],
+            results: [...lead, ...merged].map((entry) => ({ ...entry.item, relevance: round(entry.item.relevance) })),
+            albums: albumInfos,
             tracks: trackInfos,
             artists: artistInfos
         };

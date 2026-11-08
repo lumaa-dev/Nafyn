@@ -16,7 +16,7 @@ import { luceneAnyTerms, luceneFuzzyTerms, luceneQuote, luceneTerms } from "../m
 import { barcodeForms, parseIsrc, parseUpc, sameBarcode } from "./codes";
 import type { SearchConfig } from "./config";
 import type { CoverArtChecker } from "./coverArt";
-import { detectIntent, hasDeluxeKeyword, hasRemasterKeyword, releaseQualifies, sortableDate, workPasses, type QueryIntent } from "./filters";
+import { detectIntent, hasDeluxeKeyword, hasRemasterKeyword, recordingPasses, releaseQualifies, sortableDate, workPasses, type QueryIntent } from "./filters";
 import { normalizeText, type NormalizedText } from "./normalize";
 import { latinize, needsLatinForm, phoneticKey, romajiToKanaVariants } from "./script";
 import { alignWords, compareNormalized, exactness, levenshteinRatio, nameSimilarity, titleScore, type Comparison } from "./similarity";
@@ -674,6 +674,8 @@ class Pipeline {
     private evaluate(candidate: Candidate): Evaluated | null {
         // works that can never qualify are dropped before they cost a request
         if (candidate.kind === "album" && !workPasses({ title: candidate.title, secondaryTypes: candidate.secondaryTypes }, this.intent, this.config)) return null;
+        // a live, remixed, acoustic... recording is not the song asked for, unless the query says so
+        if (candidate.kind === "track" && !recordingPasses(candidate, this.intent)) return null;
 
         const forms = this.titleForms(candidate);
         const names = creditNames(candidate.credits).map((name) => this.norm(name));
@@ -935,7 +937,9 @@ class Pipeline {
                         secondaryTypes: group?.["secondary-types"] ?? candidate.secondaryTypes
                     },
                     this.intent,
-                    this.config
+                    this.config,
+                    // a track is found through a Deluxe edition too (bonus tracks)
+                    { tracks: candidate.kind === "track" }
                 );
             });
             if (qualifying.length === 0) continue;
@@ -945,10 +949,14 @@ class Pipeline {
                 const index = this.config.primaryTypeOrder.indexOf(type as never);
                 return index === -1 ? this.config.primaryTypeOrder.length : index;
             };
-            // albums: earliest official digital release; tracks (payload has no dates): album before EP before single
+            // a track found on both the standard and a Deluxe edition is shown on the standard one
+            const edition = (release: RawRelease) => candidate.kind === "track" && !this.intent.wantsDeluxe
+                && (hasDeluxeKeyword(`${release.title ?? ""} ${release.disambiguation ?? ""} ${release["release-group"]?.title ?? ""}`, this.config)) ? 1 : 0;
+            // albums: earliest official digital release; tracks (payload has no dates): standard edition, then
+            // album before EP before single
             qualifying.sort((a, b) => candidate.kind === "album"
                 ? sortableDate(a.date).localeCompare(sortableDate(b.date))
-                : rank(a) - rank(b));
+                : edition(a) - edition(b) || rank(a) - rank(b));
             candidate.qualifying = qualifying;
 
             const best = qualifying[0]!;

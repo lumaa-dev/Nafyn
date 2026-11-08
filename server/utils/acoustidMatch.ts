@@ -8,6 +8,7 @@
 // compared with what was requested.
 
 import { needsLatinForm, phoneticKey } from "./search/script";
+import { differentVersion } from "./versionMarkers";
 
 export interface AcoustIdRecording {
     id: string,
@@ -43,6 +44,8 @@ export interface ExpectedRecording {
     // AcoustID often lists a Japanese song under its romanized title, which is still the same song
     altTitles?: string[],
     artistAliases?: string[],
+    // MusicBrainz' note on the recording ("live, 2003: Wembley"): a version the request is for
+    disambiguation?: string | null,
     // seconds, 0 when MusicBrainz doesn't know it
     duration: number
 }
@@ -55,6 +58,10 @@ export interface MatchConfig {
     durationTolerance: number,
     // title + artist agreement alone (different MBID) is only believed at this score or above
     identityMinScore: number,
+    // ...and only when the candidate's own length is this close to the REQUESTED recording's (a live take, an
+    // edit or another language's version has the same title and a fingerprint close enough to be listed, but
+    // not the same length). Tighter than `durationTolerance`: duplicates of one recording differ by a second or two
+    identityDurationTolerance: number,
     // a candidate at/above this score that is a different song means the file is very probably the wrong one
     confidentScore: number,
     // merged-away MBIDs looked up on MusicBrainz per file
@@ -65,6 +72,7 @@ export const DEFAULT_MATCH_CONFIG: MatchConfig = {
     minScore: 0.7,
     durationTolerance: 5,
     identityMinScore: 0.85,
+    identityDurationTolerance: 4,
     confidentScore: 0.9,
     maxAliasLookups: 3
 };
@@ -89,10 +97,20 @@ function normalize(text: string): string {
     return text.normalize("NFD").replace(/\p{M}+/gu, "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
 }
 
-// "Song (2011 Remaster)", "Song [Live]", "Song - Radio Edit" all name the same composition for the purpose of
-// "is this obviously another song"; a bracketed suffix must not turn a right file into a wrong one
+// "Song (2011 Remaster)", "Song - Radio Edit", "Song (feat. X)" all name the same composition for the purpose of
+// "is this obviously another song"; a bracketed suffix must not turn a right file into a wrong one. What does NOT
+// go through here is a suffix that names another VERSION ("(Live)", "(Japanese ver.)", "(Acoustic)"): the
+// markers are compared first (see `isSameSong`), because the rest of such a title is the original's, word for word.
 function baseTitle(title: string): string {
-    return normalize(title.replace(/[([{][^)\]}]*[)\]}]/g, " ").replace(/\s[-–—]\s.*$/, " "));
+    return normalize(title
+        .replace(/[([{][^)\]}]*[)\]}]/g, " ")
+        .replace(/\s[-–—]\s.*$/, " ")
+        .replace(/\s(?:feat|ft|featuring)\.?\s.*$/i, " "));
+}
+
+// `needle` as whole words inside `haystack`
+function containsWords(haystack: string, needle: string): boolean {
+    return ` ${haystack} `.includes(` ${needle} `);
 }
 
 // across scripts (さよならの夏 / "Sayonara no Natsu") only a phonetic skeleton can compare - on the raw text, the
@@ -108,24 +126,35 @@ function samePhonetic(a: string, b: string): boolean {
     return left === right || left.includes(right) || right.includes(left);
 }
 
+// the same title once the decoration is gone; or one inside the other when the shorter is a phrase of three words
+// or more ("numero" is not in "numero uno", "calling all villains" is in "calling all villains theme")
 function sameTitle(a: string, b: string): boolean {
     const left = baseTitle(a);
     const right = baseTitle(b);
     if (!left || !right) return false;
-    return left === right || left.includes(right) || right.includes(left) || samePhonetic(a, b);
+    if (left === right || samePhonetic(a, b)) return true;
+    const [shorter, longer] = left.length <= right.length ? [left, right] : [right, left];
+    return shorter.split(" ").length >= 3 && containsWords(longer, shorter);
 }
 
 function sameArtist(candidate: string, expected: string): boolean {
     const left = normalize(candidate);
     const right = normalize(expected);
     if (!left || !right) return false;
-    return left === right || left.includes(right) || right.includes(left) || samePhonetic(candidate, expected);
+    // "BTS, Halsey" is BTS; "btsx" is not
+    return left === right || containsWords(left, right) || containsWords(right, left) || samePhonetic(candidate, expected);
 }
 
-function isSameSong(candidate: Candidate, expected: ExpectedRecording): boolean {
+// `config` is only asked for its identity duration tolerance
+function isSameSong(candidate: Candidate, expected: ExpectedRecording, tolerance: number = DEFAULT_MATCH_CONFIG.identityDurationTolerance): boolean {
+    // another recording of "the same" song: a candidate whose length is known and far from the requested one
+    if (candidate.duration !== null && expected.duration > 0 && Math.abs(candidate.duration - expected.duration) > tolerance) return false;
     const titles = [expected.title, ...(expected.altTitles ?? [])];
     const artists = [expected.artistName, ...(expected.artistAliases ?? [])];
-    return titles.some((title) => sameTitle(candidate.title, title)) && artists.some((artist) => sameArtist(candidate.artist, artist));
+    // a title form that names the same version (or none) and the same words
+    const sameWork = titles.some((title, index) =>
+        !differentVersion(candidate.title, index === 0 && expected.disambiguation ? `${title} ${expected.disambiguation}` : title) && sameTitle(candidate.title, title));
+    return sameWork && artists.some((artist) => sameArtist(candidate.artist, artist));
 }
 
 // one entry per recording ID (its best score across every AcoustID result that lists it), noise and
@@ -200,13 +229,13 @@ export function judge(
     }
 
     for (const candidate of candidates) {
-        if (candidate.score >= config.identityMinScore && isSameSong(candidate, expected)) {
+        if (candidate.score >= config.identityMinScore && isSameSong(candidate, expected, config.identityDurationTolerance)) {
             return { matched: true, via: "identity", best: candidate, confidentOther: null };
         }
     }
 
     const confidentOther = aliasesComplete
-        ? candidates.find((candidate) => candidate.score >= config.confidentScore && !isSameSong(candidate, expected)) ?? null
+        ? candidates.find((candidate) => candidate.score >= config.confidentScore && !isSameSong(candidate, expected, config.identityDurationTolerance)) ?? null
         : null;
 
     return { matched: false, via: null, best: candidates[0] ?? null, confidentOther };

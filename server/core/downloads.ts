@@ -39,6 +39,8 @@ import { searchSoulseek, downloadFromSoulseek } from "../utils/soulseek";
 import { buildSearchQueries, matchKey, nameMatchesAnyTitle } from "../utils/soulseekText";
 import { isExcludedVersion, pickDiverse, rankForTrack } from "../utils/soulseekRank";
 import { verifyRecordingMatch } from "../utils/fingerprint";
+import { readFileTags } from "../utils/fileTags";
+import { judgeTags } from "../utils/tagEvidence";
 import { parseCoverArtUrl, warmCover } from "../utils/coverArtCache";
 import { tagAudioFile } from "../utils/audioTag";
 import { getRequestById, updateRequestStatus } from "./requests";
@@ -69,6 +71,9 @@ const ALLOWED_EXTENSIONS = [".mp3", ".flac", ".ogg", ".wav"];
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const MAX_CANDIDATES_PER_TRACK = 5;
 const MAX_DURATION_DELTA_SECONDS = 5;
+// a file AcoustID knows nothing about has nothing but its length (and its tags) to vouch for it: held to a tighter
+// bound than the 5 s a recognised file is allowed (MusicBrainz' length is rarely more than a second or two off)
+const UNMATCHED_DURATION_DELTA_SECONDS = 4;
 // a per-track search stops asking further queries once it has this many candidates nothing speaks against
 const ENOUGH_STRONG_CANDIDATES = 3;
 
@@ -78,6 +83,8 @@ export interface TrackTarget {
     aliases: string[],
     isrcs: string[],
     title: string,
+    // MusicBrainz' note on the recording ("live, 2003: Wembley", "Japanese version"): the version that was requested
+    disambiguation: string | null,
     // what other releases call this recording - for a Japanese, Korean or Chinese song, usually the title a
     // Latin-script release gives it ("Hatachi No Koi" for 二十歳の恋). Only for finding the file on Soulseek.
     altTitles: string[],
@@ -216,6 +223,7 @@ async function fetchTargets(client: MusicBrainzRepository, musicbrainzId: string
             aliases: recording.id.toLowerCase() === musicbrainzId.toLowerCase() ? [] : [musicbrainzId],
             isrcs: recording.isrcs ?? [],
             title: recording.title,
+            disambiguation: recording.disambiguation?.trim() || null,
             altTitles: otherNames(recording.title, ownTracks.map((track) => track.title)),
             artistName: credit?.name ?? "Unknown Artist",
             artistAliases: otherNames(credit?.name ?? "", [...artistNameForms(recording["artist-credit"]), ...ownTracks.flatMap((track) => artistNameForms(track["artist-credit"]))]),
@@ -281,6 +289,7 @@ async function fetchTargets(client: MusicBrainzRepository, musicbrainzId: string
                 aliases: [],
                 isrcs: track.recording.isrcs ?? [],
                 title: track.title,
+                disambiguation: track.recording.disambiguation?.trim() || null,
                 altTitles: otherNames(track.title, alternatives.map((alternative) => alternative.title)),
                 artistName: trackArtist?.name ?? "Unknown Artist",
                 artistAliases: otherNames(trackArtist?.name ?? "", [...artistNameForms(releaseGroup["artist-credit"]), ...artistNameForms(track["artist-credit"]), ...alternatives.flatMap((alternative) => alternative.artists)]),
@@ -353,8 +362,9 @@ function candidatesForTrack(results: SlskSearchResult[], target: TrackTarget): S
     const wantedTitles = [target.title, ...target.altTitles];
     if (!normalize(target.title)) return [];
     return results.filter((result) => {
-        const fileName = basename(result.file.replace(/\\/g, "/"), extname(result.file));
-        return nameMatchesAnyTitle(fileName, wantedTitles) && !isExcludedVersion(fileName, target);
+        const path = result.file.replace(/\\/g, "/");
+        const fileName = basename(path, extname(result.file));
+        return nameMatchesAnyTitle(fileName, wantedTitles) && !isExcludedVersion(fileName, target, dirname(path));
     });
 }
 
@@ -556,6 +566,7 @@ async function downloadTrack(
                 artistName: target.artistName,
                 altTitles: target.altTitles,
                 artistAliases: target.artistAliases,
+                disambiguation: target.disambiguation,
                 duration: target.duration
             });
 
@@ -565,22 +576,57 @@ async function downloadTrack(
             const durationDelta = target.duration > 0 && check.duration > 0 ? Math.abs(check.duration - target.duration) : null;
             const label = check.fingerprint.slice(0, 12);
 
+            // The file's own tags: independent of AcoustID and of the filename. Read only when nothing more reliable
+            // vouches for the file (an exact MBID match needs no second opinion).
+            const needsTagCheck = !check.verified || !check.matched || check.via === "identity";
+            const tagVerdict = needsTagCheck
+                ? judgeTags(await readFileTags(tempPath), {
+                    title: target.title,
+                    altTitles: target.altTitles,
+                    disambiguation: target.disambiguation,
+                    album: target.album,
+                    artistName: target.artistName,
+                    artistAliases: target.artistAliases
+                })
+                : { conflict: null, detail: "" };
+
             if (!check.verified) {
                 // AcoustID couldn't be reached at all (network/DNS) - that's not evidence the file is wrong,
-                // so don't fail the request over it, just accept the download unverified
+                // so don't fail the request over it - but the tags still can
+                if (tagVerdict.conflict) {
+                    console.log(`[downloads] ${label} rejected: AcoustID unreachable and ${tagVerdict.detail} (${tagVerdict.conflict} does not match)`);
+                    await rm(tempPath, { force: true });
+                    continue;
+                }
                 console.log(`[downloads] ${label} could not be verified against AcoustID (unreachable), accepting anyway`);
             } else if (check.matched) {
+                // "the same song entered twice" is a guess from the names: a file that is not the length MusicBrainz has
+                // for the recording is another recording of it (live, edit, another language)
+                if (check.via === "identity" && durationDelta !== null && durationDelta > MAX_DURATION_DELTA_SECONDS) {
+                    console.log(`[downloads] ${label} rejected: matched only by title and artist, and duration off by ${durationDelta.toFixed(1)}s`);
+                    await rm(tempPath, { force: true });
+                    continue;
+                }
+                if (tagVerdict.conflict) {
+                    console.log(`[downloads] ${label} rejected: matched only by title and artist, but ${tagVerdict.detail}`);
+                    await rm(tempPath, { force: true });
+                    continue;
+                }
                 console.log(`[downloads] ${label} matched (${check.via}, score ${check.bestScore.toFixed(2)})`);
             } else if (check.confidentOther) {
                 console.log(`[downloads] ${label} rejected: AcoustID is ${check.confidentOther.score.toFixed(2)} sure it is "${check.confidentOther.title}" by ${check.confidentOther.artist}`);
                 await rm(tempPath, { force: true });
                 continue;
-            } else if (durationDelta !== null && durationDelta > MAX_DURATION_DELTA_SECONDS) {
+            } else if (durationDelta !== null && durationDelta > UNMATCHED_DURATION_DELTA_SECONDS) {
                 console.log(`[downloads] ${label} rejected: not matched and duration off by ${durationDelta.toFixed(1)}s`);
                 await rm(tempPath, { force: true });
                 continue;
+            } else if (tagVerdict.conflict) {
+                console.log(`[downloads] ${label} rejected: not matched by AcoustID and ${tagVerdict.detail}`);
+                await rm(tempPath, { force: true });
+                continue;
             } else {
-                console.log(`[downloads] ${label} not matched by AcoustID, no contradicting candidate and duration ${durationDelta === null ? "unknown to MusicBrainz" : `within ${durationDelta.toFixed(1)}s`}, accepting`);
+                console.log(`[downloads] ${label} not matched by AcoustID, no contradicting candidate, tags agree or are absent, and duration ${durationDelta === null ? "unknown to MusicBrainz" : `within ${durationDelta.toFixed(1)}s`}, accepting`);
             }
 
             // MusicBrainz has no duration for every recording; the length measured from the downloaded audio is
