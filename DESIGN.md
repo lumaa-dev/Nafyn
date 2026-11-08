@@ -6,11 +6,23 @@
 
 By default, the background color used is `#2a2a27` and the text color is `#ffffffae`.
 
+Content never touches the edges of the screen. On small screens, every page keeps a small horizontal margin (at least 16px) on both sides, so that content stays away from the edges of the display it is used from. No page is edge-to-edge, the insights page included.
+
+On the web, no element may go out of the width of the viewport (`100vw`), whatever the page or the device. Users can never scroll horizontally, except in a container that is made for it (like a row of navigation buttons), which scrolls inside of its own frame without moving the page.
+
+On the web, no element may be hidden behind the header: the first element of a page starts below the header, and its gradient.
+
+> *See "Responsiveness" for more information about adapting elements to the screen size*
+
 ## Header and Sidebar (web)
 
 Exclusively on the web, there are the header, and the sidebar. The header shows the Nafyn wordmark as well as a search field. The sidebar shows all primary navigation links.
 
 On small screens, the Nafyn wordmark is tappable to open the sidebar.
+
+The Nafyn wordmark never disappears from the header, on any device. Except when the search button, it will hide the **wordmark only**.
+
+All buttons in the sidebar are always white, whatever the background behind them (including a page colored with a cover art's primary color), as well as the search field in the header.
 
 ---
 
@@ -26,6 +38,8 @@ On the web, on small devices, there is a dedicated "Library" web page ([`/librar
 2. Navigation buttons, that go into the users' library tracks, library albums, and the users' playlists (on the iOS, there is also the "My Year" button)
 3. Recently played media content, in a 2-column grid, with the "Recently Played" header. The media content can be a library track, a library album, or a playlist
 
+On the web, the pinned grid is responsive. On small screens, pinned elements are displayed using the [`MediaBox`](https://github.com/lumaa-dev/Nafyn/blob/main/app/components/MediaBox.vue) component, instead of a compact version of it.
+
 On the web, on bigger devices, the dedicated library tab cannot be reached without manually manipulating the URL address.
 
 ---
@@ -33,14 +47,17 @@ On the web, on bigger devices, the dedicated library tab cannot be reached witho
 On the web and on iOS, there are specific pages/views to display the users' library tracks, library albums and playlists.
 
 - For library tracks: Displayed as a list
-- For library albums and playlists: Displayed as a grid
+- For library albums and playlists: Displayed as a grid, which has 2 columns on small screens
 
 These specific views feature a search bar to search for the chosen library element. And also, users can sort their library elements using different sorting algorithms.
 
+There is always a margin between the header of these pages/views (title, search bar and sorting) and the list or grid below it.
+
 Users can also select multiple library elements by toggling the "Select" button, in the toolbar for iOS, on the bottom right corner for the web. The "Select" button, when toggled on, allows users to make bulk actions on multiple elements at once (Example: "Add to playlist", "Delete", "Edit metadata") through a *context menu* or an "Actions" button.
 
-> *See "Context Menus" for information about utilizing context menus in Nafyn*.
+When multiple track rows are being selected, rows do not show a check box. A selected row is shown with a highlight and an outline instead, so that the selection is not shown by color alone.
 
+> *See "Context Menus" for information about utilizing context menus in Nafyn*.
 > *See "Toolbars" for more information about toolbar designs*
 
 ## Track/Album Detail view
@@ -49,7 +66,9 @@ Track or album detail views (and also Library track/album detail views) show wha
 
 Detail views are colored with the cover art's primary color, therefore the label's color is adapted between white and black (depending on the cover art's primary color). Also, on iOS only, the cover art is expanded above the app's safe area using [`backgroundExtensionEffect`](https://developer.apple.com/documentation/swiftui/view/backgroundextensioneffect()) and [`safeAreaInset`](https://developer.apple.com/documentation/swiftui/view/safeareainset(edge:alignment:spacing:content:)-6gwby).
 
-Album detail views show the track number on each track, unless it doesn't have one.
+Detail views always conform to the WCAG AAA contrast (see "Contrast"): every label, symbol and button is checked against the cover art's primary color behind it, not only against the default background color.
+
+Album detail views show the track number on each track, unless it doesn't have one. Track rows in an album detail view never show the cover art: the cover art is already the album's, and showing it next to the track number clutters the row.
 
 On iOS, detail views always have a [`ToolbarOverflowMenu`](https://developer.apple.com/documentation/swiftui/toolbaroverflowmenu) containing the same actions that were linked to the track/album row (or even [`MusicCard`](https://github.com/lumaa-dev/NafynApp/blob/main/Nafyn/Components/MusicCard.swift)) unless it creates recursion (like a navigation recursion).
 
@@ -59,9 +78,11 @@ On iOS, detail views always have a [`ToolbarOverflowMenu`](https://developer.app
 
 The Now Playing page/view shows the user all the necessary elements on the currently playing music, with a few widgets called "Panels". It is colorful, reusing the colors of the currently playing song's cover art to create a moving mesh gradient, while adapting the text color between white and black for constrat.
 
-The Now Playing page/view should never be scrollable (except for the contents of panels).
+The Now Playing page/view should never be scrollable (except for the contents of panels), whatever the screen size, and on any scroll axis (top/down or left/right). The page/view itself must never be taller or wider than the screen.
 
-On large horizontal screens, whatever the support (iOS or web), there's a maximum of 2 panels that take up 50% of the available space. 
+The text color is only picked from the contrast with the mesh gradient (white or black), never from the device's appearance. On iOS, the "System" theme, in light mode (`ColorScheme.light`) as well as in dark mode, must never show black text on a dark background, or white text on a light one.
+
+On large horizontal screens, whatever the support (iOS or web), there's a maximum of 2 panels, that each take up at most 50% of the available space. The 50% is a maximum, not a size: the width of a panel can vary per panel (the song info panel is usually narrower than the lyrics panel or the queue panel), depending on what it contains. 
 
 On smaller screens, or large vertical screens, the panels are vertically aligned, and the left panel becomes the top one, and the right one replaces the left (top on smaller screens) panel with toggleable panels (rather than tab system on large screens)
 
@@ -107,8 +128,8 @@ Whenever synchronized lyrics are available, users can click/tap on a lyric, to a
 
 Optionally, users can toggle on or off in Nafyn's settings to switch the font from Instruments Serif to `sans-serif`.
 
-> *See "Error messages" for more information about displaying errors to users
-> See "Interface" for more information about fonts*
+> *See "Error messages" for more information about displaying errors to users*
+> *See "Interface" for more information about fonts*
 
 On iOS, users have additional Liquid Glass controls on the bottom leading edge of the scroll view:
 
@@ -142,6 +163,40 @@ There is also a secondary font available in the app's settings for dyslexic peop
 Information about user interactions between Nafyn, its interface, and the reaction provided back to the user. From a keyboard push, mouse click, screen tapping, to a context menu being displayed, a new web page showed, a button state changing, etc...
 
 Nafyn shall have micro-animation between states, to prevent from user interface elements to jump from one state to another.
+
+## Animations
+
+Every change of state of an element is animated, none of them jumps from one state to another:
+
+- Buttons, menu items and rows: hover, focus, pressed, selected and disabled states fade in and out
+- Context menus, menus, sheets and toasts: they fade and move slightly when they appear or disappear, the sheets' background darkens progressively
+- Colors that depend on a cover art (detail pages/views, Now Playing) blend from the previous cover art's colors to the new ones
+- Elements that are added to, removed from or moved inside a list (queue, toasts, selection) glide to their place
+
+Micro-animations are short (between 150 and 300 milliseconds), use an ease-out curve, and never delay the user from acting. When the user asked their device to reduce motion (`prefers-reduced-motion` on the web, Reduce Motion on iOS), movements are removed and only fades remain, or nothing at all.
+
+## Responsiveness
+
+The web app is responsive, from phones to wide screens. An element adapts to the space it has, it is never stretched, cut, or clipped out of its container, nor out of the screen. Rows of elements, especially of buttons, wrap or stack when they do not fit, and the content of an element never overlaps the content of another.
+
+Elements are sized with relative units rather than fixed widths, and nothing has a minimum width bigger than the screen.
+
+> *See "Views and pages" for margins and horizontal scrolling*
+
+## Contrast
+
+Nafyn conforms to the WCAG AAA contrast, everywhere. Body text has a contrast ratio of at least 7:1, large text and interface components (buttons, symbols, borders) at least 4.5:1, and information is never carried by color alone.
+
+Text and symbols are white or black, picked depending on the background behind them, so that the contrast is always enough, including on pages/views that are colored using a cover art. Only buttons and other interactive elements can use colors from the *Colors* table, and they must still be compliant with the contrast ratios above against the background they sit on.
+
+The red `#e06666ae` of the *Colors* table cannot reach these ratios with a label on it, nor as text on the default background. Therefore, in red elements, the "red" is split in two, both keeping the same hue:
+
+- Red fills (filled destructive buttons, red toasts) use a deeper red, `#a02c2e`, with a white label
+- Red text, symbols and borders (hollow destructive buttons, destructive context menu actions, error messages) use a lighter red, `#ff9e9e`, on dark backgrounds (on iOS, in the "System" theme and in light mode, the deeper `#a02c2e` is used instead)
+
+## Text fields
+
+All text fields (text inputs, search fields, password fields, text areas, pickers…) are designed by Nafyn, no field ever uses the default style of the browser. They all share the design of the search field of the header: a transparent background, with a slightly blurred backdrop, rounded corners, text with the same font as the rest of the app, and a visible focus. Their states (hover, focus, disabled, error) are animated.
 
 ## Colors
 
@@ -181,6 +236,12 @@ Both buttons can turn red, if they're considered "destructive".
 
 Both buttons are pill-shaped, with a `0.6em`-high padding (CSS code, should be converted in SwiftUI), no regulation is applied for horizontal padding except that it should always prioritize the button's content rather than the button's design (padding), without losing the pill shape.
 
+The content of a Filled or Hollow button is always centered, horizontally and vertically, in the button's frame, and never clips out of it.
+
+### Icon-only buttons
+
+A button that only has a symbol always has a size ratio of 1:1 (a circle), and its symbol takes at least 70% of the button's width. This applies to every button with only a symbol, whatever the page, like the "delete" button of a request, or the "New playlist" (+) button. They have an accessible label, and a tooltip on devices with a pointer/cursor, since no text explains them.
+
 ### "Select" buttons (web)
 
 Only on the web, "Select" buttons are exclusively used for the bulk editing feature, available in the library pages. They're have two (2) goals for the user:
@@ -188,7 +249,6 @@ Only on the web, "Select" buttons are exclusively used for the bulk editing feat
 This is a fallback for iOS's Liquid Glass effect in toolbars, where rests the "Select" button on the Nafyn iOS app.
 
 > *See "Library" to understand how that button works in its entirety*
-
 > *See "Toolbars" for more information about toolbar designs*
 
 ## Context Menus
@@ -204,7 +264,7 @@ On the iOS app, the context menu should use the native [`contextMenu`](https://d
 
 A context menu is shown as text (with the *Instrument* font) on the web, and with a [`Label`](https://developer.apple.com/documentation/swiftui/label) on iOS (which may be nested in a [`ControlGroup`](https://developer.apple.com/documentation/swiftui/controlgroup)). Some context menus may have:
 
-- Destructive actions, written in red (with a red symbol on iOS)
+- Destructive actions, written in red (with a `Color.red` symbol on iOS, do not use Nafyn's red color)
 - Nested menus, which are indicated with an arrow
 
 Some pages/views may have a "Select" button, which allows users to select multiple elements in a list. Using the context menu trigger, instead of triggering the context menu for only one element, it will trigger the context menu for all the selected elements, showing the amount of selected elements isn't considered as a section header. The "Select" button cannot be in a context menu whatsoever.
@@ -232,7 +292,6 @@ Menus in Nafyn are a mix of a button and a context menu. There are 2 perfect exa
 It shows up as a button, and when clicked/tapped, it shows the context menu "attached" to the element.
 
 > *See "Context Menus" and "Buttons" for more information about how they work, and how they look*
-
 > *See "Toolbars" for more information about toolbar designs*
 
 ## Modals / Sheets
@@ -245,6 +304,12 @@ On the web, on large screens, Nafyn re-uses a similar sheet design from [iPadOS]
 - There is a "large" mode for sheets, where a lot of information can be displayed, like forms. It is the same size ratio as the whole viewport, it is made for text fields, sliders, pickers, etc…
 
 All sheets should have a "Close" button in its toolbar on the top leading (top-left) edge of the sheet, which requires the sheet's content to have more top padding (to prevent overlaying the toolbar and the content).
+
+All buttons in the toolbar of a sheet are of one singular type: the one of the "Close" button (`modal-close`). Primary actions (like "Save" or "Move") on the trailing edge, and the "Close" button, share the same shape, size and style, in every sheet. Only the color can differ, to show the action type (see "Toolbars").
+
+Buttons in a sheet use symbols rather than text (a cross for "Close", a checkmark for "Save", etc…), especially on smaller screens, where text does not fit. These buttons are icon-only buttons (see "Icon-only buttons"), and so they have an accessible label and a tooltip.
+
+The title of a sheet is always centered in the toolbar, whatever the content of the toolbar. The leading and trailing areas of the toolbar have the same width, so that having a different number of buttons on each side never moves the title.
 
 When a sheet is opened, on the web, the background darkens and is no longer interactable. This prevents users from interacting with buttons in the background, and focusing on the active sheet.
 
