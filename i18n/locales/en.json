@@ -386,6 +386,7 @@
         "title": "Followed releases",
         "intro": "Upcoming albums and tracks you'll be notified about at midnight, your time, on release day.",
         "unfollow": "Unfollow",
+        "remove": "Remove",
         "empty": "You don't follow any upcoming release. Open an unreleased album or track and press \"Notify me\"."
       }
     },

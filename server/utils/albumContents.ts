@@ -6,6 +6,7 @@
 import type { IArtistCredit, IRelease, IReleaseGroup } from "musicbrainz-api";
 import type { MusicBrainzRepository } from "./musicbrainzRepository";
 import { pickReleaseForGroup } from "./release";
+import { trackPosition } from "./trackPosition";
 
 export interface AlbumContents {
     albumId: string,
@@ -68,7 +69,7 @@ export async function getAlbumContents(client: Pick<MusicBrainzRepository, "look
 
     const tracks: AlbumContents["tracks"] = [];
     for (const [mediumIndex, medium] of (release.media ?? []).entries()) {
-        for (const track of medium.tracks ?? []) {
+        for (const [trackIndex, track] of (medium.tracks ?? []).entries()) {
             if (!track.recording?.id) continue;
             // the credit the track carries on this release, else its recording's
             const credits = track["artist-credit"] ?? track.recording?.["artist-credit"] ?? releaseGroup["artist-credit"];
@@ -80,7 +81,7 @@ export async function getAlbumContents(client: Pick<MusicBrainzRepository, "look
                 artist: creditText(credits),
                 length: track.length ?? track.recording.length ?? null,
                 releaseDate: track.recording["first-release-date"] || null,
-                position: track.position ?? null,
+                position: trackPosition(track, medium, trackIndex),
                 discNumber: medium.position ?? mediumIndex + 1,
                 discTitle: medium.title?.trim() || null
             });

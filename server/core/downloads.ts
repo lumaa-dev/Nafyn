@@ -35,6 +35,7 @@ import type { SlskSearchResult } from "../utils/soulseek";
 import { getMusicBrainzRepository, getAppleMusicTrackID, TRACK_LOOKUP_INC } from "../utils/musicbrainz";
 import { MusicBrainzError, withMusicBrainzContext, type MusicBrainzRepository } from "../utils/musicbrainzRepository";
 import { pickCanonicalRelease, pickReleaseForGroup } from "../utils/release";
+import { findRecordingTrack, trackPosition } from "../utils/trackPosition";
 import { searchSoulseek, downloadFromSoulseek } from "../utils/soulseek";
 import { buildSearchQueries, matchKey, nameMatchesAnyTitle } from "../utils/soulseekText";
 import { isExcludedVersion, pickDiverse, rankForTrack } from "../utils/soulseekRank";
@@ -55,6 +56,7 @@ import {
     libraryFilePath,
     updateMediaFileSize,
     deleteOrphanMediaRow,
+    deleteLibraryEntryForUser,
     type LibraryEntry,
     type MediaRow
 } from "./library";
@@ -211,9 +213,12 @@ async function fetchTargets(client: MusicBrainzRepository, musicbrainzId: string
         const ownTracks = (recording.releases ?? []).flatMap((candidate) => (candidate.media ?? [])
             .flatMap((medium) => medium.tracks ?? [])
             .filter((track) => track.recording?.id === recording.id || track.recording === undefined));
-        // this recording's position within the picked release's tracklist, when the release carries one
-        const medium = release?.media?.find((candidate) => (candidate.tracks ?? []).some((track) => track.recording?.id === recording.id));
-        const trackNumber = medium?.tracks?.find((track) => track.recording?.id === recording.id)?.position ?? null;
+        // this recording's position within the picked release's tracklist, when the release carries one. A recording
+        // lookup lists the track without its `recording` (it can only be this one), so matching on
+        // `track.recording.id` alone found nothing and every single-track request was stored with no track number
+        const onRelease = release ? findRecordingTrack(release.media, recording.id) : null;
+        const medium = onRelease?.medium;
+        const trackNumber = onRelease ? trackPosition(onRelease.track, onRelease.medium, onRelease.index) : null;
 
         // albumId must be the release-*group* MBID (not the release's own ID) so the library's
         // "album" grouping links back to a valid /api/v1/album/{aid} target
@@ -281,7 +286,7 @@ async function fetchTargets(client: MusicBrainzRepository, musicbrainzId: string
 
     const targets: TrackTarget[] = [];
     for (const [mediumIndex, medium] of (release.media ?? []).entries()) {
-        for (const track of medium.tracks ?? []) {
+        for (const [trackIndex, track] of (medium.tracks ?? []).entries()) {
             const trackArtist = track["artist-credit"]?.[0]?.artist ?? releaseArtist;
             const alternatives = altTracks.get(track.recording.id) ?? [];
             targets.push({
@@ -298,7 +303,7 @@ async function fetchTargets(client: MusicBrainzRepository, musicbrainzId: string
                 albumAltTitles,
                 albumId: releaseGroup.id,
                 albumType,
-                trackNumber: track.position,
+                trackNumber: trackPosition(track, medium, trackIndex),
                 releaseDate,
                 duration: track.length ? Math.round(track.length / 1000) : 0,
                 label,
@@ -434,16 +439,36 @@ async function alreadyOwned(userId: string, identity: RecordingIdentity): Promis
     return true;
 }
 
-// grants the user another user's existing copy of this recording (matched by MBID or ISRC), if there is one
-async function shareExistingCopy(userId: string, identity: RecordingIdentity): Promise<boolean> {
+// grants the user another user's existing copy of this recording (matched by MBID or ISRC), if there is one;
+// the id of the media row shared, null when there was none
+async function shareExistingCopy(userId: string, identity: RecordingIdentity): Promise<string | null> {
     for (const media of await findMediaByIdentity(identity)) {
         const sourceEntry = await findAnyLibraryEntryForMedia(media.id);
         if (!sourceEntry) continue;
         await shareMediaWithUser(userId, media, sourceEntry.filePath);
         await addMediaIdentifiers(media.id, identity);
-        return true;
+        return media.id;
     }
-    return false;
+    return null;
+}
+
+// how one track of a request ended. `addedMediaId` is the media row this attempt put into the requester's
+// library (downloaded, or someone else's copy shared), null when they already had it: what an album that fails
+// further down takes back out again (see rollBackAlbum)
+type TrackOutcome = { ok: false } | { ok: true, addedMediaId: string | null };
+
+// an album is all or nothing: once one of its tracks cannot be downloaded, the tracks this request already put
+// into the requester's library are taken out again (file and row too when nobody else has them, see
+// deleteLibraryEntryForUser). Tracks the requester owned before the request are never in `addedMediaIds`.
+async function rollBackAlbum(requestId: string, userId: string, addedMediaIds: string[]): Promise<void> {
+    for (const mediaId of addedMediaIds) {
+        try {
+            await deleteLibraryEntryForUser(userId, mediaId);
+        } catch (error) {
+            console.error(`[downloads] Request ${requestId}: could not take ${mediaId} back out of the library:`, error);
+        }
+    }
+    if (addedMediaIds.length > 0) console.log(`[downloads] Request ${requestId}: took ${addedMediaIds.length} downloaded track(s) back out of the library`);
 }
 
 // steps 3-7 for a single recording
@@ -456,7 +481,7 @@ async function downloadTrack(
     attempt: TrackAttempt,
     primaryResults?: SlskSearchResult[],
     poolResults?: SlskSearchResult[]
-): Promise<boolean> {
+): Promise<TrackOutcome> {
     // a single track finishing or failing is never the end of the request (finish() in processDownloadRequest
     // emits that): sent as "completed"/"failed" it would freeze the client's live view mid-album, so it goes
     // out as "processing" with the track's own outcome in `trackResult`
@@ -472,11 +497,12 @@ async function downloadTrack(
     const identity = targetIdentity(target);
     if (await alreadyOwned(requestedBy, identity)) {
         progress({ stage: "completed", message: "Already in library" });
-        return true;
+        return { ok: true, addedMediaId: null };
     }
-    if (await shareExistingCopy(requestedBy, identity)) {
+    const shared = await shareExistingCopy(requestedBy, identity);
+    if (shared) {
         progress({ stage: "completed", message: "Granted access to existing library entry" });
-        return true;
+        return { ok: true, addedMediaId: shared };
     }
 
     // step 4: search + download through Soulseek
@@ -513,7 +539,7 @@ async function downloadTrack(
 
     if (candidates.length === 0) {
         progress({ stage: "failed", message: "No Soulseek results found" });
-        return false;
+        return { ok: false };
     }
 
     console.log(`[downloads] Matching ${candidates.length} candidates for "${target.title}" (MusicBrainz ${target.duration || "?"}s), best first: ${candidates.map((c) => `${c.user} ${c.length ?? "?"}s`).join(", ")}`);
@@ -640,14 +666,15 @@ async function downloadTrack(
             if (await alreadyOwned(requestedBy, identity)) {
                 await rm(tempPath, { force: true });
                 progress({ stage: "completed", message: "Already in library" });
-                return true;
+                return { ok: true, addedMediaId: null };
             }
-            if (await shareExistingCopy(requestedBy, identity)) {
+            const sharedNow = await shareExistingCopy(requestedBy, identity);
+            if (sharedNow) {
                 // someone beat us to it while we were downloading/verifying this candidate - share their
                 // existing file instead of tagging our own copy into a second physical file for the same track
                 await rm(tempPath, { force: true });
                 progress({ stage: "completed", message: "Granted access to existing library entry" });
-                return true;
+                return { ok: true, addedMediaId: sharedNow };
             }
             // a row with no owner yet (the other in-flight attempt hasn't reached addLibraryEntry) - finish
             // tagging this download against that already-inserted row instead of inserting a second one
@@ -702,11 +729,12 @@ async function downloadTrack(
             const entry: LibraryEntry = await addLibraryEntry(requestedBy, media.id, destPath);
             // the requester already held this row (a race the checks above can't fully close): keep their
             // file, and drop ours rather than leave an unreferenced second copy in music/
-            if (entry.filePath !== destPath) await rm(destPath, { force: true });
+            const alreadyHeld = entry.filePath !== destPath;
+            if (alreadyHeld) await rm(destPath, { force: true });
             destPath = null;
 
             progress({ stage: "completed" });
-            return true;
+            return { ok: true, addedMediaId: alreadyHeld ? null : media.id };
         } catch (error) {
             console.error(`[downloads] Error occured for candidates ${error}`);
             // never let cleanup throw out of the catch itself and fail the whole request over a leftover temp file
@@ -723,7 +751,7 @@ async function downloadTrack(
     }
 
     progress({ stage: "failed", message: "Could not verify a matching download" });
-    return false;
+    return { ok: false };
 }
 
 export async function processDownloadRequestId(requestId: UUID | string): Promise<void> {
@@ -768,6 +796,10 @@ async function runDownloadRequest(request: NafynRequest): Promise<void> {
         return;
     }
 
+    // media rows this request put into the requester's library, taken back out if an album fails (rollBackAlbum)
+    const addedMediaIds: string[] = [];
+    let requesterId: string | null = null;
+
     try {
         await updateRequestStatus(request.id, "searching");
         // out of the download queue and about to search: the requester's Live Activity starts now
@@ -799,6 +831,7 @@ async function runDownloadRequest(request: NafynRequest): Promise<void> {
             await finish("failed", "Request has no valid requester");
             return;
         }
+        requesterId = requestedById;
 
         // tracks the requester already has (under any name, see utils/mediaIdentity.ts) are never searched for:
         // a request for something fully owned completes without touching Soulseek, and the seller for an
@@ -840,11 +873,26 @@ async function runDownloadRequest(request: NafynRequest): Promise<void> {
         }
 
         // strictly in track order, and a track that did not land gets one more go (fresh per-track search,
-        // no preferred seller) before the next one starts, so a skipped track can't slip through unnoticed
+        // no preferred seller) before the next one starts. An album is all or nothing: the first track that still
+        // fails cancels the request - nothing after it is downloaded, and what this request already added goes
+        // back out (rollBackAlbum), so a request never leaves half an album behind
         for (const [i, target] of targets.entries()) {
             const attempt = newTrackAttempt();
-            let ok = await downloadTrack(request.id, requestedById, target, i + 1, targets.length, attempt, primaryResults, poolResults);
-            if (!ok) ok = await downloadTrack(request.id, requestedById, target, i + 1, targets.length, attempt);
+            let outcome = await downloadTrack(request.id, requestedById, target, i + 1, targets.length, attempt, primaryResults, poolResults);
+            if (!outcome.ok) outcome = await downloadTrack(request.id, requestedById, target, i + 1, targets.length, attempt);
+            if (outcome.ok) {
+                if (outcome.addedMediaId) addedMediaIds.push(outcome.addedMediaId);
+                continue;
+            }
+            const failedTrack = `${target.trackNumber ?? i + 1}. ${target.title}`;
+            if (request.type === "album") {
+                console.log(`[downloads] Request ${request.id}: "${target.title}" could not be downloaded, cancelling the album`);
+                await rollBackAlbum(request.id, requestedById, addedMediaIds);
+                await finish("failed", `Download cancelled: track ${failedTrack} could not be downloaded`);
+            } else {
+                await finish("failed", `${failedTrack} could not be downloaded`);
+            }
+            return;
         }
 
         // the request is only complete when the requester really owns every track of it (by the same
@@ -857,13 +905,17 @@ async function runDownloadRequest(request: NafynRequest): Promise<void> {
         }
 
         if (missing.length > 0) {
+            if (request.type === "album") await rollBackAlbum(request.id, requestedById, addedMediaIds);
             await finish("failed", `${missing.length} of ${targets.length} tracks could not be downloaded: ${missing.join(", ")}`);
         } else {
             await finish("completed");
         }
     } catch (err) {
         if (finished) console.error(`[downloads] Error after request ${request.id} was already finished:`, err);
-        else await finish("failed", err instanceof Error ? err.message : "Unknown error");
+        else {
+            if (request.type === "album" && requesterId) await rollBackAlbum(request.id, requesterId, addedMediaIds);
+            await finish("failed", err instanceof Error ? err.message : "Unknown error");
+        }
     } finally {
         clearDownloadEmitter(request.id);
     }

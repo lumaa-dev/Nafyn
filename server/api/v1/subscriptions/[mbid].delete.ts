@@ -3,7 +3,7 @@ import { assertMbid } from "~~/server/utils/ids";
 
 defineRouteMeta({
     openAPI: {
-        description: "Stop following an upcoming album/track (by its MusicBrainz ID)",
+        description: "Stop following an upcoming album/track (by its MusicBrainz ID), or remove a released one from the list before its 30 days are up",
         tags: ["subscriptions"],
         operationId: "deleteReleaseSubscription",
         parameters: [{ name: "mbid", in: "path", required: true, schema: { type: "string" } }],

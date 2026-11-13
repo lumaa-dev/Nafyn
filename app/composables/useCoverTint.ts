@@ -61,7 +61,12 @@ export function useCoverTint(source: () => Tinted | null | undefined) {
                 const background = tint?.imageColors?.[0];
                 if (!background || !/^#[0-9a-f]{3,8}$/i.test(background)) return "";
                 const readable = readableTint(background);
-                return `background: ${readable.background}; color: ${readable.text}; --tint-fg: ${readable.text}; --icon-filter: ${readable.text === "#000000" ? "none" : "invert(1)"};`;
+                const dark = readable.text === "#000000";
+                // --page-tint-*: a filled button is the label colour with the background as its label (>= 7:1 both
+                // ways by construction), so it never fades into a light or dark cover. app.vue applies them inside
+                // the page only (`.view`), never to a sheet teleported over it.
+                return `background: ${readable.background}; color: ${readable.text}; --tint-fg: ${readable.text}; --icon-filter: ${dark ? "none" : "invert(1)"};`
+                    + ` --page-tint-fill: ${readable.text}; --page-tint-label: ${readable.background}; --page-tint-fill-icon: ${dark ? "invert(1)" : "none"};`;
             })
         }
     });

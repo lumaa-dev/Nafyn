@@ -36,7 +36,8 @@
               <ReleaseCountdown v-else compact :date="s.releaseDate" />
             </span>
           </span>
-          <button v-if="!s.notifiedAt" class="danger" type="button" filled="hollow" :disabled="busySubscriptionId === s.id" @click="unsubscribe(s)">{{ $t('settings.notifications.releases.unfollow') }}</button>
+          <!-- a released one stays listed for 30 days (as "Out now"), and can be removed before then -->
+          <button class="danger" type="button" filled="hollow" :disabled="busySubscriptionId === s.id" @click="unsubscribe(s)">{{ s.notifiedAt ? $t('settings.notifications.releases.remove') : $t('settings.notifications.releases.unfollow') }}</button>
         </li>
       </ul>
       <p v-else class="subsonic-note">{{ $t('settings.notifications.releases.empty') }}</p>

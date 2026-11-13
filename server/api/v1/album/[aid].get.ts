@@ -1,6 +1,7 @@
 import type { IRelease, IReleaseGroup } from "musicbrainz-api";
 import { getMusicBrainzRepository, parseReleaseDate } from "~~/server/utils/musicbrainz";
 import { hasFrontCover, isOfficialRelease, pickReleaseForGroup } from "~~/server/utils/release";
+import { trackPosition } from "~~/server/utils/trackPosition";
 import { sortableDate } from "~~/server/utils/search/filters";
 import type { AlbumDetail, AlbumRelease, DiscInfo } from "~~/server/entity/media/AlbumDetail";
 import type { TrackInfo } from "~~/server/entity/media/TrackInfo";
@@ -218,7 +219,7 @@ export default defineEventHandler(async (event): Promise<AlbumDetail> => {
     for (const [mediumIndex, medium] of (release.media ?? []).entries()) {
         const discNumber = medium.position ?? mediumIndex + 1;
         discs.push({ number: discNumber, title: medium.title?.trim() || null });
-        for (const track of medium.tracks ?? []) {
+        for (const [trackIndex, track] of (medium.tracks ?? []).entries()) {
             const trackReleaseDate = parseReleaseDate(track.recording?.["first-release-date"]) ?? releaseDate;
             // same identity match as POST /api/v1/request and the download pipeline, so a track shown as
             // missing here is exactly one a request would download
@@ -239,7 +240,7 @@ export default defineEventHandler(async (event): Promise<AlbumDetail> => {
             tracks.push({
                 id: track.recording.id,
                 title: track.title,
-                trackNumber: track.position,
+                trackNumber: trackPosition(track, medium, trackIndex) ?? trackIndex + 1,
                 discNumber,
                 duration: track.length ? Math.round(track.length / 1000) : 0,
                 releaseDate: trackReleaseDate,

@@ -386,6 +386,7 @@
         "title": "Sorties suivies",
         "intro": "Albums et titres à venir dont vous serez notifié à minuit, heure locale, le jour de leur sortie.",
         "unfollow": "Ne plus suivre",
+        "remove": "Retirer",
         "empty": "Vous ne suivez aucune sortie à venir. Ouvrez un album ou un titre pas encore sorti et appuyez sur « Me notifier »."
       }
     },

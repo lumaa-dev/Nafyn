@@ -216,12 +216,23 @@ button {
 	font-size: inherit;
 }
 
+/* a detail screen tinted with its cover (useCoverTint, DESIGN.md "Track/Album Detail view" + "Contrast"): the
+   translucent white fill vanished on a light cover, so there a filled button is solid, in the label colour, with
+   the page's background as its label. Only inside the page: a sheet teleported over it keeps its own look. When
+   the page is not tinted, the --page-tint-* are unset and every rule below falls back to the default colours. */
+.view {
+	--tint-fill: var(--page-tint-fill);
+	--tint-fill-hover: color-mix(in srgb, var(--page-tint-fill) 82%, var(--page-tint-label));
+	--tint-fill-label: var(--page-tint-label);
+	--tint-fill-icon: var(--page-tint-fill-icon);
+}
+
 button[filled], a[filled], p[filled] {
-	background: #ffffffae;
-	border: #ffffffae 1px solid;
+	background: var(--tint-fill, #ffffffae);
+	border: var(--tint-fill, #ffffffae) 1px solid;
 	outline: none;
 	border-radius: 250px;
-	color: #000;
+	color: var(--tint-fill-label, #000);
 	font-family: "Instrument-Serif";
 	text-decoration: none;
 	font-size: inherit;
@@ -252,12 +263,12 @@ button[filled="hollow"], p[filled="hollow"] {
 }
 
 button[filled]:hover:not(:disabled), a[filled]:hover:not(:disabled) {
-	background: #ffffffd0;
-	border: #ffffffd0 1px solid;
+	background: var(--tint-fill-hover, #ffffffd0);
+	border: var(--tint-fill-hover, #ffffffd0) 1px solid;
 }
 
 button[filled="hollow"]:hover:not(:disabled), a[filled="hollow"]:hover:not(:disabled) {
-	color: #000000;
+	color: var(--tint-fill-label, #000000);
 }
 
 /* destructive (DESIGN.md "Colors" + "Contrast"). A destructive button is either filled (deep red fill, white label,
@@ -376,7 +387,8 @@ button.icon-only svg {
 
 button.icon-only:hover:not(:disabled) img,
 button.icon-only[filled]:not([filled="hollow"]) img {
-	filter: none;
+	/* on the fill: black on the default white fill, white on a black one (a light cover's page) */
+	filter: var(--tint-fill-icon, none);
 }
 
 /* DESIGN.md "Animations": no state of any control jumps. Hover, focus, pressed, selected and disabled all
@@ -412,12 +424,12 @@ button.icon-only[filled]:not([filled="hollow"]) img {
 
 /* keyboard focus is always visible (the resets above remove the browser's own ring) */
 :where(button, a, select, summary):focus-visible {
-	outline: 2px solid #ffffff;
+	outline: 2px solid var(--tint-fill, #ffffff);
 	outline-offset: 2px;
 }
 
 input:focus-visible, textarea:focus-visible {
-	outline: 2px solid #ffffff;
+	outline: 2px solid var(--tint-fill, #ffffff);
 	outline-offset: 2px;
 }
 

@@ -136,7 +136,7 @@ useCoverTint(() => track.value as (MediaRow & { imageColors?: string[], textColo
 
 .track .album-link {
   font-size: 0.85em;
-  color: #ffffff;
+  color: currentColor;
   text-decoration: none;
   margin-top: 4px;
 }
@@ -156,7 +156,7 @@ useCoverTint(() => track.value as (MediaRow & { imageColors?: string[], textColo
 
 .track .details {
   font-size: 0.85em;
-  color: #ffffff;
+  color: currentColor;
   margin: 1em 0;
 }
 

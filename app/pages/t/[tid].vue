@@ -163,8 +163,8 @@ useCoverTint(() => track.value);
 .track .type {
   text-transform: uppercase;
   font-size: 1.0em;
-  color: #ffffffae;
-  border: #ffffffae 1px solid;
+  color: currentColor;
+  border: currentColor 1px solid;
   border-radius: 250px;
   padding: 0.2em 1.0em;
 }
