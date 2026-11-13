@@ -4,9 +4,9 @@
 
 > Note: View are used in SwiftUI, for the Nafyn iOS app. Pages are used on any web browser, on any device, for the Nafyn web service. Do not use "page" or "view" whatever happens to talk about a Nafyn screen.
 
-By default, the background color used is `#2a2a27` and the text color is `#ffffffae`.
+By default, the background color used is `#2a2a27ff` and the text color is `#ffffffae`, using RGBA.
 
-Content never touches the edges of the screen. On small screens, every page keeps a small horizontal margin (at least 16px) on both sides, so that content stays away from the edges of the display it is used from. No page is edge-to-edge, the insights page included.
+Content never touches the edges of the screen. On small screens, every page keeps a small horizontal margin (at least 16px) on both sides, so that content stays away from the edges of the display it is used from. No page is edge-to-edge.
 
 On the web, no element may go out of the width of the viewport (`100vw`), whatever the page or the device. Users can never scroll horizontally, except in a container that is made for it (like a row of navigation buttons), which scrolls inside of its own frame without moving the page.
 
@@ -57,7 +57,7 @@ Users can also select multiple library elements by toggling the "Select" button,
 
 When multiple track rows are being selected, rows do not show a check box. A selected row is shown with a highlight and an outline instead, so that the selection is not shown by color alone.
 
-> *See "Context Menus" for information about utilizing context menus in Nafyn*.
+> *See "Context Menus" for information about utilizing context menus in Nafyn*.\
 > *See "Toolbars" for more information about toolbar designs*
 
 ## Search
@@ -108,7 +108,7 @@ Track or album detail views (and also Library track/album detail views) show wha
 
 Detail views are colored with the cover art's primary color, therefore the label's color is adapted between white and black (depending on the cover art's primary color). Also, on iOS only, the cover art is expanded above the app's safe area using [`backgroundExtensionEffect`](https://developer.apple.com/documentation/swiftui/view/backgroundextensioneffect()) and [`safeAreaInset`](https://developer.apple.com/documentation/swiftui/view/safeareainset(edge:alignment:spacing:content:)-6gwby).
 
-Detail views always conform to the WCAG AAA contrast (see "Contrast"): every label, symbol and button is checked against the cover art's primary color behind it, not only against the default background color.
+Detail views always conform to the WCAG AAA contrast (see "Contrast"): every label, symbol, link and button is checked against the cover art's primary color behind it, not only against the default background color.
 
 At the bottom of an album detail page/view, after the track list and its footer (date, label, link to MusicBrainz), users can change which `release` of the album's `release-group` they are viewing (the standard edition, a Deluxe edition, another country, a reissue...). The releases are shown in a *category grid* (see "Category grids"), titled "Releases"; the description of each is its disambiguation when it has one, else its year and country. The release being viewed is outlined (not only colored). Choosing another release shows its track list, label and cover art in place, without leaving the page/view. When the viewed release is not the standard one, the album as a whole cannot be requested (a request downloads the standard edition), but each of its tracks still can.
 
@@ -116,7 +116,10 @@ Album detail views show the track number on each track, unless it doesn't have o
 
 On iOS, detail views always have a [`ToolbarOverflowMenu`](https://developer.apple.com/documentation/swiftui/toolbaroverflowmenu) containing the same actions that were linked to the track/album row (or even [`MusicCard`](https://github.com/lumaa-dev/NafynApp/blob/main/Nafyn/Components/MusicCard.swift)) unless it creates recursion (like a navigation recursion).
 
-> *See "Toolbars" for more information about toolbar designs*
+Also on iOS, if the user is using the "System" theme (which removes most of Nafyn's unique designs), it should change all buttons using a `Color.blue` background, to `Color.white` or `Color.black` (with `Color.white` foreground) depending on the contrast (See "Contrast").
+
+> *See "Toolbars" for more information about toolbar designs*\
+> *See "Contrast" for more information about making Nafyn accessible, whatever the colors used*
 
 ## Cover art editing
 
@@ -172,7 +175,7 @@ The Lyrics Panel has 5 different states:
 
 Whenever lyrics are found, the lyrics are inside of a scroll view, that automatically scrolls to the newly active lyrics depending on the playback time.
 
-Whenever synchronized lyrics are available, users can click/tap on a lyric, to automatically jump the playback to the lyric's start time.
+Whenever synchronized lyrics are available, users can click/tap on a lyric, to automatically jump the playback to the lyric's start time. Additionally, only on iOS, users can tap-and-hold on a lyric paragraph, to open the "Share lyrics" sheet.
 
 Optionally, users can toggle on or off in Nafyn's settings to switch the font from Instruments Serif to `sans-serif`.
 
@@ -182,6 +185,7 @@ Optionally, users can toggle on or off in Nafyn's settings to switch the font fr
 On iOS, users have additional Liquid Glass controls on the bottom leading edge of the scroll view:
 
 - Translate: Translates the lyrics using the on-device [Foundation Models API](https://developer.apple.com/documentation/foundationmodels), from any language to the app's selected locale.
+- Romanize: Romanizes lyrics that aren't using latin letters (A-Z) in 90% of all lyrics, using the on-device [Foundation Models API](https://developer.apple.com/documentation/foundationmodels). It does not translates from one language to another, it shows a romanized version (simplified).
 
 These iOS-only controls require the scroll view to have a content margin at the top and bottom, and also for visual comfort reasons.
 
@@ -198,6 +202,12 @@ By default, the Queue Panel's scroll view starts at the 2nd section ("Queue acti
 The Song queue must never show the currently playing song in the queue, or any previously playing song (that's for the Song history). The Song history also must never show the currently playing song in the history, or any song that's up next in the queue (unless they've been played previously).
 
 Repeating a track (using "Repeat One") adds the track only **once** in the history, without duplicating it after each replay.
+
+## "Your Music Year"
+
+"Your Music Year" is the name for the statistics feature (inspired by Spotify Wrapped, Apple Music Replay...), where users can get a weekly, monthly, yearly recap of what they've listened to on Nafyn.
+
+
 
 # Interface
 
@@ -257,7 +267,7 @@ All design guidelines mentionning these colors shall be using the color code ass
 | Green                 | `#66e086ff`                         |
 | Orange                | `#e0a666ff`                         |
 | Yellow                | `#e0c666ff`                         |
-| Background color      | `#2a2a27`                           |
+| Background color      | `#2a2a27ff`                         |
 
 ## Buttons
 
@@ -296,8 +306,16 @@ Only on the web, "Select" buttons are exclusively used for the bulk editing feat
 
 This is a fallback for iOS's Liquid Glass effect in toolbars, where rests the "Select" button on the Nafyn iOS app.
 
-> *See "Library" to understand how that button works in its entirety*
+> *See "Library" to understand how that button works in its entirety*\
 > *See "Toolbars" for more information about toolbar designs*
+
+## Links
+
+Links appear slightly differently than buttons for the most part. Links are completely white (`#ffffffff`) and are underlined using the *Instrument Serif* font italicized.
+
+But, in the album/track detail view (and their library counterpart), have to conform to the WCAG AAA contrast (see "Contrast"). It is possible for links to turn completely black for constrast purposes only.
+
+On iOS, tapping on a link doesn't open it in Safari directly, but rather it opens a sheet with the web view, using UIKit's [`WKWebView`](https://developer.apple.com/documentation/webkit/wkwebview).
 
 ## Context Menus
 
@@ -316,6 +334,8 @@ A context menu is shown as text (with the *Instrument* font) on the web, and wit
 - Nested menus, which are indicated with an arrow
 
 Some pages/views may have a "Select" button, which allows users to select multiple elements in a list. Using the context menu trigger, instead of triggering the context menu for only one element, it will trigger the context menu for all the selected elements, showing the amount of selected elements isn't considered as a section header. The "Select" button cannot be in a context menu whatsoever.
+
+Actions that begin with the same word, like "View" or "Share", can be **optionally** nested into a sub-menu. Menu Example: ["View" > "Artist" | "Album" | "Track"]
 
 Additionally, all context menu actions are sorted in categories, which themselves are sorted by importance and usage (as listed below in *Categories*).
 
@@ -339,8 +359,20 @@ Menus in Nafyn are a mix of a button and a context menu. There are 2 perfect exa
 
 It shows up as a button, and when clicked/tapped, it shows the context menu "attached" to the element.
 
-> *See "Context Menus" and "Buttons" for more information about how they work, and how they look*
+> *See "Context Menus" and "Buttons" for more information about how they work, and how they look*\
 > *See "Toolbars" for more information about toolbar designs*
+
+## Graphics & Charts
+
+Graphics and charts allows users to see easily an aggregation of data into a visual, like a pie chart, a line chart, a progress bar, etc...
+
+On all graphics and charts, you always have to show a legend at the bottom leading (left) corner of the chart. With the color, its associated label, and its associated value.
+
+All values must be ordered by descending or ascending. **No randomized order**.
+
+The primary color for graphics and charts is **`Color.blue` on iOS**, and **orange on the web**. Alternatively, other colors can be used to represent other "columns" of data.
+
+> *See "Colors" for the exact color codes for the web*
 
 ## Modals / Sheets
 
@@ -355,11 +387,13 @@ All sheets should have a "Close" button in its toolbar on the top leading (top-l
 
 All buttons in the toolbar of a sheet are of one singular type: the one of the "Close" button (`modal-close`). Primary actions (like "Save" or "Move") on the trailing edge, and the "Close" button, share the same shape, size and style, in every sheet. Only the color can differ, to show the action type (see "Toolbars").
 
-Buttons in a sheet use symbols rather than text (a cross for "Close", a checkmark for "Save", etc…), especially on smaller screens, where text does not fit. These buttons are icon-only buttons (see "Icon-only buttons"), and so they have an accessible label and a tooltip.
+Buttons in a sheet use symbols rather than text (a cross for "Close", a checkmark for "Save", etc…) **most of the time**, especially on smaller screens, where text does not fit. These buttons are icon-only buttons (see "Icon-only buttons"), and so they have an accessible label and a tooltip.
 
 The title of a sheet is always centered in the toolbar, whatever the content of the toolbar. The leading and trailing areas of the toolbar have the same width, so that having a different number of buttons on each side never moves the title.
 
 When a sheet is opened, on the web, the background darkens and is no longer interactable. This prevents users from interacting with buttons in the background, and focusing on the active sheet.
+
+> *See "Toolbars" for more information about toolbar usage and styling*
 
 ---
 
@@ -371,7 +405,9 @@ Sheets take up 95% of the whole vertical viewport, toolbar is at the top with th
 
 ## Toolbars
 
-On iOS, use the native [`toolbar`](https://developer.apple.com/documentation/swiftui/view/toolbar(content:)), it is also heavily recommended to use `Label`s in toolbars for iPhone Duo support, but text can also be inputted if no symbols match with the action. Instead of making a ellipsis menu using [`ToolbarOverflowMenu`](https://developer.apple.com/documentation/swiftui/toolbaroverflowmenu) for cross compatibility with other Apple devices
+On iOS, use the native [`toolbar`](https://developer.apple.com/documentation/swiftui/view/toolbar(content:)), it is also heavily recommended to use [`Label`](https://developer.apple.com/documentation/swiftui/label)s in toolbars for iPhone Duo support, but text can also be inputted if no symbols match with the action. Instead of making a ellipsis menu using [`ToolbarOverflowMenu`](https://developer.apple.com/documentation/swiftui/toolbaroverflowmenu) for cross compatibility with other Apple devices.
+
+There are a few exceptions to the [`Label`](https://developer.apple.com/documentation/swiftui/label) with icon rule, that are listed below in the sub-section
 
 On the web, outside of sheets, all toolbar actions sit primarily at the bottom right corner of the viewport. Actions can also be placed at the bottom left corner, but these are for secondary actions.
 
@@ -385,6 +421,11 @@ On the web, in sheets, are primarily at the top, but can also be at the bottom. 
 Whatever the toolbar's location, if the source of the toolbar is a scroll view
 
 > *See "Modals / Sheets" for more information about how modals look and feel*
+
+### Text-only toolbar buttons
+
+The buttons listed below should **never** have an icon associated with it, even on iOS:
+- "Select" button (**"Done" button NOT included**)
 
 ## Toasts
 
@@ -425,3 +466,23 @@ If the triggered action shouldn't' have caused a screen change like requesting a
 
 > *See "Toasts" for more information about using toasts, and toast styles.*
 
+## Sharing
+
+Sharing content from Nafyn to third-party services like Discord, Instagram, Signal, etc...
+
+Only one item can be shared at a time, no bulk sharing.
+
+On the web, the sharing feature copies the link of the selected item.
+
+The sharing action can be found either:
+- As a Context Menu action
+- (on iOS only) in the Toolbar
+
+Exclusively on iOS, users can either share their selected item as a link, or as an image.
+Sharing an image allows users to share their content in their Instagram or Snapchat stories, all images have to have a 9:16 ratio.
+Both sharing an image and sharing a link use Apple's native [`ShareLink`](https://developer.apple.com/documentation/swiftui/sharelink).
+
+Items that are private (like library tracks, library albums, private playlist...) cannot be shared. Items that **can** be public (playlists), may not show the "Share" button in the toolbar when it is private, it may be disabled from the context menu. If the item is public, the share button can be in the toolbar (but not necessarily), and the context menu action is enabled.
+
+> *See "Toolbars" for more information about toolbar styling and usage*\
+> *See "Context Menu" for more information about action categories*
