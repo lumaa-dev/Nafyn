@@ -146,11 +146,21 @@ historique d'écoute.
 - **AcoustID**, qui reçoit l'empreinte audio d'un fichier téléchargé pour confirmer qu'il s'agit du bon
   enregistrement.
 - **Last.fm**, pour les biographies d'artistes, si l'opérateur a configuré une clé.
+- **Le catalogue iTunes d'Apple**, qui reçoit le titre et l'artiste d'un titre que vous ne possédez pas quand
+  vous écoutez son extrait de 30 secondes.
+- **Discogs**, quand vous importez votre collection Discogs : Nafyn lit cette collection à partir du nom
+  d'utilisateur Discogs que vous lui donnez.
 - **Cover Art Archive**, pour récupérer les pochettes.
 
 Une recherche textuelle que vous saisissez est transmise telle quelle à MusicBrainz et, quand vous demandez
 un titre, au réseau Soulseek. C'est la seule
 donnée de cette liste sur laquelle vous avez la main directement.
+
+**Le scrobbling Last.fm est l'autre exception**, et seulement si vous connectez vous-même votre compte Last.fm
+(Paramètres -> Profil) : chaque titre que vous écoutez (titre, artiste, album, durée et moment de l'écoute) est
+alors envoyé à *votre* compte Last.fm, selon la politique de confidentialité de Last.fm. Nafyn conserve la clé de
+session que Last.fm donne pour votre compte (jamais votre mot de passe Last.fm) jusqu'à ce que vous le
+déconnectiez ou supprimiez votre compte Nafyn.
 
 **Les notifications font exception** au « jamais votre nom d'utilisateur », puisque prévenir quelqu'un d'une
 demande est tout leur intérêt :

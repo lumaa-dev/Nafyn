@@ -1,3 +1,4 @@
+import { isScrobbling, scrobblePlays } from "~~/server/core/lastfmAccounts";
 // batch ingestion for play events - the one write path into the append-only store.
 import { insertPlayEvents } from "~~/server/core/playEvents";
 import { isHistoryEnabled } from "~~/server/core/insightsSettings";
@@ -52,7 +53,8 @@ defineRouteMeta({
                             properties: {
                                 accepted: { type: "integer", description: "Events newly written to the store" },
                                 rejected: { type: "integer", description: "Entries dropped as malformed, duplicated within the batch, or referencing a track outside the user's library" },
-                                historyEnabled: { type: "boolean", description: "False means the batch was accepted and discarded; the client should stop sending" }
+                                historyEnabled: { type: "boolean", description: "False means the batch was not stored in the listening history" },
+                                scrobbling: { type: "boolean", description: "The plays are scrobbled to Last.fm. A client stops sending only when both this and historyEnabled are false" }
                             }
                         }
                     }
@@ -98,11 +100,15 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event);
     const { events, rejected } = parsePlayEventBatch(body);
 
+    // Last.fm scrobbling does not depend on the listening history: a client keeps sending its plays while either is on
+    const scrobbling = await isScrobbling(userId);
+    if (scrobbling) scrobblePlays(userId, events.map((e) => ({ trackId: e.trackId, startedAtMs: e.startedAtMs, durationMs: e.durationMs })));
+
     // Accept-and-discard rather than 4xx. A tab left open across a settings change would otherwise sit in an
     // error loop it can't recover from, and answering "yes, received" to a client whose events are being
     // dropped is exactly what lets it clear its queue and stop asking.
     if (!await isHistoryEnabled(userId)) {
-        return { accepted: 0, rejected: rejected + events.length, historyEnabled: false };
+        return { accepted: 0, rejected: rejected + events.length, historyEnabled: false, scrobbling };
     }
 
     const result = await insertPlayEvents(userId, events);
@@ -110,6 +116,7 @@ export default defineEventHandler(async (event) => {
     return {
         accepted: result.accepted,
         rejected: rejected + result.unknownTracks,
-        historyEnabled: true
+        historyEnabled: true,
+        scrobbling
     };
 });

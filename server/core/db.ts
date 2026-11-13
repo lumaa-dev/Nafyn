@@ -347,6 +347,16 @@ export async function initDatabases(): Promise<void> {
             INDEX idx_release_sub_due (notifiedAt, releaseAt)
         );
 
+        -- a user's Last.fm account (scrobbling): the session key auth.getSession gave for it, which is a credential
+        -- (never exported, never listed). In eraseAccount(), and buildAccountExport() lists the username only.
+        CREATE TABLE IF NOT EXISTS user_lastfm (
+            userId VARCHAR(36) PRIMARY KEY,
+            username VARCHAR(64) NOT NULL,
+            sessionKey VARCHAR(64) NOT NULL,
+            scrobbling TINYINT NOT NULL DEFAULT 1,
+            createdAt BIGINT NOT NULL
+        );
+
         -- pins: albums, playlists and tracks a user keeps at hand (Library home, top of Tracks). refId is the
         -- track's media id, the album's release-group MBID or the playlist id. No limit per user, and a pin whose
         -- target is gone is pruned the next time the list is read. (No semicolons in these comments: exec() splits on them.)
@@ -391,6 +401,8 @@ export async function initDatabases(): Promise<void> {
             requestId VARCHAR(36) NULL,
             via VARCHAR(8) NULL,
             message VARCHAR(255) NULL,
+            kind VARCHAR(8) NOT NULL DEFAULT 'track',
+            barcode VARCHAR(20) NULL,
             PRIMARY KEY (importId, position)
         );
     `);
@@ -401,7 +413,7 @@ export async function initDatabases(): Promise<void> {
             id VARCHAR(36) PRIMARY KEY,
             musicbrainzId VARCHAR(36) NOT NULL,
             type VARCHAR(16) NOT NULL CHECK(type IN ('album', 'track')),
-            status VARCHAR(16) NOT NULL DEFAULT 'waiting' CHECK(status IN ('waiting', 'searching', 'downloading', 'processing', 'completed', 'failed', 'denied')),
+            status VARCHAR(16) NOT NULL DEFAULT 'waiting' CHECK(status IN ('waiting', 'searching', 'downloading', 'processing', 'completed', 'failed', 'denied', 'cancelled')),
             requestedBy VARCHAR(36),
             title TEXT,
             artistName TEXT,

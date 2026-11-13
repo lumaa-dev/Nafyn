@@ -11,6 +11,7 @@ import type { MediaRow, AlbumRow } from "~~/server/core/library";
 import type { ContextMenuItem } from "~/components/ContextMenu.vue";
 import { useAuthToken } from "~/composables/useAuthToken";
 import type { PinKind } from "~/composables/usePins";
+import { EXTERNAL_SERVICES, EXTERNAL_SERVICE_NAMES, externalQuery, externalSearchUrl } from "~/utils/externalLinks";
 
 export interface TrackSubject {
   kind: "track",
@@ -229,6 +230,26 @@ export function useMediaMenu() {
       .flatMap((group, i) => i === 0 ? group : [{ label: "", separator: true }, ...group]);
   }
 
+  // "Open on YouTube" and "Share" > one search link per service (DESIGN.md "Sharing": on the web, sharing copies the
+  // link). A search for "artist title" on the other service - one item at a time, never in a bulk menu.
+  function externalItems(title: string, artist: string | null): ContextMenuItem[] {
+    const query = externalQuery(title, artist);
+    if (!query) return [];
+    return [
+      { label: t("menu.openOnYouTube"), action: () => { window.open(externalSearchUrl("youtube", query), "_blank", "noopener,noreferrer"); } },
+      {
+        label: t("menu.share"),
+        children: EXTERNAL_SERVICES.map((service) => ({
+          label: EXTERNAL_SERVICE_NAMES[service],
+          action: guarded(title, t("menu.shareError"), async () => {
+            await navigator.clipboard.writeText(externalSearchUrl(service, query));
+            sendToast({ title, content: t("menu.linkCopied", { service: EXTERNAL_SERVICE_NAMES[service] }), tint: "green", icon: null });
+          })
+        }))
+      }
+    ];
+  }
+
   function trackItems(subject: TrackSubject, options: MenuOptions): ContextMenuItem[] {
     const { media } = subject;
     const owned = subject.owned !== false;
@@ -250,6 +271,7 @@ export function useMediaMenu() {
         action: guarded(media.title, t("menu.pinError"), () => togglePin("track", media.id, options.onChanged))
       });
     }
+    view.push(...externalItems(media.title, media.artistName));
 
     const modify: ContextMenuItem[] = [];
     if (subject.canEdit ?? owned) {
@@ -316,7 +338,8 @@ export function useMediaMenu() {
       {
         label: pins.isPinned("album", album.id) ? t("menu.unpin") : t("menu.pin"),
         action: guarded(album.title, t("menu.pinError"), () => togglePin("album", album.id, options.onChanged))
-      }
+      },
+      ...externalItems(album.title, album.artistName)
     );
 
     const modify: ContextMenuItem[] = [

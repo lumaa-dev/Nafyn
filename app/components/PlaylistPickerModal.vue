@@ -1,10 +1,26 @@
 <template>
   <Modal :model-value="modelValue" @update:model-value="emit('update:modelValue', $event)" :title="$t('playlist.picker.title')">
+    <!-- several playlists can be picked; the toolbar's check adds to all of them (DESIGN.md "Modals / Sheets") -->
+    <template #toolbar>
+      <IconButton toolbar symbol="check" :label="saving ? $t('playlist.picker.adding') : $t('playlist.picker.add', { count: selected.size })" :disabled="saving || selected.size === 0" @click="addToSelected" />
+    </template>
     <p v-if="playlists.length === 0" class="picker-empty">{{ $t('playlist.picker.empty') }}</p>
-    <ul v-else class="plist">
-      <li v-for="playlist in playlists" :key="playlist.id" @click="addTo(playlist.id)">
+    <ul v-else class="plist" role="listbox" aria-multiselectable="true" :aria-label="$t('playlist.picker.title')">
+      <li
+        v-for="playlist in playlists"
+        :key="playlist.id"
+        role="option"
+        tabindex="0"
+        :aria-selected="selected.has(playlist.id)"
+        :class="{ selected: selected.has(playlist.id) }"
+        @click="toggle(playlist.id)"
+        @keydown.enter.prevent="toggle(playlist.id)"
+        @keydown.space.prevent="toggle(playlist.id)"
+      >
         <img :src="playlistImageUrl(playlist)" @error="($event.target as HTMLImageElement).src = noCover" loading="lazy" draggable="false" />
-        <span>{{ playlist.title }}</span>
+        <span class="name">{{ playlist.title }}</span>
+        <!-- a tick, not only a colour, says which ones are picked -->
+        <svg v-if="selected.has(playlist.id)" class="tick" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
       </li>
     </ul>
   </Modal>
@@ -13,6 +29,7 @@
 <script lang="ts" setup>
 import noCover from '~/assets/no-cover.png';
 import Modal from '~/components/Modal.vue';
+import IconButton from '~/components/IconButton.vue';
 import { useAuthToken } from '~/composables/useAuthToken';
 
 interface PlaylistRow {
@@ -26,9 +43,12 @@ const emit = defineEmits<{ (e: "update:modelValue", value: boolean): void }>();
 
 const token = useAuthToken().token.value ?? "";
 const playlists = ref<PlaylistRow[]>([]);
+const selected = ref(new Set<string>());
+const saving = ref(false);
 
 watch(() => props.modelValue, async (isOpen) => {
   if (!isOpen) return;
+  selected.value = new Set();
 
   if (props.admin) {
     playlists.value = await $fetch<PlaylistRow[]>("/api/v1/playlist/all", { headers: { Authorization: token } }).catch((e) => {
@@ -50,19 +70,41 @@ function playlistImageUrl(playlist: PlaylistRow): string {
   return playlist.image ? `/api/v1/playlist/${playlist.id}/image?token=${encodeURIComponent(token)}&v=${playlist.image}` : noCover;
 }
 
-async function addTo(playlistId: string) {
-  try {
-    await $fetch(`/api/v1/playlist/${playlistId}/tracks`, {
-      method: "POST",
-      headers: { Authorization: token },
-      body: { mediaIds: props.mediaIds }
-    });
-    useToast().sendToast({ content: $t('playlist.picker.added'), tint: "green", icon: null, title: null });
-    close();
-  } catch (e) {
-    const err = apiErrorMessage(e, $t('playlist.picker.error'));
-    useToast().sendToast({ content: err, tint: "red", icon: null, title: null });
+function toggle(playlistId: string) {
+  const next = new Set(selected.value);
+  if (next.has(playlistId)) next.delete(playlistId);
+  else next.add(playlistId);
+  selected.value = next;
+}
+
+// one call per playlist; the ones that failed stay picked so another try only sends those
+async function addToSelected() {
+  if (saving.value || selected.value.size === 0) return;
+  saving.value = true;
+  const failed = new Set<string>();
+  let lastError: unknown = null;
+  for (const playlistId of selected.value) {
+    try {
+      await $fetch(`/api/v1/playlist/${playlistId}/tracks`, {
+        method: "POST",
+        headers: { Authorization: token },
+        body: { mediaIds: props.mediaIds }
+      });
+    } catch (e) {
+      failed.add(playlistId);
+      lastError = e;
+    }
   }
+  saving.value = false;
+
+  const added = selected.value.size - failed.size;
+  if (added > 0) useToast().sendToast({ content: $t('playlist.picker.addedMany', { count: added }), tint: "green", icon: null, title: null });
+  if (failed.size > 0) {
+    useToast().sendError(null, lastError, $t('playlist.picker.error'));
+    selected.value = failed;
+    return;
+  }
+  close();
 }
 
 function close() {
@@ -103,6 +145,23 @@ function close() {
 
 .plist li:hover {
   background: #ffffff1a;
+}
+
+.plist li.selected {
+  background: #ffffff26;
+}
+
+.plist li .name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.plist li .tick {
+  flex-shrink: 0;
+  color: #ffffff;
 }
 
 .plist img {

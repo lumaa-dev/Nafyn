@@ -18,6 +18,7 @@ export default defineNitroPlugin(async () => {
             soulseekDownloadsPath: config.soulseekDownloadsPath,
             acoustidApiKey: config.acoustidApiKey,
             lastfmApiKey: config.lastfmApiKey,
+            lastfmApiSecret: config.lastfmApiSecret,
             domainsWhitelist: config.domainsWhitelist
         }));
     } catch (error) {

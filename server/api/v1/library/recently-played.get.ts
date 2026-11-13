@@ -39,6 +39,7 @@ defineRouteMeta({
                             title: { type: "string" },
                             subtitle: { type: "string", nullable: true },
                             coverArt: { type: "string", nullable: true },
+                            coverMediaId: { type: "string", nullable: true, description: "A track carrying an uploaded cover (the track itself, or one of the album's): GET /api/v1/library/{coverMediaId}/cover wins over coverArt" },
                             playlistImage: { type: "string", nullable: true, description: "Only set for type \"playlist\"; the raw image version stamp" },
                             href: { type: "string", description: "Relative app URL to open this item" }
                         }

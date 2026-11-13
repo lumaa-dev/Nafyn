@@ -25,9 +25,13 @@
           <span>
             <p :filled="liveStatus == 'waiting' ? 'hollow' : ''" :class="`status ${liveStatus}`">{{ $t(`requests.status.${liveStatus}`) }}</p>
           </span>
-          <!-- accept / deny / delete: only for people who manage requests (the server checks it again) -->
-          <span class="actions" v-if="canManageRequests && (liveStatus === 'waiting' || !active)">
-            <template v-if="liveStatus === 'waiting'">
+          <!-- accept / deny / delete: only for people who manage requests (the server checks it again);
+               cancel: the requester and managers, while the request hasn't finished -->
+          <span class="actions" v-if="canCancel || (canManageRequests && (liveStatus === 'waiting' || !active))">
+            <button v-if="canCancel" type="button" class="cancel" :disabled="busy || cancelling" :title="cancelling ? $t('requests.cancelling') : $t('requests.cancel')" :aria-label="cancelling ? $t('requests.cancelling') : $t('requests.cancel')" @click="cancel">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2" /></svg>
+            </button>
+            <template v-if="canManageRequests && liveStatus === 'waiting'">
               <button type="button" class="accept" :disabled="busy" :title="$t('requests.accept')" :aria-label="$t('requests.accept')" @click="decide('searching')">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
               </button>
@@ -36,7 +40,7 @@
               </button>
             </template>
             <!-- nobody can delete a request the pipeline is working on, ADMIN included -->
-            <button v-if="!active" type="button" class="remove" :disabled="busy" :title="$t('requests.delete')" :aria-label="$t('requests.delete')" @click="remove">
+            <button v-if="canManageRequests && !active" type="button" class="remove" :disabled="busy" :title="$t('requests.delete')" :aria-label="$t('requests.delete')" @click="remove">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a1 1 0 001 1h8a1 1 0 001-1l1-12M9 7V4h6v3" /></svg>
             </button>
           </span>
@@ -134,14 +138,49 @@ const progressPercent = computed(() => {
   return Math.min(100, (p.bytesDownloaded ?? 0) / p.totalBytes * 100);
 });
 
-const TERMINAL_STAGES: RequestStatus[] = ["completed", "failed", "denied"];
+const TERMINAL_STAGES: RequestStatus[] = ["completed", "failed", "denied", "cancelled"];
 
 // -- managing the request (MANAGE_REQUESTS) --
 
-const { can, ensureLoaded } = useCurrentUser();
+const { can, ensureLoaded, user } = useCurrentUser();
 const canManageRequests = computed(() => can(Permission.MANAGE_REQUESTS));
 const active = computed(() => isRequestActive(liveStatus.value));
 const busy = ref(false);
+
+// POST /api/v1/request/{id}/cancel: the requester and managers, while it is waiting or in the pipeline
+const cancelling = ref(false);
+const isRequester = computed(() => {
+  const by = props.request.requestedBy;
+  const id = typeof by === "string" ? by : by?.id;
+  return !!id && id === user.value?.id;
+});
+const canCancel = computed(() => (liveStatus.value === "waiting" || active.value) && (isRequester.value || canManageRequests.value));
+
+async function cancel() {
+  const token = useAuthToken().token.value;
+  if (!token || busy.value || cancelling.value || !canCancel.value) return;
+  if (!confirm($t('requests.cancelConfirm'))) return;
+
+  busy.value = true;
+  try {
+    const result = await $fetch<{ status: "cancelled" | "cancelling" }>(`/api/v1/request/${props.request.id}/cancel`, { method: "POST", headers: { Authorization: token } });
+    if (result.status === "cancelled") {
+      liveStatus.value = "cancelled";
+      progress.value = null;
+      disconnect();
+      useToast().sendToast({ title: props.request.info?.title ?? null, content: $t('requests.cancelled'), tint: "green", icon: null });
+    } else {
+      // the pipeline stops at its next step and says "cancelled" over the socket
+      cancelling.value = true;
+      connect();
+    }
+  } catch (e) {
+    useToast().sendError(props.request.info?.title ?? null, e);
+    await resync();
+  } finally {
+    busy.value = false;
+  }
+}
 
 // the server rejects a decision on a request that is no longer waiting (another manager got there first);
 // re-reading it puts the row back in step with what actually happened
@@ -227,7 +266,12 @@ function connect() {
     progress.value = event;
     liveStatus.value = event.stage;
 
-    if (event.stage === "completed" || event.stage === "failed") {
+    if (event.stage === "cancelled") {
+      cancelling.value = false;
+      progress.value = null;
+      useToast().sendToast({ title: props.request.info?.title ?? null, content: $t('requests.cancelled'), tint: "green", icon: null });
+    }
+    if (event.stage === "completed" || event.stage === "failed" || event.stage === "cancelled") {
       disconnect();
     }
   });
@@ -388,6 +432,7 @@ onUnmounted(disconnect);
 }
 
 .reqrow .actions button.deny:hover:not(:disabled),
+.reqrow .actions button.cancel:hover:not(:disabled),
 .reqrow .actions button.remove:hover:not(:disabled) {
   background: color-mix(in srgb, var(--danger-text) 20%, transparent);
   border-color: var(--danger-text);
@@ -399,7 +444,8 @@ onUnmounted(disconnect);
   color: #ffffff;
 }
 
-.reqrow .status.denied {
+.reqrow .status.denied,
+.reqrow .status.cancelled {
   border: var(--danger-text) 1px solid;
   color: var(--danger-text);
 }

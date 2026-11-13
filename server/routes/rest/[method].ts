@@ -43,6 +43,7 @@ import {
 import { recordRecentlyPlayed } from "~~/server/core/recentlyPlayed";
 import { getReplayMix, listReplayYears, isReplayPlaylistId, parseReplayPlaylistId, replayPlaylistId, ALL_TIME_YEAR } from "~~/server/core/replayMix";
 import { insertPlayEvents } from "~~/server/core/playEvents";
+import { scrobblePlays, sendNowPlaying } from "~~/server/core/lastfmAccounts";
 import { isHistoryEnabled } from "~~/server/core/insightsSettings";
 import { playlistImageFilePath, deletePlaylistImage } from "~~/server/utils/playlistImage";
 import { isUuid, escapeLike } from "~~/server/utils/ids";
@@ -440,8 +441,11 @@ const handlers: Record<string, Handler> = {
         const submission = firstStr(query, "submission");
 
         // Subsonic distinguishes a "now playing" ping (submission=false) from a completed play; only the
-        // latter is a listen
-        if (submission !== undefined && submission !== "true") return [];
+        // latter is a listen. The ping is Last.fm's "now playing" (sendNowPlaying checks the track is playable).
+        if (submission !== undefined && submission !== "true") {
+            sendNowPlaying(user.id, id);
+            return [];
+        }
 
         // SECURITY: recently-played entries are rendered with the media row's title/artist/cover, looked up by
         // id alone (core/recentlyPlayed.ts). Recording an arbitrary id here let any account read the metadata
@@ -451,6 +455,12 @@ const handlers: Record<string, Handler> = {
         if (!song) throw new SubsonicApiError(SubsonicErrors.notFound);
 
         await recordRecentlyPlayed(user.id, "track", id);
+
+        // a Subsonic client only scrobbles what it played through: the whole length, ending now. `time` (ms) is
+        // when it was played, when the client sends it
+        const timeMs = Number(firstStr(query, "time"));
+        const playedAtMs = Number.isFinite(timeMs) && timeMs > 0 && timeMs <= Date.now() ? timeMs : Date.now() - song.duration * 1000;
+        scrobblePlays(user.id, [{ trackId: id, startedAtMs: playedAtMs, durationMs: song.duration * 1000 }]);
 
         // Feed the same event store the web player writes to, so listening through a Subsonic client counts
         // toward the user's insights - cross-device consistency is keyed on user_id alone, and this is the

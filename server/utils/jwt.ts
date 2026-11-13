@@ -45,7 +45,7 @@ export async function verifyAuthToken(token: string): Promise<AuthTokenPayload> 
 
     // `jwt.verify` resolves a bare string payload to a string, and `sub`/`jti` may legally be absent - none
     // of this is a token we ever issue, and all would otherwise flow onward as an undefined user id/session
-    if (typeof payload !== "object" || typeof payload.sub !== "string" || !payload.sub || typeof payload.jti !== "string" || !payload.jti) {
+    if (typeof payload !== "object" || typeof payload.sub !== "string" || !payload.sub || typeof payload.jti !== "string" || !payload.jti || payload.aud !== undefined) {
         throw new jwt.JsonWebTokenError("Malformed token payload");
     }
 
@@ -54,4 +54,20 @@ export async function verifyAuthToken(token: string): Promise<AuthTokenPayload> 
     }
 
     return payload;
+}
+
+// short-lived, single-purpose tokens that are not logins (the Last.fm connect round trip carries one as its `state`):
+// signed with the same secret, but with an `aud` naming the purpose, so one can never be used as the other - a
+// login token has no `aud` and verifyAuthToken never accepts one that has.
+export function signPurposeToken(purpose: string, payload: Record<string, string>, expiresIn: `${number}m`): string {
+    return jwt.sign(payload, getSecret(), { expiresIn, algorithm: ALGORITHM, issuer: ISSUER, audience: `nafyn:${purpose}` });
+}
+
+export function verifyPurposeToken(purpose: string, token: string): Record<string, unknown> | null {
+    try {
+        const payload = jwt.verify(token, getSecret(), { algorithms: [ALGORITHM], issuer: ISSUER, audience: `nafyn:${purpose}` });
+        return typeof payload === "object" ? payload as Record<string, unknown> : null;
+    } catch {
+        return null;
+    }
 }

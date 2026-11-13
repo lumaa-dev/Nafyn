@@ -67,6 +67,44 @@ const MIGRATIONS: Migration[] = [
             if (await columnExists(conn, "apn_activity_tokens", "updatedAt")) return;
             await conn.query(`ALTER TABLE apn_activity_tokens ADD COLUMN updatedAt BIGINT NULL`);
         }
+    },
+    {
+        // requests can be cancelled ("cancelled", POST /api/v1/request/{id}/cancel): the status column's CHECK
+        // listed every status but that one. Its name is whatever the server generated (MySQL: requests_chk_N,
+        // MariaDB: the column name), so it is looked up, dropped and re-added under a known name.
+        id: "2026-11-request-status-cancelled",
+        up: async (conn) => {
+            const [rows] = await conn.execute(
+                `SELECT cc.CONSTRAINT_NAME AS name, cc.CHECK_CLAUSE AS clause
+                 FROM information_schema.CHECK_CONSTRAINTS cc
+                 JOIN information_schema.TABLE_CONSTRAINTS tc
+                   ON tc.CONSTRAINT_SCHEMA = cc.CONSTRAINT_SCHEMA AND tc.CONSTRAINT_NAME = cc.CONSTRAINT_NAME
+                 WHERE cc.CONSTRAINT_SCHEMA = DATABASE() AND tc.TABLE_NAME = 'requests' AND tc.CONSTRAINT_TYPE = 'CHECK'`
+            );
+            const checks = rows as { name: string, clause: string }[];
+            const statusChecks = checks.filter((c) => /status/i.test(c.clause) && /denied/i.test(c.clause));
+            if (statusChecks.length > 0 && statusChecks.every((c) => /cancelled/i.test(c.clause))) return;
+            for (const check of statusChecks) {
+                if (/cancelled/i.test(check.clause)) continue;
+                // the name comes from information_schema, not from input; backticks are escaped all the same
+                await conn.query(`ALTER TABLE requests DROP CONSTRAINT \`${check.name.replace(/`/g, "``")}\``);
+            }
+            if (!checks.some((c) => c.name === "requests_status_chk")) {
+                await conn.query(`ALTER TABLE requests ADD CONSTRAINT requests_status_chk CHECK (status IN ('waiting', 'searching', 'downloading', 'processing', 'completed', 'failed', 'denied', 'cancelled'))`);
+            }
+        }
+    },
+    {
+        // imports can hold albums (a Discogs collection), not only tracks: what an item is, and its barcode
+        id: "2026-11-import-items-albums",
+        up: async (conn) => {
+            if (!await columnExists(conn, "import_items", "kind")) {
+                await conn.query(`ALTER TABLE import_items ADD COLUMN kind VARCHAR(8) NOT NULL DEFAULT 'track'`);
+            }
+            if (!await columnExists(conn, "import_items", "barcode")) {
+                await conn.query(`ALTER TABLE import_items ADD COLUMN barcode VARCHAR(20) NULL`);
+            }
+        }
     }
 ];
 

@@ -34,6 +34,8 @@
         <span v-if="track.trackNumber" class="number">{{ track.trackNumber }}</span>
         <span class="title">{{ track.title }}</span>
         <ReleaseCountdown v-if="!track.released && track.releaseDate && album.released" compact :date="track.releaseDate" />
+        <!-- not in the library: its 30 s iTunes preview -->
+        <button v-if="track.released && !track.inLibrary" type="button" filled="hollow" class="icon-only" :disabled="failedIds.has(track.id)" :aria-pressed="playingId === track.id" :title="previewLabel(track.id)" :aria-label="previewLabel(track.id)" @click.stop="togglePreview(track.id)"><img :src="playingId === track.id ? pauseIcon : playIcon" alt="" draggable="false"></button>
         <button v-if="track.released && !track.inLibrary" filled="hollow" class="icon-only" :title="$t('album.request')" :aria-label="$t('album.request')" :disabled="track.requested || !canRequestTracks" @click.stop="requestTrack(track)"><img src="../../assets/icons/download.svg" alt="" draggable="false"></button>
         <button type="button" class="ellipsis" v-if="track.mediaId" :aria-label="$t('menu.more')" @click.stop="onTrackMenu($event, track)">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
@@ -76,6 +78,17 @@ import { Permission } from '~~/server/entity/Permission';
 import ReleaseCountdown from '~/components/ReleaseCountdown.vue';
 import MediaBox from '~/components/MediaBox.vue';
 import ReleaseGrid from '~/components/ReleaseGrid.vue';
+import { usePreview } from '~/composables/usePreview';
+import playIcon from '~/assets/icons/play.svg';
+import pauseIcon from '~/assets/icons/pause.svg';
+
+const { playingId, loadingId, failedIds, togglePreview } = usePreview();
+// the preview button says what it does now, and when iTunes has none for the track (its error, in place)
+function previewLabel(tid: string): string {
+  if (failedIds.value.has(tid)) return $t('preview.none');
+  if (loadingId.value === tid) return $t('preview.loading');
+  return playingId.value === tid ? $t('preview.stop') : $t('preview.play');
+}
 
 const { locale } = useI18n();
 const route = useRoute();

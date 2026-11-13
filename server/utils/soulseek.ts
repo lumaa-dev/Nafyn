@@ -14,6 +14,7 @@ import { copyFile, rm, rmdir } from "node:fs/promises";
 import { dirname, extname, resolve, sep } from "node:path";
 import { ensureDir } from "./ensureDir";
 import { soulseekQueryText } from "./soulseekText";
+import { cancellableDelay } from "./requestCancel";
 
 export interface SlskSearchResult {
     user: string,
@@ -394,11 +395,13 @@ async function cleanUpSlskdDownload(file: SlskSearchResult, trace: DownloadTrace
 export async function downloadFromSoulseek(
     file: SlskSearchResult,
     destPath: string,
-    onProgress?: (progress: DownloadProgress) => void
+    onProgress?: (progress: DownloadProgress) => void,
+    // the request was cancelled (utils/requestCancel.ts): the transfer is dropped within a second
+    signal?: AbortSignal
 ): Promise<void> {
     const trace: DownloadTrace = {};
     try {
-        await runDownload(file, destPath, onProgress, trace);
+        await runDownload(file, destPath, onProgress, trace, signal);
     } catch (error) {
         await cleanUpSlskdDownload(file, trace);
         throw error;
@@ -412,7 +415,8 @@ async function runDownload(
     file: SlskSearchResult,
     destPath: string,
     onProgress: ((progress: DownloadProgress) => void) | undefined,
-    trace: DownloadTrace
+    trace: DownloadTrace,
+    signal?: AbortSignal
 ): Promise<void> {
     const { downloadsPath } = getConfig();
     if (!downloadsPath) {
@@ -457,7 +461,7 @@ async function runDownload(
 
     // poll until the transfer reaches a terminal (Completed-flagged) state
     for (;;) {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await cancellableDelay(1000, signal);
 
         const pollRes = await slskdFetch(`/api/v0/transfers/downloads/${encodeURIComponent(file.user)}/${transfer.id}`).catch(() => null);
         if (!pollRes?.ok) {

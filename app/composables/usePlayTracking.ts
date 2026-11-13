@@ -72,6 +72,22 @@ export function getHistoryState(): HistoryState {
     return historyState;
 }
 
+// Last.fm scrobbling (server side, from the same events): while it is on, plays are reported even with the
+// listening history off - the server scrobbles them and stores nothing. Settled by the server like the history flag.
+let scrobblingOn = false;
+
+export function setScrobblingState(enabled: boolean): void {
+    scrobblingOn = enabled;
+}
+
+/** Last.fm's "now playing" for a track that just started, when scrobbling is on. Fire-and-forget. */
+export function reportNowPlaying(mediaId: string): void {
+    if (!import.meta.client || suppressed || !scrobblingOn) return;
+    const token = authToken();
+    if (!token) return;
+    void $fetch("/api/v1/user/lastfm/now-playing", { method: "POST", headers: { Authorization: token }, body: { mediaId } }).catch(() => {});
+}
+
 // Set by the highlight-reel player while it plays its 6-second excerpts. Without it, a twenty-slide reel
 // would register as twenty sub-30-second plays and pollute the very data it is celebrating.
 let suppressed = false;
@@ -143,7 +159,7 @@ export function enqueuePlayEvent(event: QueuedPlayEvent): void {
     if (!import.meta.client || suppressed) return;
     // only a confirmed opt-out stops capture. "unknown" still queues: the listen has already happened, and
     // throwing it away because a settings request hasn't come back yet loses real data for good.
-    if (historyState === "disabled") return;
+    if (historyState === "disabled" && !scrobblingOn) return;
     if (event.duration_ms <= 0) return;
 
     const queue = readQueue();
@@ -172,7 +188,7 @@ export async function flushPlayEvents(): Promise<void> {
     flushing = true;
 
     try {
-        const result = await $fetch<{ accepted: number, rejected: number, historyEnabled: boolean }>(ENDPOINT, {
+        const result = await $fetch<{ accepted: number, rejected: number, historyEnabled: boolean, scrobbling?: boolean }>(ENDPOINT, {
             method: "POST",
             headers: { Authorization: token },
             body: { events: batch }
@@ -186,7 +202,8 @@ export async function flushPlayEvents(): Promise<void> {
         // the server is the authority on this, so its answer settles the flag in both directions: it
         // confirms an opt-in we only assumed, and it stops capture if the user turned history off elsewhere
         setHistoryEnabledState(result.historyEnabled);
-        if (!result.historyEnabled) writeQueue([]);
+        setScrobblingState(result.scrobbling === true);
+        if (!result.historyEnabled && !result.scrobbling) writeQueue([]);
 
         // only when something was actually stored - a batch of duplicates changes no numbers
         if (result.accepted > 0) notifyInsightsUpdated();
@@ -252,10 +269,11 @@ export async function syncHistorySetting(): Promise<boolean> {
     if (!token) return false;
 
     try {
-        const settings = await $fetch<{ historyEnabled: boolean, tzOffsetMinutes: number }>("/api/v1/insights/settings", {
+        const settings = await $fetch<{ historyEnabled: boolean, tzOffsetMinutes: number, scrobbling?: boolean }>("/api/v1/insights/settings", {
             headers: { Authorization: token }
         });
         setHistoryEnabledState(settings.historyEnabled);
+        setScrobblingState(settings.scrobbling === true);
 
         // getTimezoneOffset() is minutes to add to *local* to get UTC, i.e. the opposite sign from what the
         // server stores

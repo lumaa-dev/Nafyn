@@ -136,11 +136,20 @@ downloaded - never your username, your account id, or your listening history.
 - **AcoustID**, which receives an audio fingerprint of a downloaded file to confirm it is the right
   recording.
 - **Last.fm**, for artist biographies, if the operator configured a key for it.
+- **Apple's iTunes catalogue**, which receives the title and artist of a track you don't own when you play
+  its 30-second preview.
+- **Discogs**, when you import your Discogs collection: Nafyn reads that collection by the Discogs username
+  you give it.
 - **Cover Art Archive**, to fetch artwork.
 
 A text search you type is sent to MusicBrainz and, when you request something, to the Soulseek network as the
 search term. If that matters to you, note that
 search terms are the one thing here you control directly.
+
+**Last.fm scrobbling is the other exception**, and only if you connect your Last.fm account yourself (Settings ->
+Profile): every track you play (title, artist, album, length and when you played it) is then sent to *your*
+Last.fm account, under Last.fm's own privacy policy. Nafyn keeps the session key Last.fm gives for your account
+(never your Last.fm password) until you disconnect it or delete your Nafyn account.
 
 **Notifications are the exception** to "never your username", because telling someone about a request is
 their whole point:

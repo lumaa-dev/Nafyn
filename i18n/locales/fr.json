@@ -143,7 +143,8 @@
       "processing": "Traitement",
       "completed": "Terminé",
       "failed": "Échec",
-      "denied": "Refusée"
+      "denied": "Refusée",
+      "cancelled": "Annulée"
     },
     "progress": {
       "eta": "{time} restant",
@@ -158,6 +159,10 @@
     "denied": "Demande refusée",
     "deleted": "Demande supprimée",
     "open": "Ouvrir {title}",
+    "cancel": "Annuler la demande",
+    "cancelConfirm": "Annuler cette demande ? Les titres déjà téléchargés seront retirés de la bibliothèque.",
+    "cancelled": "Demande annulée",
+    "cancelling": "Annulation…",
     "filter": {
       "title": "Filtrer les demandes",
       "all": "Toutes",
@@ -180,6 +185,37 @@
       "developer": "Développeur",
       "notifications": "Notifications",
       "webhooks": "Webhooks"
+    },
+    "connections": {
+      "lastfm": {
+        "title": "Last.fm",
+        "intro": "Connectez votre compte Last.fm et Nafyn scrobble tout ce que vous écoutez, depuis tous vos appareils et applis.",
+        "unavailable": "Le scrobbling Last.fm n'est pas configuré sur ce serveur.",
+        "connect": "Connecter Last.fm",
+        "connectedAs": "Connecté en tant que {username}",
+        "scrobbling": "Scrobbler mes écoutes",
+        "disconnect": "Déconnecter",
+        "connected": "Compte Last.fm connecté",
+        "failed": "Impossible de connecter votre compte Last.fm"
+      },
+      "discogs": {
+        "title": "Discogs",
+        "intro": "Demander tous les albums de votre collection Discogs publique (le nom d'utilisateur Discogs de votre profil). Les albums déjà dans votre bibliothèque ou déjà demandés sont ignorés.",
+        "import": "Importer depuis Discogs",
+        "reading": "Lecture de votre collection…",
+        "noUsername": "Ajoutez votre nom d'utilisateur Discogs ci-dessus et enregistrez d'abord.",
+        "started": "Import de {total} album(s)",
+        "progress": "{processed} albums traités sur {total}",
+        "done": "Import terminé ({total} albums)",
+        "status": {
+          "requested": "{count} demandé(s)",
+          "owned": "{count} déjà dans votre bibliothèque",
+          "already-requested": "{count} déjà demandé(s)",
+          "not-found": "{count} introuvable(s)",
+          "unreleased": "{count} pas encore sorti(s)",
+          "error": "{count} en échec"
+        }
+      }
     },
     "profile": {
       "title": "Profil",
@@ -446,6 +482,9 @@
       "title": "Ajouter à une playlist",
       "empty": "Vous n'avez aucune playlist pour l'instant.",
       "added": "Ajouté à la playlist",
+      "addedMany": "Ajouté à {count} playlist(s)",
+      "add": "Ajouter à {count} playlist(s)",
+      "adding": "Ajout…",
       "cancel": "Annuler",
       "error": "Impossible d'ajouter à la playlist"
     },
@@ -732,6 +771,10 @@
     "pinError": "Impossible de modifier l'épingle",
     "viewAlbum": "Voir l'album",
     "viewPlaylist": "Voir la playlist",
+    "openOnYouTube": "Ouvrir sur YouTube",
+    "share": "Partager",
+    "shareError": "Impossible de copier le lien",
+    "linkCopied": "Lien {service} copié",
     "deleteAlbum": "Supprimer l'album",
     "confirmDeleteTracks": "Supprimer {count} titres de votre bibliothèque ? Cette action est irréversible.",
     "confirmDeleteAlbums": "Supprimer {count} album(s) - {tracks} titres - de votre bibliothèque ? Cette action est irréversible.",
@@ -752,6 +795,12 @@
       "album": "Album",
       "playlist": "Playlist"
     }
+  },
+  "preview": {
+    "play": "Écouter un extrait",
+    "stop": "Arrêter l'extrait",
+    "loading": "Chargement de l'extrait…",
+    "none": "Aucun extrait disponible"
   },
   "profile": {
     "tracks": "{count} titre | {count} titres",

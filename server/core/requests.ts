@@ -91,8 +91,8 @@ export async function getRequestById(id: string): Promise<NafynRequest | null> {
     return row ? rowToRequest(row) : null;
 }
 
-// statuses a list can be filtered by, as the groups the API exposes (`denied` has no filter and is always
-// listed)
+// statuses a list can be filtered by, as the groups the API exposes (`denied` and `cancelled` have no filter and
+// are always listed)
 export const REQUEST_STATUS_GROUPS = {
     succeeded: ["completed"],
     failed: ["failed"],

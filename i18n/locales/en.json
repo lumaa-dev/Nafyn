@@ -143,7 +143,8 @@
       "processing": "Processing",
       "completed": "Completed",
       "failed": "Failed",
-      "denied": "Denied"
+      "denied": "Denied",
+      "cancelled": "Cancelled"
     },
     "progress": {
       "eta": "{time} left",
@@ -158,6 +159,10 @@
     "denied": "Request denied",
     "deleted": "Request deleted",
     "open": "Open {title}",
+    "cancel": "Cancel request",
+    "cancelConfirm": "Cancel this request? Tracks it already downloaded will be removed from the library.",
+    "cancelled": "Request cancelled",
+    "cancelling": "Cancelling…",
     "filter": {
       "title": "Filter requests",
       "all": "All",
@@ -180,6 +185,37 @@
       "developer": "Developer",
       "notifications": "Notifications",
       "webhooks": "Webhooks"
+    },
+    "connections": {
+      "lastfm": {
+        "title": "Last.fm",
+        "intro": "Connect your Last.fm account and Nafyn scrobbles everything you play, from every device and app.",
+        "unavailable": "Last.fm scrobbling isn't set up on this server.",
+        "connect": "Connect Last.fm",
+        "connectedAs": "Connected as {username}",
+        "scrobbling": "Scrobble what I play",
+        "disconnect": "Disconnect",
+        "connected": "Last.fm account connected",
+        "failed": "Couldn't connect your Last.fm account"
+      },
+      "discogs": {
+        "title": "Discogs",
+        "intro": "Request every album of your public Discogs collection (the Discogs username on your profile). Albums already in your library or already requested are skipped.",
+        "import": "Import from Discogs",
+        "reading": "Reading your collection…",
+        "noUsername": "Add your Discogs username above and save first.",
+        "started": "Importing {total} album(s)",
+        "progress": "{processed} of {total} albums processed",
+        "done": "Import finished ({total} albums)",
+        "status": {
+          "requested": "{count} requested",
+          "owned": "{count} already in your library",
+          "already-requested": "{count} already requested",
+          "not-found": "{count} not found",
+          "unreleased": "{count} not released",
+          "error": "{count} failed"
+        }
+      }
     },
     "profile": {
       "title": "Profile",
@@ -446,6 +482,9 @@
       "title": "Add to playlist",
       "empty": "You have no playlists yet.",
       "added": "Added to playlist",
+      "addedMany": "Added to {count} playlist(s)",
+      "add": "Add to {count} playlist(s)",
+      "adding": "Adding…",
       "cancel": "Cancel",
       "error": "Couldn't add to playlist"
     },
@@ -732,6 +771,10 @@
     "pinError": "Couldn't update the pin",
     "viewAlbum": "View album",
     "viewPlaylist": "View playlist",
+    "openOnYouTube": "Open on YouTube",
+    "share": "Share",
+    "shareError": "Couldn't copy the link",
+    "linkCopied": "{service} link copied",
     "deleteAlbum": "Delete album",
     "confirmDeleteTracks": "Delete {count} tracks from your library? This can't be undone.",
     "confirmDeleteAlbums": "Delete {count} album(s) - {tracks} tracks - from your library? This can't be undone.",
@@ -752,6 +795,12 @@
       "album": "Album",
       "playlist": "Playlist"
     }
+  },
+  "preview": {
+    "play": "Play preview",
+    "stop": "Stop preview",
+    "loading": "Loading preview…",
+    "none": "No preview available"
   },
   "profile": {
     "tracks": "{count} track | {count} tracks",

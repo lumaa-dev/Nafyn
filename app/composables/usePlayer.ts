@@ -2,7 +2,7 @@
 import type { MediaRow } from "~~/server/core/library";
 import type { RecentlyPlayedType } from "~~/server/core/recentlyPlayed";
 import type { Ref } from "vue";
-import { enqueuePlayEvent, bindPlayTracking, getHistoryState, isTrackingSuppressed, useHistoryEnabled, type PlaySource } from "./usePlayTracking";
+import { enqueuePlayEvent, bindPlayTracking, getHistoryState, isTrackingSuppressed, reportNowPlaying, useHistoryEnabled, type PlaySource } from "./usePlayTracking";
 import { usePlaybackSettings, type PlaybackSettings } from "./usePlaybackSettings";
 import { useAuthToken } from "./useAuthToken";
 
@@ -77,6 +77,7 @@ function contextToSource(context: PlayContext | null): PlaySource {
 
 function startSegment(track: MediaRow) {
     if (!import.meta.client) return;
+    reportNowPlaying(track.id);
     segment = {
         track,
         playlistId: currentContext?.type === "playlist" ? currentContext.refId : null,

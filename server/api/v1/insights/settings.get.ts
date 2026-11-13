@@ -1,3 +1,4 @@
+import { isScrobbling } from "~~/server/core/lastfmAccounts";
 import { getInsightSettings } from "~~/server/core/insightsSettings";
 
 defineRouteMeta({
@@ -22,7 +23,8 @@ defineRouteMeta({
                             historyEnabled: { type: "boolean", description: "Opt-in; false by default and for users who have never touched the setting" },
                             enabledAt: { type: "integer", format: "int64", nullable: true, description: "Epoch ms the setting was last switched on" },
                             disabledAt: { type: "integer", format: "int64", nullable: true, description: "Epoch ms the setting was last switched off" },
-                            tzOffsetMinutes: { type: "integer", description: "Minutes to add to UTC to reach the user's local time; decides where their day, week and year boundaries fall" }
+                            tzOffsetMinutes: { type: "integer", description: "Minutes to add to UTC to reach the user's local time; decides where their day, week and year boundaries fall" },
+                            scrobbling: { type: "boolean", description: "GET only: plays are scrobbled to Last.fm, so a client reports them (POST /insights/events) even with the history off" }
                         }
                     }
                 }
@@ -33,5 +35,6 @@ defineRouteMeta({
 
 export default defineEventHandler(async (event) => {
     const { sub: userId } = await requireAuthToken(event);
-    return await getInsightSettings(userId);
+    // `scrobbling`: plays must still be reported while the history is off, for Last.fm (see POST /insights/events)
+    return { ...await getInsightSettings(userId), scrobbling: await isScrobbling(userId) };
 });

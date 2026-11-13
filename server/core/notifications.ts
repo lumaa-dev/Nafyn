@@ -203,6 +203,17 @@ export function notifyRequestFinished(requestId: string, outcome: "completed" | 
     });
 }
 
+/**
+ * A request was cancelled (POST /api/v1/request/{id}/cancel). Whoever cancelled it asked for it, so nobody is
+ * alerted: a running Live Activity just shows "Cancelled" briefly and ends.
+ */
+export function notifyRequestCancelled(requestId: string): void {
+    announceRequestActivityEnd(requestId);
+    fireAndForget("request.cancelled", async () => {
+        await endRequestActivity(requestId, "failed", "Cancelled");
+    });
+}
+
 /** The scheduler hit releaseAt - 3 h for a subscription. */
 export function notifyReleaseSoon(sub: DueSubscription): void {
     fireAndForget("release countdown", async () => {

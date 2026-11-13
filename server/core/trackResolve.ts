@@ -3,7 +3,7 @@
 import { getMusicBrainzRepository } from "../utils/musicbrainz";
 import { MusicBrainzError } from "../utils/musicbrainzRepository";
 import { getSearchDeps } from "../utils/catalogSearch";
-import { searchTracks, type SearchDeps } from "../utils/search/engine";
+import { searchAlbums, searchTracks, type SearchDeps } from "../utils/search/engine";
 import { acceptSearchResult, pickIsrcRecording, searchForms, type DescribedTrack, type IsrcRecording } from "../utils/trackPick";
 
 const ISRC_PATTERN = /^[A-Z]{2}[A-Z0-9]{3}\d{2}\d{5}$/;
@@ -75,4 +75,36 @@ export async function resolveDescribedTrack(track: TrackDescription): Promise<Re
         if (accepted) return { recordingId: accepted.id, via: "search" };
     }
     return null;
+}
+
+export interface AlbumDescription {
+    title: string,
+    artist: string,
+    /** UPC / EAN as printed, any punctuation */
+    barcode?: string | null
+}
+
+const BARCODE_PATTERN = /^\d{8,14}$/;
+
+/** the barcode as digits, or null when it can't be one */
+export function usableBarcode(raw: string | null | undefined): string | null {
+    const digits = (raw ?? "").replace(/[\s-]/g, "");
+    return BARCODE_PATTERN.test(digits) ? digits : null;
+}
+
+/**
+ * The release-group an album described by another service (a Discogs collection) is: the album search with its
+ * barcode as evidence, title + artist otherwise. Only a result the search itself is sure of (`bestResultMinScore`)
+ * is taken. Throws `MusicBrainzError` when MusicBrainz can't be asked.
+ */
+export async function resolveDescribedAlbum(album: AlbumDescription): Promise<{ releaseGroupId: string, via: "barcode" | "search" } | null> {
+    if (!album.title?.trim()) return null;
+    const deps = getImportSearchDeps();
+    const upc = usableBarcode(album.barcode) ?? undefined;
+    const { results } = await searchAlbums({ title: album.title, artist: album.artist?.trim() || undefined, upc }, deps, SEARCH_RESULTS_CONSIDERED);
+    const usable = results.filter((result) => !result.match.flags.includes("code_contradiction"));
+    const byCode = upc ? usable.find((result) => result.match.flags.includes("upc_match")) : undefined;
+    if (byCode) return { releaseGroupId: byCode.id, via: "barcode" };
+    const strong = usable.find((result) => result.match.relevance >= deps.config.bestResultMinScore);
+    return strong ? { releaseGroupId: strong.id, via: "search" } : null;
 }

@@ -15,10 +15,18 @@
           <ReleaseCountdown v-if="track.releaseDate && track.releaseDatePrecision === 'day'" class="value" :date="track.releaseDate" @released="refreshNuxtData(`track-${tid}`)" />
           <span v-else-if="track.releaseDate" class="value">{{ $t('upcoming.expected', { date: formatPartialDate(track.releaseDate, track.releaseDatePrecision) }) }}</span>
         </div>
-        <button filled :disabled="track.requested || !!track.inLibrary || !canRequestTracks" @click="requestTrack" v-if="track.released">{{ track.inLibrary ? $t('track.inLibrary') : track.requested ? $t('track.alreadyRequested') : $t('track.request') }}</button>
-        <button v-else-if="!track.released" :filled="track.subscribed ? 'hollow' : ''" :disabled="subscriptionPending" @click="toggleSubscription">
-          {{ track.subscribed ? $t('upcoming.following') : $t('upcoming.notifyMe') }}
-        </button>
+        <span class="actions">
+          <button filled :disabled="track.requested || !!track.inLibrary || !canRequestTracks" @click="requestTrack" v-if="track.released">{{ track.inLibrary ? $t('track.inLibrary') : track.requested ? $t('track.alreadyRequested') : $t('track.request') }}</button>
+          <button v-else-if="!track.released" :filled="track.subscribed ? 'hollow' : ''" :disabled="subscriptionPending" @click="toggleSubscription">
+            {{ track.subscribed ? $t('upcoming.following') : $t('upcoming.notifyMe') }}
+          </button>
+          <!-- a track not in the library can be heard for 30 s (the iTunes preview) -->
+          <button v-if="track.released && !track.inLibrary" filled="hollow" :disabled="failedIds.has(tid)" :aria-pressed="playingId === tid" @click="togglePreview(tid)">
+            {{ loadingId === tid ? $t('preview.loading') : playingId === tid ? $t('preview.stop') : $t('preview.play') }}
+          </button>
+        </span>
+        <!-- DESIGN.md "Error messages": where the preview should have started -->
+        <p v-if="failedIds.has(tid)" class="preview-none">{{ $t('preview.none') }}</p>
       </div>
     </div>
 
@@ -38,6 +46,9 @@ import { useAuthToken } from '~/composables/useAuthToken';
 import { useCurrentUser } from '~/composables/useCurrentUser';
 import { Permission } from '~~/server/entity/Permission';
 import ReleaseCountdown from '~/components/ReleaseCountdown.vue';
+import { usePreview } from '~/composables/usePreview';
+
+const { playingId, loadingId, failedIds, togglePreview } = usePreview();
 
 type TrackDetail = MediaInfo & {
   albumMbid: string | null,
@@ -136,9 +147,19 @@ useCoverTint(() => track.value);
   justify-content: center;
 }
 
-.track .meta button {
+.track .meta .actions {
+  display: flex;
+  flex-wrap: wrap;
+  /* side by side buttons are the same height (DESIGN.md "Buttons") */
+  align-items: stretch;
+  gap: 10px;
   margin: 1.2em 0;
-  align-self: flex-start;
+}
+
+.track .meta .preview-none {
+  margin: 0;
+  font-size: 0.85em;
+  color: color-mix(in srgb, currentColor 80%, transparent);
 }
 
 .track .upcoming {

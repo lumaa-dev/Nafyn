@@ -42,6 +42,8 @@
 
         <button type="button" filled :disabled="!canSave || saving" @click="save">{{ $t('settings.profile.save') }}</button>
 
+        <ConnectionsSettings :discogs-username="user?.discogs ?? null" />
+
         <NuxtLink v-if="user" :to="`/u/${user.username}`" class="everyone-link">{{ $t('settings.profile.publicProfile') }}</NuxtLink>
         <p v-if="user" class="subsonic-note">{{ $t('settings.profile.publicProfileNote') }}</p>
 
@@ -408,6 +410,7 @@ import { canManageUser, hasPermission, Permission } from '~~/server/entity/Permi
 import type { RegisterTokenRow } from '~~/server/core/registerTokens';
 import type { ApiTokenSummary, ApiTokenRow } from '~~/server/core/apiTokens';
 import { syncHistorySetting, useHistoryEnabled, setHistoryEnabledState } from '~/composables/usePlayTracking';
+import ConnectionsSettings from '~/components/settings/ConnectionsSettings.vue';
 import { useDyslexicFont } from '~/composables/useDyslexicFont';
 import { useLyricsSansSerif } from '~/composables/useLyricsFont';
 import { useAppearanceSettings, syncAppearanceSettings, setAppearanceSetting } from '~/composables/useAppearanceSettings';

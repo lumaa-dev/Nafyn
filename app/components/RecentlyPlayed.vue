@@ -59,6 +59,8 @@ function entryCover(item: RecentlyPlayedEntry): string {
   if (item.type === "playlist") {
     return item.playlistImage ? `/api/v1/playlist/${item.refId}/image?token=${encodeURIComponent(token ?? "")}&v=${item.playlistImage}` : noCover;
   }
+  // an uploaded cover (the track's own, or one of the album's tracks') wins over the archive's
+  if (item.coverMediaId) return `/api/v1/library/${item.coverMediaId}/cover`;
   return coverArtUrl(item.coverArt);
 }
 </script>

@@ -383,7 +383,7 @@ export async function sweepApnTokens(staleDays: number): Promise<void> {
     // finished requests and delivered release countdowns have already been sent their `end`
     await db.prepare(`
         DELETE FROM apn_activity_tokens WHERE kind = 'request'
-          AND refId NOT IN (SELECT id FROM requests WHERE status NOT IN ('completed', 'failed', 'denied'))
+          AND refId NOT IN (SELECT id FROM requests WHERE status NOT IN ('completed', 'failed', 'denied', 'cancelled'))
     `).run();
     await db.prepare(`
         DELETE FROM apn_activity_tokens WHERE kind = 'release'
@@ -913,6 +913,8 @@ export async function updateRequestActivity(event: DownloadProgressEvent): Promi
     // per-track "completed"/"failed" events arrive in the middle of an album; only the request-level end
     // (endRequestActivity, called once the whole pipeline is done) may end the activity
     if ((event.stage === "completed" || event.stage === "failed") && event.trackIndex === undefined) return;
+    // a cancelled request's activity is ended by notifyRequestCancelled
+    if (event.stage === "cancelled") return;
 
     const last = requestActivityThrottle.get(event.requestId);
     const now = Date.now();

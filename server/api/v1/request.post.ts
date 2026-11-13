@@ -100,7 +100,7 @@ defineRouteMeta({
                                 nullable: true
                             },
                             type: { type: "string", enum: ["album", "track"] },
-                            status: { type: "string", enum: ["waiting", "searching", "downloading", "processing", "completed", "failed", "denied"] },
+                            status: { type: "string", enum: ["waiting", "searching", "downloading", "processing", "completed", "failed", "denied", "cancelled"] },
                             requestedBy: {
                                 type: ["object", "string"],
                                 oneOf: [

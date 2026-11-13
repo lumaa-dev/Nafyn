@@ -21,6 +21,9 @@ export interface RecentlyPlayedEntry {
     title: string,
     subtitle: string | null,
     coverArt: string | null,
+    // a track (type "track") / one of the album's tracks (type "album") carrying an uploaded cover, which wins over
+    // `coverArt`: GET /api/v1/library/{coverMediaId}/cover
+    coverMediaId: string | null,
     // only set for type "playlist" - the raw image version stamp, since the actual image URL needs a
     // caller-supplied auth token query param (see playlist image.get.ts), which this module has no access to
     playlistImage: string | null,
@@ -56,7 +59,8 @@ interface TrackAlbumJoinRow {
     playedAt: number,
     title: string | null,
     subtitle: string | null,
-    coverArt: string | null
+    coverArt: string | null,
+    coverMediaId: string | null
 }
 
 export async function getRecentlyPlayed(userId: string): Promise<RecentlyPlayedEntry[]> {
@@ -70,7 +74,8 @@ export async function getRecentlyPlayed(userId: string): Promise<RecentlyPlayedE
     for (const row of rows) {
         if (row.type === "track") {
             const media = await db.prepare(`
-                SELECT media.musicbrainzId AS refId, media.title AS title, media.artistName AS subtitle, media.coverArt AS coverArt
+                SELECT media.musicbrainzId AS refId, media.title AS title, media.artistName AS subtitle, media.coverArt AS coverArt,
+                    CASE WHEN media.hasCustomCover = 1 THEN media.id END AS coverMediaId
                 FROM media WHERE media.id = ?
             `).get(row.refId) as TrackAlbumJoinRow | undefined;
             if (!media?.title) continue;
@@ -82,6 +87,7 @@ export async function getRecentlyPlayed(userId: string): Promise<RecentlyPlayedE
                 title: media.title,
                 subtitle: media.subtitle,
                 coverArt: media.coverArt,
+                coverMediaId: media.coverMediaId ?? null,
                 playlistImage: null,
                 href: `/t/${media.refId}`
             });
@@ -90,7 +96,8 @@ export async function getRecentlyPlayed(userId: string): Promise<RecentlyPlayedE
                 SELECT
                     MIN(media.album) AS title,
                     MIN(media.artistName) AS subtitle,
-                    MIN(media.coverArt) AS coverArt
+                    MIN(media.coverArt) AS coverArt,
+                    MIN(CASE WHEN media.hasCustomCover = 1 THEN media.id END) AS coverMediaId
                 FROM library_entries
                 JOIN media ON media.id = library_entries.mediaId
                 WHERE library_entries.userId = ? AND media.albumId = ?
@@ -105,6 +112,7 @@ export async function getRecentlyPlayed(userId: string): Promise<RecentlyPlayedE
                 title: album.title,
                 subtitle: album.subtitle,
                 coverArt: album.coverArt,
+                coverMediaId: album.coverMediaId ?? null,
                 playlistImage: null,
                 href: `/a/${row.refId}`
             });
@@ -119,6 +127,7 @@ export async function getRecentlyPlayed(userId: string): Promise<RecentlyPlayedE
                 title: playlist.title,
                 subtitle: null,
                 coverArt: null,
+                coverMediaId: null,
                 playlistImage: playlist.image,
                 href: `/l/playlist/${row.refId}`
             });

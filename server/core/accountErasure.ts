@@ -43,6 +43,7 @@ import { dropUnitySession } from "../utils/unityRegistry";
 import { deleteApnDataForUser } from "../utils/apn";
 import { deleteWebhooksForUser } from "../utils/webhook";
 import { deleteReleaseSubscriptionsForUser } from "./releaseSubscriptions";
+import { deleteLastfmAccount } from "./lastfmAccounts";
 import { deleteImportsForUser } from "./imports";
 import { deletePinsForUser } from "./pins";
 
@@ -89,6 +90,8 @@ export async function eraseAccount(userId: string): Promise<ErasureReport> {
     await deletePlaybackSettings(userId);
     await deleteUnitySettings(userId);
     const releaseSubscriptions = await deleteReleaseSubscriptionsForUser(userId);
+    // the Last.fm session key (a credential for the user's Last.fm account) goes with the account
+    await deleteLastfmAccount(userId);
     const pins = await deletePinsForUser(userId);
     // playlist imports name the tracks someone had in another service's playlists (a running one stops: its
     // worker finds no item left)

@@ -9,7 +9,7 @@
 import { randomUUID } from "node:crypto";
 import { getRequestsDb, sqlInt, withTransaction } from "./db";
 import { createMediaRequest } from "./requestCreate";
-import { resolveDescribedTrack, usableIsrc } from "./trackResolve";
+import { resolveDescribedAlbum, resolveDescribedTrack, usableBarcode, usableIsrc } from "./trackResolve";
 import { MusicBrainzError, withMusicBrainzContext } from "../utils/musicbrainzRepository";
 
 export const MAX_IMPORT_TRACKS = 1000;
@@ -33,8 +33,20 @@ export interface ImportTrackInput {
     duration?: number | null
 }
 
+/** an album to request whole (a Discogs collection): resolved to a release-group, requested as an album */
+export interface ImportAlbumInput {
+    title: string,
+    artist: string,
+    barcode?: string | null
+}
+
+export type ImportItemKind = "track" | "album";
+
 export interface ImportItem {
     position: number,
+    /** a track (requested as a track) or an album (`title` is the album's, requested whole) */
+    kind: ImportItemKind,
+    barcode: string | null,
     isrc: string | null,
     title: string,
     artist: string,
@@ -43,8 +55,8 @@ export interface ImportItem {
     status: ImportItemStatus,
     musicbrainzId: string | null,
     requestId: string | null,
-    // how the recording was found: by ISRC or by searching title + artist
-    via: "isrc" | "search" | null,
+    // how the recording / release-group was found: by ISRC, by barcode, or by searching title + artist
+    via: "isrc" | "barcode" | "search" | null,
     message: string | null
 }
 
@@ -74,6 +86,8 @@ interface ImportRow {
 
 interface ItemRow {
     position: number | string,
+    kind: ImportItemKind | null,
+    barcode: string | null,
     isrc: string | null,
     title: string,
     artist: string,
@@ -83,7 +97,7 @@ interface ItemRow {
     attempts: number | string,
     musicbrainzId: string | null,
     requestId: string | null,
-    via: "isrc" | "search" | null,
+    via: "isrc" | "barcode" | "search" | null,
     message: string | null
 }
 
@@ -97,6 +111,8 @@ function emptyCounts(): Record<ImportItemStatus, number> {
 function rowToItem(row: ItemRow): ImportItem {
     return {
         position: Number(row.position),
+        kind: row.kind === "album" ? "album" : "track",
+        barcode: row.barcode ?? null,
         isrc: row.isrc,
         title: row.title,
         artist: row.artist,
@@ -169,24 +185,29 @@ export async function listImports(userId: string, limit: number, offset: number)
 
 // ---------------------------------------------------------------- creating
 
-export async function createImport(userId: string, input: { source: string | null, name: string | null, tracks: ImportTrackInput[] }): Promise<ImportJob> {
+export async function createImport(userId: string, input: { source: string | null, name: string | null, tracks?: ImportTrackInput[], albums?: ImportAlbumInput[] }): Promise<ImportJob> {
     const id = randomUUID();
     const createdAt = now();
+    // one list: the tracks first, then the albums
+    const entries: Array<{ kind: ImportItemKind, isrc: string | null, barcode: string | null, title: string, artist: string, album: string | null, duration: number | null }> = [
+        ...(input.tracks ?? []).map((track) => ({ kind: "track" as const, isrc: usableIsrc(track.isrc), barcode: null, title: track.title, artist: track.artist, album: track.album ?? null, duration: track.duration ?? null })),
+        ...(input.albums ?? []).map((album) => ({ kind: "album" as const, isrc: null, barcode: usableBarcode(album.barcode), title: album.title, artist: album.artist, album: album.title, duration: null }))
+    ];
 
     await withTransaction(async (conn) => {
         await conn.execute(
             `INSERT INTO imports (id, userId, source, name, status, total, processed, createdAt, updatedAt) VALUES (?, ?, ?, ?, 'running', ?, 0, ?, ?)`,
-            [id, userId, input.source, input.name, input.tracks.length, createdAt, createdAt]
+            [id, userId, input.source, input.name, entries.length, createdAt, createdAt]
         );
         // in chunks: one multi-row INSERT per 200 items keeps a 1000-track import to a handful of round trips
-        for (let start = 0; start < input.tracks.length; start += 200) {
-            const chunk = input.tracks.slice(start, start + 200);
+        for (let start = 0; start < entries.length; start += 200) {
+            const chunk = entries.slice(start, start + 200);
             const values: Array<string | number | null> = [];
-            for (const [offset, track] of chunk.entries()) {
-                values.push(id, start + offset, usableIsrc(track.isrc), track.title, track.artist, track.album ?? null, track.duration ?? null);
+            for (const [offset, entry] of chunk.entries()) {
+                values.push(id, start + offset, entry.kind, entry.isrc, entry.barcode, entry.title, entry.artist, entry.album, entry.duration);
             }
             await conn.execute(
-                `INSERT INTO import_items (importId, position, isrc, title, artist, album, duration, status) VALUES ${chunk.map(() => "(?, ?, ?, ?, ?, ?, ?, 'pending')").join(", ")}`,
+                `INSERT INTO import_items (importId, position, kind, isrc, barcode, title, artist, album, duration, status) VALUES ${chunk.map(() => "(?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')").join(", ")}`,
                 values
             );
         }
@@ -194,8 +215,8 @@ export async function createImport(userId: string, input: { source: string | nul
 
     startImportWorker(id);
     const counts = emptyCounts();
-    counts.pending = input.tracks.length;
-    return { id, source: input.source, name: input.name, status: "running", total: input.tracks.length, processed: 0, counts, createdAt, updatedAt: createdAt };
+    counts.pending = entries.length;
+    return { id, source: input.source, name: input.name, status: "running", total: entries.length, processed: 0, counts, createdAt, updatedAt: createdAt };
 }
 
 // ---------------------------------------------------------------- the worker
@@ -263,24 +284,31 @@ async function upstreamFailure(importId: string, item: ItemRow, message: string)
 
 async function processItem(importId: string, userId: string, item: ItemRow): Promise<void> {
     const position = Number(item.position);
+    const isAlbum = item.kind === "album";
 
-    let resolved;
+    let resolved: { id: string, via: "isrc" | "barcode" | "search" } | null;
     try {
-        resolved = await resolveDescribedTrack({
-            isrc: item.isrc,
-            title: item.title,
-            artist: item.artist,
-            duration: item.duration === null ? undefined : Number(item.duration)
-        });
+        if (isAlbum) {
+            const album = await resolveDescribedAlbum({ title: item.title, artist: item.artist, barcode: item.barcode });
+            resolved = album ? { id: album.releaseGroupId, via: album.via } : null;
+        } else {
+            const track = await resolveDescribedTrack({
+                isrc: item.isrc,
+                title: item.title,
+                artist: item.artist,
+                duration: item.duration === null ? undefined : Number(item.duration)
+            });
+            resolved = track ? { id: track.recordingId, via: track.via } : null;
+        }
     } catch (error) {
         if (error instanceof MusicBrainzError) return upstreamFailure(importId, item, "MusicBrainz is unavailable");
         console.error(`[imports] resolving "${item.title}" failed:`, error);
-        return finishItem(importId, position, { status: "error", message: "Could not look this track up" });
+        return finishItem(importId, position, { status: "error", message: isAlbum ? "Could not look this album up" : "Could not look this track up" });
     }
-    if (!resolved) return finishItem(importId, position, { status: "not-found", message: "No matching recording on MusicBrainz" });
+    if (!resolved) return finishItem(importId, position, { status: "not-found", message: isAlbum ? "No matching album on MusicBrainz" : "No matching recording on MusicBrainz" });
 
-    const result = await createMediaRequest(userId, resolved.recordingId, "track");
-    const found = { musicbrainzId: resolved.recordingId, via: resolved.via };
+    const result = await createMediaRequest(userId, resolved.id, isAlbum ? "album" : "track");
+    const found = { musicbrainzId: resolved.id, via: resolved.via };
     if (result.ok) return finishItem(importId, position, { status: "requested", requestId: result.request.id, ...found });
 
     switch (result.reason) {

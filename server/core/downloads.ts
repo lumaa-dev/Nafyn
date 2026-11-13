@@ -63,8 +63,9 @@ import {
 import { buildIdentity, type RecordingIdentity } from "../utils/mediaIdentity";
 import { emitDownloadProgress, clearDownloadEmitter } from "../utils/downloadEvents";
 import { isReleased } from "../utils/releaseDate";
-import { notifyRequestFinished, notifyRequestStarted } from "./notifications";
+import { notifyRequestCancelled, notifyRequestFinished, notifyRequestStarted } from "./notifications";
 import { acquireDownloadSlot } from "./downloadQueue";
+import { isRequestCancelled, registerCancellable, throwIfCancelled, unregisterCancellable } from "../utils/requestCancel";
 import { NafynRequest } from "../entity/NafynRequest";
 import { ensureDir } from "../utils/ensureDir";
 
@@ -479,6 +480,7 @@ async function downloadTrack(
     trackIndex: number,
     trackCount: number,
     attempt: TrackAttempt,
+    signal: AbortSignal | undefined,
     primaryResults?: SlskSearchResult[],
     poolResults?: SlskSearchResult[]
 ): Promise<TrackOutcome> {
@@ -532,6 +534,7 @@ async function downloadTrack(
         // results this track's earlier attempt found but didn't get to come first; more queries only if they run dry
         candidates = pickCandidates(attempt.searched, target, attempt);
         while (candidates.length === 0 && attempt.queriesRun < queries.length) {
+            throwIfCancelled(signal);
             await searchMoreForTrack(queries, target, attempt);
             candidates = pickCandidates(attempt.searched, target, attempt);
         }
@@ -545,6 +548,7 @@ async function downloadTrack(
     console.log(`[downloads] Matching ${candidates.length} candidates for "${target.title}" (MusicBrainz ${target.duration || "?"}s), best first: ${candidates.map((c) => `${c.user} ${c.length ?? "?"}s`).join(", ")}`);
 
     for (const candidate of candidates) {
+        throwIfCancelled(signal);
         if (attempt.deadPeers.has(candidate.user)) continue;
         attempt.tried.add(candidateKey(candidate));
         const extension = sanitizeCandidate(candidate)!.extension;
@@ -566,12 +570,13 @@ async function downloadTrack(
                         etaSeconds: dl.etaSeconds,
                         message: "Downloading"
                     });
-                });
+                }, signal);
             } catch (error) {
                 // the transfer itself failed (stalled, refused, broke off): that peer's other files would too
-                attempt.deadPeers.add(candidate.user);
+                if (!isRequestCancelled(error)) attempt.deadPeers.add(candidate.user);
                 throw error;
             }
+            throwIfCancelled(signal);
 
             // step 5: verify fingerprint
             await updateRequestStatus(requestId, "processing");
@@ -747,6 +752,8 @@ async function downloadTrack(
                 // unowned "duplicate media row" bug)
                 await deleteOrphanMediaRow(insertedMediaId).catch(() => {});
             }
+            // cancelled: no next candidate, the request stops here
+            if (isRequestCancelled(error)) throw error;
         }
     }
 
@@ -762,23 +769,48 @@ export async function processDownloadRequestId(requestId: UUID | string): Promis
 
 // entry point: runs the full pipeline for a request and lands it on "completed" or "failed"
 export async function processDownloadRequest(request: NafynRequest): Promise<void> {
-    if (!request || request.status === "completed" || request.status === "failed" || request.status === "denied") return;
+    if (!request || request.status === "completed" || request.status === "failed" || request.status === "denied" || request.status === "cancelled") return;
 
-    // instance-wide cap on requests in the pipeline; past it the request waits here, still "searching"
-    const release = await acquireDownloadSlot(request.id, (position) => {
-        emitDownloadProgress({ requestId: request.id, stage: "searching", message: `Queued (position ${position})` });
-    });
+    // POST /api/v1/request/{id}/cancel aborts this while the request waits for a slot or runs
+    const signal = registerCancellable(request.id);
     try {
-        // background work: its MusicBrainz lookups (targets, fingerprint aliases) queue behind anyone browsing, and
-        // take turns with other users' downloads
-        const requester = typeof request.requestedBy === "string" ? request.requestedBy : request.requestedBy?.id;
-        await withMusicBrainzContext({ lane: "bulk", key: requester ?? "system" }, () => runDownloadRequest(request));
+        // instance-wide cap on requests in the pipeline; past it the request waits here, still "searching"
+        let release: () => void;
+        try {
+            release = await acquireDownloadSlot(request.id, (position) => {
+                emitDownloadProgress({ requestId: request.id, stage: "searching", message: `Queued (position ${position})` });
+            }, signal);
+        } catch (error) {
+            if (!isRequestCancelled(error)) throw error;
+            // cancelled before it ever ran: nothing to take back
+            await markCancelled(request.id);
+            return;
+        }
+        try {
+            // cancelled between being accepted and reaching here (the cancel route found no runner yet and marked
+            // it itself): it must not start after all
+            if ((await getRequestById(request.id))?.status === "cancelled") return;
+            // background work: its MusicBrainz lookups (targets, fingerprint aliases) queue behind anyone browsing, and
+            // take turns with other users' downloads
+            const requester = typeof request.requestedBy === "string" ? request.requestedBy : request.requestedBy?.id;
+            await withMusicBrainzContext({ lane: "bulk", key: requester ?? "system" }, () => runDownloadRequest(request, signal));
+        } finally {
+            release();
+        }
     } finally {
-        release();
+        unregisterCancellable(request.id);
     }
 }
 
-async function runDownloadRequest(request: NafynRequest): Promise<void> {
+// the end of a cancelled request: status, live progress and the Live Activity agree on it (no alert - the person
+// who cancelled it knows)
+async function markCancelled(requestId: string): Promise<void> {
+    await updateRequestStatus(requestId, "cancelled");
+    emitDownloadProgress({ requestId, stage: "cancelled", message: "Cancelled" });
+    notifyRequestCancelled(requestId);
+}
+
+async function runDownloadRequest(request: NafynRequest, signal: AbortSignal): Promise<void> {
 
     // set once the outcome is stored: anything that throws after that point (events, notifications) must not
     // reach the catch below and overwrite a "completed" request with "failed"
@@ -808,6 +840,7 @@ async function runDownloadRequest(request: NafynRequest): Promise<void> {
 
         const client = getMusicBrainzRepository();
         const targets = await resolveTargets(client, request.musicbrainzId, request.type);
+        throwIfCancelled(signal);
 
         if (targets.length === 0) {
             await finish("failed", "Nothing found on MusicBrainz for this ID");
@@ -850,6 +883,7 @@ async function runDownloadRequest(request: NafynRequest): Promise<void> {
         // results stay around as a zero-cost fallback pool before we ever resort to per-track searching
         let primaryResults: SlskSearchResult[] | undefined;
         let poolResults: SlskSearchResult[] | undefined;
+        throwIfCancelled(signal);
         if (request.type === "album" && targets[0].album) {
             emitDownloadProgress({ requestId: request.id, stage: "searching", message: "Searching Soulseek for album" });
             const rawResults = await searchWithFallback(buildSearchQueries({
@@ -877,9 +911,10 @@ async function runDownloadRequest(request: NafynRequest): Promise<void> {
         // fails cancels the request - nothing after it is downloaded, and what this request already added goes
         // back out (rollBackAlbum), so a request never leaves half an album behind
         for (const [i, target] of targets.entries()) {
+            throwIfCancelled(signal);
             const attempt = newTrackAttempt();
-            let outcome = await downloadTrack(request.id, requestedById, target, i + 1, targets.length, attempt, primaryResults, poolResults);
-            if (!outcome.ok) outcome = await downloadTrack(request.id, requestedById, target, i + 1, targets.length, attempt);
+            let outcome = await downloadTrack(request.id, requestedById, target, i + 1, targets.length, attempt, signal, primaryResults, poolResults);
+            if (!outcome.ok) outcome = await downloadTrack(request.id, requestedById, target, i + 1, targets.length, attempt, signal);
             if (outcome.ok) {
                 if (outcome.addedMediaId) addedMediaIds.push(outcome.addedMediaId);
                 continue;
@@ -894,6 +929,8 @@ async function runDownloadRequest(request: NafynRequest): Promise<void> {
             }
             return;
         }
+
+        throwIfCancelled(signal);
 
         // the request is only complete when the requester really owns every track of it (by the same
         // identity match that let a track be skipped as "already in library")
@@ -912,7 +949,13 @@ async function runDownloadRequest(request: NafynRequest): Promise<void> {
         }
     } catch (err) {
         if (finished) console.error(`[downloads] Error after request ${request.id} was already finished:`, err);
-        else {
+        else if (isRequestCancelled(err)) {
+            // cancelled by the requester or a manager: everything this request added goes back out, track or album
+            console.log(`[downloads] Request ${request.id} cancelled`);
+            if (requesterId) await rollBackAlbum(request.id, requesterId, addedMediaIds);
+            finished = true;
+            await markCancelled(request.id);
+        } else {
             if (request.type === "album" && requesterId) await rollBackAlbum(request.id, requesterId, addedMediaIds);
             await finish("failed", err instanceof Error ? err.message : "Unknown error");
         }

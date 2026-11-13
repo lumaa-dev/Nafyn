@@ -1,7 +1,7 @@
 // pub/sub for download progress, consumed by the `ws/downloads` route so clients can watch a request live
 import { EventEmitter } from "node:events";
 
-export type DownloadStage = "searching" | "downloading" | "processing" | "completed" | "failed";
+export type DownloadStage = "searching" | "downloading" | "processing" | "completed" | "failed" | "cancelled";
 
 export interface DownloadProgressEvent {
     requestId: string,
