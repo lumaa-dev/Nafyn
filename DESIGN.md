@@ -60,6 +60,48 @@ When multiple track rows are being selected, rows do not show a check box. A sel
 > *See "Context Menus" for information about utilizing context menus in Nafyn*.
 > *See "Toolbars" for more information about toolbar designs*
 
+## Search
+
+Search shows its results as one single list, whatever their kind. Each result is a row, and a row is either a track row, an album row or an artist row (an artist row shows a round picture, a track or album row a square cover). The kind of the row is always written out in its secondary line ("Track · Artist · Album", "Album · Artist", "Artist"), it is never told by the shape of the cover alone.
+
+The list is ordered by likelihood: the most up-top result is the most likely answer to the query, the most down-bottom result is the least likely one. All kinds are ranked together, on the same scale, so a track can be above an album and an artist can be between two tracks. When a query is equally likely an artist, an album and a track, the artist comes first, then the album, then the track. There are no categories, headers or separate sections between results.
+
+When the most likely result is an album, that album is followed by its tracks, in the album's order, before any other result.
+
+The search filters (albums only, tracks only, artists only) are kept: with a filter on, the list only holds that kind of rows, in the same order.
+
+A search result never is a "Deluxe" or "Remaster" edition, a "Live" or "Remix" work or version, unless the query itself says so. A track is the exception for "Deluxe": a track that is on a Deluxe album is found, and shown on the standard album when it is on both.
+
+## Artist
+
+The artist page/view starts with the artist's picture and name, the number of listeners and the biography, followed by the artist's `release`s sorted by kind, each kind being a *category grid* (see "Category grids"). The categories are, in this order, and only the ones that hold something are shown:
+
+1. Albums
+2. EPs
+3. Singles
+4. Compilations
+5. Live
+6. Remixes
+7. Soundtracks
+8. Other
+
+A live album is in "Live", never in "Albums", whatever its primary type; the same goes for compilations, remixes and soundtracks.
+
+In a category, `release`s are ordered by release-date, the newest first (the ones without a date last). A standard edition always comes before its edition of the same day.
+
+The "Deluxe" or "Remaster" edition of an album or EP that has a standard edition is always shown next to it, as a `release` of its own, even when MusicBrainz holds it inside the standard edition's release-group (like "Pinkerton" by Weezer). Opening it opens the album on that very release. "Live" editions are never added this way, they are in "Live" already.
+
+## Category grids
+
+A category grid is a titled group of `release`s (an artist's "Albums", the releases of an album...), shown with [`MediaBox`](https://github.com/lumaa-dev/Nafyn/blob/main/app/components/MediaBox.vue) on the web, and `MusicCard` on iOS:
+
+- On the web, on widescreens, the grid has 2 rows, and scrolls horizontally
+- On iOS, **and** on small screens on the web, the grid has 1 row, and scrolls horizontally
+
+The grid scrolls inside of its own frame, the page/view itself never scrolls horizontally. A `release` in a grid shows its cover art, its title, and a description under the title (the artist, or the disambiguation of a release when there is one).
+
+`release`s in a grid are ordered by release-date. The grid's frame reaches the edge of the content, so covers scroll under the edge, but the first cover never touches the edge of the screen (see "Views and pages").
+
 ## Track/Album Detail view
 
 Track or album detail views (and also Library track/album detail views) show what the name implies: Details of the chosen track or album the user has clicked or tapped on.
@@ -68,11 +110,17 @@ Detail views are colored with the cover art's primary color, therefore the label
 
 Detail views always conform to the WCAG AAA contrast (see "Contrast"): every label, symbol and button is checked against the cover art's primary color behind it, not only against the default background color.
 
+At the bottom of an album detail page/view, after the track list and its footer (date, label, link to MusicBrainz), users can change which `release` of the album's `release-group` they are viewing (the standard edition, a Deluxe edition, another country, a reissue...). The releases are shown in a *category grid* (see "Category grids"), titled "Releases"; the description of each is its disambiguation when it has one, else its year and country. The release being viewed is outlined (not only colored). Choosing another release shows its track list, label and cover art in place, without leaving the page/view. When the viewed release is not the standard one, the album as a whole cannot be requested (a request downloads the standard edition), but each of its tracks still can.
+
 Album detail views show the track number on each track, unless it doesn't have one. Track rows in an album detail view never show the cover art: the cover art is already the album's, and showing it next to the track number clutters the row.
 
 On iOS, detail views always have a [`ToolbarOverflowMenu`](https://developer.apple.com/documentation/swiftui/toolbaroverflowmenu) containing the same actions that were linked to the track/album row (or even [`MusicCard`](https://github.com/lumaa-dev/NafynApp/blob/main/Nafyn/Components/MusicCard.swift)) unless it creates recursion (like a navigation recursion).
 
 > *See "Toolbars" for more information about toolbar designs*
+
+## Cover art editing
+
+Editing the cover art of a track (from "Edit metadata") offers the cover arts of every release its MusicBrainz `recording` is on (the single, the album, a compilation...). Editing several tracks at once, or an album, offers the cover arts of the album's `release-group` and of its releases. Only cover arts that exist are offered: a `release`, `release-group` or `recording` without a cover art is never listed, and the list says so when none is left. The user can always upload their own cover art instead.
 
 ## Now Playing
 
