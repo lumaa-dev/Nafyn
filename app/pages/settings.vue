@@ -192,7 +192,7 @@
             <div class="pie" :style="{ background: pieGradient }" @mousemove="onPieHover" @mouseleave="hoveredUserIndex = null" />
             <ul class="legend">
               <li
-                v-for="(u, i) in storage.perUser.sort((a, b) => a.bytes < b.bytes)"
+                v-for="(u, i) in storage.perUser"
                 :key="u.userId"
                 :class="{ active: hoveredUserIndex === i }"
                 @mouseenter="hoveredUserIndex = i"
@@ -206,7 +206,7 @@
         </section>
 
         <!-- same users, same colours as the storage pie above: a user keeps their colour from one chart to the next -->
-        <section class="subsection" v-if="storage && storage.perUser.some((u) => u.tracks > 0).sort((a, b) => a.tracks < b.tracks)">
+        <section class="subsection" v-if="storage && storage.perUser.some((u) => u.tracks > 0)">
           <h2>{{ $t('settings.storage.tracksPerUser.title') }}</h2>
           <div class="pie-wrap">
             <div class="pie" role="img" :aria-label="$t('settings.storage.tracksPerUser.title')" :style="{ background: tracksPieGradient }" @mousemove="onTracksPieHover" @mouseleave="hoveredTracksIndex = null" />
@@ -789,7 +789,11 @@ const storage = ref<StorageResponse | null>(null);
 
 async function loadStoragePanel() {
   try {
-    storage.value = await $fetch<StorageResponse>("/api/v1/settings/storage", { headers: { Authorization: token } });
+    const loaded = await $fetch<StorageResponse>("/api/v1/settings/storage", { headers: { Authorization: token } });
+    // highest first, once, here: both pies and both legends walk `perUser` in this order, so a user keeps their
+    // colour from one chart to the next (sorting inside the template would also mutate the data while rendering)
+    loaded.perUser = [...loaded.perUser].sort((a, b) => b.bytes - a.bytes || a.username.localeCompare(b.username));
+    storage.value = loaded;
   } catch (e) {
     loadFailed($t('settings.storage.title'), e);
   }

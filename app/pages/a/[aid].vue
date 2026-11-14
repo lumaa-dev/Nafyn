@@ -36,6 +36,8 @@
         <ReleaseCountdown v-if="!track.released && track.releaseDate && album.released" compact :date="track.releaseDate" />
         <!-- not in the library: its 30 s iTunes preview -->
         <button v-if="track.released && !track.inLibrary" type="button" filled="hollow" class="icon-only" :disabled="failedIds.has(track.id)" :aria-pressed="playingId === track.id" :title="previewLabel(track.id)" :aria-label="previewLabel(track.id)" @click.stop="togglePreview(track.id)"><img :src="playingId === track.id ? pauseIcon : playIcon" alt="" draggable="false"></button>
+        <!-- DESIGN.md "Error messages": in the row, where the preview should have started -->
+        <span v-if="failedIds.has(track.id)" class="preview-none">{{ $t('preview.none') }}</span>
         <button v-if="track.released && !track.inLibrary" filled="hollow" class="icon-only" :title="$t('album.request')" :aria-label="$t('album.request')" :disabled="track.requested || !canRequestTracks" @click.stop="requestTrack(track)"><img src="../../assets/icons/download.svg" alt="" draggable="false"></button>
         <button type="button" class="ellipsis" v-if="track.mediaId" :aria-label="$t('menu.more')" @click.stop="onTrackMenu($event, track)">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
@@ -407,6 +409,11 @@ useCoverTint(() => album.value);
   font-variant-numeric: tabular-nums;
   font-family: var(--font-discy);
   font-size: 0.7em;
+}
+
+.album .tracks .preview-none {
+  font-size: 0.7em;
+  color: color-mix(in srgb, currentColor 80%, transparent);
 }
 
 .album .tracks li.unreleased .title {

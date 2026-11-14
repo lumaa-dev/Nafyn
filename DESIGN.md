@@ -203,11 +203,9 @@ The Song queue must never show the currently playing song in the queue, or any p
 
 Repeating a track (using "Repeat One") adds the track only **once** in the history, without duplicating it after each replay.
 
-## "Your Music Year"
+## "Your Music Year"
 
 "Your Music Year" is the name for the statistics feature (inspired by Spotify Wrapped, Apple Music Replay...), where users can get a weekly, monthly, yearly recap of what they've listened to on Nafyn.
-
-
 
 # Interface
 

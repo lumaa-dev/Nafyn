@@ -1,5 +1,5 @@
 <template>
-  <article class="privacy">
+  <article class="privacy-notice">
     <LoadError :error="error" />
     <!-- deliberately a div: Header.vue's style block is global, so a semantic header element here would
          pick up its fixed 15vh bar styling and sit on top of the real Header (see CLAUDE.md) -->
@@ -75,68 +75,68 @@ useHead(() => ({ title: `Nafyn - ${doc.value?.title ?? "Privacy"}` }));
    `margin` here - which `margin: 0 auto` did - puts the title straight under the Header and leaves the top
    of the notice hidden behind its black gradient. So: no margin override, only a max-width and the extra
    top padding that lands the first heading clear of the gradient's bottom edge rather than right at it. */
-.privacy {
+.privacy-notice {
   max-width: 720px;
   padding: 40px 0 80px 0;
   line-height: 1.55;
 }
 
-.privacy .intro {
+.privacy-notice .intro {
   margin-bottom: 32px;
 }
 
-.privacy .updated {
+.privacy-notice .updated {
   color: var(--tint-fg, #ffffffae);
   font-family: "Instrument-Italic";
   font-size: 0.85em;
 }
 
-.privacy .controller {
+.privacy-notice .controller {
   margin-bottom: 36px;
 }
 
-.privacy h2 {
+.privacy-notice h2 {
   font-size: 1.1em;
   margin-bottom: 8px;
 }
 
 /* styles for the rendered markdown. Kept deliberately plain: the document controls its own structure, so
    this only has to make headings, lists and emphasis legible at the widths Nafyn actually renders at */
-.privacy .prose h2 {
+.privacy-notice .prose h2 {
   margin-top: 36px;
 }
 
-.privacy .prose h3 {
+.privacy-notice .prose h3 {
   font-size: 0.98em;
   margin-top: 22px;
   margin-bottom: 4px;
 }
 
-.privacy .prose p,
-.privacy .prose ul,
-.privacy .prose ol {
+.privacy-notice .prose p,
+.privacy-notice .prose ul,
+.privacy-notice .prose ol {
   font-size: 0.92em;
 }
 
-.privacy .prose ul,
-.privacy .prose ol {
+.privacy-notice .prose ul,
+.privacy-notice .prose ol {
   padding-left: 18px;
 }
 
-.privacy .prose li {
+.privacy-notice .prose li {
   margin-bottom: 4px;
 }
 
 /* retention lines are written as *emphasis* paragraphs in the markdown - a whole paragraph in <em> is the
    document saying "this is the aside", so it gets the muted treatment rather than italics mid-sentence */
-.privacy .prose p > em:only-child {
+.privacy-notice .prose p > em:only-child {
   color: var(--tint-fg, #ffffffae);
   font-style: normal;
   font-size: 0.95em;
 }
 
-.privacy .prose-missing,
-.privacy .back {
+.privacy-notice .prose-missing,
+.privacy-notice .back {
   margin-top: 48px;
   font-size: 0.9em;
 }

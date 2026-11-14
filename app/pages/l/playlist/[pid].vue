@@ -379,7 +379,7 @@ function onPlaylistMenu(e: MouseEvent) {
   if (!detail.value) return;
   void openMenu(e, {
     kind: "playlist",
-    playlist: { id: pid, title: detail.value.playlist.title },
+    playlist: { id: pid, title: detail.value.playlist.title, privacy: detail.value.playlist.privacy },
     isOwner: viewer.value.isOwner,
     isMember: viewer.value.isMember
   }, { hideDetails: true, onChanged: (change) => { if (change.type === "deleted" || change.type === "left") void navigateTo("/l/playlists"); } });

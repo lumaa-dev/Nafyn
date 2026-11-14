@@ -98,7 +98,7 @@ const { selecting, selectedIds, count, isSelected, toggle, selectAll, clear, sta
 
 const subjectOf = (playlist: PlaylistRow) => ({
   kind: "playlist" as const,
-  playlist: { id: playlist.id, title: playlist.title },
+  playlist: { id: playlist.id, title: playlist.title, privacy: playlist.privacy },
   isOwner: playlist.ownerId === me.value?.id,
   isMember: playlist.ownerId !== me.value?.id
 });

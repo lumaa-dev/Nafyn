@@ -22,7 +22,13 @@ export interface TrackSubject {
   canEdit?: boolean
 }
 export interface AlbumSubject { kind: "album", album: AlbumRow }
-export interface PlaylistSubject { kind: "playlist", playlist: { id: string, title: string }, isOwner?: boolean, isMember?: boolean }
+export interface PlaylistSubject {
+  kind: "playlist",
+  /** `privacy` when the page knows it: "Share" is offered (enabled for a public playlist only) only then */
+  playlist: { id: string, title: string, privacy?: "public" | "private" },
+  isOwner?: boolean,
+  isMember?: boolean
+}
 export type MenuSubject = TrackSubject | AlbumSubject | PlaylistSubject;
 
 export interface MenuChange {
@@ -230,24 +236,33 @@ export function useMediaMenu() {
       .flatMap((group, i) => i === 0 ? group : [{ label: "", separator: true }, ...group]);
   }
 
-  // "Open on YouTube" and "Share" > one search link per service (DESIGN.md "Sharing": on the web, sharing copies the
-  // link). A search for "artist title" on the other service - one item at a time, never in a bulk menu.
-  function externalItems(title: string, artist: string | null): ContextMenuItem[] {
+  // "Open on" > YouTube / YouTube Music / Spotify / Apple Music / Deezer: a search for "artist title" on that service,
+  // in a new tab (nothing else of theirs is known: no ids). Actions starting with the same word are nested (DESIGN.md
+  // "Context Menus"). It is not sharing: DESIGN.md "Sharing" on the web copies the item's own link, and only for what
+  // can be public (a library track or album is private, a playlist may be public) - see `shareItem()`.
+  function openOnItem(title: string, artist: string | null): ContextMenuItem[] {
     const query = externalQuery(title, artist);
     if (!query) return [];
-    return [
-      { label: t("menu.openOnYouTube"), action: () => { window.open(externalSearchUrl("youtube", query), "_blank", "noopener,noreferrer"); } },
-      {
-        label: t("menu.share"),
-        children: EXTERNAL_SERVICES.map((service) => ({
-          label: EXTERNAL_SERVICE_NAMES[service],
-          action: guarded(title, t("menu.shareError"), async () => {
-            await navigator.clipboard.writeText(externalSearchUrl(service, query));
-            sendToast({ title, content: t("menu.linkCopied", { service: EXTERNAL_SERVICE_NAMES[service] }), tint: "green", icon: null });
-          })
-        }))
-      }
-    ];
+    return [{
+      label: t("menu.openOn"),
+      children: EXTERNAL_SERVICES.map((service) => ({
+        label: EXTERNAL_SERVICE_NAMES[service],
+        action: () => { window.open(externalSearchUrl(service, query), "_blank", "noopener,noreferrer"); }
+      }))
+    }];
+  }
+
+  // DESIGN.md "Sharing": on the web, copies the link of the selected item; one item at a time; a private item cannot
+  // be shared (the action stays in the menu, disabled)
+  function shareItem(title: string, path: string, isPublic: boolean): ContextMenuItem {
+    return {
+      label: t("menu.share"),
+      disabled: !isPublic,
+      action: guarded(title, t("menu.shareError"), async () => {
+        await navigator.clipboard.writeText(`${location.origin}${path}`);
+        sendToast({ title, content: t("menu.linkCopied"), tint: "green", icon: null });
+      })
+    };
   }
 
   function trackItems(subject: TrackSubject, options: MenuOptions): ContextMenuItem[] {
@@ -271,7 +286,7 @@ export function useMediaMenu() {
         action: guarded(media.title, t("menu.pinError"), () => togglePin("track", media.id, options.onChanged))
       });
     }
-    view.push(...externalItems(media.title, media.artistName));
+    view.push(...openOnItem(media.title, media.artistName));
 
     const modify: ContextMenuItem[] = [];
     if (subject.canEdit ?? owned) {
@@ -339,7 +354,7 @@ export function useMediaMenu() {
         label: pins.isPinned("album", album.id) ? t("menu.unpin") : t("menu.pin"),
         action: guarded(album.title, t("menu.pinError"), () => togglePin("album", album.id, options.onChanged))
       },
-      ...externalItems(album.title, album.artistName)
+      ...openOnItem(album.title, album.artistName)
     );
 
     const modify: ContextMenuItem[] = [
@@ -381,6 +396,7 @@ export function useMediaMenu() {
       label: pins.isPinned("playlist", playlist.id) ? t("menu.unpin") : t("menu.pin"),
       action: guarded(playlist.title, t("menu.pinError"), () => togglePin("playlist", playlist.id, options.onChanged))
     });
+    if (playlist.privacy) view.push(shareItem(playlist.title, `/l/playlist/${playlist.id}`, playlist.privacy === "public"));
 
     const destructive: ContextMenuItem[] = [];
     if (subject.isOwner) {
