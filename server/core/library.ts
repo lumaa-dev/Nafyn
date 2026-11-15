@@ -200,6 +200,14 @@ export async function addMediaIdentifiers(mediaId: string, identity: Pick<Record
     }
 }
 
+/** Every ISRC recorded for a media row (sorted, so it is stable as part of a cache key). */
+export async function getMediaIsrcs(mediaId: string): Promise<string[]> {
+    const rows = await getLibrariesDb()
+        .prepare(`SELECT value FROM media_identifiers WHERE mediaId = ? AND kind = 'isrc' ORDER BY value`)
+        .all(mediaId) as { value: string }[];
+    return rows.map((row) => row.value);
+}
+
 // media rows that are this recording by a strong identifier: MBID first (the row's own or a recorded alias),
 // then ISRC. `userId` narrows it to rows in that user's library. Never matches by title - that is only ever
 // good enough for "you already have this", not for handing someone another user's file.

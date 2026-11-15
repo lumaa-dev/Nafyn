@@ -23,6 +23,19 @@
         <template v-else>{{ line.text }}</template>
       </li>
     </ol>
+    <!-- Unison's licence: credit Unison and whoever submitted the lyrics, both linked (the page is where a wrong
+         line gets voted on or fixed). Shown at the end of the lyrics, not pinned on screen. -->
+    <p v-if="credit && paragraphs && kind" class="credit">
+      <a :href="credit.url" target="_blank" rel="noopener noreferrer">{{ credit.text }}</a>
+      <template v-if="credit.submitter">
+        <span aria-hidden="true"> · </span>
+        <i18n-t keypath="player.lyricsSubmittedBy" tag="span">
+          <template #name>
+            <a :href="credit.submitter.url" target="_blank" rel="noopener noreferrer">{{ credit.submitter.name }}</a>
+          </template>
+        </i18n-t>
+      </template>
+    </p>
   </div>
 </template>
 
@@ -30,9 +43,16 @@
 import { isStatic, isBeatByBeat, type Provider, type LyricParagraphs, type LyricLine, type LyricSegment } from '~~/server/utils/lyrics/parser';
 import { useAuthToken } from '~/composables/useAuthToken';
 
+interface LyricsCredit {
+  text: string;
+  url: string;
+  submitter?: { name: string; url: string } | null;
+}
+
 interface LyricsResponse {
   provider: Provider;
   paragraphs: LyricParagraphs;
+  credit?: LyricsCredit;
 }
 
 interface FlatLine extends LyricLine {
@@ -46,6 +66,7 @@ const sansSerif = useLyricsSansSerif();
 const errorMessage = ref<string | null>(null);
 
 const paragraphs = ref<LyricParagraphs | null>(null);
+const credit = ref<LyricsCredit | null>(null);
 const loading = ref(false);
 const scrollContainer = ref<HTMLElement | null>(null);
 const autoScrollEnabled = ref(true);
@@ -183,6 +204,7 @@ async function loadLyrics(id: string | null) {
   observer?.disconnect();
   lineRefs = [];
   paragraphs.value = null;
+  credit.value = null;
   errorMessage.value = null;
   autoScrollEnabled.value = true;
 
@@ -197,9 +219,11 @@ async function loadLyrics(id: string | null) {
     const res = await $fetch<LyricsResponse>(`/api/v1/library/${id}/lyrics`, { headers: { Authorization: token }, timeout: 120_000 });
     if (seq !== requestSeq) return;
     paragraphs.value = res.paragraphs;
+    credit.value = res.credit ?? null;
   } catch (e) {
     if (seq !== requestSeq) return;
     paragraphs.value = null;
+    credit.value = null;
     // a 404 is the normal "no lyrics for this track"; anything else (rate limit, provider down, timeout) is a failure
     // worth saying - in the panel itself, since the screen change (the lyrics) is what didn't happen
     if ((e as { statusCode?: number })?.statusCode !== 404) errorMessage.value = apiErrorMessage(e);
@@ -253,6 +277,20 @@ onUnmounted(() => {
   color: var(--np-text, #ffffff);
   line-height: 1.6;
   padding: 20px 4px;
+}
+
+/* links are underlined italic Instrument Serif (DESIGN.md "Links"); the colour is --np-text so it keeps the
+   contrast the cover-driven surface picked */
+.lyrics-panel .credit {
+  margin: 0;
+  padding: 8px 4px 24px;
+  color: color-mix(in srgb, var(--np-text, #ffffff) 90%, transparent);
+}
+
+.lyrics-panel .credit a {
+  color: var(--np-text, #ffffff);
+  font-style: italic;
+  text-decoration: underline;
 }
 
 .lyrics-panel .lines {

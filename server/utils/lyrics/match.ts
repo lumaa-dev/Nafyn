@@ -10,6 +10,8 @@ export interface TrackLookup {
 	trackName: string;
 	artistName: string;
 	albumName?: string;
+	/** The recording's ISRC, when known (lets a provider name the exact recording instead of searching). */
+	isrc?: string;
 	/** Seconds. */
 	duration?: number;
 }

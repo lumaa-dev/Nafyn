@@ -528,6 +528,7 @@
     "nothingPlaying": "Aucune lecture en cours.",
     "lyricsLoading": "Chargement des paroles...",
     "lyricsUnavailable": "Aucune parole disponible pour ce titre.",
+    "lyricsSubmittedBy": "proposé par {name}",
     "unity": {
       "playingOn": "Lecture sur {device}",
       "playHere": "Lire ici"

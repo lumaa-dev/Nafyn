@@ -54,6 +54,8 @@ export enum Provider {
 	/** Lyrics a Nafyn user wrote or pasted in themselves; they override every fetched provider. */
 	Manual = "manual",
 	BetterLyrics = "betterLyrics",
+	/** Better Lyrics' QQ provider (`/qq/getLyrics`, word-timed QRC). */
+	BetterLyricsPortato = "betterLyricsPortato",
 	Unison = "unison",
 	Cider = "cider",
 	Lrclib = "lrclib",
@@ -66,6 +68,8 @@ export function providerLocalized(provider: Provider): string {
 			return "Nafyn";
 		case Provider.BetterLyrics:
 			return "Better Lyrics";
+		case Provider.BetterLyricsPortato:
+			return "Better Lyrics Portato";
 		case Provider.Unison:
 			return "Unison";
 		case Provider.Cider:

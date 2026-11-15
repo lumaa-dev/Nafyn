@@ -1,8 +1,11 @@
 // ---------------------------------------------------------------------------
 // Better Lyrics client (https://docs.betterlyrics.org/)
 //
-// `GET /getLyrics?s=&a=&al=&d=` answers `{ ttml, score? }` (word-timed TTML); `GET /qq/getLyrics` the QQ
-// provider's `{ lyrics }` (QRC, word-timed too). They no longer hand out API keys: a song is only served once
+// Two providers of the Better Lyrics API, kept apart so the lyrics answer can say which one it came from:
+//   - Better Lyrics: `GET /getLyrics?s=&a=&al=&d=` answers `{ ttml, score? }` (syllable-timed TTML);
+//   - Better Lyrics Portato (the extension's name for the QQ provider): `GET /qq/getLyrics` answers
+//     `{ lyrics }` (QRC, word-timed).
+// They no longer hand out API keys: a song is only served once
 // someone has cached it through Unison or the Better Lyrics extension, an uncached one answers 401 - which is
 // simply "no lyrics here", not an error. All four parameters are sent because the cache key includes album and
 // duration.
@@ -66,18 +69,28 @@ async function fetchQrc(lookup: TrackLookup): Promise<LyricParagraphs | null> {
 	return lyricsFitDuration(paragraphs, lookup.duration) ? paragraphs : null;
 }
 
-/** Word-timed lyrics from Better Lyrics (TTML first, then the QQ provider's QRC), or `null`. */
-export async function fetchBetterLyricsParagraphs(lookup: TrackLookup): Promise<LyricParagraphs | null> {
+async function fetchWithLength(
+	name: string,
+	fetchOne: (lookup: TrackLookup) => Promise<LyricParagraphs | null>,
+	lookup: TrackLookup,
+): Promise<LyricParagraphs | null> {
 	// the cache key is song + artist + album + duration: without a length no entry can be told from a cover's
 	if (!lookup.duration || lookup.duration <= 0) return null;
 
-	for (const fetchOne of [fetchTtml, fetchQrc]) {
-		try {
-			const paragraphs = await fetchOne(lookup);
-			if (paragraphs) return paragraphs;
-		} catch (e) {
-			console.error("[BetterLyrics] fetch failed:", e);
-		}
+	try {
+		return await fetchOne(lookup);
+	} catch (e) {
+		console.error(`[${name}] fetch failed:`, e);
+		return null;
 	}
-	return null;
+}
+
+/** Syllable-timed lyrics from Better Lyrics (`/getLyrics`, TTML), or `null`. */
+export function fetchBetterLyricsParagraphs(lookup: TrackLookup): Promise<LyricParagraphs | null> {
+	return fetchWithLength("BetterLyrics", fetchTtml, lookup);
+}
+
+/** Word-timed lyrics from Better Lyrics Portato (`/qq/getLyrics`, QRC), or `null`. */
+export function fetchBetterLyricsPortatoParagraphs(lookup: TrackLookup): Promise<LyricParagraphs | null> {
+	return fetchWithLength("BetterLyricsPortato", fetchQrc, lookup);
 }
