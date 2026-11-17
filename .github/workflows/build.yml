@@ -1,5 +1,7 @@
 name: Build Nuxt.js
-on: [push]
+on:
+  push:
+    branches: [main]
 
 jobs:
   build-nuxtjs:
