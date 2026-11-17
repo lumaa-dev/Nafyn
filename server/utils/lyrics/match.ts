@@ -4,7 +4,7 @@
 // name must never get lyrics that belong to another recording, so every check here errs on refusing.
 // ---------------------------------------------------------------------------
 
-import type { LyricParagraphs } from "./parser";
+import { lyricsEndMs, type Lyric } from "./parse";
 
 export interface TrackLookup {
 	trackName: string;
@@ -70,14 +70,7 @@ export function sameTrackByName(
  * Timed lyrics cannot run past the end of the song they belong to: a final line that ends well after the track
  * does is another (longer) recording's. Static lyrics carry no timing and prove nothing, so they pass.
  */
-export function lyricsFitDuration(paragraphs: LyricParagraphs, durationSeconds: number | undefined): boolean {
+export function lyricsFitDuration(lyrics: readonly Lyric[], durationSeconds: number | undefined): boolean {
 	if (!durationSeconds || durationSeconds <= 0) return true;
-
-	let lastEnd = 0;
-	for (const paragraph of paragraphs) {
-		for (const line of paragraph.lines) {
-			lastEnd = Math.max(lastEnd, line.endTime, line.segments[line.segments.length - 1]?.endTime ?? 0);
-		}
-	}
-	return lastEnd <= durationSeconds + 5;
+	return lyricsEndMs(lyrics) <= (durationSeconds + 5) * 1000;
 }

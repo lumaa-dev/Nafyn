@@ -25,6 +25,10 @@
     "openapi": "bun scripts/generate-openapi.ts"
   },
   "dependencies": {
+    "@braccato/core": "1.21.5",
+    "@braccato/highlight": "0.3.2",
+    "@braccato/parsers": "0.4.3",
+    "@braccato/types": "1.1.0",
     "@nuxt/content": "3.15.0",
     "@nuxt/eslint": "1.16.0",
     "@nuxt/image": "2.0.0",

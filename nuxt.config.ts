@@ -5,6 +5,14 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/immersive.css'],
 
+  // the lyrics renderer is Braccato's <braccato-lyrics> custom element (app/components/panels/LyricsPanel.vue),
+  // registered in the browser by @braccato/core/element: Vue must leave the tag alone, not look for a component
+  vue: {
+    compilerOptions: {
+      isCustomElement: (tag) => tag === 'braccato-lyrics' || tag === 'better-lyrics'
+    }
+  },
+
   // no home page yet - land on the tracks library instead
   routeRules: {
     '/': { redirect: '/l/tracks' }

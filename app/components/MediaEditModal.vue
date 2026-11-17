@@ -61,7 +61,7 @@
           </select>
         </label>
         <label class="lyrics">{{ $t('edit.lyrics') }}
-          <textarea v-model="form.lyrics" rows="8" :placeholder="$t('edit.lyricsPlaceholder')" />
+          <LyricsField v-model="form.lyrics" :format="form.lyricsFormat" :placeholder="$t('edit.lyricsPlaceholder')" />
         </label>
       </template>
     </form>
@@ -381,8 +381,7 @@ async function save() {
 .media-edit input[type="text"],
 .media-edit input[type="number"],
 .media-edit input[type="date"],
-.media-edit select,
-.media-edit textarea {
+.media-edit select {
   background: #00000040;
   border: 1px solid #666666;
   border-radius: 8px;
@@ -392,10 +391,6 @@ async function save() {
   width: 100%;
 }
 
-.media-edit textarea {
-  resize: vertical;
-  min-height: 120px;
-}
 
 .media-edit .cover-field {
   display: flex;

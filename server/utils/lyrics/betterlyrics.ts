@@ -11,7 +11,8 @@
 // duration.
 // ---------------------------------------------------------------------------
 
-import { parseQRC, qrcHeader, TTMLParser, type LyricParagraphs } from "./parser";
+import { parseQrc, parseTtml, type ParsedLyrics } from "./parse";
+import { qrcHeader } from "./qrcHeader";
 import { artistsShare, lyricsFitDuration, titleKey, type TrackLookup } from "./match";
 
 const BETTER_LYRICS_BASE_URL = "https://api.betterlyrics.org";
@@ -19,6 +20,8 @@ const USER_AGENT = "Nafyn (https://github.com/lumaa-dev/Nafyn)";
 
 /** `score` (0-1) is only sent for a freshly fetched song; below this it is another song's lyrics. */
 const MIN_SCORE = 0.7;
+
+const durationMs = (lookup: TrackLookup) => lookup.duration ? lookup.duration * 1000 : undefined;
 
 async function betterLyricsJson(path: string, lookup: TrackLookup): Promise<Record<string, unknown> | null> {
 	const url = new URL(`${BETTER_LYRICS_BASE_URL}${path}`);
@@ -41,17 +44,17 @@ async function betterLyricsJson(path: string, lookup: TrackLookup): Promise<Reco
 	return json && typeof json === "object" ? json as Record<string, unknown> : null;
 }
 
-async function fetchTtml(lookup: TrackLookup): Promise<LyricParagraphs | null> {
+async function fetchTtml(lookup: TrackLookup): Promise<ParsedLyrics | null> {
 	const json = await betterLyricsJson("/getLyrics", lookup);
 	if (!json || typeof json.ttml !== "string" || json.ttml.length === 0) return null;
 	if (typeof json.score === "number" && json.score < MIN_SCORE) return null;
 
-	const paragraphs = new TTMLParser(json.ttml).parse();
-	if (!paragraphs || paragraphs.length === 0) return null;
-	return lyricsFitDuration(paragraphs, lookup.duration) ? paragraphs : null;
+	const parsed = parseTtml(json.ttml, durationMs(lookup));
+	if (!parsed) return null;
+	return lyricsFitDuration(parsed.lyrics, lookup.duration) ? parsed : null;
 }
 
-async function fetchQrc(lookup: TrackLookup): Promise<LyricParagraphs | null> {
+async function fetchQrc(lookup: TrackLookup): Promise<ParsedLyrics | null> {
 	const json = await betterLyricsJson("/qq/getLyrics", lookup);
 	if (!json || typeof json.lyrics !== "string" || json.lyrics.length === 0) return null;
 
@@ -60,20 +63,19 @@ async function fetchQrc(lookup: TrackLookup): Promise<LyricParagraphs | null> {
 	if (header.title && titleKey(header.title) !== titleKey(lookup.trackName)) return null;
 	if (header.artist && !artistsShare(header.artist, lookup.artistName)) return null;
 
-	const paragraphs = parseQRC(json.lyrics, {
+	const parsed = parseQrc(json.lyrics, durationMs(lookup), {
 		title: header.title ?? lookup.trackName,
 		artist: header.artist ?? lookup.artistName,
-		durationMs: lookup.duration ? lookup.duration * 1000 : undefined,
 	});
-	if (!paragraphs || paragraphs.length === 0) return null;
-	return lyricsFitDuration(paragraphs, lookup.duration) ? paragraphs : null;
+	if (!parsed) return null;
+	return lyricsFitDuration(parsed.lyrics, lookup.duration) ? parsed : null;
 }
 
 async function fetchWithLength(
 	name: string,
-	fetchOne: (lookup: TrackLookup) => Promise<LyricParagraphs | null>,
+	fetchOne: (lookup: TrackLookup) => Promise<ParsedLyrics | null>,
 	lookup: TrackLookup,
-): Promise<LyricParagraphs | null> {
+): Promise<ParsedLyrics | null> {
 	// the cache key is song + artist + album + duration: without a length no entry can be told from a cover's
 	if (!lookup.duration || lookup.duration <= 0) return null;
 
@@ -86,11 +88,11 @@ async function fetchWithLength(
 }
 
 /** Syllable-timed lyrics from Better Lyrics (`/getLyrics`, TTML), or `null`. */
-export function fetchBetterLyricsParagraphs(lookup: TrackLookup): Promise<LyricParagraphs | null> {
+export function fetchBetterLyrics(lookup: TrackLookup): Promise<ParsedLyrics | null> {
 	return fetchWithLength("BetterLyrics", fetchTtml, lookup);
 }
 
 /** Word-timed lyrics from Better Lyrics Portato (`/qq/getLyrics`, QRC), or `null`. */
-export function fetchBetterLyricsPortatoParagraphs(lookup: TrackLookup): Promise<LyricParagraphs | null> {
+export function fetchBetterLyricsPortato(lookup: TrackLookup): Promise<ParsedLyrics | null> {
 	return fetchWithLength("BetterLyricsPortato", fetchQrc, lookup);
 }

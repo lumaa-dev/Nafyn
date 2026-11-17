@@ -1,47 +1,60 @@
 <template>
-  <div ref="scrollContainer" class="lyrics-panel np-quiet-scroll" :class="{ sans: sansSerif }">
-    <p v-if="loading" class="status">{{ $t('player.lyricsLoading') }}</p>
-    <!-- a failed request (anything but 200 / 404) is told where the lyrics should have been, not as a toast -->
-    <p v-else-if="errorMessage" class="status" role="alert">{{ errorMessage }}</p>
-    <p v-else-if="!paragraphs || !kind" class="status">{{ $t('player.lyricsUnavailable') }}</p>
+  <div class="lyrics-panel" :class="{ sans: sansSerif }">
+    <div ref="scrollContainer" class="lyrics-scroll np-quiet-scroll">
+      <p v-if="loading" class="status">{{ $t('player.lyricsLoading') }}</p>
+      <!-- a failed request (anything but 200 / 404) is told where the lyrics should have been, not as a toast -->
+      <p v-else-if="errorMessage" class="status" role="alert">{{ errorMessage }}</p>
+      <p v-else-if="!answer" class="status">{{ $t('player.lyricsUnavailable') }}</p>
 
-    <pre v-else-if="kind === 'static'" class="static">{{ staticText }}</pre>
+      <!-- Braccato's renderer (@braccato/core): it builds the lines, follows the clock, scrolls this panel and seeks on a
+           click. Kept connected whatever the state (v-show), since it is built once, when it connects. -->
+      <braccato-lyrics v-show="answer && !loading" ref="view" class="lyrics-view" :style="viewStyle" />
 
-    <ol v-else class="lines">
-      <li
-        v-for="(line, index) in lines"
-        :key="line.id"
-        :ref="(el) => setLineRef(el as HTMLElement | null, index)"
-        :class="{ active: activeIndices.includes(index), bg: line.type.kind === 'background', gap: line.firstInParagraph }"
-        :nafyn-start="line.startTime"
-        :nafyn-end="line.endTime"
-        @click="clickLyric(line)"
-      >
-        <template v-if="kind === 'beat' && activeIndices.includes(index)">
-          <span v-for="segment in line.segments" :key="segment.id" class="segment" :style="segmentStyle(segment)">{{ segment.text }}{{ segment.endsWord ? ' ' : '' }}</span>
+      <!-- Unison's licence: credit Unison and whoever submitted the lyrics, both linked (the page is where a wrong
+           line gets voted on or fixed). Shown at the end of the lyrics, not pinned on screen. -->
+      <p v-if="answer?.credit && !loading" class="credit">
+        <a :href="answer.credit.url" target="_blank" rel="noopener noreferrer">{{ answer.credit.text }}</a>
+        <template v-if="answer.credit.submitter">
+          <span aria-hidden="true"> · </span>
+          <i18n-t keypath="player.lyricsSubmittedBy" tag="span">
+            <template #name>
+              <a :href="answer.credit.submitter.url" target="_blank" rel="noopener noreferrer">{{ answer.credit.submitter.name }}</a>
+            </template>
+          </i18n-t>
         </template>
-        <template v-else>{{ line.text }}</template>
-      </li>
-    </ol>
-    <!-- Unison's licence: credit Unison and whoever submitted the lyrics, both linked (the page is where a wrong
-         line gets voted on or fixed). Shown at the end of the lyrics, not pinned on screen. -->
-    <p v-if="credit && paragraphs && kind" class="credit">
-      <a :href="credit.url" target="_blank" rel="noopener noreferrer">{{ credit.text }}</a>
-      <template v-if="credit.submitter">
-        <span aria-hidden="true"> · </span>
-        <i18n-t keypath="player.lyricsSubmittedBy" tag="span">
-          <template #name>
-            <a :href="credit.submitter.url" target="_blank" rel="noopener noreferrer">{{ credit.submitter.name }}</a>
-          </template>
-        </i18n-t>
-      </template>
-    </p>
+      </p>
+    </div>
+
+    <!-- lyric offset: only timed lyrics have a timing to move. Below the lyrics rather than over them, so it never
+         hides a line. -->
+    <Transition name="offset-fade">
+      <div v-if="answer && answer.syncType !== 'none' && !loading" class="offset" role="group" :aria-label="$t('player.lyricsOffset')">
+        <button type="button" class="icon-only" filled="hollow" :aria-label="$t('player.lyricsEarlier')" :title="$t('player.lyricsEarlier')" @click="nudge(-OFFSET_STEP_MS)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none" /></svg>
+        </button>
+        <button type="button" class="value" filled="hollow" :disabled="offsetMs === 0" :aria-label="$t('player.lyricsOffsetReset', { value: offsetLabel })" :title="$t('player.lyricsOffsetReset', { value: offsetLabel })" @click="setOffset(0)">{{ offsetLabel }}</button>
+        <button type="button" class="icon-only" filled="hollow" :aria-label="$t('player.lyricsLater')" :title="$t('player.lyricsLater')" @click="nudge(OFFSET_STEP_MS)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none" /></svg>
+        </button>
+      </div>
+    </Transition>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { isStatic, isBeatByBeat, type Provider, type LyricParagraphs, type LyricLine, type LyricSegment } from '~~/server/utils/lyrics/parser';
+// The lyrics renderer is Braccato's (@braccato/core, https://github.com/better-lyrics/braccato): the <braccato-lyrics>
+// custom element. This component only feeds it - the lyrics the server parsed with @braccato/parsers, the playback
+// clock (from useUnity(), so a device that is not playing follows the one that is), the track's lyric offset - and
+// gives it Nafyn's look through two themes (app/utils/lyricsThemes.ts). Everything else (which line is sung, the sweep,
+// auto-scroll and its pause while the reader scrolls away, click-to-seek) is Braccato's.
+import type { Lyric, LyricSyncType } from '@braccato/types';
+import type { BraccatoLyricsElement } from '@braccato/core/element';
+import '@braccato/core/styles/variables.css';
+import '@braccato/core/styles/lyrics.css';
+import '@braccato/core/styles/instrumental.css';
+import type { Provider } from '~~/server/utils/lyrics/provider';
 import { useAuthToken } from '~/composables/useAuthToken';
+import { lyricsTheme } from '~/utils/lyricsThemes';
 
 interface LyricsCredit {
   text: string;
@@ -51,166 +64,123 @@ interface LyricsCredit {
 
 interface LyricsResponse {
   provider: Provider;
-  paragraphs: LyricParagraphs;
+  syncType: LyricSyncType;
+  lyrics: Lyric[];
+  songwriters: string[];
+  language?: string;
   credit?: LyricsCredit;
+  offsetMs: number;
 }
 
-interface FlatLine extends LyricLine {
-  firstInParagraph: boolean;
-}
+const OFFSET_STEP_MS = 100;
 
-type LyricsKind = 'static' | 'paragraph' | 'beat';
-
-const { currentTrack, state } = useUnity();
+const { t } = useI18n();
+const { currentTrack, state, seek } = useUnity();
 const sansSerif = useLyricsSansSerif();
+
+const answer = ref<LyricsResponse | null>(null);
 const errorMessage = ref<string | null>(null);
-
-const paragraphs = ref<LyricParagraphs | null>(null);
-const credit = ref<LyricsCredit | null>(null);
 const loading = ref(false);
+const offsetMs = ref(0);
 const scrollContainer = ref<HTMLElement | null>(null);
-const autoScrollEnabled = ref(true);
-let lineRefs: (HTMLElement | null)[] = [];
-let observer: IntersectionObserver | null = null;
+const view = ref<BraccatoLyricsElement | null>(null);
+// true once @braccato/core/element has registered the tag: writing the element's properties before that would set
+// plain fields that shadow its accessors for good
+const ready = ref(false);
 let requestSeq = 0;
+let resetPlaybackClock: (() => void) | null = null;
 
-// `timeupdate` only fires a handful of times per second (browser-dependent, not
-// evenly spaced), which makes anything driven directly off it look stepped/jittery.
-// Interpolate between ticks with rAF, using each real `currentTime` update as a
-// correction anchor so drift never accumulates beyond one tick's worth.
-const displayedTime = ref(0);
+const offsetLabel = computed(() => {
+  const seconds = offsetMs.value / 1000;
+  return `${seconds > 0 ? '+' : seconds < 0 ? '−' : ''}${Math.abs(seconds).toFixed(1)} s`;
+});
+
+// the credits line ("Written by A & B") takes its label from CSS; it is the only text Braccato writes itself
+const viewStyle = computed(() => ({ '--blyrics-credits-label': JSON.stringify(t('player.lyricsWrittenBy')) }));
+
+// ---------------------------------------------------------------------------------------------------------------
+// The clock. `currentTime` only moves a few times a second (and on a remote device, once per Unity update), so the
+// view is told the last real reading plus WHEN it was taken (`eventCreationTime`), and Braccato carries it forward
+// itself. Re-anchored on every reading, on play/pause and on a seek, and written every frame while playing.
+// ---------------------------------------------------------------------------------------------------------------
+let anchorTime = 0;
+let anchorWallMs = Date.now();
 let rafId: number | null = null;
-let anchorAudioTime = 0;
-let anchorPerfTime = 0;
+const reducedMotion = import.meta.client ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
 
-function syncTimeAnchor() {
-  anchorAudioTime = state.value.currentTime;
-  anchorPerfTime = performance.now();
-  displayedTime.value = anchorAudioTime;
+function syncAnchor() {
+  anchorTime = state.value.currentTime;
+  anchorWallMs = Date.now();
 }
 
-// Only runs while audio is actually playing: a paused (or hidden - the browser stops rAF there anyway) panel
-// has nothing to interpolate, and a loop that re-renders the lyrics 60 times a second for nothing is exactly the
-// kind of idle cost that adds up on a phone.
-function tick() {
-  displayedTime.value = anchorAudioTime + (performance.now() - anchorPerfTime) / 1000;
-  rafId = requestAnimationFrame(tick);
+function pushClock() {
+  const el = view.value;
+  if (!ready.value || !el) return;
+  el.tickOptions = {
+    eventCreationTime: anchorWallMs,
+    lyricOffset: offsetMs.value / 1000,
+    // DESIGN.md "Animations": reduced motion keeps the fades, not the glide between lines
+    smoothScroll: !reducedMotion?.matches,
+    // a seek made while paused (here, or on the device that plays) moves the highlight too
+    followPausedSeeks: true,
+    // this view is ticked every frame, which would otherwise spend Braccato's "one scroll held back" on the
+    // reader's own scroll: scrolling away has to pause auto-scroll at once
+    countEveryUserScroll: true,
+  };
+  if (el.playing !== state.value.isPlaying) el.playing = state.value.isPlaying;
+  el.currentTime = anchorTime;
 }
 
+function frame() {
+  pushClock();
+  rafId = requestAnimationFrame(frame);
+}
+
+// only while playing: a paused view has nothing to move, and a loop for nothing is idle cost on a phone
 function startLoop() {
-  if (rafId !== null) return;
-  syncTimeAnchor();
-  rafId = requestAnimationFrame(tick);
+  if (rafId === null && ready.value) rafId = requestAnimationFrame(frame);
 }
 
 function stopLoop() {
   if (rafId !== null) cancelAnimationFrame(rafId);
   rafId = null;
-  syncTimeAnchor();
 }
 
-function clickLyric(line: LyricLine) {
-  const { seek } = useUnity();
-  seek(line.startTime);
-}
-
-watch(() => state.value.currentTime, syncTimeAnchor);
-
-const kind = computed<LyricsKind | null>(() => {
-  if (!paragraphs.value || paragraphs.value.length === 0) return null;
-  if (isBeatByBeat(paragraphs.value)) return 'beat';
-  if (isStatic(paragraphs.value)) return 'static';
-  return 'paragraph';
+watch(() => state.value.currentTime, () => { syncAnchor(); if (rafId === null) pushClock(); });
+watch(() => state.value.isPlaying, (playing) => {
+  syncAnchor();
+  pushClock();
+  if (playing) startLoop(); else stopLoop();
 });
 
-const lines = computed<FlatLine[]>(() => {
-  if (!paragraphs.value) return [];
-  const out: FlatLine[] = [];
-  for (const paragraph of paragraphs.value) {
-    paragraph.lines.forEach((line, i) => out.push({ ...line, firstInParagraph: i === 0 }));
-  }
-  return out;
-});
-
-const staticText = computed(() =>
-  paragraphs.value?.map((p) => p.lines.map((l) => l.text).join('\n')).join('\n\n') ?? ''
-);
-
-// main + background lines can be simultaneously active (they overlap in time), so
-// this tracks every active line rather than a single index
-//
-// Returns the previous array when nothing changed: a fresh array every frame would count as a change and
-// re-render the whole lyric list 60 times a second, where it only needs to when a line starts or ends.
-const activeIndices = computed<number[]>((previous) => {
-  const time = displayedTime.value;
-  const out: number[] = [];
-  lines.value.forEach((line, i) => { if (time >= line.startTime && time < line.endTime) out.push(i); });
-  return previous && previous.length === out.length && previous.every((value, i) => value === out[i]) ? previous : out;
-});
-
-// the line auto-scroll/observer follow: the main line if active, else whichever line is
-const activeIndex = computed(() => {
-  const indices = activeIndices.value;
-  if (indices.length === 0) return -1;
-  return indices.find((i) => lines.value[i].type.kind === 'main') ?? indices[0];
-});
-
-function segmentStyle(segment: LyricSegment) {
-  const duration = segment.endTime - segment.startTime;
-  const progress = duration > 0 ? Math.min(1, Math.max(0, (displayedTime.value - segment.startTime) / duration)) : 1;
-  return {
-    backgroundPositionX: `${((1 - progress) * 100).toFixed(2)}%`
+// ---------------------------------------------------------------------------------------------------------------
+// The lyrics
+// ---------------------------------------------------------------------------------------------------------------
+function applyLyrics() {
+  const el = view.value;
+  if (!ready.value || !el) return;
+  const found = answer.value;
+  el.lyricsOptions = {
+    songKey: currentTrack.value?.id,
+    songwriters: found?.songwriters ?? [],
+    language: found?.language ?? null,
   };
+  // an empty array clears the view
+  el.lyrics = found?.lyrics ?? [];
+  pushClock();
 }
-
-function setLineRef(el: HTMLElement | null, index: number) {
-  lineRefs[index] = el;
-}
-
-function scrollToLine(index: number, smooth: boolean) {
-  // scrolls only the panel: scrollIntoView also scrolls every ancestor, including the document, which dragged
-  // the whole now-playing page past the viewport whenever a line became active
-  const container = scrollContainer.value;
-  const el = lineRefs[index];
-  if (!container || !el) return;
-  const box = container.getBoundingClientRect();
-  const line = el.getBoundingClientRect();
-  const top = container.scrollTop + (line.top - box.top) - (box.height - line.height) / 2;
-  container.scrollTo({ top, behavior: smooth ? 'smooth' : 'auto' });
-}
-
-// re-targets the intersection observer at whichever line is active; watching its visibility is
-// what lets auto-scroll disable itself when the user scrolls away, and resume once they scroll back
-function observeActive() {
-  observer?.disconnect();
-  const el = activeIndex.value >= 0 ? lineRefs[activeIndex.value] : null;
-  if (!el || !scrollContainer.value) return;
-
-  observer = new IntersectionObserver(
-    (entries) => { autoScrollEnabled.value = entries[0]?.isIntersecting ?? false; },
-    { root: scrollContainer.value, threshold: 0.6 }
-  );
-  observer.observe(el);
-}
-
-watch(activeIndex, async (index) => {
-  if (index < 0) return;
-  await nextTick();
-  if (autoScrollEnabled.value) scrollToLine(index, true);
-  observeActive();
-});
 
 async function loadLyrics(id: string | null) {
-  observer?.disconnect();
-  lineRefs = [];
-  paragraphs.value = null;
-  credit.value = null;
+  const seq = ++requestSeq;
+  answer.value = null;
   errorMessage.value = null;
-  autoScrollEnabled.value = true;
+  offsetMs.value = 0;
+  // a new song: Braccato's clock must not read the jump to its start as a seek inside the last one
+  resetPlaybackClock?.();
+  applyLyrics();
+  if (scrollContainer.value) scrollContainer.value.scrollTop = 0;
 
   if (!id) return;
-
-  const seq = ++requestSeq;
   const token = useAuthToken().token.value;
   if (!token) return;
 
@@ -218,12 +188,10 @@ async function loadLyrics(id: string | null) {
   try {
     const res = await $fetch<LyricsResponse>(`/api/v1/library/${id}/lyrics`, { headers: { Authorization: token }, timeout: 120_000 });
     if (seq !== requestSeq) return;
-    paragraphs.value = res.paragraphs;
-    credit.value = res.credit ?? null;
+    answer.value = res;
+    offsetMs.value = res.offsetMs ?? 0;
   } catch (e) {
     if (seq !== requestSeq) return;
-    paragraphs.value = null;
-    credit.value = null;
     // a 404 is the normal "no lyrics for this track"; anything else (rate limit, provider down, timeout) is a failure
     // worth saying - in the panel itself, since the screen change (the lyrics) is what didn't happen
     if ((e as { statusCode?: number })?.statusCode !== 404) errorMessage.value = apiErrorMessage(e);
@@ -231,52 +199,110 @@ async function loadLyrics(id: string | null) {
     if (seq === requestSeq) loading.value = false;
   }
 
+  if (seq !== requestSeq) return;
+  // built once the view is shown (v-show): Braccato measures the lines as it builds them, and a hidden view
+  // measures nothing
   await nextTick();
-  if (scrollContainer.value) scrollContainer.value.scrollTop = 0;
-  observeActive();
+  if (seq !== requestSeq) return;
+  syncAnchor();
+  applyLyrics();
 }
 
 watch(() => currentTrack.value?.id ?? null, (id) => loadLyrics(id), { immediate: true });
 
-watch(() => state.value.isPlaying, (playing) => { if (playing) startLoop(); else stopLoop(); });
+// ---------------------------------------------------------------------------------------------------------------
+// The lyric offset: shown at once, saved with the track's cached lyrics once the clicks stop
+// ---------------------------------------------------------------------------------------------------------------
+let saveTimer: ReturnType<typeof setTimeout> | null = null;
 
-onMounted(() => {
-  syncTimeAnchor();
+function nudge(deltaMs: number) {
+  setOffset(offsetMs.value + deltaMs);
+}
+
+function setOffset(value: number) {
+  offsetMs.value = Math.max(-30_000, Math.min(30_000, Math.round(value)));
+  pushClock();
+
+  const id = currentTrack.value?.id;
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    saveTimer = null;
+    const token = useAuthToken().token.value;
+    if (!id || !token) return;
+    try {
+      await $fetch(`/api/v1/library/${id}/lyrics/offset`, { method: 'PUT', headers: { Authorization: token }, body: { offsetMs: offsetMs.value } });
+    } catch (e) {
+      // the lyrics already moved here; what failed is keeping it for the next play - a red toast (DESIGN.md "Error messages")
+      useToast().sendError(t('player.lyricsOffsetError'), e);
+    }
+  }, 400);
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// The element
+// ---------------------------------------------------------------------------------------------------------------
+watch(sansSerif, () => { if (ready.value && view.value) view.value.theme = lyricsTheme({ sansSerif: sansSerif.value }); });
+
+onMounted(async () => {
+  // the tag only exists in a browser (it extends HTMLElement), so it is registered here, never during SSR
+  const [, core] = await Promise.all([import('@braccato/core/element'), import('@braccato/core')]);
+  resetPlaybackClock = core.resetPlaybackClock;
+  await customElements.whenDefined('braccato-lyrics');
+  const el = view.value;
+  if (!el) return;
+
+  el.host = {
+    // the panel scrolls, not the page (DESIGN.md "Now Playing": the page never scrolls)
+    getScrollElement: () => scrollContainer.value,
+    // Braccato hands the PLAYER's time (the offset already taken back out); unsynced lines have none to go to
+    seek: (timeS: number) => { if (answer.value && answer.value.syncType !== 'none') seek(timeS); },
+  };
+  el.theme = lyricsTheme({ sansSerif: sansSerif.value });
+  ready.value = true;
+
+  syncAnchor();
+  applyLyrics();
   if (state.value.isPlaying) startLoop();
 });
 
-onUnmounted(() => {
-  observer?.disconnect();
-  if (rafId !== null) cancelAnimationFrame(rafId);
-  rafId = null;
+onBeforeUnmount(() => {
+  stopLoop();
+  if (saveTimer) clearTimeout(saveTimer);
 });
 </script>
 
 <style scoped>
 .lyrics-panel {
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   height: 100%;
-  mask-image: linear-gradient(to bottom, transparent 0, #000 30px, #000 calc(100% - 30px), transparent 100%);
+  min-height: 0;
+  /* Lyrics are Instrument Serif; the setting switches them to Braccato's own sans stack (app/utils/lyricsThemes.ts) */
+  font-family: "Instrument-Serif", serif;
 }
 
-/* Lyrics are Instrument Serif; the setting switches them to the default sans-serif */
-.lyrics-panel.sans,
-.lyrics-panel.sans .static {
-  font-family: sans-serif;
+.lyrics-panel.sans {
+  font-family: var(--blyrics-default-font-family, sans-serif);
+}
+
+.lyrics-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  /* DESIGN.md "Now Playing": a small smooth fade at the top and bottom edges. Declared to Braccato too, as scroll
+     padding, so the line being sung is kept inside the band that is fully visible. */
+  mask-image: linear-gradient(to bottom, transparent 0, #000 30px, #000 calc(100% - 30px), transparent 100%);
+  scroll-padding-block: 30px;
+}
+
+.lyrics-view {
+  display: block;
 }
 
 .lyrics-panel .status {
   color: color-mix(in srgb, var(--np-text, #ffffff) 90%, transparent);
   text-align: center;
   margin-top: 20px;
-}
-
-.lyrics-panel .static {
-  white-space: pre-wrap;
-  font-family: inherit;
-  color: var(--np-text, #ffffff);
-  line-height: 1.6;
-  padding: 20px 4px;
 }
 
 /* links are underlined italic Instrument Serif (DESIGN.md "Links"); the colour is --np-text so it keeps the
@@ -293,83 +319,63 @@ onUnmounted(() => {
   text-decoration: underline;
 }
 
-.lyrics-panel .lines {
-  list-style: none;
-  padding: 20px 4px;
-  margin: 0;
+.offset {
+  flex: none;
   display: flex;
-  flex-direction: column;
-  gap: 14px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 4px 0;
+  font-size: 0.75em;
 }
 
-.lyrics-panel .lines li {
-  /* the active line grows by transform, not font-size: no reflow, no re-wrapping of the lines around it, and it
-     stays on the compositor. It scales from its left edge so the text doesn't drift sideways. */
-  transform: scale(0.8);
-  transform-origin: left center;
-  /* --np-text is set by now-playing.vue from the cover (black on a light one, white on a dark one), so the
-     lyrics follow the same WCAG-picked colour as the rest of the page instead of a hardcoded white */
-  color: color-mix(in srgb, var(--np-text, #ffffff) 80%, transparent);
-  font-size: 1.3em;
-  font-weight: 600;
-  line-height: 1.4;
-  transition: color 0.35s ease, transform 0.35s ease;
-  cursor: pointer;
-  width: fit-content;
-  max-width: 92%;
+.offset button.icon-only {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--np-text, #ffffff);
 }
 
-.lyrics-panel .lines li:hover {
-  color: var(--np-text, #ffffff);
+.offset button.icon-only svg {
+  width: 60%;
+  height: 60%;
 }
 
-.lyrics-panel .lines li.gap {
-  margin-top: 14px;
+.offset button.value {
+  min-width: 5.5em;
+  padding-block: 0.35em;
+  padding-inline: 0.8em;
+  font-variant-numeric: tabular-nums;
 }
 
-.lyrics-panel .lines li.bg {
-  font-size: 1em;
-  opacity: 0.8;
+.offset-fade-enter-active,
+.offset-fade-leave-active {
+  transition: opacity 0.2s ease-out;
 }
 
-.lyrics-panel .lines li.active {
-  color: var(--np-text, #ffffff);
-  transform: scale(1.0);
-  will-change: transform;
+.offset-fade-enter-from,
+.offset-fade-leave-to {
+  opacity: 0;
+}
+</style>
+
+<style>
+/* Settings -> Appearance -> OpenDyslexic replaces every font of the app with !important, the lyrics excepted: they
+   stay in Instrument Serif or, with "sans-serif lyrics" on, Braccato's own font. More specific than the global
+   `html.dyslexic-font *` rule, so this one wins. */
+html.dyslexic-font .lyrics-panel,
+html.dyslexic-font .lyrics-panel *:not(.blyrics-container, .blyrics-container *) {
+  font-family: "Instrument-Serif", serif !important;
 }
 
-.lyrics-panel .lines li.bg.active {
-  transform: scale(0.95);
+html.dyslexic-font .lyrics-panel.sans,
+html.dyslexic-font .lyrics-panel.sans *:not(.blyrics-container, .blyrics-container *) {
+  font-family: var(--blyrics-default-font-family, sans-serif) !important;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .lyrics-panel .lines li {
-    transition: color 0.35s ease;
-  }
-
-  .lyrics-panel .lines li.active,
-  .lyrics-panel .lines li.bg.active {
-    transform: none;
-  }
-}
-
-.lyrics-panel .segment {
-  background-image: linear-gradient(90deg, var(--np-text, #ffffff) 50%, color-mix(in srgb, var(--np-text, #ffffff) 35%, transparent) 50%);
-  background-size: 200% 100%;
-  background-position-x: 100%;
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  transition: background-position-x 0.1s linear;
-}
-
-@media screen and (max-width: 800px) {
-  .lyrics-panel .lines li {
-    font-size: 1.05em;
-  }
-
-  .lyrics-panel .lines li.bg {
-    font-size: 0.85em;
-  }
+html.dyslexic-font .lyrics-panel .blyrics-container,
+html.dyslexic-font .lyrics-panel .blyrics-container * {
+  font-family: var(--blyrics-font-family, var(--blyrics-default-font-family)) !important;
 }
 </style>

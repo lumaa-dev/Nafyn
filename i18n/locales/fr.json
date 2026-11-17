@@ -529,6 +529,12 @@
     "lyricsLoading": "Chargement des paroles...",
     "lyricsUnavailable": "Aucune parole disponible pour ce titre.",
     "lyricsSubmittedBy": "proposé par {name}",
+    "lyricsWrittenBy": "Écrit par",
+    "lyricsOffset": "Synchronisation des paroles",
+    "lyricsEarlier": "Afficher les paroles plus tôt",
+    "lyricsLater": "Afficher les paroles plus tard",
+    "lyricsOffsetReset": "Décalage des paroles {value}, revenir à la synchronisation d'origine",
+    "lyricsOffsetError": "Impossible de modifier la synchronisation des paroles",
     "unity": {
       "playingOn": "Lecture sur {device}",
       "playHere": "Lire ici"

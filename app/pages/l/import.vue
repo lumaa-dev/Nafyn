@@ -38,7 +38,7 @@
           <option value="lrc">{{ $t('edit.lyricsLrc') }}</option>
         </select>
       </label>
-      <label>{{ $t('edit.lyrics') }}<textarea v-model="form.lyrics" rows="8" :placeholder="$t('edit.lyricsPlaceholder')" /></label>
+      <label>{{ $t('edit.lyrics') }}<LyricsField v-model="form.lyrics" :format="form.lyricsFormat" :placeholder="$t('edit.lyricsPlaceholder')" /></label>
 
       <button type="submit" filled :disabled="importing || !audioFile">
         {{ importing ? $t('import.importing') : $t('import.submit') }}
@@ -162,8 +162,7 @@ async function submit() {
 .import input[type="text"],
 .import input[type="number"],
 .import input[type="date"],
-.import select,
-.import textarea {
+.import select {
   background: #00000040;
   border: 1px solid #666666;
   border-radius: 8px;
@@ -172,9 +171,6 @@ async function submit() {
   font: inherit;
 }
 
-.import textarea {
-  resize: vertical;
-}
 
 .import .file-field,
 .import .cover-field {

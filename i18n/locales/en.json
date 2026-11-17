@@ -529,6 +529,12 @@
     "lyricsLoading": "Loading lyrics...",
     "lyricsUnavailable": "No lyrics available for this track.",
     "lyricsSubmittedBy": "submitted by {name}",
+    "lyricsWrittenBy": "Written by",
+    "lyricsOffset": "Lyrics timing",
+    "lyricsEarlier": "Show the lyrics earlier",
+    "lyricsLater": "Show the lyrics later",
+    "lyricsOffsetReset": "Lyrics timing {value}, reset to the original timing",
+    "lyricsOffsetError": "Couldn't change the lyrics timing",
     "unity": {
       "playingOn": "Playing on {device}",
       "playHere": "Play here"

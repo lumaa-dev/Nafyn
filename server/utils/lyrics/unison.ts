@@ -13,8 +13,7 @@
 // put behind a paywall.
 // ---------------------------------------------------------------------------
 
-import { parseLrcSyncedLyrics } from "./lrclib";
-import { parseQRC, TTMLParser, type LyricParagraphs } from "./parser";
+import { parseLrc, parseQrc, parseTtml, type ParsedLyrics } from "./parse";
 import { LYRICS_DURATION_TOLERANCE_SECONDS, lyricsFitDuration, sameTrackByName, type TrackLookup } from "./match";
 
 const UNISON_BASE_URL = "https://unison.betterlyrics.org";
@@ -45,8 +44,7 @@ export interface UnisonCredit {
 	submitter: { name: string; url: string } | null;
 }
 
-export interface UnisonResult {
-	paragraphs: LyricParagraphs;
+export interface UnisonResult extends ParsedLyrics {
 	credit: UnisonCredit;
 }
 
@@ -93,18 +91,19 @@ async function unisonLookup(lookup: TrackLookup): Promise<UnisonLyrics | null> {
 	return unisonGet(params);
 }
 
-function parseEntry(entry: UnisonLyrics, lookup: TrackLookup): LyricParagraphs | null {
+function parseEntry(entry: UnisonLyrics, lookup: TrackLookup): ParsedLyrics | null {
 	const body = entry.lyrics;
 	if (!body) return null;
+	const durationMs = lookup.duration ? lookup.duration * 1000 : undefined;
 
 	switch (entry.format) {
 		case "ttml":
-			return new TTMLParser(body).parse();
+			return parseTtml(body, durationMs);
 		case "lrc":
-			return parseLrcSyncedLyrics(body);
+			return parseLrc(body, durationMs);
 		// `qrc` is no longer listed by Unison (ttml / lrc / plain) but older entries may still carry it
 		case "qrc":
-			return parseQRC(body, { title: lookup.trackName, artist: lookup.artistName, durationMs: lookup.duration ? lookup.duration * 1000 : undefined });
+			return parseQrc(body, durationMs, { title: lookup.trackName, artist: lookup.artistName });
 		// unsynced text: LRCLIB, later in line, may have a synced version of the same song
 		default:
 			return null;
@@ -135,18 +134,13 @@ export async function fetchUnison(lookup: TrackLookup): Promise<UnisonResult | n
 		// the entry's own length, when it states one and we know ours
 		if (lookup.duration && typeof entry.duration === "number" && Math.abs(entry.duration - lookup.duration) > LYRICS_DURATION_TOLERANCE_SECONDS) return null;
 
-		const paragraphs = parseEntry(entry, lookup);
-		if (!paragraphs || paragraphs.length === 0) return null;
-		if (!lyricsFitDuration(paragraphs, lookup.duration)) return null;
+		const parsed = parseEntry(entry, lookup);
+		if (!parsed) return null;
+		if (!lyricsFitDuration(parsed.lyrics, lookup.duration)) return null;
 
-		return { paragraphs, credit: creditOf(entry) };
+		return { ...parsed, credit: creditOf(entry) };
 	} catch (e) {
 		console.error("[Unison] fetch failed:", e);
 		return null;
 	}
-}
-
-/** Community lyrics from Unison for exactly this song, or `null`. Use {@link fetchUnison} to get the credit too. */
-export async function fetchUnisonParagraphs(lookup: TrackLookup): Promise<LyricParagraphs | null> {
-	return (await fetchUnison(lookup))?.paragraphs ?? null;
 }

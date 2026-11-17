@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { artistsShare, lyricsFitDuration, sameTrackByName, titleKey } from "../../server/utils/lyrics/match";
-import { parseQRC } from "../../server/utils/lyrics/parser";
+import { parseQrc } from "../../server/utils/lyrics/parse";
 
 describe("sameTrackByName", () => {
 	const lookup = { trackName: "Bad Decisions", artistName: "The Strokes" };
@@ -36,7 +36,7 @@ describe("artistsShare", () => {
 });
 
 describe("lyricsFitDuration", () => {
-	const parsed = parseQRC("[0,2000]a(0,1000) (1000,1000)\n[100000,5000]b(100000,5000)")!;
+	const parsed = parseQrc("[0,2000]a(0,1000) (1000,1000)\n[100000,5000]b(100000,5000)", 105_000)!.lyrics;
 
 	test("lyrics that end inside the track fit, ones that outrun it do not", () => {
 		expect(lyricsFitDuration(parsed, 110)).toBe(true);

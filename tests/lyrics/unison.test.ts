@@ -57,7 +57,7 @@ describe("fetchUnison", () => {
 		expect(urls).toHaveLength(1);
 		expect(urls[0]!.searchParams.get("isrc")).toBe("FR8EU2300090");
 		expect(urls[0]!.searchParams.has("song")).toBe(false);
-		expect(found?.paragraphs.length).toBeGreaterThan(0);
+		expect(found?.lyrics.length).toBeGreaterThan(0);
 	});
 
 	test("an ISRC with nothing behind it falls back to title + artist", async () => {

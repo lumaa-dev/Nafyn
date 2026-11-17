@@ -21,12 +21,13 @@
 
 <script lang="ts" setup>
 import { type Toast, useToast } from '~/composables/useToast';
-import { Provider, type LyricParagraphs } from '~~/server/utils/lyrics/parser';
+import { Provider } from '~~/server/utils/lyrics/provider';
+import type { Lyric } from '@braccato/types';
 import { useAuthToken } from '~/composables/useAuthToken';
 
 interface LyricsResponse {
     provider: Provider,
-    paragraphs: LyricParagraphs
+    lyrics: Lyric[]
 }
 
 console.log(`---- env: ${process.env.NODE_ENV} -----`)
@@ -56,7 +57,7 @@ async function unPeuDeLyricsPlease(mediaId: string) {
         const { error } = await useAsyncData<LyricsResponse>(`lyrics-${mediaId}`, () => {
             return token.value
                 ? $fetch(`/api/v1/library/${mediaId}/lyrics`, { headers: { Authorization: token.value }, timeout: 120_000 })
-                : Promise.resolve({ provider: Provider.Cache, paragraphs: [] });
+                : Promise.resolve({ provider: Provider.Cache, lyrics: [] });
         });
         let isError: boolean = typeof error.value !== "undefined";
 

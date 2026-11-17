@@ -6,8 +6,7 @@
 // module only implements fetching, not `/api/publish` (submitting lyrics).
 // ---------------------------------------------------------------------------
 
-import { randomUUID } from "node:crypto";
-import { createLyricLine, type LyricParagraphs } from "./parser";
+import { parseLrc, parsePlain, type ParsedLyrics } from "./parse";
 
 const LRCLIB_BASE_URL = "https://lrclib.net/api";
 
@@ -120,81 +119,18 @@ export async function fetchLrclibTrack(
 	}
 }
 
-const LRC_TIMESTAMP_RE = /\[(\d{2}):(\d{2})(?:\.(\d{1,3}))?\]/g;
-
-/**
- * Parses LRCLIB's `syncedLyrics` (standard LRC: `[mm:ss.xx]text`, possibly
- * several timestamps sharing one line) into `LyricParagraphs`. LRC has no
- * word-level timing, so every line becomes a single un-segmented "main"
- * line; a blank-text timestamp is treated as a paragraph break.
- */
-export function parseLrcSyncedLyrics(syncedLyrics: string): LyricParagraphs {
-	const entries: { time: number; text: string }[] = [];
-
-	for (const rawLine of syncedLyrics.split(/\r?\n/)) {
-		LRC_TIMESTAMP_RE.lastIndex = 0;
-		const tags = [...rawLine.matchAll(LRC_TIMESTAMP_RE)];
-		if (tags.length === 0) continue;
-
-		const text = rawLine.replace(LRC_TIMESTAMP_RE, "").trim();
-		for (const tag of tags) {
-			const minutes = Number(tag[1]);
-			const seconds = Number(tag[2]);
-			const millis = tag[3] ? Number(tag[3].padEnd(3, "0")) : 0;
-			entries.push({ time: minutes * 60 + seconds + millis / 1000, text });
-		}
-	}
-
-	entries.sort((a, b) => a.time - b.time);
-
-	const paragraphs: LyricParagraphs = [];
-	let currentLines: LyricParagraphs[number]["lines"] = [];
-
-	const flush = () => {
-		if (currentLines.length > 0) {
-			paragraphs.push({ id: randomUUID(), lines: currentLines });
-			currentLines = [];
-		}
-	};
-
-	for (let i = 0; i < entries.length; i++) {
-		const entry = entries[i];
-		const next = entries[i + 1];
-		const end = next ? next.time : entry.time + 5;
-
-		if (entry.text.length === 0) {
-			flush();
-			continue;
-		}
-
-		currentLines.push(
-			createLyricLine(entry.text, entry.time, end, { kind: "main", alt: false }),
-		);
-	}
-	flush();
-
-	return paragraphs;
-}
-
-/** Wraps `plainLyrics` (no timing at all) into a single static paragraph. */
-export function parsePlainLyrics(plainLyrics: string): LyricParagraphs {
-	const lines = plainLyrics
-		.split(/\r?\n/)
-		.filter((line) => line.trim().length > 0)
-		.map((line) => createLyricLine(line.trim(), 0, 0, { kind: "main", alt: false }));
-
-	if (lines.length === 0) return [];
-	return [{ id: randomUUID(), lines }];
-}
-
-/** Resolves a title/artist(/album/duration) to `LyricParagraphs` via LRCLIB, or `null`. */
-export async function fetchLrclibParagraphs(
+/** Resolves a title/artist(/album/duration) to lyrics via LRCLIB (synced first, else plain), or `null`. */
+export async function fetchLrclib(
 	lookup: LrclibLookup,
-): Promise<LyricParagraphs | null> {
+): Promise<ParsedLyrics | null> {
 	const track = await fetchLrclibTrack(lookup);
 	if (!track || track.instrumental) return null;
 
-	if (track.syncedLyrics) return parseLrcSyncedLyrics(track.syncedLyrics);
-	if (track.plainLyrics) return parsePlainLyrics(track.plainLyrics);
+	const durationMs = lookup.duration ? lookup.duration * 1000 : undefined;
+	if (track.syncedLyrics) {
+		const synced = parseLrc(track.syncedLyrics, durationMs);
+		if (synced) return synced;
+	}
+	if (track.plainLyrics) return parsePlain(track.plainLyrics);
 	return null;
 }

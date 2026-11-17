@@ -1,12 +1,13 @@
 // user-supplied lyrics for a media row.
 //
-// Nafyn already fetches lyrics from Better Lyrics/Unison/Cider/LRCLIB at read time (GET /api/v1/library/{id}/lyrics). This table
+// Nafyn already fetches lyrics from Unison/Better Lyrics/Cider/LRCLIB at read time (GET /api/v1/library/{id}/lyrics). This table
 // is the manual override: whatever a user typed or pasted in for a track wins over every provider, and is
 // the only lyric source a manually imported track (which no provider knows about) ever has.
 //
 // Content is stored verbatim as the user entered it, either as plain text or as an LRC-timed transcript;
 // Nafyn does not author or fetch it here.
 import { getLibrariesDb } from "./db";
+import { forgetCachedLyrics } from "../utils/lyrics/cache";
 
 export type LyricsFormat = "plain" | "lrc";
 
@@ -35,10 +36,13 @@ export async function setMediaLyrics(mediaId: string, format: LyricsFormat, cont
         VALUES (:mediaId, :format, :content, :updatedAt)
         ON DUPLICATE KEY UPDATE format = :format, content = :content, updatedAt = :updatedAt
     `).run(row);
+    // the cached answer (and its offset) was for the old lyrics - or for a provider's, which these now override
+    forgetCachedLyrics(mediaId);
 
     return row;
 }
 
 export async function deleteMediaLyrics(mediaId: string): Promise<void> {
     await getLibrariesDb().prepare(`DELETE FROM media_lyrics WHERE mediaId = ?`).run(mediaId);
+    forgetCachedLyrics(mediaId);
 }

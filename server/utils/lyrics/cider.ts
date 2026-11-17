@@ -1,3 +1,5 @@
+import { parseTtml, type ParsedLyrics } from "./parse";
+
 /** A single community-submitted lyric entry from Cider Lyrics Studio. */
 export interface StudioLyricResponse {
 	/** The raw TTML document for this submission. */
@@ -92,4 +94,19 @@ export async function fetchAllLyrics(
 
 	const json = (await response.json()) as StudioTrackAllResponse;
 	return json.lyrics;
+}
+
+/**
+ * The best-rated Cider Lyrics Studio submission for a song (`media.amId`), parsed, or `null`.
+ * `durationMs` is the track's length, used when the TTML states none.
+ */
+export async function fetchCiderLyrics(songId: string, durationMs?: number): Promise<ParsedLyrics | null> {
+	try {
+		const all = await fetchAllLyrics(songId);
+		const best = [...all].sort((a, b) => (b.score ?? 0) - (a.score ?? 0))[0];
+		return best?.ttml ? parseTtml(best.ttml, durationMs) : null;
+	} catch (e) {
+		console.error("[Cider] fetch failed:", e);
+		return null;
+	}
 }
