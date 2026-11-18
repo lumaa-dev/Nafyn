@@ -121,6 +121,23 @@ const MIGRATIONS: Migration[] = [
                 if (!await indexExists(conn, table, name)) await conn.query(ddl);
             }
         }
+    },
+    {
+        // scrobbling and the profile link moved to ListenBrainz: the old service's handle column and its table of
+        // session keys (credentials nothing reads any more) go. A handle there is not one on ListenBrainz, so
+        // nothing is carried over: users link their ListenBrainz account again.
+        id: "2026-11-listenbrainz",
+        up: async (conn) => {
+            if (!await columnExists(conn, "users", "listenBrainz")) {
+                await conn.query(`ALTER TABLE users ADD COLUMN listenBrainz TEXT NULL`);
+            }
+            if (await columnExists(conn, "users", "lastFm")) {
+                await conn.query(`ALTER TABLE users DROP COLUMN lastFm`);
+            }
+            if (await tableExists(conn, "user_lastfm")) {
+                await conn.query(`DROP TABLE user_lastfm`);
+            }
+        }
     }
 ];
 

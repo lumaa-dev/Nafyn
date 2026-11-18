@@ -72,7 +72,7 @@ export function getHistoryState(): HistoryState {
     return historyState;
 }
 
-// Last.fm scrobbling (server side, from the same events): while it is on, plays are reported even with the
+// ListenBrainz scrobbling (server side, from the same events): while it is on, plays are reported even with the
 // listening history off - the server scrobbles them and stores nothing. Settled by the server like the history flag.
 let scrobblingOn = false;
 
@@ -80,12 +80,12 @@ export function setScrobblingState(enabled: boolean): void {
     scrobblingOn = enabled;
 }
 
-/** Last.fm's "now playing" for a track that just started, when scrobbling is on. Fire-and-forget. */
+/** ListenBrainz' "playing now" for a track that just started, when scrobbling is on. Fire-and-forget. */
 export function reportNowPlaying(mediaId: string): void {
     if (!import.meta.client || suppressed || !scrobblingOn) return;
     const token = authToken();
     if (!token) return;
-    void $fetch("/api/v1/user/lastfm/now-playing", { method: "POST", headers: { Authorization: token }, body: { mediaId } }).catch(() => {});
+    void $fetch("/api/v1/user/listenbrainz/now-playing", { method: "POST", headers: { Authorization: token }, body: { mediaId } }).catch(() => {});
 }
 
 // Set by the highlight-reel player while it plays its 6-second excerpts. Without it, a twenty-slide reel

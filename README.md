@@ -143,8 +143,7 @@ Configured via environment variables (see `.env.example`):
 | `MYSQL_HOST` / `MYSQL_PORT` / `MYSQL_USER` / `MYSQL_PASSWORD` / `MYSQL_DATABASE` | MySQL connection. The database is created on first boot if it doesn't exist. |
 | `NAFYN_SLSKD_MAX_CONCURRENT_SEARCHES` / `NAFYN_SLSKD_SEARCH_INTERVAL_MS` | Soulseek search pacing: searches in flight (default `3`) and the minimum gap between starts (default `1000` ms). Bursts get throttled by the Soulseek server, and a throttled search looks exactly like "nobody shares this". |
 | `NAFYN_MAX_ACTIVE_REQUESTS_PER_USER` | Requests one account may have waiting or in the pipeline at once. Default `500`; past it, requests answer `429`. |
-| `LASTFM_API_KEY` | Artist bios/images on the artist page, search results, and Subsonic's `getArtistInfo2`. Optional — those surfaces just show less without it. |
-| `LASTFM_API_SECRET` | The shared secret of the same Last.fm API account. With it (and `LASTFM_API_KEY`), users connect their Last.fm account and Nafyn scrobbles what they play — web, iOS and Subsonic clients alike. Optional. |
+| `THEAUDIODB_API_KEY` | TheAudioDB key for artist bios and pictures (artist page, search results, Subsonic's `getArtistInfo2`). Defaults to `123`, TheAudioDB's free public key (30 requests a minute); a paid key lifts the limit. |
 | `DOMAINS_WHITELIST` | Comma-separated hostnames exempt from the login/register rate limits. Leave empty unless you specifically need it — every entry is an IP that can brute-force passwords freely. |
 | `TRUST_PROXY` | Number of reverse proxies in front of Nafyn (nginx/Caddy/Traefik/Cloudflare). `0` (default) when Nafyn is directly exposed. Gates whether `X-Forwarded-For` is trusted at all — wrong in either direction breaks or defeats rate limiting, see [`server/utils/clientIp.ts`](server/utils/clientIp.ts). |
 | `NAFYN_PUBLIC_OPENAPI` | Set `true` to publish the auto-generated [OpenAPI](#nafyn-api) spec + Scalar docs UI in production. Off by default — the spec enumerates every endpoint, parameter and auth requirement to anonymous visitors. |
@@ -293,7 +292,7 @@ Nafyn is self-hosted, so **you** are the data controller — Nafyn's job is to m
 
 **Retention**: sessions (with their IP + user agent) go when they expire after 7 days, or a minute after being revoked. The recently-played shelf is pruned after 180 days. Raw play events are pruned after 3 years — the statistics built from them are not, so no screen changes at that boundary. What the Discover page showed each user (the bandit's decision log) is pruned after 90 days. All of these are tunable, see [Settings](#settings).
 
-**What leaves your server**: MusicBrainz, AcoustID (an audio fingerprint), Cover Art Archive, your own slskd instance, and for recommendations ListenBrainz (one recording or artist MBID per request) and the iTunes catalogue (the 30-second preview of a suggestion, to measure its audio). These carry what is being searched for, downloaded or compared — never a username, account id or listening history.
+**What leaves your server**: MusicBrainz, AcoustID (an audio fingerprint), Cover Art Archive, TheAudioDB and Wikidata (an artist's MBID or name, for its bio and picture), ListenBrainz (an artist MBID, for its listener count), your own slskd instance, and for recommendations ListenBrainz (one recording or artist MBID per request) and the iTunes catalogue (the 30-second preview of a suggestion, to measure its audio). These carry what is being searched for, downloaded or compared — never a username, account id or listening history. The one exception is ListenBrainz scrobbling, which a user turns on by connecting their own ListenBrainz account: what they play is then sent to that account.
 
 **One accepted weak point, worth knowing before you deploy**: Subsonic API tokens are stored in readable form, because the Subsonic protocol's token challenge requires a secret the server can re-hash. Account passwords are bcrypt-hashed as normal. This is disclosed in the notice rather than hidden, but it means your database dump contains working app passwords — treat it accordingly.
 
@@ -340,7 +339,8 @@ Clients built on it:
 - [Nuxt 4](https://nuxt.com/) (Vue 3) — frontend + server API routes (Nitro)
 - `mysql2` — database
 - `musicbrainz-api` — TypeScript types for MusicBrainz payloads only; all requests go through Nafyn's own rate-limited [`MusicBrainzRepository`](server/utils/musicbrainzRepository.ts)
-- Last.fm API — artist bios/images (optional, `LASTFM_API_KEY`)
+- TheAudioDB — artist bios and pictures (free key by default, `THEAUDIODB_API_KEY`), with Wikidata / Wikimedia Commons as the fallback picture
+- ListenBrainz — scrobbling (each user's own token, no instance key) and artist listener counts
 - `slskd` (external, self-hosted) — Soulseek network access
 - `fpcalc` + AcoustID — audio fingerprint verification (fingerprint and duration always regenerated from the file, candidates scored — see [How it works](#how-it-works))
 - `music-metadata` — tag reading/writing

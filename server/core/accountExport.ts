@@ -25,7 +25,7 @@ import { listReplayYears, getReplayMix } from "./replayMix";
 import { listPlaylistsOwnedBy, listMembershipsOfUser } from "./playlists";
 import { listRequestsByUser } from "./requests";
 import { listSubscriptionExportForUser } from "./releaseSubscriptions";
-import { getLastfmAccount } from "./lastfmAccounts";
+import { getListenBrainzAccount } from "./listenbrainzAccounts";
 import { listPinExportForUser } from "./pins";
 import { listImportExportForUser } from "./imports";
 import { listWebhookExportForUser } from "../utils/webhook";
@@ -118,8 +118,8 @@ export async function buildAccountExport(userId: string): Promise<Record<string,
 
     const pins = await listPinExportForUser(userId);
 
-    // the connected Last.fm account: never its session key (a credential), only which account and whether it scrobbles
-    const lastfm = await getLastfmAccount(userId);
+    // the connected ListenBrainz account: never its token (a credential), only which account and whether it scrobbles
+    const listenBrainz = await getListenBrainzAccount(userId);
 
     // playlist imports: the tracks that were in each imported playlist and what became of them
     const playlistImports = await listImportExportForUser(userId);
@@ -149,7 +149,7 @@ export async function buildAccountExport(userId: string): Promise<Record<string,
         // plain-language account of what each section is and why it is held, so the export doubles as the
         // art. 15 disclosure rather than being a bare dump the reader has to interpret
         about: {
-            notice: "Everything this Nafyn instance holds about your account. Secrets (your password hash, your app-password values, your passkey public keys, your webhook URLs, Apple push tokens and your Last.fm session key) are deliberately excluded - their existence and metadata are listed instead.",
+            notice: "Everything this Nafyn instance holds about your account. Secrets (your password hash, your app-password values, your passkey public keys, your webhook URLs, Apple push tokens and your ListenBrainz token) are deliberately excluded - their existence and metadata are listed instead.",
             privacyPolicy: "/privacy"
         },
         account: {
@@ -158,9 +158,9 @@ export async function buildAccountExport(userId: string): Promise<Record<string,
             displayName: user.displayName,
             hasAvatar: !!user.avatar,
             permissions: user.permissions,
-            linkedLastFm: user.lastFm,
+            linkedListenBrainz: user.listenBrainz,
             linkedDiscogs: user.discogs,
-            lastfmScrobbling: lastfm ? { username: lastfm.username, scrobbling: lastfm.scrobbling, connectedAt: lastfm.createdAt } : null
+            listenBrainzScrobbling: listenBrainz ? { username: listenBrainz.username, scrobbling: listenBrainz.scrobbling, connectedAt: listenBrainz.createdAt } : null
         },
         settings: {
             appearance,

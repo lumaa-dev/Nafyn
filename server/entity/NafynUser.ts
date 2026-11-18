@@ -6,6 +6,6 @@ export interface NafynUser {
     displayName: string | null,
     avatar: string | null,
     permissions: Permission[] | number,
-    lastFm: string | null,
+    listenBrainz: string | null,
     discogs: string | null
 }

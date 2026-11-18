@@ -12,8 +12,8 @@
           <span>{{ $t('profile.tracks', { count: profile.trackCount }, profile.trackCount) }}</span>
           <span> &middot; {{ $t('profile.playlistCount', { count: profile.playlists.length }, profile.playlists.length) }}</span>
         </p>
-        <p class="links" v-if="profile.lastFm || profile.discogs">
-          <a v-if="profile.lastFm" :href="`https://www.last.fm/user/${encodeURIComponent(profile.lastFm)}`" rel="noopener noreferrer">Last.fm</a>
+        <p class="links" v-if="profile.listenBrainz || profile.discogs">
+          <a v-if="profile.listenBrainz" :href="`https://listenbrainz.org/user/${encodeURIComponent(profile.listenBrainz)}/`" rel="noopener noreferrer">ListenBrainz</a>
           <a v-if="profile.discogs" :href="`https://www.discogs.com/user/${encodeURIComponent(profile.discogs)}`" rel="noopener noreferrer">Discogs</a>
         </p>
       </div>
@@ -42,7 +42,7 @@ interface PublicProfile {
   username: string;
   displayName: string | null;
   avatar: string | null;
-  lastFm: string | null;
+  listenBrainz: string | null;
   discogs: string | null;
   trackCount: number;
   playlists: { id: string; title: string; description: string | null; image: string | null; trackCount: number; updatedAt: number }[];

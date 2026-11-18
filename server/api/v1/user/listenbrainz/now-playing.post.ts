@@ -1,10 +1,10 @@
-import { sendNowPlaying } from "~~/server/core/lastfmAccounts";
+import { sendNowPlaying } from "~~/server/core/listenbrainzAccounts";
 
 defineRouteMeta({
     openAPI: {
-        description: "Tell Last.fm what the user just started playing (track.updateNowPlaying), when scrobbling is on. Fire-and-forget: always answers at once. The scrobble itself comes from the play event (POST /api/v1/insights/events)",
+        description: "Tell ListenBrainz what the user just started playing (a `playing_now` listen), when scrobbling is on. Fire-and-forget: always answers at once. The listen itself comes from the play event (POST /api/v1/insights/events)",
         tags: ["user"],
-        operationId: "lastfmNowPlaying",
+        operationId: "listenBrainzNowPlaying",
         requestBody: {
             required: true,
             content: { "application/json": { schema: { type: "object", required: ["mediaId"], properties: { mediaId: { type: "string" } } } } }

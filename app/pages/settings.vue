@@ -34,8 +34,8 @@
         <label for="displayName">{{ $t('settings.profile.displayName') }}</label>
         <input id="displayName" v-model="displayName" type="text" maxlength="20" :placeholder="$t('settings.profile.displayNamePlaceholder')">
 
-        <label for="lastFm">{{ $t('settings.profile.lastFm') }}</label>
-        <input id="lastFm" v-model="lastFm" type="text" :placeholder="$t('settings.profile.lastFmPlaceholder')">
+        <label for="listenBrainz">{{ $t('settings.profile.listenBrainz') }}</label>
+        <input id="listenBrainz" v-model="listenBrainz" type="text" :placeholder="$t('settings.profile.listenBrainzPlaceholder')">
 
         <label for="discogs">{{ $t('settings.profile.discogs') }}</label>
         <input id="discogs" v-model="discogs" type="text" :placeholder="$t('settings.profile.discogsPlaceholder')">
@@ -143,8 +143,8 @@
                 <input v-model="editDraft.displayName" type="text" maxlength="20" :disabled="isSelf(u)">
                 <label>{{ $t('settings.accounts.users.username') }}</label>
                 <input v-model="editDraft.username" type="text" :disabled="isSelf(u)">
-                <label>{{ $t('settings.profile.lastFm') }}</label>
-                <input v-model="editDraft.lastFm" type="text" :disabled="isSelf(u)">
+                <label>{{ $t('settings.profile.listenBrainz') }}</label>
+                <input v-model="editDraft.listenBrainz" type="text" :disabled="isSelf(u)">
                 <label>{{ $t('settings.profile.discogs') }}</label>
                 <input v-model="editDraft.discogs" type="text" :disabled="isSelf(u)">
 
@@ -445,7 +445,7 @@ const activeCategory = ref<Category["id"]>('profile');
 
 const user = ref<NafynUser | null>(null);
 const displayName = ref("");
-const lastFm = ref("");
+const listenBrainz = ref("");
 const discogs = ref("");
 const avatarVersion = ref<string | null>(null);
 const avatarFile = ref<File | null>(null);
@@ -563,7 +563,7 @@ if (data.value) {
 function applyUser(u: NafynUser) {
   user.value = u;
   displayName.value = u.displayName ?? u.username;
-  lastFm.value = u.lastFm ?? "";
+  listenBrainz.value = u.listenBrainz ?? "";
   discogs.value = u.discogs ?? "";
   avatarVersion.value = u.avatar;
 }
@@ -606,7 +606,7 @@ async function save() {
       headers: { Authorization: token },
       body: {
         displayName: displayName.value.trim(),
-        lastFm: lastFm.value.trim() || null,
+        listenBrainz: listenBrainz.value.trim() || null,
         discogs: discogs.value.trim() || null
       }
     });
@@ -669,7 +669,7 @@ const { items: users, loadingMore: usersLoadingMore, error: usersError, sentinel
   return $fetch("/api/v1/users", { headers: { Authorization: token }, query: { page, limit } });
 });
 const editingId = ref<string | null>(null);
-const editDraft = reactive({ displayName: "", username: "", lastFm: "", discogs: "", permissions: 0 });
+const editDraft = reactive({ displayName: "", username: "", listenBrainz: "", discogs: "", permissions: 0 });
 const savingUser = ref(false);
 
 const permOptions = Object.values(Permission).filter((v) => typeof v === "number" && v !== Permission.NONE) as Permission[];
@@ -740,7 +740,7 @@ function toggleEdit(u: NafynUser) {
   editingId.value = u.id;
   editDraft.displayName = u.displayName ?? u.username;
   editDraft.username = u.username;
-  editDraft.lastFm = u.lastFm ?? "";
+  editDraft.listenBrainz = u.listenBrainz ?? "";
   editDraft.discogs = u.discogs ?? "";
   editDraft.permissions = typeof u.permissions === "number" ? u.permissions : 0;
 }
@@ -758,7 +758,7 @@ async function saveUser(u: NafynUser) {
       body: {
         displayName: editDraft.displayName.trim(),
         username: editDraft.username.trim(),
-        lastFm: editDraft.lastFm.trim() || null,
+        listenBrainz: editDraft.listenBrainz.trim() || null,
         discogs: editDraft.discogs.trim() || null,
         permissions: editDraft.permissions
       }

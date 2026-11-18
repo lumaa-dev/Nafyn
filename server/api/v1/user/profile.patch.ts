@@ -13,7 +13,7 @@ defineRouteMeta({
                         type: "object",
                         properties: {
                             displayName: { type: "string", description: "1-20 characters" },
-                            lastFm: { type: "string", nullable: true, description: "Up to 50 characters" },
+                            listenBrainz: { type: "string", nullable: true, description: "Up to 50 characters" },
                             discogs: { type: "string", nullable: true, description: "Up to 50 characters" }
                         }
                     }
@@ -79,7 +79,7 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 400, statusMessage: "Expected a JSON body" });
     }
 
-    const changes: Partial<Pick<NafynUser, "displayName" | "lastFm" | "discogs">> = {};
+    const changes: Partial<Pick<NafynUser, "displayName" | "listenBrainz" | "discogs">> = {};
 
     if ("displayName" in body) {
         const displayName = typeof body.displayName === "string" ? body.displayName.trim() : "";
@@ -89,8 +89,8 @@ export default defineEventHandler(async (event) => {
         changes.displayName = displayName;
     }
 
-    if ("lastFm" in body) {
-        changes.lastFm = normalizeOptionalText(body.lastFm, 50);
+    if ("listenBrainz" in body) {
+        changes.listenBrainz = normalizeOptionalText(body.listenBrainz, 50);
     }
 
     if ("discogs" in body) {

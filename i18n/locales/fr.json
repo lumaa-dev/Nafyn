@@ -120,7 +120,7 @@
     "category": { "album": "Albums", "ep": "EP", "single": "Singles", "compilation": "Compilations", "live": "En concert", "remix": "Remixes", "soundtrack": "Bandes originales", "other": "Autres" },
     "discography": "Discographie",
     "viewInMusicbrainz": "Voir dans MusicBrainz",
-    "listeners": "{count} auditeurs sur Last.fm"
+    "listeners": "{count} auditeurs sur ListenBrainz"
   },
   "search": {
     "albums": "Albums",
@@ -190,16 +190,17 @@
       "webhooks": "Webhooks"
     },
     "connections": {
-      "lastfm": {
-        "title": "Last.fm",
-        "intro": "Connectez votre compte Last.fm et Nafyn scrobble tout ce que vous écoutez, depuis tous vos appareils et applis.",
-        "unavailable": "Le scrobbling Last.fm n'est pas configuré sur ce serveur.",
-        "connect": "Connecter Last.fm",
+      "listenbrainz": {
+        "title": "ListenBrainz",
+        "intro": "Connectez votre compte ListenBrainz et Nafyn scrobble tout ce que vous écoutez, depuis tous vos appareils et applis. Collez le jeton utilisateur de vos réglages ListenBrainz.",
+        "tokenLink": "Obtenir votre jeton utilisateur",
+        "tokenPlaceholder": "Jeton utilisateur ListenBrainz",
+        "connect": "Connecter ListenBrainz",
         "connectedAs": "Connecté en tant que {username}",
         "scrobbling": "Scrobbler mes écoutes",
         "disconnect": "Déconnecter",
-        "connected": "Compte Last.fm connecté",
-        "failed": "Impossible de connecter votre compte Last.fm"
+        "connected": "Compte ListenBrainz connecté",
+        "failed": "Impossible de connecter votre compte ListenBrainz"
       },
       "discogs": {
         "title": "Discogs",
@@ -226,8 +227,8 @@
       "removeAvatar": "Retirer",
       "displayName": "Nom affiché",
       "displayNamePlaceholder": "Votre nom affiché",
-      "lastFm": "Nom d'utilisateur Last.fm",
-      "lastFmPlaceholder": "Nom d'utilisateur Last.fm",
+      "listenBrainz": "Nom d'utilisateur ListenBrainz",
+      "listenBrainzPlaceholder": "Nom d'utilisateur ListenBrainz",
       "discogs": "Nom d'utilisateur Discogs",
       "discogsPlaceholder": "Nom d'utilisateur Discogs",
       "save": "Enregistrer",

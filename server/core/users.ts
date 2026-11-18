@@ -11,7 +11,7 @@ interface UserRow {
     displayName: string | null,
     avatar: string | null,
     permissions: number,
-    lastFm: string | null,
+    listenBrainz: string | null,
     discogs: string | null
 }
 
@@ -22,7 +22,7 @@ function rowToUser(row: UserRow): NafynUser {
         displayName: row.displayName,
         avatar: row.avatar,
         permissions: row.permissions as unknown as Permission[],
-        lastFm: row.lastFm,
+        listenBrainz: row.listenBrainz,
         discogs: row.discogs
     };
 }
@@ -39,8 +39,8 @@ export async function createUser(user: Omit<NafynUser, "id"> & { id?: UUID }, pa
     user.permissions = permcount;
 
     await getUsersDb().prepare(`
-        INSERT INTO users (id, username, passwordHash, displayName, avatar, permissions, lastFm, discogs)
-        VALUES (:id, :username, :passwordHash, :displayName, :avatar, :permissions, :lastFm, :discogs)
+        INSERT INTO users (id, username, passwordHash, displayName, avatar, permissions, listenBrainz, discogs)
+        VALUES (:id, :username, :passwordHash, :displayName, :avatar, :permissions, :listenBrainz, :discogs)
     `).run({
         id,
         username: user.username,
@@ -48,7 +48,7 @@ export async function createUser(user: Omit<NafynUser, "id"> & { id?: UUID }, pa
         displayName: user.displayName ?? null,
         avatar: user.avatar ?? null,
         permissions: user.permissions,
-        lastFm: user.lastFm ?? null,
+        listenBrainz: user.listenBrainz ?? null,
         discogs: user.discogs ?? null
     });
 
@@ -92,7 +92,7 @@ export async function updateUser(id: string, changes: Partial<Omit<NafynUser, "i
     const merged = { ...existing, ...changes };
     await getUsersDb().prepare(`
         UPDATE users
-        SET username = :username, displayName = :displayName, avatar = :avatar, permissions = :permissions, lastFm = :lastFm, discogs = :discogs
+        SET username = :username, displayName = :displayName, avatar = :avatar, permissions = :permissions, listenBrainz = :listenBrainz, discogs = :discogs
         WHERE id = :id
     `).run({
         id,
@@ -100,7 +100,7 @@ export async function updateUser(id: string, changes: Partial<Omit<NafynUser, "i
         displayName: merged.displayName ?? null,
         avatar: merged.avatar ?? null,
         permissions: merged.permissions as unknown as number,
-        lastFm: merged.lastFm ?? null,
+        listenBrainz: merged.listenBrainz ?? null,
         discogs: merged.discogs ?? null
     });
 

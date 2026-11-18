@@ -16,7 +16,7 @@ import type { ArtistInfo } from "../../entity/media/ArtistInfo";
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 50;
 
-// this endpoint fans out to MusicBrainz (and Last.fm) on every call, so an authenticated account could
+// this endpoint fans out to MusicBrainz on every call, so an authenticated account could
 // otherwise use Nafyn as a free proxy to hammer those upstreams - and get Nafyn's own IP blocked there
 const MAX_SEARCHES = 60;
 

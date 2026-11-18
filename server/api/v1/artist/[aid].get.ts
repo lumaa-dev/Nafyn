@@ -1,6 +1,6 @@
 import type { IReleaseGroup } from "musicbrainz-api";
 import { getMusicBrainzRepository, parseReleaseDate } from "~~/server/utils/musicbrainz";
-import { getLastfmArtistInfo } from "~~/server/utils/lastfm";
+import { getArtistInfo } from "~~/server/utils/artistInfo";
 import { resolveArtistImage } from "~~/server/utils/artistImage";
 import { userOwnsAlbum } from "~~/server/core/library";
 import type { ArtistDetail, ArtistRelease, ReleaseCategory } from "~~/server/entity/media/ArtistDetail";
@@ -14,7 +14,7 @@ import { luceneQuote } from "~~/server/utils/musicbrainzRepository";
 
 defineRouteMeta({
     openAPI: {
-        description: "Get artist details: name, picture, Last.fm bio (if LASTFM_API_KEY is configured), and their discography from MusicBrainz with per-album library status for the requesting user. `categories` lays the discography out by kind (Albums, EPs, Singles, Compilations, Live, Remixes, Soundtracks, Other), newest first, and adds the Deluxe / Remaster edition of an album when it is a release inside the album's own release-group",
+        description: "Get artist details: name, picture and bio (TheAudioDB), listener count (ListenBrainz), and their discography from MusicBrainz with per-album library status for the requesting user. `categories` lays the discography out by kind (Albums, EPs, Singles, Compilations, Live, Remixes, Soundtracks, Other), newest first, and adds the Deluxe / Remaster edition of an album when it is a release inside the album's own release-group",
         tags: ["artist"],
         operationId: "getArtist",
         parameters: [
@@ -69,9 +69,9 @@ defineRouteMeta({
                         properties: {
                             id: { type: "string", description: "MusicBrainz artist ID" },
                             name: { type: "string" },
-                            image: { type: "string", nullable: true, description: "The Last.fm profile photo MusicBrainz links to the artist; without a link, TheAudioDB then Last.fm. Null when none has one" },
-                            bio: { type: "string", nullable: true, description: "From Last.fm" },
-                            listeners: { type: "number", nullable: true, description: "Last.fm listener count" },
+                            image: { type: "string", nullable: true, description: "From TheAudioDB; without one there, the Wikimedia Commons image of the Wikidata item MusicBrainz links to the artist. Null when none has one" },
+                            bio: { type: "string", nullable: true, description: "From TheAudioDB, in English" },
+                            listeners: { type: "number", nullable: true, description: "How many people listened to the artist on ListenBrainz" },
                             albums: {
                                 type: "array",
                                 description: "Every release-group, newest first, all kinds mixed",
@@ -165,9 +165,9 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 404, statusMessage: "No artist found for that ID" });
     }
 
-    const [releaseGroups, lastfm, image] = await Promise.all([
+    const [releaseGroups, info, image] = await Promise.all([
         browseReleaseGroups(client, aid),
-        getLastfmArtistInfo(artist.name, aid),
+        getArtistInfo(artist.name, aid),
         resolveArtistImage(aid, artist.name, artist.relations ?? [])
     ]);
 
@@ -228,8 +228,8 @@ export default defineEventHandler(async (event) => {
         id: artist.id,
         name: artist.name,
         image,
-        bio: lastfm?.bio ?? null,
-        listeners: lastfm?.listeners ?? null,
+        bio: info.bio,
+        listeners: info.listeners,
         albums,
         categories
     };

@@ -45,11 +45,8 @@ export default defineNuxtConfig({
     domainsWhitelist: process.env.DOMAINS_WHITELIST || '',
 
     acoustidApiKey: process.env.ACOUSTID_API_KEY || '',
-    lastfmApiKey: process.env.LASTFM_API_KEY || '',
-    // with the key: users connect their Last.fm account and Nafyn scrobbles what they play (server side)
-    lastfmApiSecret: process.env.LASTFM_API_SECRET || '',
-    // TheAudioDB artist pictures; "2" is the free key TheAudioDB publishes for everyone (30 requests a minute)
-    theaudiodbApiKey: process.env.THEAUDIODB_API_KEY || '2',
+    // TheAudioDB artist bios and pictures; "123" is the free key TheAudioDB publishes for everyone (30 requests a minute)
+    theaudiodbApiKey: process.env.THEAUDIODB_API_KEY || '123',
 
     public: {
       // GDPR art. 13: the person running the instance is the data controller, and a privacy notice has to

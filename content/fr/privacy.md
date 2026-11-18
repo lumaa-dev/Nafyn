@@ -32,7 +32,7 @@ Tout reste sur le serveur et la base de données de cette instance. Rien de ce q
 
 ### Votre compte
 
-Nom d'utilisateur, nom affiché facultatif, avatar facultatif, vos permissions, et les identifiants Last.fm /
+Nom d'utilisateur, nom affiché facultatif, avatar facultatif, vos permissions, et les identifiants ListenBrainz /
 Discogs que vous choisissez de lier. Nécessaire pour avoir un compte.
 
 *Conservé jusqu'à la suppression de votre compte.*
@@ -40,7 +40,7 @@ Discogs que vous choisissez de lier. Nécessaire pour avoir un compte.
 ### Votre profil public
 
 Votre page de profil (`/u/<nom d'utilisateur>`) est **publique** : toute personne disposant du lien, connectée ou
-non, voit votre nom affiché, votre avatar, les noms d'utilisateur Last.fm / Discogs que vous avez liés, le nombre
+non, voit votre nom affiché, votre avatar, les noms d'utilisateur ListenBrainz / Discogs que vous avez liés, le nombre
 de titres de votre bibliothèque et les playlists que vous possédez et qui sont publiques. Les aperçus de lien
 (Discord, réseaux sociaux) montrent la même chose. Vos playlists privées, la liste de vos titres et votre
 historique d'écoute n'en font jamais partie.
@@ -169,12 +169,13 @@ historique d'écoute.
 - **MusicBrainz**, pour identifier enregistrements, sorties et artistes.
 - **AcoustID**, qui reçoit l'empreinte audio d'un fichier téléchargé pour confirmer qu'il s'agit du bon
   enregistrement.
-- **Last.fm**, pour les biographies d'artistes, si l'opérateur a configuré une clé.
+- **TheAudioDB** et **Wikidata / Wikimedia Commons**, pour les biographies et photos d'artistes. Ils reçoivent
+  l'identifiant ou le nom d'un artiste, jamais qui a demandé.
 - **Le catalogue iTunes d'Apple**, qui reçoit le titre et l'artiste d'un titre que vous ne possédez pas quand
   vous écoutez son extrait de 30 secondes, ou quand cet extrait est analysé (tempo, tonalité, énergie...)
   pour savoir s'il a sa place dans l'un de vos mix.
 - **ListenBrainz** (MetaBrainz Foundation), pour trouver des enregistrements et des artistes proches de ceux
-  de vos mix. Il reçoit un identifiant d'enregistrement ou d'artiste à la fois, jamais qui a demandé ni
+  de vos mix, et pour afficher le nombre d'auditeurs d'un artiste. Il reçoit un identifiant d'enregistrement ou d'artiste à la fois, jamais qui a demandé ni
   pourquoi.
 - **Discogs**, quand vous importez votre collection Discogs : Nafyn lit cette collection à partir du nom
   d'utilisateur Discogs que vous lui donnez.
@@ -184,11 +185,12 @@ Une recherche textuelle que vous saisissez est transmise telle quelle à MusicBr
 un titre, au réseau Soulseek. C'est la seule
 donnée de cette liste sur laquelle vous avez la main directement.
 
-**Le scrobbling Last.fm est l'autre exception**, et seulement si vous connectez vous-même votre compte Last.fm
-(Paramètres -> Profil) : chaque titre que vous écoutez (titre, artiste, album, durée et moment de l'écoute) est
-alors envoyé à *votre* compte Last.fm, selon la politique de confidentialité de Last.fm. Nafyn conserve la clé de
-session que Last.fm donne pour votre compte (jamais votre mot de passe Last.fm) jusqu'à ce que vous le
-déconnectiez ou supprimiez votre compte Nafyn.
+**Le scrobbling ListenBrainz est l'autre exception**, et seulement si vous connectez vous-même votre compte
+ListenBrainz (Paramètres -> Profil) : chaque titre que vous écoutez (titre, artiste, album, durée, ses
+identifiants MusicBrainz et moment de l'écoute) est alors envoyé à *votre* compte ListenBrainz, selon la
+politique de confidentialité de la MetaBrainz Foundation. Les écoutes ListenBrainz sont publiques sur votre profil
+ListenBrainz. Nafyn conserve le jeton utilisateur que vous lui donnez (jamais votre mot de passe MusicBrainz)
+jusqu'à ce que vous le déconnectiez ou supprimiez votre compte Nafyn.
 
 **Les notifications font exception** au « jamais votre nom d'utilisateur », puisque prévenir quelqu'un d'une
 demande est tout leur intérêt :

@@ -116,7 +116,7 @@ defineRouteMeta({
                                 type: ["array", "number"],
                                 description: "The user's current permissions"
                             },
-                            lastFm: {
+                            listenBrainz: {
                                 type: "string"
                             },
                             discogs: {
@@ -187,7 +187,7 @@ export default defineEventHandler(async (event) => {
             displayName: null,
             avatar: null,
             permissions: defaultPerms,
-            lastFm: null,
+            listenBrainz: null,
             discogs: null
         }, passwordHash);
     } catch {

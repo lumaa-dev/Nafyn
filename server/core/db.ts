@@ -181,7 +181,7 @@ export async function initDatabases(): Promise<void> {
             displayName VARCHAR(255),
             avatar TEXT,
             permissions INT NOT NULL DEFAULT 0,
-            lastFm TEXT,
+            listenBrainz TEXT,
             discogs TEXT
         );
 
@@ -348,12 +348,12 @@ export async function initDatabases(): Promise<void> {
             INDEX idx_release_sub_due (notifiedAt, releaseAt)
         );
 
-        -- a user's Last.fm account (scrobbling): the session key auth.getSession gave for it, which is a credential
-        -- (never exported, never listed). In eraseAccount(), and buildAccountExport() lists the username only.
-        CREATE TABLE IF NOT EXISTS user_lastfm (
+        -- a user's ListenBrainz account (scrobbling): its user token, which is a credential (never exported,
+        -- never listed). In eraseAccount(), and buildAccountExport() lists the username only.
+        CREATE TABLE IF NOT EXISTS user_listenbrainz (
             userId VARCHAR(36) PRIMARY KEY,
             username VARCHAR(64) NOT NULL,
-            sessionKey VARCHAR(64) NOT NULL,
+            token VARCHAR(128) NOT NULL,
             scrobbling TINYINT NOT NULL DEFAULT 1,
             createdAt BIGINT NOT NULL
         );

@@ -56,7 +56,7 @@ export async function verifyAuthToken(token: string): Promise<AuthTokenPayload> 
     return payload;
 }
 
-// short-lived, single-purpose tokens that are not logins (the Last.fm connect round trip carries one as its `state`):
+// short-lived, single-purpose tokens that are not logins (say, the `state` of a round trip through another site):
 // signed with the same secret, but with an `aud` naming the purpose, so one can never be used as the other - a
 // login token has no `aud` and verifyAuthToken never accepts one that has.
 export function signPurposeToken(purpose: string, payload: Record<string, string>, expiresIn: `${number}m`): string {

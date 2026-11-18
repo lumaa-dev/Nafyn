@@ -1,27 +1,30 @@
 <template>
   <div class="connections">
-    <!-- Last.fm scrobbling (server side, every client): connect once on last.fm, then pause / resume or disconnect -->
+    <!-- ListenBrainz scrobbling (server side, every client): connect once with the user token, then pause / resume or disconnect -->
     <section class="subsection">
-      <h2>{{ $t('settings.connections.lastfm.title') }}</h2>
-      <LoadError :error="lastfmError" />
-      <template v-if="lastfm">
-        <p v-if="!lastfm.available" class="subsonic-note">{{ $t('settings.connections.lastfm.unavailable') }}</p>
-        <template v-else-if="lastfm.username">
-          <p class="subsonic-note">{{ $t('settings.connections.lastfm.connectedAs', { username: lastfm.username }) }}</p>
+      <h2>{{ $t('settings.connections.listenbrainz.title') }}</h2>
+      <LoadError :error="listenBrainzError" />
+      <template v-if="listenBrainz">
+        <template v-if="listenBrainz.username">
+          <p class="subsonic-note">{{ $t('settings.connections.listenbrainz.connectedAs', { username: listenBrainz.username }) }}</p>
           <label class="switch-row">
-            <input type="checkbox" :checked="lastfm.scrobbling" :disabled="lastfmBusy" @change="toggleScrobbling">
-            {{ $t('settings.connections.lastfm.scrobbling') }}
+            <input type="checkbox" :checked="listenBrainz.scrobbling" :disabled="listenBrainzBusy" @change="toggleScrobbling">
+            {{ $t('settings.connections.listenbrainz.scrobbling') }}
           </label>
           <span class="row">
-            <button type="button" filled="hollow" class="danger" :disabled="lastfmBusy" @click="disconnectLastfm">{{ $t('settings.connections.lastfm.disconnect') }}</button>
+            <button type="button" filled="hollow" class="danger" :disabled="listenBrainzBusy" @click="disconnectListenBrainz">{{ $t('settings.connections.listenbrainz.disconnect') }}</button>
           </span>
         </template>
-        <template v-else>
-          <p class="subsonic-note">{{ $t('settings.connections.lastfm.intro') }}</p>
+        <form v-else @submit.prevent="connectListenBrainz">
+          <p class="subsonic-note">
+            {{ $t('settings.connections.listenbrainz.intro') }}
+            <a href="https://listenbrainz.org/settings/" target="_blank" rel="noopener noreferrer">{{ $t('settings.connections.listenbrainz.tokenLink') }}</a>
+          </p>
+          <input v-model="listenBrainzToken" type="password" autocomplete="off" maxlength="128" :placeholder="$t('settings.connections.listenbrainz.tokenPlaceholder')" :disabled="listenBrainzBusy">
           <span class="row">
-            <button type="button" filled="hollow" :disabled="lastfmBusy" @click="connectLastfm">{{ $t('settings.connections.lastfm.connect') }}</button>
+            <button type="submit" filled="hollow" :disabled="listenBrainzBusy || !listenBrainzToken.trim()">{{ $t('settings.connections.listenbrainz.connect') }}</button>
           </span>
-        </template>
+        </form>
       </template>
     </section>
 
@@ -51,7 +54,7 @@ import LoadError from '~/components/LoadError.vue';
 
 const props = defineProps<{ discogsUsername: string | null }>();
 
-interface LastfmConnection { available: boolean, username: string | null, scrobbling: boolean }
+interface ListenBrainzConnection { username: string | null, scrobbling: boolean }
 interface ImportJob {
   id: string,
   status: "running" | "completed",
@@ -63,57 +66,62 @@ interface ImportJob {
 const { t } = useI18n();
 const { token } = useAuthToken();
 const headers = () => ({ Authorization: token.value ?? "" });
-const route = useRoute();
 
-const lastfm = ref<LastfmConnection | null>(null);
-const lastfmError = ref<unknown>(null);
-const lastfmBusy = ref(false);
+const listenBrainz = ref<ListenBrainzConnection | null>(null);
+const listenBrainzError = ref<unknown>(null);
+const listenBrainzBusy = ref(false);
+const listenBrainzToken = ref("");
 
-async function loadLastfm() {
+async function loadListenBrainz() {
   try {
-    lastfm.value = await $fetch<LastfmConnection>("/api/v1/user/lastfm", { headers: headers() });
-    lastfmError.value = null;
+    listenBrainz.value = await $fetch<ListenBrainzConnection>("/api/v1/user/listenbrainz", { headers: headers() });
+    listenBrainzError.value = null;
   } catch (e) {
-    lastfmError.value = e;
+    listenBrainzError.value = e;
   }
 }
 
-async function connectLastfm() {
-  lastfmBusy.value = true;
+async function connectListenBrainz() {
+  const value = listenBrainzToken.value.trim();
+  if (!value) return;
+  listenBrainzBusy.value = true;
   try {
-    const { url } = await $fetch<{ url: string }>("/api/v1/user/lastfm/connect", { method: "POST", headers: headers(), body: { client: "web" } });
-    // last.fm sends the browser back to /settings?lastfm=connected|error
-    window.location.href = url;
+    // the server checks the token with ListenBrainz before keeping it
+    listenBrainz.value = await $fetch<ListenBrainzConnection>("/api/v1/user/listenbrainz", { method: "POST", headers: headers(), body: { token: value } });
+    listenBrainzToken.value = "";
+    setScrobblingState(listenBrainz.value.scrobbling);
+    useToast().sendToast({ title: t('settings.connections.listenbrainz.title'), content: t('settings.connections.listenbrainz.connected'), tint: "green", icon: null });
   } catch (e) {
-    useToast().sendError(t('settings.connections.lastfm.title'), e);
-    lastfmBusy.value = false;
+    useToast().sendError(t('settings.connections.listenbrainz.failed'), e);
+  } finally {
+    listenBrainzBusy.value = false;
   }
 }
 
 async function toggleScrobbling(e: Event) {
   const wanted = (e.target as HTMLInputElement).checked;
-  lastfmBusy.value = true;
+  listenBrainzBusy.value = true;
   try {
-    lastfm.value = await $fetch<LastfmConnection>("/api/v1/user/lastfm", { method: "PATCH", headers: headers(), body: { scrobbling: wanted } });
-    setScrobblingState(lastfm.value.scrobbling);
+    listenBrainz.value = await $fetch<ListenBrainzConnection>("/api/v1/user/listenbrainz", { method: "PATCH", headers: headers(), body: { scrobbling: wanted } });
+    setScrobblingState(listenBrainz.value.scrobbling);
   } catch (err) {
     (e.target as HTMLInputElement).checked = !wanted;
-    useToast().sendError(t('settings.connections.lastfm.title'), err);
+    useToast().sendError(t('settings.connections.listenbrainz.title'), err);
   } finally {
-    lastfmBusy.value = false;
+    listenBrainzBusy.value = false;
   }
 }
 
-async function disconnectLastfm() {
-  lastfmBusy.value = true;
+async function disconnectListenBrainz() {
+  listenBrainzBusy.value = true;
   try {
-    await $fetch("/api/v1/user/lastfm", { method: "DELETE", headers: headers() });
+    await $fetch("/api/v1/user/listenbrainz", { method: "DELETE", headers: headers() });
     setScrobblingState(false);
-    await loadLastfm();
+    await loadListenBrainz();
   } catch (e) {
-    useToast().sendError(t('settings.connections.lastfm.title'), e);
+    useToast().sendError(t('settings.connections.listenbrainz.title'), e);
   } finally {
-    lastfmBusy.value = false;
+    listenBrainzBusy.value = false;
   }
 }
 
@@ -156,17 +164,7 @@ async function importDiscogs() {
 }
 
 onMounted(async () => {
-  await loadLastfm();
-  const outcome = route.query.lastfm;
-  if (outcome === "connected" || outcome === "error") {
-    if (outcome === "connected") {
-      setScrobblingState(true);
-      useToast().sendToast({ title: t('settings.connections.lastfm.title'), content: t('settings.connections.lastfm.connected'), tint: "green", icon: null });
-    } else {
-      useToast().sendToast({ title: t('settings.connections.lastfm.title'), content: t('settings.connections.lastfm.failed'), tint: "red", icon: null });
-    }
-    await navigateTo({ path: route.path, query: { ...route.query, lastfm: undefined } }, { replace: true });
-  }
+  await loadListenBrainz();
 });
 
 onBeforeUnmount(() => { if (pollTimer) clearTimeout(pollTimer); });
@@ -179,6 +177,12 @@ const savedDiscogs = computed(() => props.discogsUsername?.trim() || null);
 .connections .row {
   display: flex;
   flex-wrap: wrap;
+  gap: 10px;
+}
+
+.connections form {
+  display: flex;
+  flex-direction: column;
   gap: 10px;
 }
 

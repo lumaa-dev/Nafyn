@@ -25,7 +25,7 @@ defineRouteMeta({
                         properties: {
                             displayName: { type: "string", description: "1-20 characters" },
                             username: { type: "string" },
-                            lastFm: { type: "string", nullable: true, description: "Up to 50 characters" },
+                            listenBrainz: { type: "string", nullable: true, description: "Up to 50 characters" },
                             discogs: { type: "string", nullable: true, description: "Up to 50 characters" },
                             permissions: { type: "number", description: "Non-negative integer bitfield, see the Permission enum" }
                         }
@@ -115,7 +115,7 @@ export default defineEventHandler(async (event) => {
     if (!body || typeof body !== "object") {
         throw createError({ statusCode: 400, statusMessage: "Expected a JSON body" });
     }
-    const changes: Partial<Pick<NafynUser, "displayName" | "username" | "lastFm" | "discogs" | "permissions">> = {};
+    const changes: Partial<Pick<NafynUser, "displayName" | "username" | "listenBrainz" | "discogs" | "permissions">> = {};
 
     if ("displayName" in body) {
         const displayName = typeof body.displayName === "string" ? body.displayName.trim() : "";
@@ -134,8 +134,8 @@ export default defineEventHandler(async (event) => {
         (changes as Partial<NafynUser>).username = username;
     }
 
-    if ("lastFm" in body) {
-        changes.lastFm = normalizeOptionalText(body.lastFm, 50);
+    if ("listenBrainz" in body) {
+        changes.listenBrainz = normalizeOptionalText(body.listenBrainz, 50);
     }
 
     if ("discogs" in body) {

@@ -1,22 +1,23 @@
 // Where an artist's picture comes from.
 //
-//   1. MusicBrainz lists the artist's Last.fm profile -> that profile's photo (it is the profile the community
-//      attached to this very artist, so there is nothing to guess)
-//   2. it doesn't -> TheAudioDB first, found through the MusicBrainz ID, then Last.fm by that ID / the name
+//   1. TheAudioDB, found through the MusicBrainz ID (the same answer that carries the artist's bio, so the artist
+//      page asks once)
+//   2. it has none -> the image of the Wikidata item MusicBrainz links to the artist, from Wikimedia Commons (it is
+//      the item the community attached to this very artist, so there is nothing to guess)
 //
-// Step 1 falls back to the Last.fm API when the profile page yields nothing. Answers are cached (a picture does
-// not change by the hour, and a search lists dozens of artists), concurrent lookups of one artist share a
-// single run, and "no picture anywhere" is remembered for a shorter while than a hit.
+// Answers are cached (a picture does not change by the hour, and a search lists dozens of artists), concurrent
+// lookups of one artist share a single run, and "no picture anywhere" is remembered for a shorter while than a hit.
 import { getMusicBrainzRepository } from "~~/server/utils/musicbrainz";
-import { getLastfmArtistInfo, getLastfmProfileImage } from "~~/server/utils/lastfm";
-import { audioDbThumb, lastfmProfileFromRelations, type UrlRelation } from "~~/server/utils/artistImageParse";
+import { getAudioDbArtist } from "~~/server/utils/artistInfo";
+import { USER_AGENT } from "~~/server/utils/app";
+import { commonsImageUrl, wikidataIdFromRelations, wikidataImageFile, type UrlRelation } from "~~/server/utils/artistImageParse";
 
 const HIT_TTL_MS = 24 * 60 * 60 * 1000;
 const MISS_TTL_MS = 60 * 60 * 1000;
 // an upstream that was down says nothing about the artist: ask again soon
 const UNSURE_TTL_MS = 2 * 60 * 1000;
 const MAX_ENTRIES = 5_000;
-const AUDIODB_TIMEOUT_MS = 5_000;
+const WIKIDATA_TIMEOUT_MS = 5_000;
 
 const cache = new Map<string, { image: string | null, expiresAtMs: number }>();
 const inFlight = new Map<string, Promise<string | null>>();
@@ -33,16 +34,16 @@ interface Lookup {
     unsure: boolean
 }
 
-async function fromAudioDb(mbid: string): Promise<Lookup> {
-    const key = useRuntimeConfig().theaudiodbApiKey;
-    if (!key) return { image: null, unsure: false };
+async function fromWikidata(itemId: string): Promise<Lookup> {
     try {
-        const response = await fetch(`https://www.theaudiodb.com/api/v1/json/${encodeURIComponent(key)}/artist-mb.php?i=${encodeURIComponent(mbid)}`, {
-            signal: AbortSignal.timeout(AUDIODB_TIMEOUT_MS),
-            headers: { Accept: "application/json" }
+        const response = await fetch(`https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${itemId}&property=P18&format=json`, {
+            signal: AbortSignal.timeout(WIKIDATA_TIMEOUT_MS),
+            headers: { Accept: "application/json", "User-Agent": USER_AGENT },
+            redirect: "error"
         });
         if (!response.ok) return { image: null, unsure: true };
-        return { image: audioDbThumb(await response.json(), mbid), unsure: false };
+        const file = wikidataImageFile(await response.json());
+        return { image: file ? commonsImageUrl(file) : null, unsure: false };
     } catch {
         return { image: null, unsure: true };
     }
@@ -51,37 +52,24 @@ async function fromAudioDb(mbid: string): Promise<Lookup> {
 async function run(mbid: string, name: string, relations: UrlRelation[] | null | undefined): Promise<Lookup> {
     let unsure = false;
 
-    // MusicBrainz' own list of links wins
+    // TheAudioDB first
+    const audioDb = await getAudioDbArtist(name, mbid);
+    if (audioDb?.image) return { image: audioDb.image, unsure: false };
+    if (audioDb === undefined) unsure = true;
+
+    // ...then the Wikidata item among MusicBrainz' own list of links
     let rels = relations;
     if (!rels) {
         try {
             rels = ((await getMusicBrainzRepository().lookup("artist", mbid, ["url-rels"])) as { relations?: UrlRelation[] }).relations ?? [];
         } catch {
-            rels = [];
-            unsure = true;
+            return { image: null, unsure: true };
         }
     }
-    const profile = lastfmProfileFromRelations(rels);
-    if (profile) {
-        const photo = await getLastfmProfileImage(profile);
-        if (photo) return { image: photo, unsure: false };
-        // the page had no usable photo (or was unreachable): the API may still know one for this artist
-        const info = await getLastfmArtistInfo(name, mbid);
-        return { image: info?.image ?? null, unsure };
-    }
-
-    // no Last.fm link: TheAudioDB first...
-    const audioDb = await fromAudioDb(mbid);
-    if (audioDb.image) return { image: audioDb.image, unsure: false };
-    unsure ||= audioDb.unsure;
-
-    // ...then Last.fm itself
-    const info = await getLastfmArtistInfo(name, mbid);
-    if (info?.url) {
-        const photo = await getLastfmProfileImage(info.url);
-        if (photo) return { image: photo, unsure: false };
-    }
-    return { image: info?.image ?? null, unsure };
+    const item = wikidataIdFromRelations(rels);
+    if (!item) return { image: null, unsure };
+    const wikidata = await fromWikidata(item);
+    return { image: wikidata.image, unsure: !wikidata.image && (unsure || wikidata.unsure) };
 }
 
 /**

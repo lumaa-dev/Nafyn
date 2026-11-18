@@ -1,4 +1,4 @@
-import { isScrobbling, scrobblePlays } from "~~/server/core/lastfmAccounts";
+import { isScrobbling, scrobblePlays } from "~~/server/core/listenbrainzAccounts";
 // batch ingestion for play events - the one write path into the append-only store.
 import { insertPlayEvents } from "~~/server/core/playEvents";
 import { isHistoryEnabled } from "~~/server/core/insightsSettings";
@@ -54,7 +54,7 @@ defineRouteMeta({
                                 accepted: { type: "integer", description: "Events newly written to the store" },
                                 rejected: { type: "integer", description: "Entries dropped as malformed, duplicated within the batch, or referencing a track outside the user's library" },
                                 historyEnabled: { type: "boolean", description: "False means the batch was not stored in the listening history" },
-                                scrobbling: { type: "boolean", description: "The plays are scrobbled to Last.fm. A client stops sending only when both this and historyEnabled are false" }
+                                scrobbling: { type: "boolean", description: "The plays are scrobbled to ListenBrainz. A client stops sending only when both this and historyEnabled are false" }
                             }
                         }
                     }
@@ -100,7 +100,7 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event);
     const { events, rejected } = parsePlayEventBatch(body);
 
-    // Last.fm scrobbling does not depend on the listening history: a client keeps sending its plays while either is on
+    // ListenBrainz scrobbling does not depend on the listening history: a client keeps sending its plays while either is on
     const scrobbling = await isScrobbling(userId);
     if (scrobbling) scrobblePlays(userId, events.map((e) => ({ trackId: e.trackId, startedAtMs: e.startedAtMs, durationMs: e.durationMs })));
 

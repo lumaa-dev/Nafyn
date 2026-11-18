@@ -29,7 +29,7 @@ or used to profile you across other services.
 
 ### Your account
 
-Username, optional display name, optional avatar image, your permissions, and the Last.fm / Discogs
+Username, optional display name, optional avatar image, your permissions, and the ListenBrainz / Discogs
 usernames you choose to link. Needed to have an account at all.
 
 *Kept until you delete your account.*
@@ -37,7 +37,7 @@ usernames you choose to link. Needed to have an account at all.
 ### Your public profile
 
 Your profile page (`/u/<username>`) is **public**: anyone with the link, signed in or not, sees your display
-name, your avatar, the Last.fm / Discogs usernames you linked, how many tracks your library holds, and the
+name, your avatar, the ListenBrainz / Discogs usernames you linked, how many tracks your library holds, and the
 playlists you own that are set to public. Link previews (Discord, social networks) show the same. Your
 private playlists, your track list and your listening history are never part of it.
 
@@ -158,12 +158,14 @@ downloaded - never your username, your account id, or your listening history.
 - **MusicBrainz**, to resolve recordings, releases and artists.
 - **AcoustID**, which receives an audio fingerprint of a downloaded file to confirm it is the right
   recording.
-- **Last.fm**, for artist biographies, if the operator configured a key for it.
+- **TheAudioDB** and **Wikidata / Wikimedia Commons**, for artist biographies and pictures. They receive an
+  artist's identifier or name, never who asked.
 - **Apple's iTunes catalogue**, which receives the title and artist of a track you don't own when you play
   its 30-second preview, or when that preview is analysed (its tempo, key, energy...) to decide whether it
   fits one of your mixes.
-- **ListenBrainz** (MetaBrainz Foundation), to find recordings and artists similar to the ones in your mixes.
-  It receives one recording or artist identifier at a time, never who asked or why.
+- **ListenBrainz** (MetaBrainz Foundation), to find recordings and artists similar to the ones in your mixes,
+  and to show how many listeners an artist has. It receives one recording or artist identifier at a time,
+  never who asked or why.
 - **Discogs**, when you import your Discogs collection: Nafyn reads that collection by the Discogs username
   you give it.
 - **Cover Art Archive**, to fetch artwork.
@@ -172,10 +174,11 @@ A text search you type is sent to MusicBrainz and, when you request something, t
 search term. If that matters to you, note that
 search terms are the one thing here you control directly.
 
-**Last.fm scrobbling is the other exception**, and only if you connect your Last.fm account yourself (Settings ->
-Profile): every track you play (title, artist, album, length and when you played it) is then sent to *your*
-Last.fm account, under Last.fm's own privacy policy. Nafyn keeps the session key Last.fm gives for your account
-(never your Last.fm password) until you disconnect it or delete your Nafyn account.
+**ListenBrainz scrobbling is the other exception**, and only if you connect your ListenBrainz account yourself
+(Settings -> Profile): every track you play (title, artist, album, length, its MusicBrainz identifiers and
+when you played it) is then sent to *your* ListenBrainz account, under the MetaBrainz Foundation's own privacy
+policy. ListenBrainz listens are public on your ListenBrainz profile. Nafyn keeps the user token you give it
+(never your MusicBrainz password) until you disconnect it or delete your Nafyn account.
 
 **Notifications are the exception** to "never your username", because telling someone about a request is
 their whole point:

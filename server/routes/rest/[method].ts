@@ -43,7 +43,7 @@ import {
 import { recordRecentlyPlayed } from "~~/server/core/recentlyPlayed";
 import { getReplayMix, listReplayYears, isReplayPlaylistId, parseReplayPlaylistId, replayPlaylistId, ALL_TIME_YEAR } from "~~/server/core/replayMix";
 import { insertPlayEvents } from "~~/server/core/playEvents";
-import { scrobblePlays, sendNowPlaying } from "~~/server/core/lastfmAccounts";
+import { scrobblePlays, sendNowPlaying } from "~~/server/core/listenbrainzAccounts";
 import { isHistoryEnabled } from "~~/server/core/insightsSettings";
 import { playlistImageFilePath, deletePlaylistImage } from "~~/server/utils/playlistImage";
 import { isUuid, escapeLike } from "~~/server/utils/ids";
@@ -51,7 +51,7 @@ import { isAllowedCoverArtUrl, fetchCoverArt } from "~~/server/utils/coverArt";
 import { getCachedCover } from "~~/server/utils/coverArtCache";
 import { parseCoverArtUrl } from "~~/server/utils/coverUrl";
 import { mediaCoverFilePath } from "~~/server/utils/mediaCover";
-import { getLastfmArtistInfo } from "~~/server/utils/lastfm";
+import { getArtistInfo } from "~~/server/utils/artistInfo";
 import { resolveArtistImage } from "~~/server/utils/artistImage";
 import { authenticateSubsonic } from "~~/server/utils/subsonicAuth";
 import { sendSubsonicResponse, errorNode, SubsonicErrors, SubsonicApiError, el, asList, type SubsonicNode, type SubsonicFormat } from "~~/server/utils/subsonicResponse";
@@ -205,7 +205,7 @@ const handlers: Record<string, Handler> = {
         return [artistWithAlbumsNode(artist, albums)];
     },
 
-    // OpenSubsonic/Subsonic's dedicated bio+image endpoint, backed by Last.fm (see server/utils/lastfm.ts) -
+    // OpenSubsonic/Subsonic's dedicated bio+image endpoint, backed by TheAudioDB (see server/utils/artistInfo.ts) -
     // getArtist above stays MusicBrainz/local-only since that's the one every client calls just to browse
     getArtistInfo2: async (_event, query, user) => {
         const id = requireParam(query, "id");
@@ -213,16 +213,16 @@ const handlers: Record<string, Handler> = {
         if (!artist) throw new SubsonicApiError(SubsonicErrors.notFound);
 
         // getArtistsOfUser/getArtistOfUser fall back to the artist's display name as `id` when no
-        // MusicBrainz artist credit is known (see server/core/library.ts) - only pass a real mbid to Last.fm
+        // MusicBrainz artist credit is known (see server/core/library.ts) - only pass a real mbid on
         const mbid = artist.id !== artist.name ? artist.id : undefined;
-        const [lastfm, picture] = await Promise.all([
-            getLastfmArtistInfo(artist.name, mbid),
+        const [info, picture] = await Promise.all([
+            getArtistInfo(artist.name, mbid),
             mbid ? resolveArtistImage(mbid, artist.name) : Promise.resolve(null)
         ]);
-        const image = picture ?? lastfm?.image ?? undefined;
+        const image = picture ?? info.image ?? undefined;
 
         return [el("artistInfo2", {
-            biography: lastfm?.bio ?? undefined,
+            biography: info.bio ?? undefined,
             smallImageUrl: image,
             mediumImageUrl: image,
             largeImageUrl: image
@@ -434,7 +434,7 @@ const handlers: Record<string, Handler> = {
         const submission = firstStr(query, "submission");
 
         // Subsonic distinguishes a "now playing" ping (submission=false) from a completed play; only the
-        // latter is a listen. The ping is Last.fm's "now playing" (sendNowPlaying checks the track is playable).
+        // latter is a listen. The ping is ListenBrainz' "playing now" (sendNowPlaying checks the track is playable).
         if (submission !== undefined && submission !== "true") {
             sendNowPlaying(user.id, id);
             return [];

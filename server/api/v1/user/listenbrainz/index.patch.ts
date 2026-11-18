@@ -1,19 +1,19 @@
-import { getLastfmAccount, lastfmCredentials, setLastfmScrobbling } from "~~/server/core/lastfmAccounts";
+import { getListenBrainzAccount, setListenBrainzScrobbling } from "~~/server/core/listenbrainzAccounts";
 
 defineRouteMeta({
     openAPI: {
-        description: "Pause or resume scrobbling to the connected Last.fm account",
+        description: "Pause or resume scrobbling to the connected ListenBrainz account",
         tags: ["user"],
-        operationId: "updateLastfmConnection",
+        operationId: "updateListenBrainzConnection",
         requestBody: {
             required: true,
             content: { "application/json": { schema: { type: "object", required: ["scrobbling"], properties: { scrobbling: { type: "boolean" } } } } }
         },
         responses: {
-            "200": { description: "", content: { "application/json": { schema: { $ref: "#/components/schemas/LastfmConnection" } } } },
+            "200": { description: "", content: { "application/json": { schema: { $ref: "#/components/schemas/ListenBrainzConnection" } } } },
             "400": { description: "Missing `scrobbling`", content: { "application/json": { schema: { $ref: "#/components/schemas/NuxtError" } } } },
             "401": { description: "Not authenticated", content: { "application/json": { schema: { $ref: "#/components/schemas/NuxtError" } } } },
-            "404": { description: "No Last.fm account connected", content: { "application/json": { schema: { $ref: "#/components/schemas/NuxtError" } } } }
+            "404": { description: "No ListenBrainz account connected", content: { "application/json": { schema: { $ref: "#/components/schemas/NuxtError" } } } }
         }
     },
 });
@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event).catch(() => null) as { scrobbling?: unknown } | null;
     if (typeof body?.scrobbling !== "boolean") throw createError({ statusCode: 400, statusMessage: "scrobbling must be a boolean" });
 
-    if (!await setLastfmScrobbling(userId, body.scrobbling)) throw createError({ statusCode: 404, statusMessage: "No Last.fm account connected" });
-    const account = await getLastfmAccount(userId);
-    return { available: lastfmCredentials() !== null, username: account?.username ?? null, scrobbling: !!account?.scrobbling };
+    if (!await setListenBrainzScrobbling(userId, body.scrobbling)) throw createError({ statusCode: 404, statusMessage: "No ListenBrainz account connected" });
+    const account = await getListenBrainzAccount(userId);
+    return { username: account?.username ?? null, scrobbling: !!account?.scrobbling };
 });

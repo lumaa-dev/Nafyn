@@ -1,5 +1,5 @@
 // GET /api/v1/artist/{aid}/image - just the artist's picture. Search results list dozens of artists and finding
-// a picture takes up to three upstream calls each (MusicBrainz links, TheAudioDB, Last.fm), so the search
+// a picture takes up to three upstream calls each (TheAudioDB, MusicBrainz links, Wikidata), so the search
 // response leaves it out (apart from pictures already known) and the page asks for the rest one by one.
 import { getMusicBrainzRepository } from "~~/server/utils/musicbrainz";
 import { MusicBrainzError } from "~~/server/utils/musicbrainzRepository";
@@ -9,7 +9,7 @@ import { enforceUpstreamLookupLimit } from "~~/server/utils/rateLimit";
 
 defineRouteMeta({
     openAPI: {
-        description: "Get an artist's picture: the Last.fm profile photo MusicBrainz links to the artist; without such a link TheAudioDB, then Last.fm. `image` is null when none has one.",
+        description: "Get an artist's picture: TheAudioDB first, then the Wikimedia Commons image of the Wikidata item MusicBrainz links to the artist. `image` is null when none has one.",
         tags: ["artist"],
         operationId: "getArtistImage",
         parameters: [

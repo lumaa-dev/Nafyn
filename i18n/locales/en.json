@@ -120,7 +120,7 @@
     "category": { "album": "Albums", "ep": "EPs", "single": "Singles", "compilation": "Compilations", "live": "Live", "remix": "Remixes", "soundtrack": "Soundtracks", "other": "Other" },
     "discography": "Discography",
     "viewInMusicbrainz": "View in MusicBrainz",
-    "listeners": "{count} listeners on Last.fm"
+    "listeners": "{count} listeners on ListenBrainz"
   },
   "search": {
     "albums": "Albums",
@@ -190,16 +190,17 @@
       "webhooks": "Webhooks"
     },
     "connections": {
-      "lastfm": {
-        "title": "Last.fm",
-        "intro": "Connect your Last.fm account and Nafyn scrobbles everything you play, from every device and app.",
-        "unavailable": "Last.fm scrobbling isn't set up on this server.",
-        "connect": "Connect Last.fm",
+      "listenbrainz": {
+        "title": "ListenBrainz",
+        "intro": "Connect your ListenBrainz account and Nafyn scrobbles everything you play, from every device and app. Paste the user token from your ListenBrainz settings.",
+        "tokenLink": "Get your user token",
+        "tokenPlaceholder": "ListenBrainz user token",
+        "connect": "Connect ListenBrainz",
         "connectedAs": "Connected as {username}",
         "scrobbling": "Scrobble what I play",
         "disconnect": "Disconnect",
-        "connected": "Last.fm account connected",
-        "failed": "Couldn't connect your Last.fm account"
+        "connected": "ListenBrainz account connected",
+        "failed": "Couldn't connect your ListenBrainz account"
       },
       "discogs": {
         "title": "Discogs",
@@ -226,8 +227,8 @@
       "removeAvatar": "Remove",
       "displayName": "Display name",
       "displayNamePlaceholder": "Your display name",
-      "lastFm": "Last.fm username",
-      "lastFmPlaceholder": "Last.fm username",
+      "listenBrainz": "ListenBrainz username",
+      "listenBrainzPlaceholder": "ListenBrainz username",
       "discogs": "Discogs username",
       "discogsPlaceholder": "Discogs username",
       "save": "Save changes",

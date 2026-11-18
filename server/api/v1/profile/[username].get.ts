@@ -8,7 +8,7 @@ import { assertValidUsername } from "~~/server/utils/validation";
 
 defineRouteMeta({
     openAPI: {
-        description: "Public profile of a user, by username: display name, avatar version, Last.fm / Discogs handles, the total number of tracks in their library and their public playlists. No authentication needed",
+        description: "Public profile of a user, by username: display name, avatar version, ListenBrainz / Discogs handles, the total number of tracks in their library and their public playlists. No authentication needed",
         tags: ["users"],
         operationId: "getProfile",
         parameters: [
@@ -27,7 +27,7 @@ defineRouteMeta({
                                 username: { type: "string" },
                                 displayName: { type: "string", nullable: true },
                                 avatar: { type: "string", nullable: true, description: "Avatar version token; the image is at /api/v1/user/{id}/avatar" },
-                                lastFm: { type: "string", nullable: true },
+                                listenBrainz: { type: "string", nullable: true },
                                 discogs: { type: "string", nullable: true },
                                 trackCount: { type: "number", description: "Tracks in their library" },
                                 playlists: {
@@ -75,7 +75,7 @@ export default defineEventHandler(async (event) => {
         username: user.username,
         displayName: user.displayName,
         avatar: user.avatar,
-        lastFm: user.lastFm,
+        listenBrainz: user.listenBrainz,
         discogs: user.discogs,
         trackCount,
         playlists

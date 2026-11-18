@@ -38,12 +38,12 @@ export interface EnvConfig {
     soulseekPassword: string,
     soulseekDownloadsPath: string,
     acoustidApiKey: string,
-    lastfmApiKey: string,
-    lastfmApiSecret: string,
+    theaudiodbApiKey: string,
     domainsWhitelist: string
 }
 
 // the built-in defaults of nuxt.config.ts's runtimeConfig - keep in sync with it
+const DEFAULT_THEAUDIODB_API_KEY = "123";
 const DEFAULT_SOULSEEK_HOST = "http://localhost:5030/";
 const DEFAULT_SOULSEEK_USERNAME = "slskd";
 const DEFAULT_SOULSEEK_PASSWORD = "slskd";
@@ -62,8 +62,7 @@ export function configFromEnv(env: NodeJS.ProcessEnv = process.env): EnvConfig {
         soulseekPassword: env.SOULSEEK_PASSWORD || DEFAULT_SOULSEEK_PASSWORD,
         soulseekDownloadsPath: env.SOULSEEK_DOWNLOADS_PATH || DEFAULT_SOULSEEK_DOWNLOADS_PATH,
         acoustidApiKey: env.ACOUSTID_API_KEY || "",
-        lastfmApiKey: env.LASTFM_API_KEY || "",
-        lastfmApiSecret: env.LASTFM_API_SECRET || "",
+        theaudiodbApiKey: env.THEAUDIODB_API_KEY || DEFAULT_THEAUDIODB_API_KEY,
         domainsWhitelist: env.DOMAINS_WHITELIST || ""
     };
 }
@@ -72,7 +71,7 @@ export function configFromEnv(env: NodeJS.ProcessEnv = process.env): EnvConfig {
 const STRING_VARIABLES = [
     "JWT_SECRET", "MYSQL_HOST", "MYSQL_PORT", "MYSQL_USER", "MYSQL_PASSWORD", "MYSQL_DATABASE",
     "SOULSEEK_HOST", "SOULSEEK_USERNAME", "SOULSEEK_PASSWORD", "SOULSEEK_DOWNLOADS_PATH",
-    "ACOUSTID_API_KEY", "LASTFM_API_KEY", "LASTFM_API_SECRET", "THEAUDIODB_API_KEY",
+    "ACOUSTID_API_KEY", "THEAUDIODB_API_KEY",
     "DOMAINS_WHITELIST", "TRUST_PROXY", "NAFYN_PUBLIC_URL", "FPCALC_PATH",
     "APN_KEY_ID", "APN_TEAM_ID", "APN_BUNDLE_ID", "APN_KEY_DIR"
 ];
@@ -191,15 +190,9 @@ export async function checkEnvironment(config: EnvConfig = configFromEnv(), env:
     }
 
     // -- optional integrations ----------------------------------------------------------------------------------
-    const optionalOff = [
-        ["LASTFM_API_KEY", config.lastfmApiKey, "artist bios and Last.fm scrobbling"],
-        ["LASTFM_API_SECRET", config.lastfmApiSecret, "Last.fm scrobbling"]
-    ].filter(([, value]) => !value);
-    for (const [name, , what] of optionalOff) {
-        add("info", "integrations", name!, `is not set - ${what} stay off.`);
-    }
-    if (config.lastfmApiSecret && !config.lastfmApiKey) {
-        add("warn", "integrations", "LASTFM_API_SECRET", "is set without LASTFM_API_KEY - scrobbling needs both.", "Set LASTFM_API_KEY from the same Last.fm API account.");
+    // TheAudioDB retired its old public key: with it, every lookup answers "no such artist"
+    if (config.theaudiodbApiKey === "2") {
+        add("warn", "integrations", "THEAUDIODB_API_KEY", "is \"2\", TheAudioDB's retired free key - artist bios and pictures stay empty.", `Remove it (the default is the current free key, "${DEFAULT_THEAUDIODB_API_KEY}") or set a paid key.`);
     }
 
     // -- notifications ------------------------------------------------------------------------------------------
