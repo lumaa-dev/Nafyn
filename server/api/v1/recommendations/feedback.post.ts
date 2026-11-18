@@ -6,7 +6,7 @@ const EVENTS = ["open", "play", "preview", "request"] as const;
 
 defineRouteMeta({
     openAPI: {
-        description: "What the person did with a card of the For You page (or a track opened from it), within 30 minutes of the page being served. `open`: the card was opened. `play`: playback started from it, `msPlayed` how long it was listened to (send it when the listen ends). `preview`: a suggestion's preview was listened to for `msPlayed`. `request`: a suggestion was requested. A card nobody touched counts as ignored when the window closes.",
+        description: "What the person did with a card of the Discover page (or a track opened from it), within 30 minutes of the page being served. `open`: the card was opened. `play`: playback started from it, `msPlayed` how long it was listened to (send it when the listen ends). `preview`: a suggestion's preview was listened to for `msPlayed`. `request`: a suggestion was requested. A card nobody touched counts as ignored when the window closes.",
         tags: ["recommendations"],
         operationId: "postRecommendationFeedback",
         requestBody: {

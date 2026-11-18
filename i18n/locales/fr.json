@@ -17,7 +17,7 @@
     "requests": "Demandes",
     "everyoneLibrary": "Bibliothèque de tous",
     "settings": "Paramètres",
-    "insights": "Statistiques",    "forYou": "Pour vous"
+    "insights": "Statistiques",    "discover": "Découvrir"
   },
   "auth": {
     "login": {
@@ -347,9 +347,9 @@
       "recommendations": {
         "title": "Recommandations personnalisées",
         "label": "Recommander de la musique d'après mon écoute",
-        "on": "Activé - votre bibliothèque, vos playlists et vos écoutes façonnent vos mix et la page Pour vous",
+        "on": "Activé - votre bibliothèque, vos playlists et vos écoutes façonnent vos mix et la page Découvrir",
         "off": "Désactivé - rien n'est recommandé d'après votre écoute, et ce qui en avait été construit est supprimé",
-        "note": "Désactiver supprime aussitôt vos mix et la trace de ce que la page Pour vous vous a montré, et votre bibliothèque ne compte plus pour les recommandations de personne. Les écoutes ne comptent que si l'historique d'écoute est activé."
+        "note": "Désactiver supprime aussitôt vos mix et la trace de ce que la page Découvrir vous a montré, et votre bibliothèque ne compte plus pour les recommandations de personne. Les écoutes ne comptent que si l'historique d'écoute est activé."
       },
       "export": {
         "title": "Exporter vos données",
@@ -828,8 +828,8 @@
     "noPlaylists": "Aucune playlist publique pour le moment.",
     "embedOpen": "Ouvrir le profil"
   },
-  "forYou": {
-    "title": "Pour vous",
+  "discover": {
+    "title": "Découvrir",
     "building": "Vos mix sont en cours d'actualisation.",
     "buildingFirst": "Vos premiers mix sont en préparation. Revenez dans quelques minutes.",
     "empty": "Rien à recommander pour l'instant : demandez, ajoutez à des playlists et écoutez d'abord quelques morceaux.",

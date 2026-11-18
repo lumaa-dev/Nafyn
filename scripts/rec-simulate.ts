@@ -1,6 +1,6 @@
 // bun run rec:simulate [--pages N] [--seed S] [--log file.jsonl]
 //
-// Online bandit ranking simulation of the For You page on a synthetic environment whose reward probabilities
+// Online bandit ranking simulation of the Discover page on a synthetic environment whose reward probabilities
 // are known: every policy serves the same stream of visitors, ranks shelves then cards with
 // Score = r_hat + lambda * sigma, observes Bernoulli rewards, and learns online. Reports engagement, regret
 // against the oracle (the true best card at every position) and scoring latency. `--log` writes the LinUCB

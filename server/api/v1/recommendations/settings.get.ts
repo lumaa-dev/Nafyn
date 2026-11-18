@@ -4,7 +4,7 @@ import { getRecConfig } from "~~/server/utils/recConfig";
 
 defineRouteMeta({
     openAPI: {
-        description: "Whether the caller's personalized recommendations (mixes, For You) are on. On by default; `available` is false when the instance has the recommender switched off.",
+        description: "Whether the caller's personalized recommendations (mixes, Discover) are on. On by default; `available` is false when the instance has the recommender switched off.",
         tags: ["recommendations"],
         operationId: "getRecommendationSettings",
         responses: {

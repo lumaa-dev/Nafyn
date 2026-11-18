@@ -6,7 +6,7 @@ import { requestContext, requirePersonalization } from "~~/server/utils/recReque
 
 defineRouteMeta({
     openAPI: {
-        description: "The caller's For You page: shelves (rows) and their cards, ranked by the contextual bandit. Every shelf carries the `decisionId` its cards were chosen under: report what the person does with a card to POST /api/v1/recommendations/feedback with that id and the card's `slot`. `device` (web, ios, subsonic, other) and `tz` (minutes to add to UTC) describe the request's context.",
+        description: "The caller's Discover page: shelves (rows) and their cards, ranked by the contextual bandit. Every shelf carries the `decisionId` its cards were chosen under: report what the person does with a card to POST /api/v1/recommendations/feedback with that id and the card's `slot`. `device` (web, ios, subsonic, other) and `tz` (minutes to add to UTC) describe the request's context.",
         tags: ["recommendations"],
         operationId: "getRecommendationsHome",
         parameters: [

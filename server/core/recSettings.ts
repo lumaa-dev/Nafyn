@@ -1,4 +1,4 @@
-// per-user switch for personalized recommendations (mixes, the For You page). On by default - the user can
+// per-user switch for personalized recommendations (mixes, the Discover page). On by default - the user can
 // turn it off under Settings -> Privacy & Security, which also deletes everything the recommender holds about
 // them (deleteRecommendationData) - an objection to profiling (GDPR art. 21) has to stop it, not just hide it.
 import { getUsersDb, withTransaction } from "./db";

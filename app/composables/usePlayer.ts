@@ -107,7 +107,7 @@ function endSegment(reason: SegmentEnd) {
     segment = null;
 
     if (finished.accumulatedMs <= 0) return;
-    // a listen that came from a For You card is that card's reward (useRecFeedback.ts)
+    // a listen that came from a Discover card is that card's reward (useRecFeedback.ts)
     reportRecListen(finished.track.id, finished.startedAtMs, finished.accumulatedMs);
 
     const trackDurationSec = finished.track.duration;

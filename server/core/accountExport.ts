@@ -136,7 +136,7 @@ export async function buildAccountExport(userId: string): Promise<Record<string,
     const replayMixes = await Promise.all(replayYears.map((r) => getReplayMix(userId, r.year)));
 
     // personalized recommendations: the setting, the mixes built for this account, and every ranking decision of
-    // its For You page (what was shown, with which probability, and what came of it)
+    // its Discover page (what was shown, with which probability, and what came of it)
     const [recommendationSettings, mixes, rankingDecisions] = await Promise.all([
         getRecSettings(userId),
         listMixExportForUser(userId),

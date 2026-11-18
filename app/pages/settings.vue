@@ -349,7 +349,7 @@
           <NuxtLink to="/insights" class="everyone-link">{{ $t('insights.title') }}</NuxtLink>
         </section>
 
-        <!-- GDPR art. 21: objecting to the profiling behind mixes and For You stops it and deletes what it built -->
+        <!-- GDPR art. 21: objecting to the profiling behind mixes and Discover stops it and deletes what it built -->
         <section class="subsection" v-if="recommendationsAvailable">
           <h2>{{ $t('settings.privacy.recommendations.title') }}</h2>
           <label class="switch-row">
@@ -1221,7 +1221,7 @@ function selectCategory(id: Category["id"]) {
   if (import.meta.client) window.scrollTo({ top: 0, left: 0, behavior: "auto" });
 }
 
-// `?category=privacy` (the For You page's "turn it back on" link) opens that category directly
+// `?category=privacy` (the Discover page's "turn it back on" link) opens that category directly
 onMounted(() => {
   const wanted = useRoute().query.category;
   if (typeof wanted === "string" && categories.value.some((c) => c.id === wanted)) selectCategory(wanted as Category["id"]);

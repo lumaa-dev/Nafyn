@@ -17,7 +17,7 @@
     "requests": "Requests",
     "everyoneLibrary": "Everyone's Library",
     "settings": "Settings",
-    "insights": "Insights",    "forYou": "For You"
+    "insights": "Insights",    "discover": "Discover"
   },
   "auth": {
     "login": {
@@ -347,9 +347,9 @@
       "recommendations": {
         "title": "Personalized recommendations",
         "label": "Recommend music from what I listen to",
-        "on": "On - your library, playlists and plays shape your mixes and the For You page",
+        "on": "On - your library, playlists and plays shape your mixes and the Discover page",
         "off": "Off - nothing is recommended from your listening, and what was built from it is deleted",
-        "note": "Turning this off deletes your mixes and the record of what the For You page showed you, at once, and your library stops counting for anyone's recommendations. Plays only count while listening history is on."
+        "note": "Turning this off deletes your mixes and the record of what the Discover page showed you, at once, and your library stops counting for anyone's recommendations. Plays only count while listening history is on."
       },
       "export": {
         "title": "Export your data",
@@ -828,8 +828,8 @@
     "noPlaylists": "No public playlists yet.",
     "embedOpen": "Open profile"
   },
-  "forYou": {
-    "title": "For You",
+  "discover": {
+    "title": "Discover",
     "building": "Your mixes are being refreshed.",
     "buildingFirst": "Your first mixes are being made. Come back in a few minutes.",
     "empty": "Nothing to recommend yet: request, add to playlists and play a few songs first.",

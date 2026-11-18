@@ -1,13 +1,13 @@
 <template>
-  <div class="foryou">
-    <div class="foryou-head">
-      <h1>{{ $t('forYou.title') }}</h1>
-      <p v-if="data?.refreshing" class="foryou-note" role="status">{{ $t('forYou.building') }}</p>
+  <div class="discover">
+    <div class="discover-head">
+      <h1>{{ $t('discover.title') }}</h1>
+      <p v-if="data?.refreshing" class="discover-note" role="status">{{ $t('discover.building') }}</p>
     </div>
 
     <template v-if="data && data.shelves.length > 0">
       <!-- DESIGN.md "Category grids": one titled, sideways-scrolling grid per shelf, in the order the page was ranked -->
-      <ReleaseGrid v-for="shelf in data.shelves" :key="shelf.decisionId" :title="$t(`forYou.shelf.${shelf.kind}`)">
+      <ReleaseGrid v-for="shelf in data.shelves" :key="shelf.decisionId" :title="$t(`discover.shelf.${shelf.kind}`)">
         <NuxtLink
           v-for="card in shelf.cards"
           :key="card.actionId"
@@ -26,13 +26,13 @@
     </template>
 
     <!-- 403: the person turned personalization off - said where it can be turned back on -->
-    <div v-else-if="statusOf(error) === 403" class="foryou-off">
-      <p>{{ $t('forYou.off') }}</p>
-      <NuxtLink to="/settings?category=privacy" class="everyone-link">{{ $t('forYou.offLink') }}</NuxtLink>
+    <div v-else-if="statusOf(error) === 403" class="discover-off">
+      <p>{{ $t('discover.off') }}</p>
+      <NuxtLink to="/settings?category=privacy" class="everyone-link">{{ $t('discover.offLink') }}</NuxtLink>
     </div>
-    <p v-else-if="statusOf(error) === 404" class="foryou-note">{{ $t('forYou.unavailable') }}</p>
+    <p v-else-if="statusOf(error) === 404" class="discover-note">{{ $t('discover.unavailable') }}</p>
     <LoadError v-else-if="error" :error="error" />
-    <p v-else-if="data" class="foryou-note">{{ data.refreshing ? $t('forYou.buildingFirst') : $t('forYou.empty') }}</p>
+    <p v-else-if="data" class="discover-note">{{ data.refreshing ? $t('discover.buildingFirst') : $t('discover.empty') }}</p>
   </div>
 </template>
 
@@ -61,13 +61,13 @@ interface Card { slot: number, actionId: string, item: CardItem, explanation: Re
 interface Shelf { decisionId: string, kind: string, row: number, cards: Card[] }
 interface HomeResponse { pageId: string, shelves: Shelf[], refreshing: boolean, refreshedAt: number | null }
 
-useHead({ title: () => $t('forYou.title') });
+useHead({ title: () => $t('discover.title') });
 
 const token = useAuthToken().token.value;
 const { mixTitle, explanation } = useRecLabels();
 
 // every visit is a new ranking decision (with its own exploration), so the page is never served from cache
-const { data, error } = await useAsyncData<HomeResponse | null>("for-you", () => {
+const { data, error } = await useAsyncData<HomeResponse | null>("discover", () => {
   if (!token) return Promise.resolve(null);
   return $fetch<HomeResponse>("/api/v1/recommendations/home", {
     headers: { Authorization: token },
@@ -119,17 +119,17 @@ async function onMenu(e: MouseEvent, card: Card) {
 
 <style>
 /* this element IS `.view` (app.vue): its margin clears the Header and the sidebar column, so only the size is set */
-.foryou {
+.discover {
   max-width: 1200px;
   padding-top: 40px;
 }
 
-.foryou-head {
+.discover-head {
   margin-bottom: 20px;
 }
 
-.foryou-note,
-.foryou-off p {
+.discover-note,
+.discover-off p {
   color: #ffffffae;
 }
 

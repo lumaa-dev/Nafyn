@@ -1,4 +1,4 @@
-// the For You page: candidates, the contextual bandit that ranks them (shelves, then cards), the decision log,
+// the Discover page: candidates, the contextual bandit that ranks them (shelves, then cards), the decision log,
 // feedback, and the online updates once a decision's attribution window has closed.
 //
 // Online serving and offline evaluation are separate on purpose: this file only scores with the serving

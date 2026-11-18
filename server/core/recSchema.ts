@@ -1,4 +1,4 @@
-// tables of the recommender (personalized mixes + the For You page's contextual bandit).
+// tables of the recommender (personalized mixes + the Discover page's contextual bandit).
 //
 // All new tables, so CREATE TABLE IF NOT EXISTS is enough on existing installs too; a later change to one of
 // them goes into migrations.ts like any other. Created with the same charset/collation as `media`
@@ -94,7 +94,7 @@ function statements(tableOptions: string): string[] {
             KEY idx_rec_cache_fetched (fetched_at)
         ) ${tableOptions}`,
 
-        // every ranking decision of the For You page, with everything offline evaluation needs: the context,
+        // every ranking decision of the Discover page, with everything offline evaluation needs: the context,
         // each candidate's action vector (base64 Float64Array, action_dim per candidate), the order shown, the
         // conditional propensity of each position, and - once the attribution window closes - its reward
         `CREATE TABLE IF NOT EXISTS rec_decisions (

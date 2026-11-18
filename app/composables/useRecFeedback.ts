@@ -1,4 +1,4 @@
-// what the person did with a For You card, reported back to the bandit (POST /api/v1/recommendations/feedback).
+// what the person did with a Discover card, reported back to the bandit (POST /api/v1/recommendations/feedback).
 //
 // Opening a card starts an "attribution": for the next 30 minutes (the server's window), what is played,
 // previewed or requested from what the card leads to counts for that card's (decision, slot):

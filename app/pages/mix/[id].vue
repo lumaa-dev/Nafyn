@@ -93,7 +93,7 @@ useHead({ title: () => title.value || t('mix.kicker') });
 const familiar = computed(() => (mix.value?.tracks ?? []).filter((e) => e.media).map((e) => e.media!));
 const suggestions = computed(() => (mix.value?.tracks ?? []).filter((e) => e.suggestion).map((e) => e.suggestion!));
 
-// a For You card that led here: its feedback covers these tracks and suggestions
+// a Discover card that led here: its feedback covers these tracks and suggestions
 watch(mix, (m) => {
   if (m && import.meta.client) attributeMix(m.id, familiar.value.map((x) => x.id), suggestions.value.map((x) => x.recordingId));
 }, { immediate: true });

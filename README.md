@@ -18,7 +18,7 @@ Multi-user: separate libraries and separate permissions per user. Users request 
 - **[Subsonic API](#subsonic-api)** for third-party players, and a documented REST API for everything else.
 - **[Notifications](#notifications)**: webhooks (Discord, Slack, ntfy, Gotify, generic JSON) and Apple push notifications, Live Activities included, through the [Nafyn iOS app](https://github.com/lumaa-dev/NafynApp).
 - **Listening insights** ("Your Music Year"): opt-in weekly, monthly and yearly summaries, a Replay Mix and a year-end story.
-- **[Personalized recommendations](#personalized-recommendations)**: up to 10 daily mixes, one per way you listen (a genre, a decade, a mood, a time of day), mixing your music with suggestions from the public catalogue, and a **For You** page ranked by a contextual bandit that learns from what you play. On by default, one switch to turn it off.
+- **[Personalized recommendations](#personalized-recommendations)**: up to 10 daily mixes, one per way you listen (a genre, a decade, a mood, a time of day), mixing your music with suggestions from the public catalogue, and a **Discover** page ranked by a contextual bandit that learns from what you play. On by default, one switch to turn it off.
 - **[Passkeys](#passkeys)**, revocable sessions, and the tooling to run the instance within the GDPR (see [Privacy & GDPR](#privacy--gdpr)).
 - English and French interface.
 
@@ -161,7 +161,7 @@ Configured via environment variables (see `.env.example`):
 | `NAFYN_UNITY_ENABLED` | Set `false` to turn [Nafyn Unity](#nafyn-unity) off outright. Needed when running more than one replica behind a load balancer — the live registry is in-process. |
 | `NAFYN_UNITY_SCHEDULER` | Set `false` to stop this replica running the session-cleanup job. |
 | `NAFYN_INSIGHTS_SCHEDULER` | Set `false` to stop this replica running the listening-insights rollup/snapshot/reel jobs. |
-| `NAFYN_REC_ENABLED` | Set `false` to switch [personalized recommendations](#personalized-recommendations) off for the whole instance (no mixes, no For You page, no calls to ListenBrainz). |
+| `NAFYN_REC_ENABLED` | Set `false` to switch [personalized recommendations](#personalized-recommendations) off for the whole instance (no mixes, no Discover page, no calls to ListenBrainz). |
 | `NAFYN_REC_SCHEDULER` | Set `false` to stop this replica running the recommender's jobs. Run them on **one** replica only: it keeps the ranking models' online updates in memory before saving them. |
 | `NAFYN_REC_*` | Tunables of the recommender (mix length, familiar/new balance, refresh cadence, bandit policy and exploration coefficient λ, exploration schedule, reward threshold, offline-evaluation gate, retention), all optional. Listed in [`.env.example`](.env.example). |
 
@@ -217,9 +217,9 @@ Each user's listening is clustered into **listening modes**, and every mode beco
 
 Every track carries why it is there (`familiar`: how much it was played; `novel`: which evidence weighed most, and through which of your artists it was found).
 
-### For You (contextual bandit)
+### Discover (contextual bandit)
 
-The For You page ([`recBandit.ts`](server/core/recBandit.ts), [`bandit/`](server/utils/recommender/bandit/)) ranks **shelves** (mixes, suggestions, jump back in, rediscover, playlists), then the **cards** inside each shelf, as a contextual multi-armed bandit:
+The Discover page ([`recBandit.ts`](server/core/recBandit.ts), [`bandit/`](server/utils/recommender/bandit/)) ranks **shelves** (mixes, suggestions, jump back in, rediscover, playlists), then the **cards** inside each shelf, as a contextual multi-armed bandit:
 
 - **Context** *s*: the user's collaborative-filtering embedding (cold start is a flag, not a zero vector), the audio of their last plays, local time of day and weekday, device class, a coarse region from the UTC offset, session signals (plays and skips in the last 30 minutes), library size, and the card's position.
 - **Action** *a*: an (item, explanation) pair — explanations ("Because you listen to X", "New release", "Not played in a while", ...) are only offered when a **validity function** says they are true, and the bandit chooses item and explanation jointly.
@@ -233,7 +233,7 @@ The For You page ([`recBandit.ts`](server/core/recBandit.ts), [`bandit/`](server
 
 ```bash
 bun run rec:mixes [--user N]     # a synthetic world (catalogue with audio, users with known modes, 4 months of history): the mixes built for one user, and how many suggestions truly fit
-bun run rec:simulate [--pages N] # online simulation of the For You page: LinUCB, Neural TS, NeuralUCB vs random and greedy - engagement, regret against the oracle, latency
+bun run rec:simulate [--pages N] # online simulation of the Discover page: LinUCB, Neural TS, NeuralUCB vs random and greedy - engagement, regret against the oracle, latency
 bun run rec:evaluate             # offline evaluation where the truth is known: IPS / SNIPS / DM / DR of several candidate policies on logged traffic vs their true value, and the gate's verdict
 ```
 
@@ -287,11 +287,11 @@ Nafyn is self-hosted, so **you** are the data controller — Nafyn's job is to m
 - **Download everything held about them** (art. 15 + 20) — one JSON file: profile, settings, logins including the IP addresses they came from, library, playlists, requests, recently played, all listening data. Never any secret. `GET /api/v1/user/export`.
 - **Delete their account** (art. 17) — permanent, password re-auth required, no administrator involved. `DELETE /api/v1/user/me`.
 - **Turn listening history on/off** (art. 7(3)) — off by default, opt-in only, and turning it off stops recording immediately.
-- **Turn personalized recommendations off** (art. 21) — on by default; turning it off deletes their mixes, the log of what the For You page showed them, and stops their library counting towards anyone's recommendations.
+- **Turn personalized recommendations off** (art. 21) — on by default; turning it off deletes their mixes, the log of what the Discover page showed them, and stops their library counting towards anyone's recommendations.
 - **Delete their listening history** on its own, without deleting the account.
 - Read the notice, and manage passkeys and sessions.
 
-**Retention**: sessions (with their IP + user agent) go when they expire after 7 days, or a minute after being revoked. The recently-played shelf is pruned after 180 days. Raw play events are pruned after 3 years — the statistics built from them are not, so no screen changes at that boundary. What the For You page showed each user (the bandit's decision log) is pruned after 90 days. All of these are tunable, see [Settings](#settings).
+**Retention**: sessions (with their IP + user agent) go when they expire after 7 days, or a minute after being revoked. The recently-played shelf is pruned after 180 days. Raw play events are pruned after 3 years — the statistics built from them are not, so no screen changes at that boundary. What the Discover page showed each user (the bandit's decision log) is pruned after 90 days. All of these are tunable, see [Settings](#settings).
 
 **What leaves your server**: MusicBrainz, AcoustID (an audio fingerprint), Cover Art Archive, your own slskd instance, and for recommendations ListenBrainz (one recording or artist MBID per request) and the iTunes catalogue (the 30-second preview of a suggestion, to measure its audio). These carry what is being searched for, downloaded or compared — never a username, account id or listening history.
 

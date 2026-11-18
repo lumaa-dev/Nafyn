@@ -1,7 +1,7 @@
 <template>
   <div class="sidebar">
     <div class="actions">
-      <NuxtLink to="/for-you">{{ $t('sidebar.forYou') }}</NuxtLink>
+      <NuxtLink to="/discover">{{ $t('sidebar.discover') }}</NuxtLink>
       <NuxtLink to="/library" class="s">{{ $t('sidebar.library') }}</NuxtLink>
       <NuxtLink to="/l/albums" class="b">{{ $t('sidebar.albums') }}</NuxtLink>
       <NuxtLink to="/l/tracks" class="b">{{ $t('sidebar.tracks') }}</NuxtLink>

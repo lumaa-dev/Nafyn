@@ -36,7 +36,7 @@ export function useRecLabels() {
 
     function explanation(e: RecExplanation | null | undefined): string | null {
         if (!e || e.kind === "none") return null;
-        return t(`forYou.why.${e.kind}`, { subject: e.subject ?? "" });
+        return t(`discover.why.${e.kind}`, { subject: e.subject ?? "" });
     }
 
     function trackReason(r: MixTrackReason): string {

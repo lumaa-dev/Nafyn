@@ -114,14 +114,14 @@ immédiatement tout nouvel enregistrement.*
 ### Recommandations personnalisées
 
 Activées sauf si vous les désactivez (Paramètres -> Confidentialité et sécurité). Nafyn construit des mix et
-la page Pour vous à partir de votre bibliothèque, de ce que vous avez ajouté à des playlists, des écoutes
+la page Découvrir à partir de votre bibliothèque, de ce que vous avez ajouté à des playlists, des écoutes
 récentes et - seulement si l'historique d'écoute est activé - de vos écoutes. Pour cela sont conservés :
 
 - **Vos mix** : les façons d'écouter repérées dans votre musique (un genre, une décennie, une ambiance, un
   moment de la journée), les titres de chacun, et les enregistrements suggérés avec la raison de chaque choix.
 - **Un résumé de vos goûts** : une courte liste de nombres calculée à partir de votre bibliothèque et de vos
-  écoutes, et les artistes que vous écoutez le plus, qui servent à classer ce que montre la page Pour vous.
-- **Ce que la page Pour vous vous a montré**, à chaque visite : ce qui a été affiché, dans quel ordre, le
+  écoutes, et les artistes que vous écoutez le plus, qui servent à classer ce que montre la page Découvrir.
+- **Ce que la page Découvrir vous a montré**, à chaque visite : ce qui a été affiché, dans quel ordre, le
   contexte du classement (moment de la journée, type d'appareil, région approximative déduite de votre fuseau
   horaire), la probabilité de chaque choix, et ce que vous en avez fait dans les 30 minutes (ouvert, écouté et
   combien de temps, extrait écouté, demandé). C'est ainsi que la page apprend ce qui fonctionne, et qu'une
@@ -131,7 +131,7 @@ Votre bibliothèque compte aussi, de manière agrégée et anonyme, pour les rec
 artiste écouté par plusieurs personnes aux goûts proches peut leur être suggéré. Aucun titre que vous possédez
 n'est jamais montré à quelqu'un d'autre, et les suggestions viennent uniquement du catalogue musical public.
 
-*Les mix sont reconstruits chaque jour. Ce que la page Pour vous vous a montré est supprimé au bout de 90
+*Les mix sont reconstruits chaque jour. Ce que la page Découvrir vous a montré est supprimé au bout de 90
 jours. Désactiver l'option supprime tout immédiatement et votre bibliothèque ne compte plus pour personne.*
 
 ### Préférences

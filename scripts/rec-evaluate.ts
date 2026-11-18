@@ -1,7 +1,7 @@
 // bun run rec:evaluate [--pages N] [--seed S]
 //
 // Offline (counterfactual) evaluation, demonstrated where the truth is known: a logging policy serves a
-// synthetic For You page with epsilon-greedy exploration and logs every decision with its propensities; then
+// synthetic Discover page with epsilon-greedy exploration and logs every decision with its propensities; then
 // several candidate policies are evaluated on those logs only - IPS, clipped IPS, SNIPS, DM and doubly robust
 // (cross-fitted reward model) - and compared with their TRUE value, computed from the environment's known
 // reward probabilities on the very same logged contexts. Finally each candidate goes through the safe-update
