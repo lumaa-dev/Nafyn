@@ -8,6 +8,9 @@ import { sweepExpiredSessions, sweepRevokedSessions } from "~~/server/core/sessi
 const TICK_INTERVAL_MS = 60_000;
 
 export default defineNitroPlugin(() => {
+    // `nuxt build` boots the server bundle to prerender @nuxt/content's dump: no database, no timers, no logs there
+    // (it used to migrate whatever MySQL .env pointed at, and the open pool kept the build from ever exiting)
+    if (import.meta.prerender) return;
     if (process.env.NAFYN_UNITY_SCHEDULER === "false") {
         console.info("[unity] scheduler disabled by NAFYN_UNITY_SCHEDULER=false");
         return;

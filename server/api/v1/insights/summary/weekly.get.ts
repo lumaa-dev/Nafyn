@@ -119,10 +119,10 @@ export default defineEventHandler(async (event) => {
         hasEnoughData(userId, current.startMs, current.endMs)
     ]);
 
-    const top = {} as Record<EntityType, unknown>;
-    for (const entityType of ["track", "album", "artist", "playlist"] as EntityType[]) {
-        top[entityType] = await getTopEntitiesForRange(userId, entityType, current.startMs, current.endMs, TOP_N);
-    }
+    // the four rankings are independent queries: run them side by side, not one after the other
+    const entityTypes: EntityType[] = ["track", "album", "artist", "playlist"];
+    const rankings = await Promise.all(entityTypes.map((entityType) => getTopEntitiesForRange(userId, entityType, current.startMs, current.endMs, TOP_N)));
+    const top = Object.fromEntries(entityTypes.map((entityType, i) => [entityType, rankings[i]])) as Record<EntityType, unknown>;
 
     return {
         week: formatIsoWeek(year, week),

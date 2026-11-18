@@ -382,21 +382,21 @@ export interface YearComparison {
 }
 
 export async function getMultiYearComparison(userId: string, years: number[]): Promise<YearComparison[]> {
-    const out: YearComparison[] = [];
-
-    for (const year of years) {
-        const totals = await getBucketTotals(userId, "yearly", { year });
-
-        const months = await getLibrariesDb().prepare(`
-            SELECT bucket_month, COALESCE(SUM(total_duration_ms), 0) AS duration
-            FROM user_entity_stats_monthly
-            WHERE user_id = :userId AND bucket_year = :year AND entity_type = 'track'
-            GROUP BY bucket_month
-        `).all<{ bucket_month: number, duration: string | number }>({ userId, year });
+    // every year (and both queries of a year) is independent: one round trip's wait instead of 2 x years
+    return await Promise.all(years.map(async (year) => {
+        const [totals, months] = await Promise.all([
+            getBucketTotals(userId, "yearly", { year }),
+            getLibrariesDb().prepare(`
+                SELECT bucket_month, COALESCE(SUM(total_duration_ms), 0) AS duration
+                FROM user_entity_stats_monthly
+                WHERE user_id = :userId AND bucket_year = :year AND entity_type = 'track'
+                GROUP BY bucket_month
+            `).all<{ bucket_month: number, duration: string | number }>({ userId, year })
+        ]);
 
         const byMonth = new Map(months.map((m) => [Number(m.bucket_month), Math.round(num(m.duration) / 60_000)]));
 
-        out.push({
+        return {
             year,
             totalMinutes: totals.totalMinutes,
             totalPlays: totals.totalPlays,
@@ -405,10 +405,8 @@ export async function getMultiYearComparison(userId: string, years: number[]): P
             uniqueArtists: totals.uniqueArtists,
             // always 12 entries so two years line up index-for-index on an overlaid chart
             monthlyMinutes: Array.from({ length: 12 }, (_, i) => byMonth.get(i + 1) ?? 0)
-        });
-    }
-
-    return out;
+        };
+    }));
 }
 
 /** years the user has any yearly aggregate for, newest first - drives the year switcher */

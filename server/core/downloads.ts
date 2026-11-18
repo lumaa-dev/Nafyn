@@ -42,7 +42,8 @@ import { isExcludedVersion, pickDiverse, rankForTrack } from "../utils/soulseekR
 import { verifyRecordingMatch } from "../utils/fingerprint";
 import { readFileTags } from "../utils/fileTags";
 import { judgeTags } from "../utils/tagEvidence";
-import { parseCoverArtUrl, warmCover } from "../utils/coverArtCache";
+import { warmCover } from "../utils/coverArtCache";
+import { parseCoverArtUrl } from "../utils/coverUrl";
 import { tagAudioFile } from "../utils/audioTag";
 import { getRequestById, updateRequestStatus } from "./requests";
 import {
@@ -869,10 +870,9 @@ async function runDownloadRequest(request: NafynRequest, signal: AbortSignal): P
         // tracks the requester already has (under any name, see utils/mediaIdentity.ts) are never searched for:
         // a request for something fully owned completes without touching Soulseek, and the seller for an
         // album is picked on the tracks actually missing
-        const missingTargets: TrackTarget[] = [];
-        for (const target of targets) {
-            if (!(await findOwnedMediaByIdentity(requestedById, targetIdentity(target)))) missingTargets.push(target);
-        }
+        // independent lookups: checked side by side (the pool caps how many run at once)
+        const owned = await Promise.all(targets.map((target) => findOwnedMediaByIdentity(requestedById, targetIdentity(target))));
+        const missingTargets: TrackTarget[] = targets.filter((_, i) => !owned[i]);
         if (missingTargets.length === 0) {
             await finish("completed", "Already in library");
             return;
@@ -934,12 +934,10 @@ async function runDownloadRequest(request: NafynRequest, signal: AbortSignal): P
 
         // the request is only complete when the requester really owns every track of it (by the same
         // identity match that let a track be skipped as "already in library")
-        const missing: string[] = [];
-        for (const [i, target] of targets.entries()) {
-            if (!(await findOwnedMediaByIdentity(requestedById, targetIdentity(target)))) {
-                missing.push(`${target.trackNumber ?? i + 1}. ${target.title}`);
-            }
-        }
+        const ownedAtEnd = await Promise.all(targets.map((target) => findOwnedMediaByIdentity(requestedById, targetIdentity(target))));
+        const missing: string[] = targets
+            .map((target, i) => ownedAtEnd[i] ? null : `${target.trackNumber ?? i + 1}. ${target.title}`)
+            .filter((line): line is string => line !== null);
 
         if (missing.length > 0) {
             if (request.type === "album") await rollBackAlbum(request.id, requestedById, addedMediaIds);

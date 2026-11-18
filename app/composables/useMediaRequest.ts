@@ -1,4 +1,5 @@
 import { useAuthToken } from "~/composables/useAuthToken";
+import { reportRecRequest } from "~/composables/useRecFeedback";
 
 /**
  * Creates a download request (POST /api/v1/request) and reports the outcome as a toast.
@@ -21,6 +22,7 @@ export function useMediaRequest() {
         body: { id: musicbrainzId, type }
       });
       useToast().sendToast({ title: toastTitle, content: t(`${type}.requested`), tint: "green", icon: null });
+      if (type === "track") reportRecRequest(musicbrainzId);
       return true;
     } catch (e) {
       useToast().sendError(toastTitle, e, t('album.error'));

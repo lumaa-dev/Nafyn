@@ -75,7 +75,7 @@ function pct(have: number, need: number): number {
 .gate .fill {
   height: 100%;
   border-radius: 3px;
-  background: #e18c46;
-  transition: width 0.4s ease;
+  background: #e0a666;
+  transition: width 0.3s ease-out;
 }
 </style>

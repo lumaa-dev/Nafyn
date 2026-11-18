@@ -104,9 +104,32 @@ insights, Replay Mixes and year-end summary.
 *Individual plays are deleted after 3 years; the statistics built from them are kept until you delete your
 history or your account. Turning the setting off stops new recording immediately.*
 
+### Personalized recommendations
+
+On unless you turn it off (Settings -> Privacy & Security). Nafyn builds mixes and the For You page from what
+you have in your library, what you added to playlists, the recently-played shelf and - only while listening
+history is on - your plays. Stored for that:
+
+- **Your mixes**: the listening modes found in your music (a genre, a decade, a mood, a time of day), the
+  tracks of each, and the suggested recordings with the reason each was chosen.
+- **A summary of your taste**: a short list of numbers computed from your library and plays, and the artists
+  you listen to most, used to rank what the For You page shows.
+- **What the For You page showed you**, each time you open it: what was shown, in which order, the context it
+  was ranked in (time of day, your device type, your coarse region from your time zone), the probability of
+  each choice, and what you did with it within 30 minutes (opened it, played it and for how long, played its
+  preview, requested it). This is how the page learns what works, and how a new ranking method is checked on
+  past visits before it is used for anyone.
+
+Your library also counts, as an anonymous aggregate, towards other people's recommendations: an artist several
+people with similar taste listen to can be suggested to them. No track you own is ever shown to anyone else,
+and suggestions only come from the public music catalogue.
+
+*Mixes are rebuilt every day. What the For You page showed you is deleted after 90 days. Turning the setting
+off deletes all of it at once and stops your library counting for anyone.*
+
 ### Preferences
 
-Display, playback and Nafyn Unity settings, plus your listening-history choice.
+Display, playback and Nafyn Unity settings, plus your listening-history and recommendations choices.
 
 *Kept until you delete your account.*
 
@@ -137,7 +160,10 @@ downloaded - never your username, your account id, or your listening history.
   recording.
 - **Last.fm**, for artist biographies, if the operator configured a key for it.
 - **Apple's iTunes catalogue**, which receives the title and artist of a track you don't own when you play
-  its 30-second preview.
+  its 30-second preview, or when that preview is analysed (its tempo, key, energy...) to decide whether it
+  fits one of your mixes.
+- **ListenBrainz** (MetaBrainz Foundation), to find recordings and artists similar to the ones in your mixes.
+  It receives one recording or artist identifier at a time, never who asked or why.
 - **Discogs**, when you import your Discogs collection: Nafyn reads that collection by the Discogs username
   you give it.
 - **Cover Art Archive**, to fetch artwork.

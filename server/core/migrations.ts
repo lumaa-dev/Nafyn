@@ -54,11 +54,9 @@ export async function indexExists(conn: PoolConnection, table: string, index: st
     return (rows as unknown[]).length > 0;
 }
 
-// append-only; see the rules at the top of this file.
-//
-// Empty on purpose at 1.0.0: every table and column that earlier development builds added through a migration
-// is now part of the base schema in db.ts (initDatabases) and insightsSchema.ts, so a fresh install gets the
-// final shape directly. The first schema change after 1.0.0 is the first entry here.
+// append-only; see the rules at the top of this file. Every change listed here is also in the CREATE TABLE
+// statements of db.ts / insightsSchema.ts, so a fresh install gets the final shape directly and each entry
+// finds its work already done.
 const MIGRATIONS: Migration[] = [
     {
         // lets the stale sweep tell when a request Live Activity was last pushed to
@@ -103,6 +101,24 @@ const MIGRATIONS: Migration[] = [
             }
             if (!await columnExists(conn, "import_items", "barcode")) {
                 await conn.query(`ALTER TABLE import_items ADD COLUMN barcode VARCHAR(20) NULL`);
+            }
+        }
+    },
+    {
+        // the hot paths had no index to use: `requests` had none at all (every "one live request per user"
+        // check, the requests page and the pipeline's status scans read the whole table), the library album
+        // pages filter `media` by albumId, and a playlist is read in position order
+        id: "2026-11-hot-path-indexes",
+        up: async (conn) => {
+            const indexes: [table: string, name: string, ddl: string][] = [
+                ["requests", "idx_requests_requestedBy_status", `ALTER TABLE requests ADD INDEX idx_requests_requestedBy_status (requestedBy, status)`],
+                ["requests", "idx_requests_status_createdAt", `ALTER TABLE requests ADD INDEX idx_requests_status_createdAt (status, createdAt)`],
+                ["requests", "idx_requests_createdAt", `ALTER TABLE requests ADD INDEX idx_requests_createdAt (createdAt)`],
+                ["media", "idx_media_albumId", `ALTER TABLE media ADD INDEX idx_media_albumId (albumId)`],
+                ["playlist_entries", "idx_playlist_entries_playlist_position", `ALTER TABLE playlist_entries ADD INDEX idx_playlist_entries_playlist_position (playlistId, position)`]
+            ];
+            for (const [table, name, ddl] of indexes) {
+                if (!await indexExists(conn, table, name)) await conn.query(ddl);
             }
         }
     }

@@ -15,7 +15,8 @@ import { isUuid } from "~~/server/utils/ids";
 import { getClientIP } from "~~/server/utils/clientIp";
 import { consumeRateLimit } from "~~/server/utils/rateLimit";
 import { isCoverArtInPublicPlaylist } from "~~/server/core/playlists";
-import { getCachedCover, isCoverKind, isCoverSize } from "~~/server/utils/coverArtCache";
+import { getCachedCover } from "~~/server/utils/coverArtCache";
+import { isCoverKind, isCoverSize } from "~~/server/utils/coverUrl";
 
 defineRouteMeta({
     openAPI: {

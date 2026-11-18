@@ -27,7 +27,7 @@ export interface DonutSlice {
 
 const props = defineProps<{ slices: DonutSlice[], centerValue: string, centerLabel: string, maxSlices?: number }>();
 
-const PALETTE = ["#e18c46", "#44cf44", "#4499cf", "#cf4444", "#cf44b8", "#cfc444", "#8c44cf", "#44cfa8"];
+const PALETTE = ["#e0a666", "#44cf44", "#4499cf", "#cf4444", "#cf44b8", "#cfc444", "#8c44cf", "#44cfa8"];
 
 function color(i: number): string {
   return PALETTE[i % PALETTE.length];

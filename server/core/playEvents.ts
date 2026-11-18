@@ -290,7 +290,7 @@ export async function deleteUserHistory(userId: string): Promise<void> {
     });
 }
 
-/** retention sweep. A retentionDays of 0 means "keep forever" and is the shipped default. */
+/** retention sweep. A retentionDays of 0 means "keep forever"; the shipped default is 1095 (insightsConfig.ts). */
 export async function pruneEventsOlderThan(retentionDays: number): Promise<number> {
     if (!Number.isFinite(retentionDays) || retentionDays <= 0) return 0;
 

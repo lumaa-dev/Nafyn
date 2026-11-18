@@ -101,11 +101,6 @@ export async function queueReel(userId: string, year: number): Promise<ReelStatu
     return "queued";
 }
 
-export async function getReelStatus(userId: string, year: number): Promise<ReelStatus> {
-    const snapshot = await getYearSnapshot(userId, year);
-    return snapshot?.reelStatus ?? "none";
-}
-
 // one render at a time, process-wide. ffmpeg will happily eat every core it is given.
 let rendering = false;
 
@@ -282,7 +277,7 @@ async function renderSlide(slide: SlideSource, imagePath: string, outputPath: st
     if (hasFont) {
         const font = FONT_PATH.replace(/\\/g, "/").replace(/:/g, "\\:");
         filters.push(
-            `drawtext=fontfile='${font}':text='#${slide.rank}':fontsize=44:fontcolor=0xe18c46:x=40:y=${Math.round(VIDEO_SIZE * 0.71)}`,
+            `drawtext=fontfile='${font}':text='#${slide.rank}':fontsize=44:fontcolor=0xe0a666:x=40:y=${Math.round(VIDEO_SIZE * 0.71)}`,
             `drawtext=fontfile='${font}':text='${escapeDrawText(slide.title)}':fontsize=40:fontcolor=white:x=40:y=${Math.round(VIDEO_SIZE * 0.78)}`,
             `drawtext=fontfile='${font}':text='${escapeDrawText(slide.subtitle)}':fontsize=28:fontcolor=0xbbbbbb:x=40:y=${Math.round(VIDEO_SIZE * 0.86)}`
         );

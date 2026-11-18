@@ -71,6 +71,7 @@
           type="button"
           :class="{ draghandle: true, grabbing: draggingIndex === i }"
           :aria-label="$t('playlist.reorder')"
+          :title="$t('playlist.reorder')"
           @pointerdown.prevent="onHandlePointerDown($event, i)"
         >
           <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><circle cx="9" cy="6" r="1.5" /><circle cx="15" cy="6" r="1.5" /><circle cx="9" cy="12" r="1.5" /><circle cx="15" cy="12" r="1.5" /><circle cx="9" cy="18" r="1.5" /><circle cx="15" cy="18" r="1.5" /></svg>
@@ -85,7 +86,7 @@
         <span class="filesize" v-if="appearance.showFileSize">{{ entry.media.fileSize != null ? formatBytes(entry.media.fileSize) : '—' }}</span>
         <span class="duration" v-if="appearance.showDuration">{{ formatDuration(entry.media.duration) }}</span>
 
-        <button type="button" class="ellipsis" @click.stop="onRowContextMenu($event, entry)" :aria-label="$t('menu.more')" v-if="viewer.userId && !selecting">
+        <button type="button" class="ellipsis" @click.stop="onRowContextMenu($event, entry)" :aria-label="$t('menu.more')" :title="$t('menu.more')" v-if="viewer.userId && !selecting">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
         </button>
       </li>

@@ -1,4 +1,5 @@
 import { useAuthToken } from "~/composables/useAuthToken";
+import { reportRecPreview } from "~/composables/useRecFeedback";
 
 // The 30-second iTunes preview of a track the viewer does not own (GET /api/v1/track/{tid}/preview), on the
 // catalog track and album pages. One preview at a time, on its own <audio> - never the player's: a preview is not
@@ -10,13 +11,22 @@ const playingId = ref<string | null>(null);
 const loadingId = ref<string | null>(null);
 const failedIds = ref(new Set<string>());
 let audio: HTMLAudioElement | null = null;
+// wall-clock listening of the preview playing now, for the recommender's feedback (useRecFeedback.ts)
+let listening: { id: string, since: number | null, ms: number } | null = null;
+
+function closeListening() {
+  if (!listening) return;
+  if (listening.since !== null) listening.ms += Date.now() - listening.since;
+  if (listening.ms > 0) reportRecPreview(listening.id, listening.ms);
+  listening = null;
+}
 
 function element(): HTMLAudioElement {
   if (audio) return audio;
   audio = new Audio();
   audio.preload = "none";
-  audio.addEventListener("ended", () => { playingId.value = null; });
-  audio.addEventListener("pause", () => { playingId.value = null; });
+  audio.addEventListener("ended", () => { playingId.value = null; closeListening(); });
+  audio.addEventListener("pause", () => { playingId.value = null; closeListening(); });
   return audio;
 }
 
@@ -51,6 +61,7 @@ export function usePreview() {
       await el.play();
       if (loadingId.value !== tid) return true;
       playingId.value = tid;
+      listening = { id: tid, since: Date.now(), ms: 0 };
       return true;
     } catch {
       if (loadingId.value === tid) {

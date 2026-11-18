@@ -378,16 +378,11 @@ async function save() {
   color: var(--tint-fg, #ffffffae);
 }
 
+/* fields keep app.vue's shared text-field style (DESIGN.md "Text fields"), only stretched to the form */
 .media-edit input[type="text"],
 .media-edit input[type="number"],
 .media-edit input[type="date"],
 .media-edit select {
-  background: #00000040;
-  border: 1px solid #666666;
-  border-radius: 8px;
-  padding: 8px;
-  color: inherit;
-  font: inherit;
   width: 100%;
 }
 

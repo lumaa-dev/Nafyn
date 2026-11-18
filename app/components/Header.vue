@@ -5,7 +5,7 @@
       <button class="wordmark-btn" aria-label="Nafyn" @click="props.toggleSidebar()" v-if="!mobileSearchActive">
         <Wordmark />
       </button>
-      <button v-if="loggedIn" class="search-toggle" :class="{ active: mobileSearchActive }" @click="mobileSearchActive = !mobileSearchActive">
+      <button v-if="loggedIn" class="search-toggle" :class="{ active: mobileSearchActive }" :aria-label="$t('search.toggle')" :title="$t('search.toggle')" :aria-pressed="mobileSearchActive" @click="mobileSearchActive = !mobileSearchActive">
         <img src="../assets/icons/search.svg" alt="" draggable="false" />
       </button>
       <input v-if="loggedIn" v-model="searchText" type="text" name="search" id="search" :class="{ 'mobile-active': mobileSearchActive }" :placeholder="$t('common.search')" :title="$t('search.hint')" :disabled="sidebarActive" @keydown.enter="search()">

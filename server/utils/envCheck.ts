@@ -17,6 +17,7 @@
 import { accessSync, constants, existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { delimiter, join, resolve } from "node:path";
 import { apnSettings } from "./apn";
+import { readRecConfig } from "./recommender/config";
 
 export type EnvSeverity = "error" | "warn" | "info";
 export type EnvGroup = "core" | "downloads" | "integrations" | "notifications" | "deployment";
@@ -79,7 +80,8 @@ const STRING_VARIABLES = [
 // flags that only the exact value "false" switches off (everything else leaves the feature ON)
 const OFF_SWITCHES = [
     "NAFYN_INSIGHTS_SCHEDULER", "NAFYN_RETENTION_SCHEDULER", "NAFYN_UNITY_SCHEDULER",
-    "NAFYN_NOTIFICATION_SCHEDULER", "NAFYN_UNITY_ENABLED", "NAFYN_IMPORT_WORKER"
+    "NAFYN_NOTIFICATION_SCHEDULER", "NAFYN_UNITY_ENABLED", "NAFYN_IMPORT_WORKER",
+    "NAFYN_REC_ENABLED", "NAFYN_REC_SCHEDULER"
 ];
 // tunables read as numbers; a value that isn't one is ignored in favour of the default (code defaults in brackets)
 const NUMBER_VARIABLES: Array<[name: string, min: number, integer: boolean]> = [
@@ -279,6 +281,11 @@ export async function checkEnvironment(config: EnvConfig = configFromEnv(), env:
     }
     if (env.NAFYN_PUBLIC_OPENAPI === "true") {
         add("info", "deployment", "NAFYN_PUBLIC_OPENAPI", "is on: the API spec and docs UI are public, listing every endpoint to anonymous visitors.");
+    }
+
+    // -- the recommender's tunables (NAFYN_REC_*): an ignored value falls back to its default --
+    for (const problem of readRecConfig(env).problems) {
+        add("warn", "integrations", problem.variable, problem.message);
     }
 
     for (const name of OFF_SWITCHES) {

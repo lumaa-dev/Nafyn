@@ -111,9 +111,33 @@ c'est ce qui alimente vos statistiques, les Replay Mix et le bilan de fin d'ann�
 conservées jusqu'à ce que vous supprimiez votre historique ou votre compte. Désactiver l'option arrête
 immédiatement tout nouvel enregistrement.*
 
+### Recommandations personnalisées
+
+Activées sauf si vous les désactivez (Paramètres -> Confidentialité et sécurité). Nafyn construit des mix et
+la page Pour vous à partir de votre bibliothèque, de ce que vous avez ajouté à des playlists, des écoutes
+récentes et - seulement si l'historique d'écoute est activé - de vos écoutes. Pour cela sont conservés :
+
+- **Vos mix** : les façons d'écouter repérées dans votre musique (un genre, une décennie, une ambiance, un
+  moment de la journée), les titres de chacun, et les enregistrements suggérés avec la raison de chaque choix.
+- **Un résumé de vos goûts** : une courte liste de nombres calculée à partir de votre bibliothèque et de vos
+  écoutes, et les artistes que vous écoutez le plus, qui servent à classer ce que montre la page Pour vous.
+- **Ce que la page Pour vous vous a montré**, à chaque visite : ce qui a été affiché, dans quel ordre, le
+  contexte du classement (moment de la journée, type d'appareil, région approximative déduite de votre fuseau
+  horaire), la probabilité de chaque choix, et ce que vous en avez fait dans les 30 minutes (ouvert, écouté et
+  combien de temps, extrait écouté, demandé). C'est ainsi que la page apprend ce qui fonctionne, et qu'une
+  nouvelle méthode de classement est vérifiée sur les visites passées avant d'être utilisée pour quiconque.
+
+Votre bibliothèque compte aussi, de manière agrégée et anonyme, pour les recommandations des autres : un
+artiste écouté par plusieurs personnes aux goûts proches peut leur être suggéré. Aucun titre que vous possédez
+n'est jamais montré à quelqu'un d'autre, et les suggestions viennent uniquement du catalogue musical public.
+
+*Les mix sont reconstruits chaque jour. Ce que la page Pour vous vous a montré est supprimé au bout de 90
+jours. Désactiver l'option supprime tout immédiatement et votre bibliothèque ne compte plus pour personne.*
+
 ### Préférences
 
-Réglages d'affichage, de lecture et de Nafyn Unity, ainsi que votre choix concernant l'historique d'écoute.
+Réglages d'affichage, de lecture et de Nafyn Unity, ainsi que vos choix concernant l'historique d'écoute et les
+recommandations.
 
 *Conservé jusqu'à la suppression de votre compte.*
 
@@ -147,7 +171,11 @@ historique d'écoute.
   enregistrement.
 - **Last.fm**, pour les biographies d'artistes, si l'opérateur a configuré une clé.
 - **Le catalogue iTunes d'Apple**, qui reçoit le titre et l'artiste d'un titre que vous ne possédez pas quand
-  vous écoutez son extrait de 30 secondes.
+  vous écoutez son extrait de 30 secondes, ou quand cet extrait est analysé (tempo, tonalité, énergie...)
+  pour savoir s'il a sa place dans l'un de vos mix.
+- **ListenBrainz** (MetaBrainz Foundation), pour trouver des enregistrements et des artistes proches de ceux
+  de vos mix. Il reçoit un identifiant d'enregistrement ou d'artiste à la fois, jamais qui a demandé ni
+  pourquoi.
 - **Discogs**, quand vous importez votre collection Discogs : Nafyn lit cette collection à partir du nom
   d'utilisateur Discogs que vous lui donnez.
 - **Cover Art Archive**, pour récupérer les pochettes.

@@ -161,7 +161,7 @@ watch(() => route.params.year, load);
 
 .replay .kicker {
   font-size: 0.7em;
-  color: #e18c46;
+  color: #e0a666;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -195,8 +195,8 @@ watch(() => route.params.year, load);
 }
 
 .replay .archive a.active {
-  background: #e18c46;
-  border-color: #e18c46;
+  background: #e0a666;
+  border-color: #e0a666;
   color: #000;
 }
 

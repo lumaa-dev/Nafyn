@@ -16,8 +16,6 @@ import { isUuid } from "./ids";
 import { coverArchiveUrl, coverOriginalUrl, COVER_SIZES, type CoverKind, type CoverSize } from "./coverUrl";
 import { ensureDir } from "./ensureDir";
 
-export { COVER_SIZES, isCoverKind, isCoverSize, parseCoverArtUrl } from "./coverUrl";
-export type { CoverKind, CoverSize } from "./coverUrl";
 
 const CACHE_DIR = join(process.cwd(), ".data", "art");
 const MAX_COVER_BYTES = 8 * 1024 * 1024;

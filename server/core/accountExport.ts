@@ -30,6 +30,9 @@ import { listPinExportForUser } from "./pins";
 import { listImportExportForUser } from "./imports";
 import { listWebhookExportForUser } from "../utils/webhook";
 import { listDeviceExportForUser } from "../utils/apn";
+import { getRecSettings } from "./recSettings";
+import { listMixExportForUser } from "./recMixes";
+import { listDecisionExportForUser } from "./recBandit";
 
 // raw play events are read in pages so a heavy listener's export doesn't materialize every row at once;
 // same caps as the insights-only export, which this supersedes
@@ -132,6 +135,14 @@ export async function buildAccountExport(userId: string): Promise<Record<string,
 
     const replayMixes = await Promise.all(replayYears.map((r) => getReplayMix(userId, r.year)));
 
+    // personalized recommendations: the setting, the mixes built for this account, and every ranking decision of
+    // its For You page (what was shown, with which probability, and what came of it)
+    const [recommendationSettings, mixes, rankingDecisions] = await Promise.all([
+        getRecSettings(userId),
+        listMixExportForUser(userId),
+        listDecisionExportForUser(userId)
+    ]);
+
     return {
         format: ACCOUNT_EXPORT_FORMAT,
         exportedAt: Date.now(),
@@ -155,7 +166,8 @@ export async function buildAccountExport(userId: string): Promise<Record<string,
             appearance,
             playback,
             unity,
-            listeningHistory: insightSettings
+            listeningHistory: insightSettings,
+            personalizedRecommendations: recommendationSettings
         },
         // login metadata. Disclosed in full, IP included: it is held about this account, so it is the
         // account's to see
@@ -179,6 +191,11 @@ export async function buildAccountExport(userId: string): Promise<Record<string,
             releaseSubscriptions
         },
         recentlyPlayed,
+        recommendations: {
+            settings: recommendationSettings,
+            mixes,
+            rankingDecisions
+        },
         listening: {
             counts: {
                 playEvents: totalEvents,

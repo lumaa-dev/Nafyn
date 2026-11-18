@@ -12,6 +12,9 @@ import { tickInsightsJobs } from "~~/server/core/insightsJobs";
 const TICK_INTERVAL_MS = 60_000;
 
 export default defineNitroPlugin(() => {
+    // `nuxt build` boots the server bundle to prerender @nuxt/content's dump: no database, no timers, no logs there
+    // (it used to migrate whatever MySQL .env pointed at, and the open pool kept the build from ever exiting)
+    if (import.meta.prerender) return;
     // lets a second replica stand down. The claim protocol makes concurrent schedulers correct anyway, but
     // correct-and-wasteful is still wasteful when one of them can simply not run.
     if (process.env.NAFYN_INSIGHTS_SCHEDULER === "false") {

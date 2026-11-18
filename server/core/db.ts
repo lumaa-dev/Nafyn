@@ -2,6 +2,7 @@
 import mysql from "mysql2/promise";
 import { createInsightsTables, resolveTableOptions } from "./insightsSchema";
 import { runMigrations } from "./migrations";
+import { createRecommendationTables } from "./recSchema";
 
 let pool: mysql.Pool | null = null;
 
@@ -419,7 +420,10 @@ export async function initDatabases(): Promise<void> {
             artistName TEXT,
             coverArt TEXT,
             createdAt BIGINT NOT NULL,
-            updatedAt BIGINT NOT NULL
+            updatedAt BIGINT NOT NULL,
+            INDEX idx_requests_requestedBy_status (requestedBy, status),
+            INDEX idx_requests_status_createdAt (status, createdAt),
+            INDEX idx_requests_createdAt (createdAt)
         );
     `);
 
@@ -451,7 +455,8 @@ export async function initDatabases(): Promise<void> {
             -- a cover image uploaded by a user, served from .data/covers/<mediaId>.webp instead of coverArt
             hasCustomCover TINYINT(1) NOT NULL DEFAULT 0,
             addedAt BIGINT NOT NULL,
-            INDEX idx_media_musicbrainzId (musicbrainzId)
+            INDEX idx_media_musicbrainzId (musicbrainzId),
+            INDEX idx_media_albumId (albumId)
         );
 
         CREATE TABLE IF NOT EXISTS library_entries (
@@ -496,7 +501,7 @@ export async function initDatabases(): Promise<void> {
             addedBy VARCHAR(36) NOT NULL,
             position INT NOT NULL,
             addedAt BIGINT NOT NULL,
-            INDEX idx_playlist_entries_playlistId (playlistId),
+            INDEX idx_playlist_entries_playlist_position (playlistId, position),
             CONSTRAINT fk_playlist_entries_playlist FOREIGN KEY (playlistId) REFERENCES playlists(id),
             CONSTRAINT fk_playlist_entries_media FOREIGN KEY (mediaId) REFERENCES media(id)
         );
@@ -517,6 +522,7 @@ export async function initDatabases(): Promise<void> {
     // CREATE TABLE above has already happened
     await createMediaChildTables();
     await createInsightsTables();
+    await createRecommendationTables();
     await runMigrations();
 }
 

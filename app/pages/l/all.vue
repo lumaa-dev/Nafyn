@@ -18,7 +18,7 @@
         <NuxtLink v-if="track.album" :to="`/a/${track.albumId}`" class="album" @click.stop>{{ track.album }}</NuxtLink>
         <span class="filesize" v-if="appearance.showFileSize">{{ track.fileSize != null ? formatBytes(track.fileSize) : '—' }}</span>
         <span class="duration" v-if="appearance.showDuration">{{ formatDuration(track.duration) }}</span>
-        <button v-if="!selecting" type="button" class="ellipsis" @click.stop="onContextMenu($event, track)" :aria-label="$t('menu.more')">
+        <button v-if="!selecting" type="button" class="ellipsis" @click.stop="onContextMenu($event, track)" :aria-label="$t('menu.more')" :title="$t('menu.more')">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
         </button>
       </li>

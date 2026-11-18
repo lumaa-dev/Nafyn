@@ -114,13 +114,14 @@ export function scrobblePlays(userId: string, plays: PlayToScrobble[]): void {
         const row = await getRow(userId);
         if (!credentials || !row || row.scrobbling !== 1) return;
 
-        const tracks: ScrobbleTrack[] = [];
-        for (const play of plays) {
-            if (!(await findPlayableEntry(userId, play.trackId))) continue;
+        // each play is checked on its own: side by side, order kept by Promise.all
+        const checked = await Promise.all(plays.map(async (play): Promise<ScrobbleTrack | null> => {
+            if (!(await findPlayableEntry(userId, play.trackId))) return null;
             const media = await getMediaId(play.trackId);
-            if (!media || !isScrobbleWorthy(play.durationMs, media.duration)) continue;
-            tracks.push(toScrobble(media, play.startedAtMs));
-        }
+            if (!media || !isScrobbleWorthy(play.durationMs, media.duration)) return null;
+            return toScrobble(media, play.startedAtMs);
+        }));
+        const tracks = checked.filter((track): track is ScrobbleTrack => track !== null);
         // Last.fm takes 50 per call
         for (let i = 0; i < tracks.length; i += 50) {
             await signedCall("track.scrobble", { ...scrobbleParams(tracks.slice(i, i + 50)), sk: row.sessionKey }, credentials, { post: true });

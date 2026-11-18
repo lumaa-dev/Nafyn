@@ -107,10 +107,6 @@ export async function updateUser(id: string, changes: Partial<Omit<NafynUser, "i
     return merged;
 }
 
-export async function updatePasswordHash(id: string, passwordHash: string): Promise<void> {
-    await getUsersDb().prepare(`UPDATE users SET passwordHash = ? WHERE id = ?`).run(passwordHash, id);
-}
-
 export async function deleteUser(id: string): Promise<boolean> {
     const result = await getUsersDb().prepare(`DELETE FROM users WHERE id = ?`).run(id);
     return result.changes > 0;

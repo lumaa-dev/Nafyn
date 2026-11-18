@@ -40,10 +40,6 @@ export function signalCancel(requestId: string): boolean {
     return true;
 }
 
-export function isCancellable(requestId: string): boolean {
-    return controllers.has(requestId);
-}
-
 export function throwIfCancelled(signal: AbortSignal | undefined): void {
     if (signal?.aborted) throw new RequestCancelledError();
 }

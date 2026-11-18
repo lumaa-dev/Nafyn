@@ -1,5 +1,6 @@
 // global "Now Playing" audio engine: one <audio> element shared across every page via useState
 import type { MediaRow } from "~~/server/core/library";
+import { reportRecListen } from "~/composables/useRecFeedback";
 import type { RecentlyPlayedType } from "~~/server/core/recentlyPlayed";
 import type { Ref } from "vue";
 import { enqueuePlayEvent, bindPlayTracking, getHistoryState, isTrackingSuppressed, reportNowPlaying, useHistoryEnabled, type PlaySource } from "./usePlayTracking";
@@ -106,6 +107,8 @@ function endSegment(reason: SegmentEnd) {
     segment = null;
 
     if (finished.accumulatedMs <= 0) return;
+    // a listen that came from a For You card is that card's reward (useRecFeedback.ts)
+    reportRecListen(finished.track.id, finished.startedAtMs, finished.accumulatedMs);
 
     const trackDurationSec = finished.track.duration;
     const completed = reason === "ended"

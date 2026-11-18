@@ -5,7 +5,9 @@
     "loadingMore": "Chargement...",
     "cancel": "Annuler",
     "close": "Fermer",
-    "error": "Une erreur est survenue"
+    "error": "Une erreur est survenue",
+    "errorTitle": "Erreur {status}",
+    "returnHome": "Retour à l'accueil"
   },
   "sidebar": {
     "library": "Librairie",
@@ -15,7 +17,7 @@
     "requests": "Demandes",
     "everyoneLibrary": "Bibliothèque de tous",
     "settings": "Paramètres",
-    "insights": "Statistiques"
+    "insights": "Statistiques",    "forYou": "Pour vous"
   },
   "auth": {
     "login": {
@@ -128,7 +130,8 @@
     "best": "Meilleur résultat",
     "loading": "Recherche en cours…",
     "empty": "Aucun résultat.",
-    "hint": "Rechercher par titre ou « Artiste - Titre » - dans n'importe quelle écriture, ou en lettres latines pour un titre japonais, coréen ou chinois"
+    "hint": "Rechercher par titre ou « Artiste - Titre » - dans n'importe quelle écriture, ou en lettres latines pour un titre japonais, coréen ou chinois",
+    "toggle": "Rechercher"
   },
   "requests": {
     "title": "Demandes",
@@ -340,6 +343,13 @@
         "on": "Activé - vos écoutes sont enregistrées et alimentent vos statistiques",
         "off": "Désactivé - rien n'est enregistré",
         "note": "Désactiver arrête immédiatement l'enregistrement des nouvelles écoutes. Cela ne supprime pas ce qui existe déjà."
+      },
+      "recommendations": {
+        "title": "Recommandations personnalisées",
+        "label": "Recommander de la musique d'après mon écoute",
+        "on": "Activé - votre bibliothèque, vos playlists et vos écoutes façonnent vos mix et la page Pour vous",
+        "off": "Désactivé - rien n'est recommandé d'après votre écoute, et ce qui en avait été construit est supprimé",
+        "note": "Désactiver supprime aussitôt vos mix et la trace de ce que la page Pour vous vous a montré, et votre bibliothèque ne compte plus pour les recommandations de personne. Les écoutes ne comptent que si l'historique d'écoute est activé."
       },
       "export": {
         "title": "Exporter vos données",
@@ -817,5 +827,65 @@
     "playlists": "Playlists publiques",
     "noPlaylists": "Aucune playlist publique pour le moment.",
     "embedOpen": "Ouvrir le profil"
+  },
+  "forYou": {
+    "title": "Pour vous",
+    "building": "Vos mix sont en cours d'actualisation.",
+    "buildingFirst": "Vos premiers mix sont en préparation. Revenez dans quelques minutes.",
+    "empty": "Rien à recommander pour l'instant : demandez, ajoutez à des playlists et écoutez d'abord quelques morceaux.",
+    "off": "Les recommandations personnalisées sont désactivées.",
+    "offLink": "Les activer dans Confidentialité et sécurité",
+    "unavailable": "Les recommandations ne sont pas disponibles sur ce serveur.",
+    "shelf": {
+      "mixes": "Conçu pour vous",
+      "suggestions": "Suggestions pour vous",
+      "jump_back_in": "Reprendre",
+      "rediscover": "Redécouvrir",
+      "playlists": "Vos playlists"
+    },
+    "why": {
+      "because_artist": "Parce que vous écoutez {subject}",
+      "from_mix": "Extrait de votre {subject}",
+      "new_release": "Nouvelle sortie",
+      "rediscover": "Pas écouté depuis longtemps",
+      "recently_played": "Écouté récemment",
+      "similar_to_recent": "Dans l'esprit de votre dernière écoute"
+    }
+  },
+  "mix": {
+    "kicker": "Mix conçu pour vous",
+    "summary": "{familiar} de votre musique · {suggested} suggestions",
+    "updated": "Mis à jour le {date}",
+    "refresh": "Actualiser mes mix",
+    "refreshStarted": "Vos mix sont en cours d'actualisation",
+    "suggested": "Suggestion",
+    "title": {
+      "default": "Mix {value}",
+      "artist": "{value} et plus",
+      "qualified": "{main} · {qualifier}"
+    },
+    "mood": {
+      "upbeat": "Entraînant",
+      "intense": "Intense",
+      "mellow": "Doux",
+      "melancholic": "Mélancolique"
+    },
+    "time": {
+      "night": "Nuit",
+      "morning": "Matin",
+      "afternoon": "Après-midi",
+      "evening": "Soirée"
+    },
+    "reason": {
+      "familiar": "De votre musique",
+      "familiarPlays": "De votre musique · écouté une fois | De votre musique · écouté {n} fois",
+      "novelArtist": "Parce que vous écoutez {artist}",
+      "novel": {
+        "collaborative": "Écouté par des gens comme vous",
+        "audio": "Sonne comme ce mix",
+        "text": "Même style que ce mix",
+        "graph": "D'artistes proches des vôtres"
+      }
+    }
   }
 }

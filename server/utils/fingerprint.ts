@@ -22,8 +22,6 @@ import {
     type ExpectedRecording
 } from "./acoustidMatch";
 
-export type { ExpectedRecording } from "./acoustidMatch";
-
 const ACOUSTID_URL = "https://api.acoustid.org/v2/lookup";
 const ACOUSTID_TIMEOUT_MS = 15_000;
 // fpcalc and the container header disagreeing by more than this is worth a log line (a VBR mp3 without a Xing

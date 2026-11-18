@@ -46,6 +46,7 @@ import { deleteReleaseSubscriptionsForUser } from "./releaseSubscriptions";
 import { deleteLastfmAccount } from "./lastfmAccounts";
 import { deleteImportsForUser } from "./imports";
 import { deletePinsForUser } from "./pins";
+import { eraseRecommendationAccount } from "./recSettings";
 
 export interface ErasureReport {
     removed: boolean,
@@ -62,7 +63,8 @@ export interface ErasureReport {
     membershipsRemoved: number,
     playlistEntriesAnonymized: number,
     requestsAnonymized: number,
-    recentlyPlayed: number
+    recentlyPlayed: number,
+    recommendations: number
 }
 
 /**
@@ -103,6 +105,8 @@ export async function eraseAccount(userId: string): Promise<ErasureReport> {
     await deleteUserHistory(userId);
     await deleteInsightSettings(userId);
     const recentlyPlayed = await deleteRecentlyPlayedForUser(userId);
+    // the recommender: mixes, ranking decisions and feedback, refresh state + embedding, the opt-out row
+    const recommendations = await eraseRecommendationAccount(userId);
 
     // 4. library. Revokes every entry and deletes the underlying file when no other user still holds it
     await deleteAllLibraryEntriesForUser(userId);
@@ -142,6 +146,7 @@ export async function eraseAccount(userId: string): Promise<ErasureReport> {
         membershipsRemoved,
         playlistEntriesAnonymized,
         requestsAnonymized,
-        recentlyPlayed
+        recentlyPlayed,
+        recommendations
     };
 }

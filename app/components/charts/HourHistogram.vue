@@ -9,7 +9,7 @@
         :width="slot - GAP"
         :height="heightOf(point)"
         rx="2"
-        :fill="point.hour === peakHour ? '#e18c46' : '#ffffff33'"
+        :fill="point.hour === peakHour ? '#e0a666' : '#ffffff33'"
       />
     </svg>
 

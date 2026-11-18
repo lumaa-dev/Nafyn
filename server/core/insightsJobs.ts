@@ -1,7 +1,7 @@
 // scheduled background work for listening insights: rollups, the weekly Replay Mix rebuild, the December
 // snapshot, reel rendering and the retention sweep.
 //
-// Nafyn has no job queue (bullmq is a dependency but has never been wired up, and there is no Redis), so
+// Nafyn has no job queue (no bullmq, no Redis), so
 // this is an in-process interval driven by server/plugins/insightsJobs.ts. What keeps that honest across
 // restarts - and across replicas, if anyone runs more than one - is `insight_job_runs`: a job/period pair is
 // claimed by an atomic conditional update, and a claim only succeeds when nobody else holds it.
@@ -385,23 +385,6 @@ export async function tickInsightsJobs(nowMs: number = Date.now()): Promise<void
 
     // every tick: renders are user-initiated and shouldn't wait for a scheduled slot
     await jobReelRender();
-}
-
-/** on-demand refresh for one user - used after a manual "recompute my insights" request */
-export async function refreshUserNow(userId: string, nowMs: number = Date.now()): Promise<void> {
-    const tz = await tzFor(userId);
-    const dateKey = localDateKey(nowMs, tz);
-    // indexed rather than destructured: localDateKey always returns YYYY-MM-DD, but the compiler cannot
-    // know that, and Number(undefined) would silently become NaN
-    const parts = dateKey.split("-");
-    const year = Number(parts[0]);
-    const month = Number(parts[1]);
-
-    await rollupDay(userId, dateKey, tz);
-    await rollupMonth(userId, year, month, tz);
-    await rollupYear(userId, year, tz);
-    await rebuildReplayMix(userId, year);
-    await rebuildAllTime(userId);
 }
 
 export { monthBounds, yearBounds };

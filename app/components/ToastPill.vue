@@ -27,7 +27,7 @@ const props = defineProps<{ toast: Toast, underLast: boolean; }>();
   padding: 0.5em 2em;
   border-radius: 50vw;
   left: 0;
-  transition: top 0.35s ease-out, scale 0.35s ease-out;
+  transition: top 0.3s ease-out, scale 0.3s ease-out;
 }
 
 .toast[nafyn-tint="green"] {

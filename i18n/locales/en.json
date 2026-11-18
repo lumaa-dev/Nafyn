@@ -5,7 +5,9 @@
     "loadingMore": "Loading more...",
     "cancel": "Cancel",
     "close": "Close",
-    "error": "Something went wrong"
+    "error": "Something went wrong",
+    "errorTitle": "Error {status}",
+    "returnHome": "Return home"
   },
   "sidebar": {
     "library": "Library",
@@ -15,7 +17,7 @@
     "requests": "Requests",
     "everyoneLibrary": "Everyone's Library",
     "settings": "Settings",
-    "insights": "Insights"
+    "insights": "Insights",    "forYou": "For You"
   },
   "auth": {
     "login": {
@@ -128,7 +130,8 @@
     "best": "Best match",
     "loading": "Searching…",
     "empty": "No results.",
-    "hint": "Search by title or \"Artist - Title\" - in any script, or in Latin letters for a Japanese, Korean or Chinese song"
+    "hint": "Search by title or \"Artist - Title\" - in any script, or in Latin letters for a Japanese, Korean or Chinese song",
+    "toggle": "Search"
   },
   "requests": {
     "title": "Requests",
@@ -340,6 +343,13 @@
         "on": "On - your plays are recorded and power your insights",
         "off": "Off - nothing is recorded",
         "note": "Turning this off stops new plays being recorded straight away. It doesn't delete what's already there."
+      },
+      "recommendations": {
+        "title": "Personalized recommendations",
+        "label": "Recommend music from what I listen to",
+        "on": "On - your library, playlists and plays shape your mixes and the For You page",
+        "off": "Off - nothing is recommended from your listening, and what was built from it is deleted",
+        "note": "Turning this off deletes your mixes and the record of what the For You page showed you, at once, and your library stops counting for anyone's recommendations. Plays only count while listening history is on."
       },
       "export": {
         "title": "Export your data",
@@ -817,5 +827,65 @@
     "playlists": "Public playlists",
     "noPlaylists": "No public playlists yet.",
     "embedOpen": "Open profile"
+  },
+  "forYou": {
+    "title": "For You",
+    "building": "Your mixes are being refreshed.",
+    "buildingFirst": "Your first mixes are being made. Come back in a few minutes.",
+    "empty": "Nothing to recommend yet: request, add to playlists and play a few songs first.",
+    "off": "Personalized recommendations are turned off.",
+    "offLink": "Turn them on in Privacy & Security",
+    "unavailable": "Recommendations are not available on this server.",
+    "shelf": {
+      "mixes": "Made For You",
+      "suggestions": "Suggested for you",
+      "jump_back_in": "Jump back in",
+      "rediscover": "Rediscover",
+      "playlists": "Your playlists"
+    },
+    "why": {
+      "because_artist": "Because you listen to {subject}",
+      "from_mix": "From your {subject}",
+      "new_release": "New release",
+      "rediscover": "Not played in a while",
+      "recently_played": "Played recently",
+      "similar_to_recent": "Like what you just played"
+    }
+  },
+  "mix": {
+    "kicker": "Mix made for you",
+    "summary": "{familiar} from your music · {suggested} suggestions",
+    "updated": "Updated {date}",
+    "refresh": "Refresh my mixes",
+    "refreshStarted": "Your mixes are being refreshed",
+    "suggested": "Suggested",
+    "title": {
+      "default": "{value} Mix",
+      "artist": "{value} and more",
+      "qualified": "{main} · {qualifier}"
+    },
+    "mood": {
+      "upbeat": "Upbeat",
+      "intense": "Intense",
+      "mellow": "Mellow",
+      "melancholic": "Melancholic"
+    },
+    "time": {
+      "night": "Late Night",
+      "morning": "Morning",
+      "afternoon": "Afternoon",
+      "evening": "Evening"
+    },
+    "reason": {
+      "familiar": "From your music",
+      "familiarPlays": "From your music · played once | From your music · played {n} times",
+      "novelArtist": "Because you listen to {artist}",
+      "novel": {
+        "collaborative": "Listeners like you play it",
+        "audio": "Sounds like this mix",
+        "text": "Same style as this mix",
+        "graph": "From artists close to yours"
+      }
+    }
   }
 }

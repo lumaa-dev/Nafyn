@@ -2,10 +2,10 @@
     <Header :toggle-sidebar="() => { navigateTo(`/`) }" />
     <div class="fp err">
         <span class="header">
-            <h1>Error {{ error.status }}</h1>
+            <h1>{{ $t("common.errorTitle", { status: error.status }) }}</h1>
             <p class="message">{{ error.message }}</p>
         </span>
-        <button @click="navigateTo(`/`)" filled>Return home</button>
+        <button @click="navigateTo(`/`)" filled>{{ $t("common.returnHome") }}</button>
     </div>
 </template>
 
@@ -13,7 +13,7 @@
 import type { NuxtError } from '#app'
 import Header from './components/Header.vue';
 
-const props = defineProps<{ error: NuxtError }>()
+defineProps<{ error: NuxtError }>()
 </script>
 
 <style scoped>

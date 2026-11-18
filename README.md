@@ -18,6 +18,7 @@ Multi-user: separate libraries and separate permissions per user. Users request 
 - **[Subsonic API](#subsonic-api)** for third-party players, and a documented REST API for everything else.
 - **[Notifications](#notifications)**: webhooks (Discord, Slack, ntfy, Gotify, generic JSON) and Apple push notifications, Live Activities included, through the [Nafyn iOS app](https://github.com/lumaa-dev/NafynApp).
 - **Listening insights** ("Your Music Year"): opt-in weekly, monthly and yearly summaries, a Replay Mix and a year-end story.
+- **[Personalized recommendations](#personalized-recommendations)**: up to 10 daily mixes, one per way you listen (a genre, a decade, a mood, a time of day), mixing your music with suggestions from the public catalogue, and a **For You** page ranked by a contextual bandit that learns from what you play. On by default, one switch to turn it off.
 - **[Passkeys](#passkeys)**, revocable sessions, and the tooling to run the instance within the GDPR (see [Privacy & GDPR](#privacy--gdpr)).
 - English and French interface.
 
@@ -29,6 +30,7 @@ Multi-user: separate libraries and separate permissions per user. Users request 
 - [Permissions](#permissions)
 - [Search](#search)
 - [Playlist imports](#playlist-imports)
+- [Personalized recommendations](#personalized-recommendations)
 - [Notifications](#notifications)
 - [Passkeys](#passkeys)
 - [Privacy & GDPR](#privacy--gdpr)
@@ -159,6 +161,9 @@ Configured via environment variables (see `.env.example`):
 | `NAFYN_UNITY_ENABLED` | Set `false` to turn [Nafyn Unity](#nafyn-unity) off outright. Needed when running more than one replica behind a load balancer — the live registry is in-process. |
 | `NAFYN_UNITY_SCHEDULER` | Set `false` to stop this replica running the session-cleanup job. |
 | `NAFYN_INSIGHTS_SCHEDULER` | Set `false` to stop this replica running the listening-insights rollup/snapshot/reel jobs. |
+| `NAFYN_REC_ENABLED` | Set `false` to switch [personalized recommendations](#personalized-recommendations) off for the whole instance (no mixes, no For You page, no calls to ListenBrainz). |
+| `NAFYN_REC_SCHEDULER` | Set `false` to stop this replica running the recommender's jobs. Run them on **one** replica only: it keeps the ranking models' online updates in memory before saving them. |
+| `NAFYN_REC_*` | Tunables of the recommender (mix length, familiar/new balance, refresh cadence, bandit policy and exploration coefficient λ, exploration schedule, reward threshold, offline-evaluation gate, retention), all optional. Listed in [`.env.example`](.env.example). |
 
 Some behaviour is tuned per install from the `app_settings` table instead of the environment, so it can change without a redeploy. Relevant to data retention: `insights.rawEventRetentionDays` (default `1095` — three years of raw play events; `0` keeps them forever) and `retention.recentlyPlayedDays` (default `180`). The listening-insights ranking weights live there too — see [`server/core/insightsConfig.ts`](server/core/insightsConfig.ts).
 
@@ -195,6 +200,46 @@ Nobody edits their own account through the account-management screen, admin incl
 A client can hand Nafyn a whole playlist from another service (Apple Music, through the [iOS app](https://github.com/lumaa-dev/NafynApp)) with `POST /api/v1/import`: up to 1000 tracks, each with title, artist and optionally ISRC, album and duration. It needs `REQUEST_TRACKS`, returns at once, and one import runs per user at a time.
 
 Nafyn then works through the list in the background, item by item: the track is resolved to a MusicBrainz recording (by ISRC first, then by searching title + artist + length) and requested like any other. Each item ends as `requested`, `owned`, `already-requested`, `not-found`, `unreleased` or `error`; follow it with `GET /api/v1/import/{id}`. If MusicBrainz is unavailable the item is retried and finally reported as `error`, never as `not-found`. Finished imports are deleted after 30 days. (Importing a single audio file you already own is a different feature: the *Import music* page.)
+
+## Personalized recommendations
+
+Two systems, built for Nafyn and running inside it — no extra service, no GPU, no external recommender. Everything mathematical is in [`server/utils/recommender/`](server/utils/recommender/) (pure TypeScript, no Nitro imports, so it runs under `bun test` and in the demo scripts); the Nafyn side (data, jobs, API) is `server/core/rec*.ts`.
+
+### Mixes ("Made For You")
+
+Each user's listening is clustered into **listening modes**, and every mode becomes a mix of up to 40 tracks: songs they have (familiar) and songs from the public catalogue they don't (suggestions, playable as a 30-second preview and requestable with one click). Mixes are rebuilt daily, or sooner after enough new listening, and keep their identity across refreshes.
+
+1. **Signals** ([`recData.ts`](server/core/recData.ts)): library entries (saves), playlist adds and playlist titles, the recently-played shelf, and plays — only while that user's listening history is on. Early skips count against a track; everything decays with a half-life.
+2. **Audio analysis** ([`mixes/audio.ts`](server/utils/recommender/mixes/audio.ts)): Nafyn measures its own descriptors from the audio (decoded by the bundled ffmpeg): tempo (onset autocorrelation), key and mode (Krumhansl chroma profiles), loudness, brightness, MFCC timbre, danceability and energy; valence and acousticness are labelled estimates. Every library file is analysed once in the background; a suggestion is analysed from its iTunes preview.
+3. **Listening modes** ([`mixes/modes.ts`](server/utils/recommender/mixes/modes.ts)): each liked track is a vector of weighted blocks — audio, collaborative-filtering factors (implicit ALS), co-occurrence embedding (PPMI + randomized SVD over playlists and sessions), text (TF-IDF over genres, playlist titles, lyrics), decade, time of day it is played. Weighted spherical k-means++, the number of mixes chosen by weighted silhouette (as many as the listening genuinely separates into, up to `NAFYN_REC_MAX_MIXES`). Each mode is named by its most distinctive facet — genre, mood, decade or time of day — and clients write the title in their own language.
+4. **Candidates** ([`recCatalog.ts`](server/core/recCatalog.ts), [`mixes/candidates.ts`](server/utils/recommender/mixes/candidates.ts)): collaborative filtering (ListenBrainz' session-based similar recordings, plus the artists Nafyn users with similar taste hold — only when at least two of them do), audio similarity to the mode, text similarity, and a personalized PageRank over an artist graph. Sources are rank-normalized and fused; hard gates keep a "1990s Mix" in the 1990s. Nothing unreleased, owned or already requested is suggested, and **no user's tracks are ever shown to another user** — suggestions come from the public catalogue only.
+5. **Sequencing** ([`mixes/sequencer.ts`](server/utils/recommender/mixes/sequencer.ts)): the familiar/new balance (`NAFYN_REC_FAMILIAR_RATIO`), at most two suggestions in a row, artists spread out, then an order minimizing audio jumps, Camelot-wheel key clashes and tempo clashes along an energy arc (greedy construction + 2-opt).
+
+Every track carries why it is there (`familiar`: how much it was played; `novel`: which evidence weighed most, and through which of your artists it was found).
+
+### For You (contextual bandit)
+
+The For You page ([`recBandit.ts`](server/core/recBandit.ts), [`bandit/`](server/utils/recommender/bandit/)) ranks **shelves** (mixes, suggestions, jump back in, rediscover, playlists), then the **cards** inside each shelf, as a contextual multi-armed bandit:
+
+- **Context** *s*: the user's collaborative-filtering embedding (cold start is a flag, not a zero vector), the audio of their last plays, local time of day and weekday, device class, a coarse region from the UTC offset, session signals (plays and skips in the last 30 minutes), library size, and the card's position.
+- **Action** *a*: an (item, explanation) pair — explanations ("Because you listen to X", "New release", "Not played in a while", ...) are only offered when a **validity function** says they are true, and the bandit chooses item and explanation jointly.
+- **Score**: `Score(s, a) = r̂(s, a) + λ · σ(s, a)`. Policies: **LinUCB** (closed-form ridge regression over crossed context × action features, σ = √(xᵀA⁻¹x), A⁻¹ kept by Sherman–Morrison and re-factorized by Cholesky), **Neural Thompson Sampling** (an MLP or factorization machine, σ from the network gradient, λ ~ N(0, ν²) per arm) and **NeuralUCB**. A full page (5 shelves, ~30 candidates each, every slot re-scored) takes about 3 ms with LinUCB.
+- **Reward**: a listen past 30 seconds is a success, an early skip a failure (the earlier, the surer); a suggestion's preview or request counts too; a card nobody touched within 30 minutes is a failure. Longer listening raises the sample's confidence (weight).
+- **Propensities**: the served order is randomized (ε-greedy with a decaying ε, softmax, or Thompson sampling with Monte Carlo propensities), and every decision is logged with its context, all candidates, the order shown, the conditional propensity of every position and, once the window closes, the reward (`rec_decisions`).
+
+**Safe policy updates** ([`recOffline.ts`](server/core/recOffline.ts), [`offline/`](server/utils/recommender/offline/)): once a day a candidate model is trained on the older 70 % of the logged traffic and evaluated on the newest 30 % — **IPS**, clipped IPS, **SNIPS**, the direct method and **doubly robust** (with a cross-fitted factorization-machine reward model). It replaces the serving model only if the paired DR estimate of its improvement is, at 95 % confidence, not below `-NAFYN_REC_GATE_MAX_REGRESSION`. Changing `NAFYN_REC_POLICY` goes through the same gate. Reports: `GET /api/v1/recommendations/models` (ADMIN).
+
+### Trying it without data
+
+```bash
+bun run rec:mixes [--user N]     # a synthetic world (catalogue with audio, users with known modes, 4 months of history): the mixes built for one user, and how many suggestions truly fit
+bun run rec:simulate [--pages N] # online simulation of the For You page: LinUCB, Neural TS, NeuralUCB vs random and greedy - engagement, regret against the oracle, latency
+bun run rec:evaluate             # offline evaluation where the truth is known: IPS / SNIPS / DM / DR of several candidate policies on logged traffic vs their true value, and the gate's verdict
+```
+
+`bun run test` includes `tests/recommender/`: the scoring formula, LinUCB's closed form, gradients of the neural models, the propensities (served frequencies match the logged ones), IPS unbiasedness, DR's double robustness (unbiased with a wrong reward model, and with wrong propensities), the end-to-end mixes pipeline and the logged-slate evaluation.
+
+API: `GET /api/v1/recommendations/home` (`?device=&tz=`), `POST /api/v1/recommendations/feedback`, `GET /api/v1/recommendations/mixes`, `GET /api/v1/recommendations/mixes/{id}`, `POST /api/v1/recommendations/mixes/refresh`, `GET|PATCH /api/v1/recommendations/settings`, `GET /api/v1/recommendations/models` (ADMIN). Run the scheduler (`NAFYN_REC_SCHEDULER`) on one replica only.
 
 ## Notifications
 
@@ -242,12 +287,13 @@ Nafyn is self-hosted, so **you** are the data controller — Nafyn's job is to m
 - **Download everything held about them** (art. 15 + 20) — one JSON file: profile, settings, logins including the IP addresses they came from, library, playlists, requests, recently played, all listening data. Never any secret. `GET /api/v1/user/export`.
 - **Delete their account** (art. 17) — permanent, password re-auth required, no administrator involved. `DELETE /api/v1/user/me`.
 - **Turn listening history on/off** (art. 7(3)) — off by default, opt-in only, and turning it off stops recording immediately.
+- **Turn personalized recommendations off** (art. 21) — on by default; turning it off deletes their mixes, the log of what the For You page showed them, and stops their library counting towards anyone's recommendations.
 - **Delete their listening history** on its own, without deleting the account.
 - Read the notice, and manage passkeys and sessions.
 
-**Retention**: sessions (with their IP + user agent) go when they expire after 7 days, or a minute after being revoked. The recently-played shelf is pruned after 180 days. Raw play events are pruned after 3 years — the statistics built from them are not, so no screen changes at that boundary. All three are tunable, see [Settings](#settings).
+**Retention**: sessions (with their IP + user agent) go when they expire after 7 days, or a minute after being revoked. The recently-played shelf is pruned after 180 days. Raw play events are pruned after 3 years — the statistics built from them are not, so no screen changes at that boundary. What the For You page showed each user (the bandit's decision log) is pruned after 90 days. All of these are tunable, see [Settings](#settings).
 
-**What leaves your server**: MusicBrainz, AcoustID (an audio fingerprint), Cover Art Archive, and your own slskd instance. These carry what is being searched for or downloaded — never a username, account id or listening history.
+**What leaves your server**: MusicBrainz, AcoustID (an audio fingerprint), Cover Art Archive, your own slskd instance, and for recommendations ListenBrainz (one recording or artist MBID per request) and the iTunes catalogue (the 30-second preview of a suggestion, to measure its audio). These carry what is being searched for, downloaded or compared — never a username, account id or listening history.
 
 **One accepted weak point, worth knowing before you deploy**: Subsonic API tokens are stored in readable form, because the Subsonic protocol's token challenge requires a secret the server can re-hash. Account passwords are bcrypt-hashed as normal. This is disclosed in the notice rather than hidden, but it means your database dump contains working app passwords — treat it accordingly.
 
@@ -304,6 +350,7 @@ Clients built on it:
 - `@simplewebauthn/server` + `/browser` — passkey registration and login
 - `@nuxt/content` — the privacy notice, as markdown under `content/`
 - `@nuxtjs/i18n` — English + French locales
+- ListenBrainz Labs — similar recordings / artists for the recommender (no key); the recommender's numerics (linear algebra, ALS, SVD, the bandits, the neural models and their gradients, DSP) are hand-written TypeScript, no ML dependency
 
 ## Development
 
@@ -315,6 +362,7 @@ bun run preview   # preview production build
 bun run test      # tests, no network needed
 bun run check:env # configuration report (exits 1 on errors)
 bun run openapi   # write the OpenAPI spec to openapi/nafyn.openapi.json (--out <file>, --server <url>)
+bun run rec:mixes / rec:simulate / rec:evaluate   # recommender demos on synthetic data, see Personalized recommendations
 ```
 
 Tests (`bun run test`) need no network. Lint with `bunx eslint .` (the config is generated: run `nuxt prepare` first if it is missing). The server layout and the conventions behind it are written down in [`CLAUDE.md`](CLAUDE.md); page route prefixes in [`app/pages/README.md`](app/pages/README.md).

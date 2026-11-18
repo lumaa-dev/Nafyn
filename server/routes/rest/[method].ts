@@ -16,7 +16,7 @@ import { Readable } from "node:stream";
 import type { H3Event } from "h3";
 import {
     findPlayableEntry,
-    findAnyLibraryEntryForMedia,
+    findAnyFilePathsForMedia,
     getAlbumOfUser,
     getAlbumSongsOfUser,
     getAlbumListOfUser,
@@ -48,7 +48,8 @@ import { isHistoryEnabled } from "~~/server/core/insightsSettings";
 import { playlistImageFilePath, deletePlaylistImage } from "~~/server/utils/playlistImage";
 import { isUuid, escapeLike } from "~~/server/utils/ids";
 import { isAllowedCoverArtUrl, fetchCoverArt } from "~~/server/utils/coverArt";
-import { getCachedCover, parseCoverArtUrl } from "~~/server/utils/coverArtCache";
+import { getCachedCover } from "~~/server/utils/coverArtCache";
+import { parseCoverArtUrl } from "~~/server/utils/coverUrl";
 import { mediaCoverFilePath } from "~~/server/utils/mediaCover";
 import { getLastfmArtistInfo } from "~~/server/utils/lastfm";
 import { resolveArtistImage } from "~~/server/utils/artistImage";
@@ -98,11 +99,7 @@ async function buildPlaylistNode(playlist: PlaylistRow): Promise<SubsonicNode> {
     // playlist entries reference the shared media pool directly (server/core/playlists.ts), not this
     // viewer's own library_entries, so filePath for display comes from whichever owner has the file -
     // actual stream.view access is gated per-viewer via findPlayableEntry (own library, or a playlist they can see)
-    const filePathByMediaId = new Map<string, string>();
-    for (const entry of entries) {
-        const source = await findAnyLibraryEntryForMedia(entry.media.id);
-        if (source) filePathByMediaId.set(entry.media.id, source.filePath);
-    }
+    const filePathByMediaId = await findAnyFilePathsForMedia(entries.map((entry) => entry.media.id));
     return playlistWithSongsNode(playlist, entries, filePathByMediaId);
 }
 
@@ -145,11 +142,7 @@ async function replayNode(userId: string, year: number, refreshedAt: number | nu
         return playlistNode(row, playable.length, duration);
     }
 
-    const filePathByMediaId = new Map<string, string>();
-    for (const e of playable) {
-        const source = await findAnyLibraryEntryForMedia(e.media!.id);
-        if (source) filePathByMediaId.set(e.media!.id, source.filePath);
-    }
+    const filePathByMediaId = await findAnyFilePathsForMedia(playable.map((e) => e.media!.id));
 
     return playlistWithSongsNode(
         row,

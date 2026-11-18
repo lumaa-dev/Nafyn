@@ -25,16 +25,16 @@
         </div>
 
         <div class="controls">
-          <button filled="hollow" class="round" :disabled="!hasPrev && state.currentTime <= 3" :aria-label="$t('player.previous')" @click="prev()"><img src="../assets/icons/prev.svg" alt="" draggable="false" /></button>
-          <button filled class="round big" :aria-label="state.isPlaying ? $t('player.pause') : $t('player.play')" @click="togglePlay()">
+          <button filled="hollow" class="round" :disabled="!hasPrev && state.currentTime <= 3" :aria-label="$t('player.previous')" :title="$t('player.previous')" @click="prev()"><img src="../assets/icons/prev.svg" alt="" draggable="false" /></button>
+          <button filled class="round big" :aria-label="state.isPlaying ? $t('player.pause') : $t('player.play')" :title="state.isPlaying ? $t('player.pause') : $t('player.play')" @click="togglePlay()">
             <img v-if="state.isPlaying" src="../assets/icons/pause.svg" alt="" draggable="false" />
             <img v-else src="../assets/icons/play.svg" alt="" draggable="false" />
           </button>
-          <button filled="hollow" class="round" :disabled="!hasNext" :aria-label="$t('player.next')" @click="next()"><img src="../assets/icons/next.svg" alt="" draggable="false" /></button>
+          <button filled="hollow" class="round" :disabled="!hasNext" :aria-label="$t('player.next')" :title="$t('player.next')" @click="next()"><img src="../assets/icons/next.svg" alt="" draggable="false" /></button>
         </div>
 
         <div class="volume">
-          <button filled="hollow" class="round" :aria-label="state.muted || state.volume === 0 ? $t('player.unmute') : $t('player.mute')" @click="toggleMute()">
+          <button filled="hollow" class="round" :aria-label="state.muted || state.volume === 0 ? $t('player.unmute') : $t('player.mute')" :title="state.muted || state.volume === 0 ? $t('player.unmute') : $t('player.mute')" @click="toggleMute()">
             <img v-if="state.muted || state.volume === 0" src="../assets/icons/volume-mute.svg" alt="" draggable="false" />
             <img v-else src="../assets/icons/volume.svg" alt="" draggable="false" />
           </button>

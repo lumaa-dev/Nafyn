@@ -1,5 +1,5 @@
 // per-user music library: shared `media` metadata rows + shared audio file on disk, `library_entries` only grants per-user access
-import { randomUUID, UUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { closeSync, openSync } from "node:fs";
 import { rm, rmdir } from "node:fs/promises";
 import { dirname, extname, join, resolve } from "node:path";
@@ -112,15 +112,28 @@ export async function isMediaSharedWithOthers(userId: string, mediaId: string): 
     return !!row;
 }
 
-export async function getLibraryOfUser(userId: string): Promise<LibraryEntry | null> {
-    const row = await getLibrariesDb().prepare(`SELECT * FROM library_entries WHERE userId = ?`).get(userId) as LibraryEntry | undefined;
-    return row ?? null;
-}
-
 // one existing owner's entry for a given media row, used as the copy source
 export async function findAnyLibraryEntryForMedia(mediaId: string): Promise<LibraryEntry | null> {
     const row = await getLibrariesDb().prepare(`SELECT * FROM library_entries WHERE mediaId = ? LIMIT 1`).get(mediaId) as LibraryEntry | undefined;
     return row ?? null;
+}
+
+// findAnyLibraryEntryForMedia for many rows at once: mediaId -> one owner's file path, a single query per chunk
+// instead of one per row (a 1000-song playlist was 1000 round trips)
+export async function findAnyFilePathsForMedia(mediaIds: string[]): Promise<Map<string, string>> {
+    const paths = new Map<string, string>();
+    const unique = [...new Set(mediaIds)];
+    const CHUNK = 500;
+    for (let i = 0; i < unique.length; i += CHUNK) {
+        const chunk = unique.slice(i, i + CHUNK);
+        const rows = await getLibrariesDb().prepare(`
+            SELECT mediaId, MIN(filePath) AS filePath FROM library_entries
+            WHERE mediaId IN (${chunk.map(() => "?").join(", ")})
+            GROUP BY mediaId
+        `).all(...chunk) as { mediaId: string, filePath: string }[];
+        for (const row of rows) paths.set(row.mediaId, row.filePath);
+    }
+    return paths;
 }
 
 export async function insertMedia(media: Omit<MediaRow, "id" | "addedAt" | "source" | "trackNumber" | "discNumber" | "discTitle" | "hasCustomCover"> & Partial<Pick<MediaRow, "id" | "source" | "trackNumber" | "discNumber" | "discTitle" | "hasCustomCover">>): Promise<MediaRow> {
@@ -737,6 +750,16 @@ export async function countAllMedia(): Promise<number> {
 export async function getMediaId(mediaId: string): Promise<MediaRow | undefined> {
     const row = await getLibrariesDb().prepare(`SELECT * FROM media WHERE id = ? LIMIT 1`).get(mediaId) as MediaRow | undefined;
     return row;
+}
+
+// which of these media ids exist, in one query
+export async function existingMediaIds(mediaIds: string[]): Promise<Set<string>> {
+    const unique = [...new Set(mediaIds)];
+    if (unique.length === 0) return new Set();
+    const rows = await getLibrariesDb().prepare(
+        `SELECT id FROM media WHERE id IN (${unique.map(() => "?").join(", ")})`
+    ).all(...unique) as { id: string }[];
+    return new Set(rows.map((row) => row.id));
 }
 
 // grants `userId` access to an already-downloaded song, no file copy needed since all users share the one file on disk

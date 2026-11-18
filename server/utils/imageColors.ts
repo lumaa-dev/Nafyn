@@ -3,7 +3,8 @@
 import { readFile, stat } from "node:fs/promises";
 import sharp from "sharp";
 import { fetchCoverArt } from "./coverArt";
-import { getCachedCover, parseCoverArtUrl } from "./coverArtCache";
+import { getCachedCover } from "./coverArtCache";
+import { parseCoverArtUrl } from "./coverUrl";
 import { toArchiveCoverUrl } from "./coverUrl";
 import { mediaCoverFilePath } from "./mediaCover";
 

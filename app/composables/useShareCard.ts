@@ -19,7 +19,7 @@ export interface ShareCardSpec {
 const WIDTH = 1080;
 const HEIGHT = 1350;
 const BG = "#2a2a27";
-const ACCENT = "#e18c46";
+const ACCENT = "#e0a666";
 const TEXT = "#ffffff";
 const MUTED = "#8a8a86";
 

@@ -105,11 +105,15 @@ export async function createMediaRequest(userId: string, mbId: string, type: "al
         // nobody requests what they already have: a track in their library - under this MBID or any other
         // name for the same song, see utils/mediaIdentity.ts - or an album whose every track is. An album only
         // partly there stays requestable; the pipeline skips the tracks the caller has and downloads the rest.
-        let missingTracks = 0;
+        // one missing track is enough to settle it, and on a new album it is the first one checked
+        let anyMissing = false;
         for (const target of targets) {
-            if (!(await findOwnedMediaByIdentity(userId, targetIdentity(target)))) missingTracks++;
+            if (!(await findOwnedMediaByIdentity(userId, targetIdentity(target)))) {
+                anyMissing = true;
+                break;
+            }
         }
-        if (missingTracks === 0) {
+        if (!anyMissing) {
             return refuse(409, "owned", type === "album" ? "Every track of this album is already in your library" : "Already in your library");
         }
 

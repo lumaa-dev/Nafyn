@@ -92,6 +92,8 @@
 
       <InsightsReelPlayer ref="reelPlayer" :slides="reel?.slides ?? []" />
     </template>
+    <!-- DESIGN.md "Error messages": the year that did not load says so where it should have been -->
+    <LoadError v-else :error="loadError" />
   </div>
 </template>
 
@@ -113,6 +115,7 @@ const PAGE_SIZE = 25;
 const yearly = ref<Awaited<ReturnType<typeof insights.yearly>> | null>(null);
 const comparison = ref<YearComparison[]>([]);
 const reel = ref<HighlightReel | null>(null);
+const loadError = ref<unknown>(null);
 const reelPlayer = ref<{ start: () => void } | null>(null);
 const requestingVideo = ref(false);
 const sharing = ref(false);
@@ -123,7 +126,7 @@ const pages = reactive<Record<EntityType, number>>({ track: 0, album: 0, artist:
 
 const reelStatus = computed(() => reel.value?.reelStatus ?? "none");
 
-const COMPARE_COLORS = ["#e18c46", "#4499cf", "#93c47d", "#cf44b8", "#cfc444"];
+const COMPARE_COLORS = ["#e0a666", "#4499cf", "#93c47d", "#cf44b8", "#cfc444"];
 const comparisonSeries = computed(() => comparison.value.map((row, i) => ({
   name: String(row.year),
   color: COMPARE_COLORS[i % COMPARE_COLORS.length],
@@ -264,7 +267,7 @@ onMounted(async () => {
     await Promise.all(entityTypes.map((type) => loadMore(type)));
   } catch (e) {
     // still go on to register the live updates below: a later refresh may well succeed
-    useToast().sendError($t('insights.title'), e);
+    loadError.value = e;
   }
 
   statsUnsubscribe = onInsightsUpdated(() => { void refreshStats(); });
@@ -299,7 +302,7 @@ onUnmounted(() => {
 
 .year-package .kicker {
   font-size: 0.75em;
-  color: #e18c46;
+  color: #e0a666;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }

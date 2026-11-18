@@ -389,7 +389,7 @@ onUnmounted(disconnect);
 }
 
 .reqrow .status.searching, .reqrow .status.downloading, .reqrow .status.processing {
-  background: #e18c46;
+  background: #e0a666;
   color: #000000;
 }
 
@@ -467,7 +467,7 @@ onUnmounted(disconnect);
 .reqrow .bar .fill {
   height: 100%;
   border-radius: 4px;
-  background: #e18c46;
+  background: #e0a666;
   transition: width 0.3s ease;
 }
 

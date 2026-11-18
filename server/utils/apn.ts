@@ -204,8 +204,6 @@ interface ApnTarget {
     environment: ApnEnvironment
 }
 
-export class ApnInputError extends Error {}
-
 // APNs device and push-to-start tokens are hex strings (32 bytes today, Apple reserves the right to grow them)
 const TOKEN_RE = /^[0-9a-fA-F]{64,400}$/;
 

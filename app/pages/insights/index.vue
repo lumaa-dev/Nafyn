@@ -141,7 +141,7 @@
             <section class="subsection">
               <h2>{{ $t('insights.charts.byMonth') }}</h2>
               <ChartsLineChart
-                :series="[{ name: String(selectedYear), color: '#e18c46', points: yearly.monthlyMinutes }]"
+                :series="[{ name: String(selectedYear), color: '#e0a666', points: yearly.monthlyMinutes }]"
                 :labels="monthLabels"
                 :aria-label="$t('insights.charts.byMonth')"
               />
@@ -173,6 +173,9 @@
           </InsightsEnoughDataGate>
         </template>
       </div>
+
+      <!-- DESIGN.md "Error messages": the panel that did not load says so where its numbers should be -->
+      <LoadError v-if="historyEnabled" :error="loadError" />
     </section>
   </div>
 </template>
@@ -196,6 +199,7 @@ const monthly = ref<Awaited<ReturnType<typeof insights.monthly>> | null>(null);
 const yearly = ref<Awaited<ReturnType<typeof insights.yearly>> | null>(null);
 const selectedYear = ref<number>(new Date().getFullYear());
 const sharing = ref(false);
+const loadError = ref<unknown>(null);
 
 const tabs = computed(() => ([
   { id: "weekly" as const, label: $t('insights.tabs.weekly') },
@@ -209,7 +213,7 @@ const monthLabels = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
 // the previous week is drawn muted and dashed so the eye reads the solid line as "now"
 const weekSeries = computed(() => weekly.value ? [
   { name: $t('insights.weekly.previous'), color: "#666666", points: weekly.value.previousSeries.map((p) => p.minutes), muted: true },
-  { name: $t('insights.weekly.current'), color: "#e18c46", points: weekly.value.series.map((p) => p.minutes) }
+  { name: $t('insights.weekly.current'), color: "#e0a666", points: weekly.value.series.map((p) => p.minutes) }
 ] : []);
 
 /** percentage change, or null when there is no previous period to compare against */
@@ -228,10 +232,11 @@ async function loadYearly(year?: number) {
 
 async function selectYear(year: number) {
   if (year === selectedYear.value) return;
+  loadError.value = null;
   try {
     await loadYearly(year);
   } catch (e) {
-    useToast().sendError($t('insights.title'), e);
+    loadError.value = e;
   }
 }
 
@@ -266,12 +271,13 @@ async function shareMonth() {
 
 // panels load on first visit only, so switching tabs back and forth doesn't refetch
 watch(activeTab, async (tab) => {
+  loadError.value = null;
   try {
     if (tab === "weekly" && !weekly.value) await loadWeekly();
     if (tab === "monthly" && !monthly.value) await loadMonthly();
     if (tab === "yearly" && !yearly.value) await loadYearly();
   } catch (e) {
-    useToast().sendError($t('insights.title'), e);
+    loadError.value = e;
   }
 });
 
@@ -300,6 +306,7 @@ async function refreshActive() {
     else if (activeTab.value === "monthly") await loadMonthly();
     // keep whichever year is on screen, rather than snapping back to the current one
     else await loadYearly(selectedYear.value);
+    loadError.value = null;
   } catch {
     // a failed refresh leaves the previous numbers on screen, which is better than blanking them
   } finally {
@@ -319,7 +326,7 @@ onMounted(async () => {
     const enabled = await syncHistorySetting();
     if (enabled) await loadWeekly();
   } catch (e) {
-    useToast().sendError($t('insights.title'), e);
+    loadError.value = e;
   }
 
   unsubscribe = onInsightsUpdated(() => { void refreshActive(); });
@@ -442,8 +449,8 @@ onUnmounted(() => {
 }
 
 .insights .year-switch button.active {
-  background: #e18c46;
-  border-color: #e18c46;
+  background: #e0a666;
+  border-color: #e0a666;
   color: #000;
 }
 

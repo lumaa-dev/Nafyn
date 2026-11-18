@@ -3,7 +3,7 @@
     <polyline
       :points="path"
       fill="none"
-      stroke="#e18c46"
+      stroke="#e0a666"
       stroke-width="2"
       stroke-linejoin="round"
       stroke-linecap="round"

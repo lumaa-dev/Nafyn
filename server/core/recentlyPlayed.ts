@@ -69,18 +69,17 @@ export async function getRecentlyPlayed(userId: string): Promise<RecentlyPlayedE
         SELECT * FROM recently_played WHERE userId = ? ORDER BY playedAt DESC LIMIT ${MAX_ENTRIES}
     `).all(userId) as RecentlyPlayedRow[];
 
-    const entries: RecentlyPlayedEntry[] = [];
-
-    for (const row of rows) {
+    // each row is one independent lookup: resolved side by side, order kept by Promise.all
+    const resolved = await Promise.all(rows.map(async (row): Promise<RecentlyPlayedEntry | null> => {
         if (row.type === "track") {
             const media = await db.prepare(`
                 SELECT media.musicbrainzId AS refId, media.title AS title, media.artistName AS subtitle, media.coverArt AS coverArt,
                     CASE WHEN media.hasCustomCover = 1 THEN media.id END AS coverMediaId
                 FROM media WHERE media.id = ?
             `).get(row.refId) as TrackAlbumJoinRow | undefined;
-            if (!media?.title) continue;
+            if (!media?.title) return null;
 
-            entries.push({
+            return {
                 type: "track",
                 refId: row.refId,
                 playedAt: row.playedAt,
@@ -90,7 +89,7 @@ export async function getRecentlyPlayed(userId: string): Promise<RecentlyPlayedE
                 coverMediaId: media.coverMediaId ?? null,
                 playlistImage: null,
                 href: `/t/${media.refId}`
-            });
+            };
         } else if (row.type === "album") {
             const album = await db.prepare(`
                 SELECT
@@ -103,9 +102,9 @@ export async function getRecentlyPlayed(userId: string): Promise<RecentlyPlayedE
                 WHERE library_entries.userId = ? AND media.albumId = ?
                 GROUP BY media.albumId
             `).get(userId, row.refId) as Omit<TrackAlbumJoinRow, "refId"> | undefined;
-            if (!album?.title) continue;
+            if (!album?.title) return null;
 
-            entries.push({
+            return {
                 type: "album",
                 refId: row.refId,
                 playedAt: row.playedAt,
@@ -115,12 +114,12 @@ export async function getRecentlyPlayed(userId: string): Promise<RecentlyPlayedE
                 coverMediaId: album.coverMediaId ?? null,
                 playlistImage: null,
                 href: `/a/${row.refId}`
-            });
+            };
         } else {
             const playlist = await db.prepare(`SELECT title, image FROM playlists WHERE id = ?`).get(row.refId) as { title: string, image: string | null } | undefined;
-            if (!playlist) continue;
+            if (!playlist) return null;
 
-            entries.push({
+            return {
                 type: "playlist",
                 refId: row.refId,
                 playedAt: row.playedAt,
@@ -130,11 +129,11 @@ export async function getRecentlyPlayed(userId: string): Promise<RecentlyPlayedE
                 coverMediaId: null,
                 playlistImage: playlist.image,
                 href: `/l/playlist/${row.refId}`
-            });
+            };
         }
-    }
+    }));
 
-    return entries;
+    return resolved.filter((entry): entry is RecentlyPlayedEntry => entry !== null);
 }
 
 // erasure helper (GDPR art. 17). Also used by the privacy panel's "delete my listening history", since the

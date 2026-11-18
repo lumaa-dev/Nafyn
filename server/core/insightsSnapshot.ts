@@ -96,10 +96,10 @@ export async function snapshotYear(userId: string, year: number, tzOffsetMinutes
         getMultiYearComparison(userId, [year])
     ]);
 
-    const top = {} as Record<EntityType, RankedEntity[]>;
-    for (const entityType of ["track", "album", "artist", "playlist"] as EntityType[]) {
-        top[entityType] = await getTopEntitiesForBucket(userId, "yearly", { year }, entityType, SNAPSHOT_TOP_N, 0);
-    }
+    // the four rankings are independent queries: run them side by side, not one after the other
+    const entityTypes: EntityType[] = ["track", "album", "artist", "playlist"];
+    const rankings = await Promise.all(entityTypes.map((entityType) => getTopEntitiesForBucket(userId, "yearly", { year }, entityType, SNAPSHOT_TOP_N, 0)));
+    const top = Object.fromEntries(entityTypes.map((entityType, i) => [entityType, rankings[i]])) as Record<EntityType, RankedEntity[]>;
 
     const payload: YearSnapshotPayload = {
         year,

@@ -40,10 +40,6 @@ export async function listSessionsForUser(userId: string): Promise<SessionRow[]>
     `).all(userId) as SessionRow[];
 }
 
-export async function touchSession(jti: string): Promise<void> {
-    await getUsersDb().prepare(`UPDATE sessions SET lastSeenAt = ? WHERE id = ?`).run(Date.now(), jti);
-}
-
 // revokes only if it belongs to userId, so one user can never revoke another's session by guessing an id.
 // soft (revokedAt), not a DELETE, so a caller can tell "never existed" apart from "revoked" if ever needed
 export async function revokeSession(userId: string, id: string): Promise<boolean> {

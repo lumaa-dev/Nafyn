@@ -178,7 +178,7 @@ defineExpose({ start, close });
   display: block;
   height: 100%;
   width: 0;
-  background: #e18c46;
+  background: #e0a666;
 }
 
 .reel .bar .fill.done { width: 100%; }
@@ -230,7 +230,7 @@ defineExpose({ start, close });
 
 .reel .caption {
   font-size: 0.75em;
-  color: #e18c46;
+  color: #e0a666;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }

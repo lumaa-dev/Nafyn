@@ -46,11 +46,6 @@ export function eventWeight(event: WeighableEvent, config: InsightsConfig): numb
     return config.midWeight;
 }
 
-/** whether a play counts toward the raw (unweighted) play_count at all */
-export function countsAsPlay(event: WeighableEvent, config: InsightsConfig): boolean {
-    return eventWeight(event, config) > 0;
-}
-
 /**
  * Exponential recency decay in [0, 1]: 1 for something played right at the end of the window, 0.5 for
  * something last played one half-life earlier, and so on. Optional in the sense that gamma = 0 removes it.

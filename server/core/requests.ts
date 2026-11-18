@@ -125,11 +125,6 @@ export async function countRequests(excluded: RequestStatusGroup[] = []): Promis
     return Number(row.count);
 }
 
-export async function listRequestsByStatus(status: RequestStatus): Promise<NafynRequest[]> {
-    const rows = await getRequestsDb().prepare(`SELECT * FROM requests WHERE status = ? ORDER BY createdAt DESC`).all(status) as RequestRow[];
-    return Promise.all(rows.map(rowToRequest));
-}
-
 export async function listRequestsByUser(requestedBy: string, limit?: number, offset?: number, excluded: RequestStatusGroup[] = []): Promise<NafynRequest[]> {
     const filter = excludeClause(excluded);
     let sql = `SELECT * FROM requests WHERE requestedBy = ?${filter.sql} ORDER BY createdAt DESC, id ASC`;

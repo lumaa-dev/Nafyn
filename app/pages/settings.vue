@@ -349,6 +349,17 @@
           <NuxtLink to="/insights" class="everyone-link">{{ $t('insights.title') }}</NuxtLink>
         </section>
 
+        <!-- GDPR art. 21: objecting to the profiling behind mixes and For You stops it and deletes what it built -->
+        <section class="subsection" v-if="recommendationsAvailable">
+          <h2>{{ $t('settings.privacy.recommendations.title') }}</h2>
+          <label class="switch-row">
+            <input type="checkbox" v-model="recommendationsEnabled" :disabled="savingRecommendations" @change="toggleRecommendations">
+            {{ $t('settings.privacy.recommendations.label') }}
+          </label>
+          <p class="subsonic-note">{{ recommendationsEnabled ? $t('settings.privacy.recommendations.on') : $t('settings.privacy.recommendations.off') }}</p>
+          <p class="subsonic-note">{{ $t('settings.privacy.recommendations.note') }}</p>
+        </section>
+
         <!-- GDPR art. 15 + 20: the account-wide export. The listening-only one below it is the narrower
              tool for people who just want their play history -->
         <section class="subsection">
@@ -809,7 +820,7 @@ const occupiedPercent = computed(() => {
   return Math.min(100, ((storage.value.totalBytes - storage.value.freeBytes) / storage.value.totalBytes) * 100);
 });
 
-const PALETTE = ["#e18c46", "#44cf44", "#4499cf", "#cf4444", "#cf44b8", "#cfc444", "#8c44cf", "#44cfa8"];
+const PALETTE = ["#e0a666", "#44cf44", "#4499cf", "#cf4444", "#cf44b8", "#cfc444", "#8c44cf", "#44cfa8"];
 
 function paletteColor(i: number): string {
   return PALETTE[i % PALETTE.length];
@@ -931,8 +942,33 @@ const exportingAccount = ref(false);
 const deletingAccount = ref(false);
 const deleteAccountPassword = ref("");
 
+const recommendationsEnabled = ref(true);
+const recommendationsAvailable = ref(false);
+const savingRecommendations = ref(false);
+
+async function loadRecommendationSettings() {
+  const settings = await $fetch<{ enabled: boolean, available: boolean }>("/api/v1/recommendations/settings", { headers: { Authorization: token } });
+  recommendationsEnabled.value = settings.enabled;
+  recommendationsAvailable.value = settings.available;
+}
+
+async function toggleRecommendations() {
+  const wanted = recommendationsEnabled.value;
+  savingRecommendations.value = true;
+  try {
+    await $fetch("/api/v1/recommendations/settings", { method: "PATCH", headers: { Authorization: token }, body: { enabled: wanted } });
+    sendToast($t('settings.privacy.recommendations.title'), wanted ? $t('settings.privacy.recommendations.on') : $t('settings.privacy.recommendations.off'));
+  } catch (e) {
+    recommendationsEnabled.value = !wanted;
+    sendToast($t('settings.privacy.recommendations.title'), apiErrorMessage(e, $t('settings.profile.error')), false);
+  } finally {
+    savingRecommendations.value = false;
+  }
+}
+
 async function loadPrivacyPanel() {
   try {
+    await loadRecommendationSettings();
     await syncHistorySetting();
     if (passkeys.value.length === 0) passkeys.value = await $fetch<PasskeySummary[]>("/api/v1/user/passkeys", { headers: { Authorization: token } });
   } catch (e) {
@@ -1184,6 +1220,12 @@ function selectCategory(id: Category["id"]) {
   activeCategory.value = id;
   if (import.meta.client) window.scrollTo({ top: 0, left: 0, behavior: "auto" });
 }
+
+// `?category=privacy` (the For You page's "turn it back on" link) opens that category directly
+onMounted(() => {
+  const wanted = useRoute().query.category;
+  if (typeof wanted === "string" && categories.value.some((c) => c.id === wanted)) selectCategory(wanted as Category["id"]);
+});
 
 watch(activeCategory, async (cat) => {
   if (cat === 'accounts' && users.value.length === 0) await loadAccountsPanel();
@@ -1487,7 +1529,7 @@ watch(activeCategory, async (cat) => {
 }
 
 .bar > .fill {
-  background: #e18c46;
+  background: #e0a666;
 }
 
 .bar > .occupied {

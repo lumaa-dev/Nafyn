@@ -1,7 +1,7 @@
 // adds one or more tracks to a playlist (single track = 1-length array, full album/EP = the album's track IDs); owner or member only.
 // entries reference `media.id` directly, not `library_entries`, so a member can add a track they don't personally own.
 import { getPlaylistById, hasAccess, addEntries } from "~~/server/core/playlists";
-import { getMediaId } from "~~/server/core/library";
+import { existingMediaIds } from "~~/server/core/library";
 import { getPermissionsById } from "~~/server/core/users";
 import { hasPermission, Permission } from "~~/server/entity/Permission";
 
@@ -128,16 +128,16 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 400, statusMessage: "`mediaIds` must be a non-empty array of media IDs" });
     }
 
-    // an unbounded array here means one request drives one DB round trip per element below - cap it so a
-    // single POST can't tie up a connection indefinitely. The largest legitimate add is one full album.
+    // an unbounded array here means one request drives an unbounded insert below - cap it so a single POST
+    // can't tie up a connection indefinitely. The largest legitimate add is one full album.
     if (mediaIds.length > MAX_TRACKS_PER_ADD) {
         throw createError({ statusCode: 400, statusMessage: `At most ${MAX_TRACKS_PER_ADD} tracks can be added at once` });
     }
 
-    for (const mediaId of mediaIds) {
-        if (!await getMediaId(mediaId)) {
-            throw createError({ statusCode: 404, statusMessage: `Media ${mediaId} not found` });
-        }
+    const existing = await existingMediaIds(mediaIds);
+    const unknown = mediaIds.find((mediaId) => !existing.has(mediaId));
+    if (unknown) {
+        throw createError({ statusCode: 404, statusMessage: `Media ${unknown} not found` });
     }
 
     return await addEntries(pid, mediaIds, userId);

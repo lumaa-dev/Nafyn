@@ -1,7 +1,6 @@
 // security response headers for every route.
 //
-// `helmet` is in package.json but was never wired into Nitro (it's Express middleware, and Nitro isn't
-// Express), so none of these were being sent. This sets them directly on the H3 event instead.
+// `helmet` is Express middleware and Nitro isn't Express, so these headers are set directly on the H3 event.
 export default defineEventHandler((event) => {
     const path = event.path ?? "";
 

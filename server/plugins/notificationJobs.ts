@@ -16,6 +16,9 @@ const TICK_INTERVAL_MS = 60_000;
 const REFRESH_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
 export default defineNitroPlugin(() => {
+    // `nuxt build` boots the server bundle to prerender @nuxt/content's dump: no database, no timers, no logs there
+    // (it used to migrate whatever MySQL .env pointed at, and the open pool kept the build from ever exiting)
+    if (import.meta.prerender) return;
     // request Live Activities follow the download pipeline of *this* process, so every replica listens
     startNotificationListeners();
 

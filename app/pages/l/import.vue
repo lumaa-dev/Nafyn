@@ -159,23 +159,14 @@ async function submit() {
   color: var(--tint-fg, #ffffffae);
 }
 
-.import input[type="text"],
-.import input[type="number"],
-.import input[type="date"],
-.import select {
-  background: #00000040;
-  border: 1px solid #666666;
-  border-radius: 8px;
-  padding: 10px;
-  color: inherit;
-  font: inherit;
-}
+/* fields keep app.vue's shared text-field style (DESIGN.md "Text fields") */
 
 
 .import .file-field,
 .import .cover-field {
   align-items: center;
-  border: 1px dashed #666666;
+  /* a drop zone is a control: its border keeps the 4.5:1 of DESIGN.md "Contrast" */
+  border: 1px dashed #ffffffae;
   border-radius: 12px;
   padding: 16px;
   cursor: pointer;

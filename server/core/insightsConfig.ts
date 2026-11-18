@@ -3,7 +3,7 @@
 // These live in `app_settings` rather than environment variables so an installation can retune its rankings
 // without a redeploy (and so an admin UI can expose them later). Defaults below are the shipped values; an
 // app_settings row named `insights.<key>` overrides one.
-import { getSetting, setSetting } from "./appSettings";
+import { getSetting } from "./appSettings";
 
 export const INSIGHTS_DEFAULTS = {
     // score = (alpha * normalized play count) + (beta * normalized listening time) + (gamma * recency decay)
@@ -121,13 +121,3 @@ export async function getInsightsConfig(): Promise<InsightsConfig> {
     return config;
 }
 
-export async function setInsightsConfig(key: keyof InsightsConfig, value: number | boolean): Promise<void> {
-    if (!(key in INSIGHTS_DEFAULTS)) throw new Error(`Unknown insights config key: ${key}`);
-    await setSetting(`${SETTING_PREFIX}${key}`, String(value));
-    cache = null;
-}
-
-// used by tests and by the config endpoints, so a change is visible immediately rather than up to a minute later
-export function invalidateInsightsConfigCache(): void {
-    cache = null;
-}

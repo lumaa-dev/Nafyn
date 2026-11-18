@@ -92,28 +92,31 @@ export async function listPins(userId: string): Promise<PinEntry[]> {
         for (const media of found) tracks.set(media.id, media);
     }
 
-    const entries: PinEntry[] = [];
-    const stale: PinRow[] = [];
-
-    for (const row of rows) {
+    // every pin is an independent lookup: resolved side by side, order kept by Promise.all; null = stale
+    const resolved = await Promise.all(rows.map(async (row): Promise<PinEntry | null> => {
         const base = { kind: row.kind, refId: row.refId, pinnedAt: row.pinnedAt, subtitle: null, coverArt: null, coverMediaId: null, media: null, playlistImage: null, isOwner: false, isMember: false };
 
         if (row.kind === "track") {
             const media = tracks.get(row.refId);
-            if (!media) { stale.push(row); continue; }
-            entries.push({ ...base, title: media.title, subtitle: media.artistName, href: `/l/t/${media.id}`, coverArt: media.coverArt, media });
+            if (!media) return null;
+            return { ...base, title: media.title, subtitle: media.artistName, href: `/l/t/${media.id}`, coverArt: media.coverArt, media };
         } else if (row.kind === "album") {
             const album: AlbumRow | null = await getAlbumOfUser(userId, row.refId);
-            if (!album) { stale.push(row); continue; }
-            entries.push({ ...base, title: album.title, subtitle: album.artistName, href: `/l/a/${album.id}`, coverArt: album.coverArt, coverMediaId: album.coverMediaId });
+            if (!album) return null;
+            return { ...base, title: album.title, subtitle: album.artistName, href: `/l/a/${album.id}`, coverArt: album.coverArt, coverMediaId: album.coverMediaId };
         } else {
             const playlist = await getPlaylistById(row.refId);
-            if (!playlist || !(playlist.privacy === "public" || await hasAccess(playlist, userId))) { stale.push(row); continue; }
+            if (!playlist) return null;
             const isOwner = playlist.ownerId === userId;
-            entries.push({ ...base, title: playlist.title, href: `/l/playlist/${playlist.id}`, playlistImage: playlist.image, isOwner, isMember: !isOwner && await hasAccess(playlist, userId) });
+            // owner or member: hasAccess is asked once, it answers both questions
+            const member = !isOwner && await hasAccess(playlist, userId);
+            if (!(playlist.privacy === "public" || isOwner || member)) return null;
+            return { ...base, title: playlist.title, href: `/l/playlist/${playlist.id}`, playlistImage: playlist.image, isOwner, isMember: member };
         }
-    }
+    }));
 
-    for (const row of stale) await removePin(userId, row.kind, row.refId);
+    const entries = resolved.filter((entry): entry is PinEntry => entry !== null);
+    const stale = rows.filter((_, i) => resolved[i] === null);
+    await Promise.all(stale.map((row) => removePin(userId, row.kind, row.refId)));
     return entries;
 }

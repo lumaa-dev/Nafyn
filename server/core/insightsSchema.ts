@@ -224,7 +224,7 @@ function statements(tableOptions: string): string[] {
 
     // ---- scheduler bookkeeping ----------------------------------------------------------------------
     //
-    // Nafyn has no job queue (bullmq is a dependency but unused, and there is no Redis), so the scheduler is
+    // Nafyn has no job queue (no bullmq, no Redis), so the scheduler is
     // an in-process interval. This table is what keeps that honest across restarts and replicas: a job is
     // claimed by an atomic INSERT ... ON DUPLICATE KEY UPDATE that only flips status to 'running' when the
     // row isn't already running or its heartbeat has gone stale. 'done' rows are never reclaimed (so a

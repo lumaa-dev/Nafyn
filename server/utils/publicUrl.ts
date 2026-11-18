@@ -21,9 +21,3 @@ export function publicUrl(path: string): string | null {
     return `${base}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-/** absolute http(s) URLs pass through, relative ones are resolved against NAFYN_PUBLIC_URL */
-export function absoluteUrl(maybeRelative: string | null | undefined): string | null {
-    if (!maybeRelative) return null;
-    if (/^https?:\/\//i.test(maybeRelative)) return maybeRelative;
-    return maybeRelative.startsWith("/") ? publicUrl(maybeRelative) : null;
-}

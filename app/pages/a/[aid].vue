@@ -39,7 +39,7 @@
         <!-- DESIGN.md "Error messages": in the row, where the preview should have started -->
         <span v-if="failedIds.has(track.id)" class="preview-none">{{ $t('preview.none') }}</span>
         <button v-if="track.released && !track.inLibrary" filled="hollow" class="icon-only" :title="$t('album.request')" :aria-label="$t('album.request')" :disabled="track.requested || !canRequestTracks" @click.stop="requestTrack(track)"><img src="../../assets/icons/download.svg" alt="" draggable="false"></button>
-        <button type="button" class="ellipsis" v-if="track.mediaId" :aria-label="$t('menu.more')" @click.stop="onTrackMenu($event, track)">
+        <button type="button" class="ellipsis" v-if="track.mediaId" :aria-label="$t('menu.more')" :title="$t('menu.more')" @click.stop="onTrackMenu($event, track)">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg>
         </button>
         <span class="duration" v-if="track.duration > 0">{{ formatDuration(track.duration) }}</span>

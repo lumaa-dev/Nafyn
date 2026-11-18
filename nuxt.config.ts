@@ -9,7 +9,7 @@ export default defineNuxtConfig({
   // registered in the browser by @braccato/core/element: Vue must leave the tag alone, not look for a component
   vue: {
     compilerOptions: {
-      isCustomElement: (tag) => tag === 'braccato-lyrics' || tag === 'better-lyrics'
+      isCustomElement: (tag) => tag === 'braccato-lyrics'
     }
   },
 
@@ -95,10 +95,7 @@ export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
     '@nuxt/content',
-    '@nuxtjs/color-mode',
-    '@nuxtjs/device',
-    '@nuxtjs/i18n',
-    '@nuxt/image'
+    '@nuxtjs/i18n'
   ],
 
   i18n: {

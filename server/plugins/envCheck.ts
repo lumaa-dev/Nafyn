@@ -6,6 +6,9 @@
 import { checkEnvironment, logEnvironmentReport } from "~~/server/utils/envCheck";
 
 export default defineNitroPlugin(async () => {
+    // `nuxt build` boots the server bundle to prerender @nuxt/content's dump: no database, no timers, no logs there
+    // (it used to migrate whatever MySQL .env pointed at, and the open pool kept the build from ever exiting)
+    if (import.meta.prerender) return;
     if (process.env.NAFYN_ENV_CHECK === "false") return;
 
     try {
