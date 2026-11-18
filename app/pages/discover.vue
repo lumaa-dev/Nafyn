@@ -28,7 +28,7 @@
     <!-- 403: the person turned personalization off - said where it can be turned back on -->
     <div v-else-if="statusOf(error) === 403" class="discover-off">
       <p>{{ $t('discover.off') }}</p>
-      <NuxtLink to="/settings?category=privacy" class="everyone-link">{{ $t('discover.offLink') }}</NuxtLink>
+      <button type="button" filled="hollow" @click="navigateTo('/settings?category=privacy')">{{ $t('discover.offLink') }}</button>
     </div>
     <p v-else-if="statusOf(error) === 404" class="discover-note">{{ $t('discover.unavailable') }}</p>
     <LoadError v-else-if="error" :error="error" />

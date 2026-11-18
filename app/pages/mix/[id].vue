@@ -14,8 +14,8 @@
           <button type="button" filled :disabled="familiar.length === 0" @click="playFrom(0)">{{ $t('playlist.play') }}</button>
           <button type="button" filled :disabled="familiar.length === 0" @click="shuffle">{{ $t('playlist.shuffle') }}</button>
           <!-- DESIGN.md "Icon-only buttons": a circle, an accessible label and a tooltip -->
-          <button type="button" class="icon-only" :disabled="refreshing" :aria-label="$t('mix.refresh')" :title="$t('mix.refresh')" @click="refreshMixes">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36" /><path d="M21 3v6h-6" /></svg>
+          <button type="button" filled="hollow" class="icon-only" :disabled="refreshing" :aria-label="$t('mix.refresh')" :title="$t('mix.refresh')" @click="refreshMixes">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36" /><path d="M21 3v6h-6" /></svg>
           </button>
         </div>
       </div>
@@ -45,12 +45,12 @@
           </NuxtLink>
           <span class="duration">{{ entry.suggestion.durationMs ? formatDuration(Math.round(entry.suggestion.durationMs / 1000)) : '' }}</span>
           <span class="suggestion-actions">
-            <button type="button" class="icon-only preview" :disabled="failedIds.has(entry.suggestion.recordingId)" :aria-pressed="playingId === entry.suggestion.recordingId"
+            <button type="button" filled="hollow" class="icon-only preview" :disabled="failedIds.has(entry.suggestion.recordingId)" :aria-pressed="playingId === entry.suggestion.recordingId"
                     :aria-label="playingId === entry.suggestion.recordingId ? $t('preview.stop') : $t('preview.play')"
                     :title="failedIds.has(entry.suggestion.recordingId) ? $t('preview.none') : playingId === entry.suggestion.recordingId ? $t('preview.stop') : $t('preview.play')"
                     @click="togglePreview(entry.suggestion.recordingId)">
-              <svg v-if="playingId === entry.suggestion.recordingId" viewBox="0 0 24 24" width="20" height="20" fill="#000"><rect x="6" y="6" width="12" height="12" rx="1" /></svg>
-              <svg v-else viewBox="0 0 24 24" width="20" height="20" fill="#000"><path d="M8 5v14l11-7z" /></svg>
+              <svg v-if="playingId === entry.suggestion.recordingId" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1" /></svg>
+              <svg v-else viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
             </button>
             <button type="button" filled="hollow" :disabled="requested.has(entry.suggestion.recordingId)" @click="requestTrack(entry.suggestion)">
               {{ requested.has(entry.suggestion.recordingId) ? $t('track.alreadyRequested') : $t('track.request') }}
