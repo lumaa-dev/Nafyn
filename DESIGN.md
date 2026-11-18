@@ -372,6 +372,18 @@ The primary color for graphics and charts is **`Color.blue` on iOS**, and **oran
 
 > *See "Colors" for the exact color codes for the web*
 
+## Skeleton loading
+
+Skeleton loading is primarily used whenever data is being fetched online through Nafyn's API (searching, details loading, statistics, discover, tracks list, albums list...) or any other service's API.
+
+Skeleton loading should be unique to each web page/views, using these different ways:
+- Web: Use rounded rectangles skeletons for text (just like iOS would), and replace all unloaded images with skeleton images. Skeleton elements are pulsing dark gray (pulsing slightly into a lighter gray, ease-in-out)
+- iOS: Use one placeholder data for each component/view, and use the [`redacted(reason:)`](https://developer.apple.com/documentation/swiftui/view/redacted(reason:)) modifier to set text as a "placeholder". Shapes should remain the same even in their skeleton form.
+
+Skeletons appear in dark gray, with **no animation** (blinking, gradient sliding, opacity...). They must not be detailed, but must keep fidelity towards the actual loaded page/view.
+
+On iOS, toolbar buttons should also be available (for user experience and animation purposes), but those should be disabled until the view has loaded.
+
 ## Modals / Sheets
 
 On iOS, use the default [`sheet`](https://developer.apple.com/documentation/swiftui/view/sheet(ispresented:ondismiss:content:)).
