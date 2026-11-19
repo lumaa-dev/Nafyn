@@ -1,8 +1,17 @@
-# Nafyn Design Guidelines
+# Nafyn Design Guidelines (`DESIGN.md`)
 
-# Views and pages
+Design Guidelines for the Nafyn project, as well as its official apps:
+- `Nafyn`, the NuxtJS app available on the web
+- `NafynApp`, the SwiftUI app available on select Apple devices
+- `NafynAndroid`, the Jetpack Compose app available on Android devices
 
-> Note: View are used in SwiftUI, for the Nafyn iOS app. Pages are used on any web browser, on any device, for the Nafyn web service. Do not use "page" or "view" whatever happens to talk about a Nafyn screen.
+It is important to keep a highly consistant design between `NafynApp` and `NafynAndroid`, while keeping their native components for OS compatibility.
+
+> Note about platform APIs: Nafyn Design Guidelines were written for a perfect web and iOS user experience, with specific API details regarding these two platforms. When a platform-specific API is mentionned (iOS API or NuxtJS API), it is important to look for a selected platform-specific API (Jetpack Compose), unless the document gives it already. The Android counterparts of the iOS APIs named in this document are listed in "SwiftUI to Jetpack Compose equivalents" (see "Android devices"). 
+
+# Composables, views and pages
+
+> Note: Composables are used in Material 3 Expressive (Android). View are used in SwiftUI, for the Nafyn iOS app. Pages are used on any web browser, on any device, for the Nafyn web service. Do not use "composable", "page" or "view" whatever happens to talk about a Nafyn screen to the user, only for developers.
 
 By default, the background color used is `#2a2a27ff` and the text color is `#ffffffae`, using RGBA.
 
@@ -32,7 +41,7 @@ The header and sidebar use a beautiful smooth/soft gradient (different from a li
 
 The library does not have the same data as the catalog, the library only includes the tracks and albums that have been successfully downloaded. Most of the times, the library is either shown as a grid or as a list.
 
-On the web, on small devices, there is a dedicated "Library" web page ([`/library`](https://github.com/lumaa-dev/Nafyn/blob/main/app/pages/library.vue)). It also works on bigger screen, but was primarily made for mobile devices that do not use the iOS app. On iOS, there is a dedicated "Library" tab ([`LibraryView`](https://github.com/lumaa-dev/NafynApp/blob/main/Nafyn/Views/Tabs/LibraryView.swift)). Both the "Library" web page and "Library" tab view use the similar layout:
+On the web, on small devices, there is a dedicated "Library" web page ([`/library`](https://github.com/lumaa-dev/Nafyn/blob/main/app/pages/library.vue)). It also works on bigger screen, but was primarily made for mobile devices that do not use the iOS app. On iOS/Android, there is a dedicated "Library" tab ([`LibraryView`](https://github.com/lumaa-dev/NafynApp/blob/main/Nafyn/Views/Tabs/LibraryView.swift)). Both the "Library" web page and "Library" tab view use the similar layout:
 
 1. Pinned elements in a 3-column grid, with the "Pinned" header
 2. Navigation buttons, that go into the users' library tracks, library albums, and the users' playlists (on the iOS, there is also the "My Year" button)
@@ -44,16 +53,16 @@ On the web, on bigger devices, the dedicated library tab cannot be reached witho
 
 ---
 
-On the web and on iOS, there are specific pages/views to display the users' library tracks, library albums and playlists.
+On the web and on iOS/Android, there are specific pages/composables/views to display the users' library tracks, library albums and playlists.
 
 - For library tracks: Displayed as a list
 - For library albums and playlists: Displayed as a grid, which has 2 columns on small screens
 
-These specific views feature a search bar to search for the chosen library element. And also, users can sort their library elements using different sorting algorithms.
+These specific pages/composables/views feature a search bar to search for the chosen library element. And also, users can sort their library elements using different sorting algorithms.
 
-There is always a margin between the header of these pages/views (title, search bar and sorting) and the list or grid below it.
+There is always a margin between the header of these pages/composables/views (title, search bar and sorting) and the list or grid below it.
 
-Users can also select multiple library elements by toggling the "Select" button, in the toolbar for iOS, on the bottom right corner for the web. The "Select" button, when toggled on, allows users to make bulk actions on multiple elements at once (Example: "Add to playlist", "Delete", "Edit metadata") through a *context menu* or an "Actions" button.
+Users can also select multiple library elements by toggling the "Select" button, in the toolbar for iOS/Android, on the bottom right corner for the web. The "Select" button, when toggled on, allows users to make bulk actions on multiple elements at once (Example: "Add to playlist", "Delete", "Edit metadata") through a *context menu* or an "Actions" button.
 
 When multiple track rows are being selected, rows do not show a check box. A selected row is shown with a highlight and an outline instead, so that the selection is not shown by color alone.
 
@@ -74,7 +83,7 @@ A search result never is a "Deluxe" or "Remaster" edition, a "Live" or "Remix" w
 
 ## Artist
 
-The artist page/view starts with the artist's picture and name, the number of listeners and the biography, followed by the artist's `release`s sorted by kind, each kind being a *category grid* (see "Category grids"). The categories are, in this order, and only the ones that hold something are shown:
+The artist page/composable/view starts with the artist's picture and name, the number of listeners and the biography, followed by the artist's `release`s sorted by kind, each kind being a *category grid* (see "Category grids"). The categories are, in this order, and only the ones that hold something are shown:
 
 1. Albums
 2. EPs
@@ -93,30 +102,30 @@ The "Deluxe" or "Remaster" edition of an album or EP that has a standard edition
 
 ## Category grids
 
-A category grid is a titled group of `release`s (an artist's "Albums", the releases of an album...), shown with [`MediaBox`](https://github.com/lumaa-dev/Nafyn/blob/main/app/components/MediaBox.vue) on the web, and `MusicCard` on iOS:
+A category grid is a titled group of `release`s (an artist's "Albums", the releases of an album...), shown with [`MediaBox`](https://github.com/lumaa-dev/Nafyn/blob/main/app/components/MediaBox.vue) on the web, and `MusicCard` on iOS/Android:
 
 - On the web, on widescreens, the grid has 2 rows, and scrolls horizontally
-- On iOS, **and** on small screens on the web, the grid has 1 row, and scrolls horizontally
+- On iOS/Android, **and** on small screens on the web, the grid has 1 row, and scrolls horizontally
 
-The grid scrolls inside of its own frame, the page/view itself never scrolls horizontally. A `release` in a grid shows its cover art, its title, and a description under the title (the artist, or the disambiguation of a release when there is one).
+The grid scrolls inside of its own frame, the page/composable/view itself never scrolls horizontally. A `release` in a grid shows its cover art, its title, and a description under the title (the artist, or the disambiguation of a release when there is one).
 
-`release`s in a grid are ordered by release-date. The grid's frame reaches the edge of the content, so covers scroll under the edge, but the first cover never touches the edge of the screen (see "Views and pages").
+`release`s in a grid are ordered by release-date. The grid's frame reaches the edge of the content, so covers scroll under the edge, but the first cover never touches the edge of the screen (see "Composables, views and pages").
 
-## Track/Album Detail view
+## Track/Album Detail composable/view
 
-Track or album detail views (and also Library track/album detail views) show what the name implies: Details of the chosen track or album the user has clicked or tapped on.
+Track or album detail composables/views (and also Library track/album detail composables/views) show what the name implies: Details of the chosen track or album the user has clicked or tapped on.
 
-Detail views are colored with the cover art's primary color, therefore the label's color is adapted between white and black (depending on the cover art's primary color). Also, on iOS only, the cover art is expanded above the app's safe area using [`backgroundExtensionEffect`](https://developer.apple.com/documentation/swiftui/view/backgroundextensioneffect()) and [`safeAreaInset`](https://developer.apple.com/documentation/swiftui/view/safeareainset(edge:alignment:spacing:content:)-6gwby).
+Detail composables/views are colored with the cover art's primary color, therefore the label's color is adapted between white and black (depending on the cover art's primary color). Also, on iOS/Android only, the cover art is expanded above the app's safe area using [`backgroundExtensionEffect`](https://developer.apple.com/documentation/swiftui/view/backgroundextensioneffect()) and [`safeAreaInset`](https://developer.apple.com/documentation/swiftui/view/safeareainset(edge:alignment:spacing:content:)-6gwby).
 
-Detail views always conform to the WCAG AAA contrast (see "Contrast"): every label, symbol, link and button is checked against the cover art's primary color behind it, not only against the default background color.
+Detail composables/views always conform to the WCAG AAA contrast (see "Contrast"): every label, symbol, link and button is checked against the cover art's primary color behind it, not only against the default background color.
 
-At the bottom of an album detail page/view, after the track list and its footer (date, label, link to MusicBrainz), users can change which `release` of the album's `release-group` they are viewing (the standard edition, a Deluxe edition, another country, a reissue...). The releases are shown in a *category grid* (see "Category grids"), titled "Releases"; the description of each is its disambiguation when it has one, else its year and country. The release being viewed is outlined (not only colored). Choosing another release shows its track list, label and cover art in place, without leaving the page/view. When the viewed release is not the standard one, the album as a whole cannot be requested (a request downloads the standard edition), but each of its tracks still can.
+At the bottom of an album detail page/composable/view, after the track list and its footer (date, label, link to MusicBrainz), users can change which `release` of the album's `release-group` they are viewing (the standard edition, a Deluxe edition, another country, a reissue...). The releases are shown in a *category grid* (see "Category grids"), titled "Releases"; the description of each is its disambiguation when it has one, else its year and country. The release being viewed is outlined (not only colored). Choosing another release shows its track list, label and cover art in place, without leaving the page/composable/view. When the viewed release is not the standard one, the album as a whole cannot be requested (a request downloads the standard edition), but each of its tracks still can.
 
-Album detail views show the track number on each track, unless it doesn't have one. Track rows in an album detail view never show the cover art: the cover art is already the album's, and showing it next to the track number clutters the row.
+Album detail composables/views show the track number on each track, unless it doesn't have one. Track rows in an album detail composables/view never show the cover art: the cover art is already the album's, and showing it next to the track number clutters the row.
 
-On iOS, detail views always have a [`ToolbarOverflowMenu`](https://developer.apple.com/documentation/swiftui/toolbaroverflowmenu) containing the same actions that were linked to the track/album row (or even [`MusicCard`](https://github.com/lumaa-dev/NafynApp/blob/main/Nafyn/Components/MusicCard.swift)) unless it creates recursion (like a navigation recursion).
+On iOS/Android, detail composables/views always have a [`ToolbarOverflowMenu`](https://developer.apple.com/documentation/swiftui/toolbaroverflowmenu) containing the same actions that were linked to the track/album row (or even [`MusicCard`](https://github.com/lumaa-dev/NafynApp/blob/main/Nafyn/Components/MusicCard.swift)) unless it creates recursion (like a navigation recursion).
 
-Also on iOS, if the user is using the "System" theme (which removes most of Nafyn's unique designs), it should change all buttons using a `Color.blue` background, to `Color.white` or `Color.black` (with `Color.white` foreground) depending on the contrast (See "Contrast").
+Also on iOS/Android, if the user is using the "System" theme (which removes most of Nafyn's unique designs), it should change all buttons using a `Color.blue` background, to `Color.white` or `Color.black` (with `Color.white` foreground) depending on the contrast (See "Contrast").
 
 > *See "Toolbars" for more information about toolbar designs*\
 > *See "Contrast" for more information about making Nafyn accessible, whatever the colors used*
@@ -127,11 +136,11 @@ Editing the cover art of a track (from "Edit metadata") offers the cover arts of
 
 ## Now Playing
 
-The Now Playing page/view shows the user all the necessary elements on the currently playing music, with a few widgets called "Panels". It is colorful, reusing the colors of the currently playing song's cover art to create a moving mesh gradient, while adapting the text color between white and black for constrat.
+The Now Playing page/composable/view shows the user all the necessary elements on the currently playing music, with a few widgets called "Panels". It is colorful, reusing the colors of the currently playing song's cover art to create a moving mesh gradient, while adapting the text color between white and black for constrat.
 
-The Now Playing page/view should never be scrollable (except for the contents of panels), whatever the screen size, and on any scroll axis (top/down or left/right). The page/view itself must never be taller or wider than the screen.
+The Now Playing page/composable/view should never be scrollable (except for the contents of panels), whatever the screen size, and on any scroll axis (top/down or left/right). The page/composable/view itself must never be taller or wider than the screen.
 
-The text color is only picked from the contrast with the mesh gradient (white or black), never from the device's appearance. On iOS, the "System" theme, in light mode (`ColorScheme.light`) as well as in dark mode, must never show black text on a dark background, or white text on a light one.
+The text color is only picked from the contrast with the mesh gradient (white or black), never from the device's appearance. On iOS/Android, the "System" theme, in light mode (`ColorScheme.light`) as well as in dark mode, must never show black text on a dark background, or white text on a light one.
 
 On large horizontal screens, whatever the support (iOS or web), there's a maximum of 2 panels, that each take up at most 50% of the available space. The 50% is a maximum, not a size: the width of a panel can vary per panel (the song info panel is usually narrower than the lyrics panel or the queue panel), depending on what it contains. 
 
@@ -156,9 +165,9 @@ All panels' top and bottom edges have a small smooth gradient, without obstructi
 
 ---
 
-On iOS, layout is slightly different:
+On iOS/Android, layout is slightly different:
 
-- In portrait mode, or specifically when the iPhone Duo is either folded (in portrait) or unfolded (in portrait), it displays only one panel at a time (song info, lyrics, queue). Music controls are not part of any panel, they're attached at the very bottom of the Now Playing view. The cover art, on the song info panel, is enlarge to take as much horizontal space as possible, without obstructing the mesh gradient background
+- In portrait mode, or specifically when the iPhone Duo is either folded (in portrait) or unfolded (in portrait), it displays only one panel at a time (song info, lyrics, queue). Music controls are not part of any panel, they're attached at the very bottom of the Now Playing composable/view. The cover art, on the song info panel, is enlarge to take as much horizontal space as possible, without obstructing the mesh gradient background
 - In landscape mode, or specifically when the iPhone Duo is unfolded (in landscape), it allows 2 panels to be displayed at once. Just like the web layout, the song info panel is on the left half of the screen, with the music controls at the bottom of the panel. On the right half of the screen, is either the lyrics panel or the queue panel, with the queue panel being the default
 
 The music controls are compact to allow space for other panels.
@@ -175,14 +184,14 @@ The Lyrics Panel has 5 different states:
 
 Whenever lyrics are found, the lyrics are inside of a scroll view, that automatically scrolls to the newly active lyrics depending on the playback time.
 
-Whenever synchronized lyrics are available, users can click/tap on a lyric, to automatically jump the playback to the lyric's start time. Additionally, only on iOS, users can tap-and-hold on a lyric paragraph, to open the "Share lyrics" sheet.
+Whenever synchronized lyrics are available, users can click/tap on a lyric, to automatically jump the playback to the lyric's start time. Additionally, only on iOS/Android, users can tap-and-hold on a lyric paragraph, to open the "Share lyrics" sheet.
 
 Optionally, users can toggle on or off in Nafyn's settings to switch the font from Instruments Serif to `sans-serif`.
 
 > *See "Error messages" for more information about displaying errors to users*
 > *See "Interface" for more information about fonts*
 
-On iOS, users have additional Liquid Glass controls on the bottom leading edge of the scroll view:
+On iOS/Android, users have additional Liquid Glass controls on the bottom leading edge of the scroll view:
 
 - Translate: Translates the lyrics using the on-device [Foundation Models API](https://developer.apple.com/documentation/foundationmodels), from any language to the app's selected locale.
 - Romanize: Romanizes lyrics that aren't using latin letters (A-Z) in 90% of all lyrics, using the on-device [Foundation Models API](https://developer.apple.com/documentation/foundationmodels). It does not translates from one language to another, it shows a romanized version (simplified).
@@ -226,10 +235,10 @@ Every change of state of an element is animated, none of them jumps from one sta
 
 - Buttons, menu items and rows: hover, focus, pressed, selected and disabled states fade in and out
 - Context menus, menus, sheets and toasts: they fade and move slightly when they appear or disappear, the sheets' background darkens progressively
-- Colors that depend on a cover art (detail pages/views, Now Playing) blend from the previous cover art's colors to the new ones
+- Colors that depend on a cover art (detail pages/composables/views, Now Playing) blend from the previous cover art's colors to the new ones
 - Elements that are added to, removed from or moved inside a list (queue, toasts, selection) glide to their place
 
-Micro-animations are short (between 150 and 300 milliseconds), use an ease-out curve, and never delay the user from acting. When the user asked their device to reduce motion (`prefers-reduced-motion` on the web, Reduce Motion on iOS), movements are removed and only fades remain, or nothing at all.
+Micro-animations are short (between 150 and 300 milliseconds), use an ease-out curve, and never delay the user from acting. When the user asked their device to reduce motion (`prefers-reduced-motion` on the web, Reduce Motion on iOS/Android), movements are removed and only fades remain, or nothing at all.
 
 ## Responsiveness
 
@@ -237,18 +246,18 @@ The web app is responsive, from phones to wide screens. An element adapts to the
 
 Elements are sized with relative units rather than fixed widths, and nothing has a minimum width bigger than the screen.
 
-> *See "Views and pages" for margins and horizontal scrolling*
+> *See "Composables, views and pages" for margins and horizontal scrolling*
 
 ## Contrast
 
 Nafyn conforms to the WCAG AAA contrast, everywhere. Body text has a contrast ratio of at least 7:1, large text and interface components (buttons, symbols, borders) at least 4.5:1, and information is never carried by color alone.
 
-Text and symbols are white or black, picked depending on the background behind them, so that the contrast is always enough, including on pages/views that are colored using a cover art. Only buttons and other interactive elements can use colors from the *Colors* table, and they must still be compliant with the contrast ratios above against the background they sit on.
+Text and symbols are white or black, picked depending on the background behind them, so that the contrast is always enough, including on pages/composables/views that are colored using a cover art. Only buttons and other interactive elements can use colors from the *Colors* table, and they must still be compliant with the contrast ratios above against the background they sit on.
 
 The red `#e06666ae` of the *Colors* table cannot reach these ratios with a label on it, nor as text on the default background. Therefore, in red elements, the "red" is split in two, both keeping the same hue:
 
 - Red fills (filled destructive buttons, red toasts) use a deeper red, `#a02c2e`, with a white label
-- Red text, symbols and borders (hollow destructive buttons, destructive context menu actions, error messages) use a lighter red, `#ff9e9e`, on dark backgrounds (on iOS, in the "System" theme and in light mode, the deeper `#a02c2e` is used instead)
+- Red text, symbols and borders (hollow destructive buttons, destructive context menu actions, error messages) use a lighter red, `#ff9e9e`, on dark backgrounds (on iOS/Android, in the "System" theme and in light mode, the deeper `#a02c2e` is used instead)
 
 ## Text fields
 
@@ -311,9 +320,9 @@ This is a fallback for iOS's Liquid Glass effect in toolbars, where rests the "S
 
 Links appear slightly differently than buttons for the most part. Links are completely white (`#ffffffff`) and are underlined using the *Instrument Serif* font italicized.
 
-But, in the album/track detail view (and their library counterpart), have to conform to the WCAG AAA contrast (see "Contrast"). It is possible for links to turn completely black for constrast purposes only.
+But, in the album/track detail composable/view (and their library counterpart), have to conform to the WCAG AAA contrast (see "Contrast"). It is possible for links to turn completely black for constrast purposes only.
 
-On iOS, tapping on a link doesn't open it in Safari directly, but rather it opens a sheet with the web view, using UIKit's [`WKWebView`](https://developer.apple.com/documentation/webkit/wkwebview).
+On iOS/Android, tapping on a link doesn't open it in Safari directly, but rather it opens a sheet with the web view, using Safari Services's [`SFSafariViewController`](https://developer.apple.com/documentation/safariservices/sfsafariviewcontroller).
 
 ## Context Menus
 
@@ -326,12 +335,12 @@ On the iOS app, the context menu should use the native [`contextMenu`](https://d
 - Example (web): The [`MediaBox`](https://github.com/lumaa-dev/Nafyn/blob/main/app/components/MediaBox.vue) component should always have the same context menu, whatever its use. While [`ArtistBox`](https://github.com/lumaa-dev/Nafyn/blob/main/app/components/ArtistBox.vue) should have a a different context menu.
 - Example (iOS): The [`MusicCard`](https://github.com/lumaa-dev/NafynApp/blob/main/Nafyn/Components/MusicCard.swift) should always have the same context menu, whatever the `View` it's from. While [`TrackRow`](https://github.com/lumaa-dev/NafynApp/blob/main/Nafyn/Components/TrackRow.swift) should have a different context menu.
 
-A context menu is shown as text (with the *Instrument* font) on the web, and with a [`Label`](https://developer.apple.com/documentation/swiftui/label) on iOS (which may be nested in a [`ControlGroup`](https://developer.apple.com/documentation/swiftui/controlgroup)). Some context menus may have:
+A context menu is shown as text (with the *Instrument* font) on the web, and with a [`Label`](https://developer.apple.com/documentation/swiftui/label) on iOS/Android (which may be nested in a [`ControlGroup`](https://developer.apple.com/documentation/swiftui/controlgroup)). Some context menus may have:
 
-- Destructive actions, written in red (with a `Color.red` symbol on iOS, do not use Nafyn's red color)
+- Destructive actions, written in red (with a `Color.red` symbol on iOS/Android, do not use Nafyn's red color)
 - Nested menus, which are indicated with an arrow
 
-Some pages/views may have a "Select" button, which allows users to select multiple elements in a list. Using the context menu trigger, instead of triggering the context menu for only one element, it will trigger the context menu for all the selected elements, showing the amount of selected elements isn't considered as a section header. The "Select" button cannot be in a context menu whatsoever.
+Some pages/composables/views may have a "Select" button, which allows users to select multiple elements in a list. Using the context menu trigger, instead of triggering the context menu for only one element, it will trigger the context menu for all the selected elements, showing the amount of selected elements isn't considered as a section header. The "Select" button cannot be in a context menu whatsoever.
 
 Actions that begin with the same word, like "View" or "Share", can be **optionally** nested into a sub-menu. Menu Example: ["View" > "Artist" | "Album" | "Track"]
 
@@ -346,13 +355,13 @@ The context menu categories are manually sorted in this order:
 3. Modifications - Example: "Change albums", "Edit metadata", "Change cover art"
 4. Destructive actions - Example: "Delete track", "Remove from playlist", "Delete from downloads", "Delete user"
 
-Context menu categories do not have a section header or footer, and are separated with a small divider line (on iOS, use [`Divider`](https://developer.apple.com/documentation/swiftui/divider)).
+Context menu categories do not have a section header or footer, and are separated with a small divider line (on iOS/Android, use [`Divider`](https://developer.apple.com/documentation/swiftui/divider)).
 
 ## Menus
 
 Menus in Nafyn are a mix of a button and a context menu. There are 2 perfect examples for this that are applied in Nafyn already:
 
-- On iOS, [`LibraryAlbumDetailView`](https://github.com/lumaa-dev/NafynApp/blob/main/Nafyn/Views/Paths/LibraryAlbumDetailView.swift#L122-L153) uses a toolbar menu that reuses the exact same actions and are ordered the same as the library album's context menu.
+- On iOS/Android, [`LibraryAlbumDetailView`](https://github.com/lumaa-dev/NafynApp/blob/main/Nafyn/Views/Paths/LibraryAlbumDetailView.swift#L122-L153) uses a toolbar menu that reuses the exact same actions and are ordered the same as the library album's context menu.
 - On the web, [`/l/tracks`](https://github.com/lumaa-dev/Nafyn/blob/main/app/pages/l/tracks.vue#L29-L31) has a vertical ellipsis menu available on all track's rows, showing the menu using the exact same context menu layout and actions.
 
 It shows up as a button, and when clicked/tapped, it shows the context menu "attached" to the element.
@@ -368,7 +377,7 @@ On all graphics and charts, you always have to show a legend at the bottom leadi
 
 All values must be ordered by descending or ascending. **No randomized order**.
 
-The primary color for graphics and charts is **`Color.blue` on iOS**, and **orange on the web**. Alternatively, other colors can be used to represent other "columns" of data.
+The primary color for graphics and charts is **`Color.blue` on iOS/Android**, and **orange on the web**. Alternatively, other colors can be used to represent other "columns" of data.
 
 > *See "Colors" for the exact color codes for the web*
 
@@ -376,17 +385,17 @@ The primary color for graphics and charts is **`Color.blue` on iOS**, and **oran
 
 Skeleton loading is primarily used whenever data is being fetched online through Nafyn's API (searching, details loading, statistics, discover, tracks list, albums list...) or any other service's API.
 
-Skeleton loading should be unique to each web page/views, using these different ways:
+Skeleton loading should be unique to each web page/composables/views, using these different ways:
 - Web: Use rounded rectangles skeletons for text (just like iOS would), and replace all unloaded images with skeleton images. Skeleton elements are pulsing dark gray (pulsing slightly into a lighter gray, ease-in-out)
-- iOS: Use one placeholder data for each component/view, and use the [`redacted(reason:)`](https://developer.apple.com/documentation/swiftui/view/redacted(reason:)) modifier to set text as a "placeholder". Shapes should remain the same even in their skeleton form.
+- iOS: Use one placeholder data for each component/composables/view, and use the [`redacted(reason:)`](https://developer.apple.com/documentation/swiftui/view/redacted(reason:)) modifier to set text as a "placeholder". Shapes should remain the same even in their skeleton form.
 
-Skeletons appear in dark gray, with **no animation** (blinking, gradient sliding, opacity...). They must not be detailed, but must keep fidelity towards the actual loaded page/view.
+Skeletons appear in dark gray, with **no animation** (blinking, gradient sliding, opacity...). They must not be detailed, but must keep fidelity towards the actual loaded page/composables/view.
 
-On iOS, toolbar buttons should also be available (for user experience and animation purposes), but those should be disabled until the view has loaded.
+On iOS/Android, toolbar buttons should also be available (for user experience and animation purposes), but those should be disabled until the composables/view has loaded.
 
 ## Modals / Sheets
 
-On iOS, use the default [`sheet`](https://developer.apple.com/documentation/swiftui/view/sheet(ispresented:ondismiss:content:)).
+On iOS/Android, use the default [`sheet`](https://developer.apple.com/documentation/swiftui/view/sheet(ispresented:ondismiss:content:)).
 
 On the web, on large screens, Nafyn re-uses a similar sheet design from [iPadOS](https://developer.apple.com/design/human-interface-guidelines/sheets#iOS-iPadOS) or [macOS](https://developer.apple.com/design/human-interface-guidelines/sheets#macOS):
 
@@ -415,7 +424,7 @@ Sheets take up 95% of the whole vertical viewport, toolbar is at the top with th
 
 ## Toolbars
 
-On iOS, use the native [`toolbar`](https://developer.apple.com/documentation/swiftui/view/toolbar(content:)), it is also heavily recommended to use [`Label`](https://developer.apple.com/documentation/swiftui/label)s in toolbars for iPhone Duo support, but text can also be inputted if no symbols match with the action. Instead of making a ellipsis menu using [`ToolbarOverflowMenu`](https://developer.apple.com/documentation/swiftui/toolbaroverflowmenu) for cross compatibility with other Apple devices.
+On iOS/Android, use the native [`toolbar`](https://developer.apple.com/documentation/swiftui/view/toolbar(content:)), it is also heavily recommended to use [`Label`](https://developer.apple.com/documentation/swiftui/label)s in toolbars for iPhone Duo support, but text can also be inputted if no symbols match with the action. Instead of making a ellipsis menu using [`ToolbarOverflowMenu`](https://developer.apple.com/documentation/swiftui/toolbaroverflowmenu) for cross compatibility with other Apple devices.
 
 There are a few exceptions to the [`Label`](https://developer.apple.com/documentation/swiftui/label) with icon rule, that are listed below in the sub-section
 
@@ -434,14 +443,14 @@ Whatever the toolbar's location, if the source of the toolbar is a scroll view
 
 ### Text-only toolbar buttons
 
-The buttons listed below should **never** have an icon associated with it, even on iOS:
+The buttons listed below should **never** have an icon associated with it, even on iOS/Android:
 - "Select" button (**"Done" button NOT included**)
 
 ## Toasts
 
 Toasts behave the same way on both the iOS and web app. But are designed slightly differently due to platform limitations:
 
-- On iOS, toasts use Liquid Glass and have only one default style. Toasts show a [`Label`](https://developer.apple.com/documentation/swiftui/label) with an icon and text. Toasts are handled using [`unionst/union-toast`](https://github.com/unionst/union-toast). Toasts don't use the *Instrument* font.
+- On iOS/Android, toasts use Liquid Glass and have only one default style. Toasts show a [`Label`](https://developer.apple.com/documentation/swiftui/label) with an icon and text. Toasts are handled using [`unionst/union-toast`](https://github.com/unionst/union-toast). Toasts don't use the *Instrument* font.
 - On the web, toasts use a transparent colored background, they also can stack one-another (maximum of 3 toasts). Toasts use *Instrument* font. Toasts have 3 styles:
     - Red - Mainly used for error messages
     - Green - Mainly used for success messages
@@ -484,11 +493,11 @@ Only one item can be shared at a time, no bulk sharing.
 
 On the web, the sharing feature copies the link of the selected item.
 
-The sharing action can be found either:
+The sharing action can be found:
 - As a Context Menu action
-- (on iOS only) in the Toolbar
+- (on iOS/Android only) in the Toolbar
 
-Exclusively on iOS, users can either share their selected item as a link, or as an image.
+Exclusively on iOS/Android, users can either share their selected item as a link, or as an image.
 Sharing an image allows users to share their content in their Instagram or Snapchat stories, all images have to have a 9:16 ratio.
 Both sharing an image and sharing a link use Apple's native [`ShareLink`](https://developer.apple.com/documentation/swiftui/sharelink).
 
@@ -496,3 +505,174 @@ Items that are private (like library tracks, library albums, private playlist...
 
 > *See "Toolbars" for more information about toolbar styling and usage*\
 > *See "Context Menu" for more information about action categories*
+
+# Platform specifications
+
+## Foldable/Flippable phones
+
+Foldable/flippable phones are new sub-genres of modern smartphones that gives user both the advantages of having a small phone-like screen when folded/flipped, while having the advantages of a tablet when the device is unfolded/unflipped.
+
+There is an important difference between a foldable phone and a flippable phone:
+|  **Foldable** phone  |  **Flippable** phone  |
+|----|----|
+| A **foldable** phone opens and closes horizontally, giving a small screen when folded, and a big widescreen when unfolded. | A **flippable** phone opens and closes vertically, giving a small screen when flipped, and a regular-sized phone when unflipped |
+
+Example of modern **foldable** phones:
+- iPhone Duo
+- Samsung Galaxy Z Fold 8
+- Samsung Galaxy Z Fold 7
+- Google Pixel 11 Pro Fold
+
+Example of modern **flippable** phones:
+- Samsung Galaxy Z Flip 8
+- Motorola Razr 60
+
+> Note: Flippable smartphones are way less common than foldable smartphones. But that doesn't mean flippable phone support should be neglected when working on Android. To this day (19/11/2026), Apple has not announced or released an flippable iPhone, unlike the foldable iPhone ("iPhone Duo").
+
+## Computer app
+
+The computer app of Nafyn is a mix of the web Nafyn design, as well as the platform-specific's native design. macOS uses SwiftUI's native [Liquid Glass](https://developer.apple.com/design/human-interface-guidelines/materials#Liquid-Glass) components, Windows uses the [Windows 11 design principles](https://learn.microsoft.com/en-us/windows/apps/design/design-principles), Linux GNOME uses the [GNOME Human Interface Guidelines](https://developer.gnome.org/hig/guidelines.html), etc...
+
+## Apple devices
+
+On a selected Apple devices, `NafynApp` can run on them. Built with SwiftUI, it uses native components as well as the Liquid Glass design offered by Apple on iOS/Android 26.0+.
+
+`NafynApp` is the repository for the SwiftUI app. It should respect both the Nafyn Design Guidelines (`DESIGN.md`) as well as the Apple [Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines).
+
+## Android devices
+
+Android devices utilizes [Material 3 Expressive](https://design.google/library/expressive-material-design-google-research), the native Android design language available on Android 16+.
+
+`NafynAndroid` is the repository for the Jetpack Compose app. It should respect both the Nafyn Design Guidelines (`DESIGN.md`) as well as the [Material 3 Expressive Design](https://developer.android.com/design/ui)
+
+### SwiftUI to Jetpack Compose equivalents
+
+This section translates every SwiftUI/iOS API named in this document into its Android counterpart, for Android developers and coding agents. It adds no design rule: wherever a guideline names a SwiftUI API, build the same behavior with the Compose API below. When a Material 3 component's default look or motion differs from these guidelines, the guidelines win, and the component is styled to match (colors, shapes, duration, contrast). Where this document already names an Android API, that one is used.
+
+> Research notes (19/11/2026): checked against the Compose Material 3 `1.5.0` release notes (stable since 18/11/2026) and the Android developer docs. Material 3 Expressive APIs that are still marked experimental need `@OptIn(ExperimentalMaterial3ExpressiveApi::class)`. API names move quickly between Compose releases, so re-check a name in the current docs before relying on it. Rows marked *approximation* have no real Android equivalent.
+
+#### Colors and themes
+
+**The hexadecimal codes in this document are RGBA (`#RRGGBBAA`). Compose's `Color(0x…)` is ARGB (`0xAARRGGBB`).** Moving the alpha to the front is the most common mistake, copying the code as it is gives a wrong color.
+
+| This document | Compose |
+| --- | --- |
+| Background `#2a2a27ff` | `Color(0xFF2A2A27)` |
+| White / text `#ffffffae` | `Color(0xAEFFFFFF)` |
+| Links `#ffffffff` | `Color.White` |
+| Red `#e06666ae` | `Color(0xAEE06666)` |
+| Green `#66e086ff` | `Color(0xFF66E086)` |
+| Orange `#e0a666ff` | `Color(0xFFE0A666)` |
+| Yellow `#e0c666ff` | `Color(0xFFE0C666)` |
+| Deeper red fill `#a02c2e` (see "Contrast") | `Color(0xFFA02C2E)` |
+| Lighter red text `#ff9e9e` (see "Contrast") | `Color(0xFFFF9E9E)` |
+
+| SwiftUI | Jetpack Compose |
+| --- | --- |
+| `Color.white`, `Color.black` | `Color.White`, `Color.Black` |
+| `Color.blue` (charts, buttons) | No system blue on Android. Define one constant, `NafynBlue`, with the iOS system blue: `Color(0xFF007AFF)` in light mode, `Color(0xFF0A84FF)` in dark mode. Never `colorScheme.primary` (it changes with dynamic color). |
+| `Color.red` (destructive menu symbols) | Compose's `Color.Red` is pure `#FF0000`, which is **not** iOS red. Define `NafynSystemRed`: `Color(0xFFFF3B30)` in light mode, `Color(0xFFFF453A)` in dark mode. Not `colorScheme.error` (changes with dynamic color), and not Nafyn's red. |
+| `ColorScheme.light` / `.dark` | `isSystemInDarkTheme()` (or `LocalConfiguration.current.uiMode`). The "never black on dark, white on light" rule of Now Playing still applies: the text color comes from the contrast with the mesh gradient, never from this value. |
+| WCAG contrast ratio (see "Contrast") | `ColorUtils.calculateContrast(foreground, background)` from `androidx.core.graphics.ColorUtils` (takes `Int` colors, convert with `Color.toArgb()`), and `Color.luminance()` to pick white or black. |
+| "System" theme | Follow the system light/dark mode and use Material dynamic color (`dynamicLightColorScheme(context)` / `dynamicDarkColorScheme(context)`, Android 12+, fixed fallback below). Buttons that would use a blue/`colorScheme.primary` background become white or black by contrast, exactly like the iOS rule in "Track/Album Detail composable/view". |
+
+#### Windows, safe areas and layout
+
+| SwiftUI | Jetpack Compose |
+| --- | --- |
+| Safe area | Edge-to-edge: call `enableEdgeToEdge()` before `setContent` (forced anyway when targeting Android 15 / API 35+). Read insets with `WindowInsets.safeDrawing`, `.systemBars`, `.displayCutout`; apply them with `Modifier.windowInsetsPadding(...)` or the `innerPadding` of `Scaffold`. Backgrounds and cover arts draw behind the system bars, controls and text never do. |
+| `backgroundExtensionEffect` + `safeAreaInset` (cover art expanded above the safe area) | *Approximation.* There is no mirrored/blurred extension API. Let the cover Box go behind the status bar (give it the height of the cover plus `WindowInsets.statusBars`, pass `Scaffold(contentWindowInsets = WindowInsets(0))` for that screen) and fill the inset band with the cover art's primary color, with a vertical gradient into the image. Pick light or dark status bar icons from the contrast (`WindowInsetsControllerCompat.isAppearanceLightStatusBars`). |
+| `ScrollView` content margins | `contentPadding` of `LazyColumn` / `LazyRow` / `LazyVerticalGrid` (also gives the "scrolls under the edge, but never starts at the edge" behavior of category grids: `LazyRow(contentPadding = PaddingValues(horizontal = 16.dp))`). |
+| Horizontal margin (at least 16px) | `Modifier.padding(horizontal = 16.dp)` on the screen's root. |
+| Never scrollable Now Playing | `Modifier.fillMaxSize()` on the root, with no `verticalScroll`/`horizontalScroll`/lazy container on it. Only the lyrics and queue panels scroll. |
+| Orientation, iPhone Duo, iPad size | Window size classes: `currentWindowAdaptiveInfo().windowSizeClass` (`androidx.compose.material3.adaptive`); two panels from `EXPANDED` width, one panel in `COMPACT`/`MEDIUM`. Foldable state (folded, unfolded, tabletop): `WindowInfoTracker.getOrCreate(context).windowLayoutInfo` and `FoldingFeature` (`androidx.window`). Flippable phones are plain phones with a different window size when flipped: size classes cover them. Never read the device model. |
+| Category grid, 2 rows | `LazyHorizontalGrid(rows = GridCells.Fixed(2))`; 1 row: `LazyRow`. |
+| Scrolling to the active lyric | `LazyListState.animateScrollToItem(...)` (or `animateScrollBy`). |
+| Soft top/bottom edge of panels | Draw the content offscreen and fade its edges: `Modifier.graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }.drawWithContent { drawContent(); drawRect(brush = Brush.verticalGradient(...), blendMode = BlendMode.DstIn) }`. |
+
+#### Toolbars, menus and context menus
+
+| SwiftUI | Jetpack Compose |
+| --- | --- |
+| `toolbar` | `Scaffold` with `TopAppBar` / `CenterAlignedTopAppBar` (`title`, `navigationIcon`, `actions`). Bottom actions: `BottomAppBar`, or `HorizontalFloatingToolbar` (Expressive, overflows by itself). |
+| `ToolbarOverflowMenu` | An `IconButton` with the vertical ellipsis (`Icons.Filled.MoreVert`, the same symbol as the web) as the last `actions` item, opening the menu below. The menu holds the exact same items as the long-press menu of the row/`MusicCard`, built by one shared function (the Android equivalent of `TrackMenuItems`). For a row of buttons that must collapse when narrow: `ButtonGroup` with its `overflowIndicator`, which moves the buttons that do not fit into a menu. |
+| `Label` (symbol + text) in toolbars | `IconButton { Icon(imageVector, contentDescription = "…") }`. Symbol and text together: `TextButton`/`Button` with an `Icon` before the `Text`, or `ExtendedFloatingActionButton`. For text-only buttons ("Select", "Done"): `TextButton { Text("Select") }` with no icon. |
+| `Label` in a menu | `DropdownMenuItem(text = …, leadingIcon = …, onClick = …)`. |
+| `contextMenu` modifier | Compose has no native context menu. Touch: `Modifier.combinedClickable(onClick, onLongClick, onLongClickLabel)` that opens a menu, with `LocalHapticFeedback.current.performHapticFeedback(HapticFeedbackType.LongPress)`. Mouse right-click: `Modifier.pointerInput` that reads `PointerEvent.buttons.isSecondaryPressed` (the desktop-only `Modifier.onClick(matcher = PointerMatcher.mouse(PointerButton.Secondary))` is not supported on Android). Both open the same menu, anchored to the touch/click position. |
+| Menu container | `DropdownMenuPopup` containing `DropdownMenuGroup`s (Material 3 Expressive menu, `androidx.compose.material3` 1.5). One `DropdownMenuGroup` per category of "Categories"; the gap between groups takes the place of the `Divider()`. Fallback, or for a single-group menu: `DropdownMenu` with `HorizontalDivider()` between categories (`Divider` is deprecated). |
+| `Divider` | `HorizontalDivider` (`VerticalDivider` for the other axis). |
+| `ControlGroup` | *Approximation.* A `Row` of icon items placed in the menu's content slot, or, outside of a menu, a `ButtonGroup`. |
+| Nested menu (arrow) | An item with `trailingIcon = Icons.AutoMirrored.Filled.KeyboardArrowRight` that opens a second menu anchored to it. |
+| Destructive item | Text and symbol tinted with `NafynSystemRed` (symbol) / the red of "Contrast" (text), last category. |
+| Context menu preview (`preview:`) | No equivalent. Open the menu without a preview. |
+| "Select" with a menu for all selected elements | Same logic with a selection state; `combinedClickable` toggles the selection while active, and the menu is opened for the whole selection. |
+| Highlight + outline of a selected row | `Modifier.background(...)` plus `Modifier.border(...)`, both animated (`animateColorAsState`). |
+
+#### Sheets
+
+| SwiftUI / web | Jetpack Compose |
+| --- | --- |
+| `sheet` | `ModalBottomSheet` with `rememberModalBottomSheetState(skipPartiallyExpanded = true)` (no half-height state: it opens expanded). Darkened background: its `scrimColor`, animated by default. Width on large windows: `sheetMaxWidth`. |
+| Sheet toolbar ("Close", title, "Save") | `ModalBottomSheet` has no toolbar. Build one as the first item of the content: a `Row` with a leading "Close" icon-only button, a centered title, and a trailing area of the same width (a `Box` with the same width as the leading area), so the title never moves. Same button type for all of them (`modal-close`). |
+| iPad/macOS-style sheet (large windows, "compact"/"large") | A centered `BasicAlertDialog` with `DialogProperties(usePlatformDefaultWidth = false)` and an explicit size (a fraction of the window) when the window size class is `EXPANDED`; `ModalBottomSheet` otherwise. |
+
+#### Buttons and text fields
+
+| Guideline | Jetpack Compose |
+| --- | --- |
+| Pill shape | `CircleShape` (or `RoundedCornerShape(percent = 50)`) as the `shape` of the button. |
+| Filled / Hollow | `Button` (filled) and `OutlinedButton` (hollow), with `BorderStroke(1.dp, …)`, and `ButtonDefaults.buttonColors(...)` set explicitly. |
+| `0.6em` vertical padding | `contentPadding = PaddingValues(vertical = with(LocalDensity.current) { (fontSize * 0.6f).toDp() })`. |
+| Disabled opacity (`174`, then `118`) | Material's own disabled colors (12%/38% alpha) do **not** match: set `disabledContainerColor`/`disabledContentColor`, or wrap the button in `Modifier.alpha(174 / 255f)`, so that the existing alpha of the color adds up to `118 / 255`. |
+| Label shrinks, then ellipsis | `Text(maxLines = 1, overflow = TextOverflow.Ellipsis)`; shrinking text: `BasicText(autoSize = TextAutoSize.StepBased(...))` (Compose foundation 1.8+). |
+| Icon-only button (1:1, symbol at least 70%) | `Modifier.aspectRatio(1f)` with `CircleShape`, and `Icon(Modifier.fillMaxSize(0.7f))`; keep the touch target at 48dp or more. Accessible label: `contentDescription`. Tooltip on pointer devices: `TooltipBox` with `PlainTooltip`. |
+| `not-allowed` cursor | Compose only offers a few pointer icons (`PointerIcon.Default`, `Text`, `Hand`, `Crosshair`): not possible on Android, ignore it ("if possible"). |
+| Click/Tap wording | Android devices are touch devices: write "Tap", never "Click", except when a pointer is in use. |
+| Text fields | `BasicTextField` with a custom `decorationBox` (transparent background, rounded corners, visible focus border animated with `animateColorAsState`). Search field: `SearchBar` / `DockedSearchBar` (stable in Material 3 1.5, `AppBarWithSearch` is still experimental). A backdrop blur needs the glass note below. |
+| Fonts | Instrument Serif: bundled in `res/font` or Google Fonts through `androidx.compose.ui.text.googlefonts`. Default `sans-serif`: `FontFamily.SansSerif`. OpenDyslexic: bundled (open license). |
+
+#### Feedback, loading and motion
+
+| SwiftUI | Jetpack Compose |
+| --- | --- |
+| Toasts (`unionst/union-toast`, Liquid Glass) | `SnackbarHost` + `SnackbarHostState` in the `Scaffold`: it shows one snackbar at a time and queues the others, like the iOS toasts (only the web stacks, up to 3). One line, styled by type: default, green (success), red (error, `Color(0xFFA02C2E)` fill with a white label, see "Contrast"). Not `android.widget.Toast` (its custom views are no longer shown). |
+| `redacted(reason: .placeholder)` | Compose has no skeleton modifier for phones (Accompanist's is deprecated; Wear's `Modifier.placeholder` is Wear only). Write one `Modifier.skeleton(visible)` that draws a dark gray rounded rectangle over the real component, which stays in composition with placeholder data so that shapes remain the same, with **no animation**. Do not use `LoadingIndicator` or shimmer libraries. |
+| Disabled toolbar buttons while loading | `enabled = false` on the same buttons. |
+| Micro-animations, 150-300 ms, ease-out | Material 3 Expressive uses springs by default (`MotionScheme.expressive()`): for Nafyn's own state changes, use `tween(durationMillis = 150..300, easing = EaseOut)`, with `animateColorAsState`, `AnimatedVisibility`, `animateContentSize`. |
+| List elements gliding | `Modifier.animateItem()` in `LazyColumn`/`LazyRow`/grids. |
+| Cover art colors blending | `animateColorAsState` on each color of the mesh gradient and of the text. |
+| Reduce Motion | Android has no dedicated setting: "Remove animations" sets `Settings.Global.ANIMATOR_DURATION_SCALE` to `0`. Compose animations already finish instantly at `0`, but custom loops, delays and the mesh gradient must be checked by hand. Read it with `Settings.Global.getFloat(contentResolver, ANIMATOR_DURATION_SCALE, 1f)` (default `1f` when missing) and expose it with a `CompositionLocal`, re-read on resume, on configuration change, or with a `ContentObserver`, or it goes stale. |
+
+#### Now Playing visuals
+
+| SwiftUI | Jetpack Compose |
+| --- | --- |
+| `MeshGradient` | `MeshGradientPainter` (`androidx.compose.ui.graphics`, Compose 1.12+, drawn with `Canvas.drawMesh` on Android 14+), applied with `Modifier.paint(...)` and animated by moving the vertices from an `rememberInfiniteTransition`. Below Android 14: an AGSL `RuntimeShader` (Android 13+) or overlapping animated radial gradients (`Brush.radialGradient`), as an *approximation*. Check the real fallback of `MeshGradientPainter` on older versions before shipping. |
+| Liquid Glass (toolbars, lyrics controls, toasts) | *Approximation.* Android has no system glass material. Use Material 3 Expressive surfaces: `HorizontalFloatingToolbar` / `FloatingToolbar`, `FloatingActionButtonMenu`, or `ButtonGroup`, over a translucent container color. `Modifier.blur` only blurs the element's own content, never the backdrop behind it. A real backdrop blur/glass needs the Haze library (`dev.chrisbanes.haze`, `haze-blur` / `haze-glass`). Haze is optional: adopting it is a decision for the Android app, not a requirement of this document. |
+| Lyrics tap-and-hold ("Share lyrics") | `combinedClickable(onLongClick = …)`. |
+| Lyrics "Translate" (Foundation Models) | ML Kit on-device Translation (`com.google.mlkit:translate`: `Translation.getClient(TranslatorOptions…)`, `downloadModelIfNeeded()`, then `translate()`; models download once, then work offline), with ML Kit Language Identification for the source language. Target: the app locale (`TranslateLanguage.fromLanguageTag(...)`). Optional: the ML Kit GenAI Prompt API (Gemini Nano through AICore) is limited to supported devices, has quotas, and no background execution, so it is never the only path. |
+| Lyrics "Romanize" (Foundation Models) | `android.icu.text.Transliterator.getInstance("Any-Latin")` (rule based, offline, no download), then `.transliterate(text)`. Result is the simplified version asked for. Limitation: ICU reads Han characters as Mandarin pinyin, so Japanese kanji are not read the Japanese way. |
+
+#### Links and sharing
+
+| SwiftUI | Jetpack Compose |
+| --- | --- |
+| `SFSafariViewController` sheet | Chrome Custom Tabs: `androidx.browser:browser`, `CustomTabsIntent.Builder().build().launchUrl(LocalContext.current, uri)`. It opens in the user's default browser that supports Custom Tabs, over the app. |
+| `ShareLink` (link) | `Intent(Intent.ACTION_SEND)` with `EXTRA_TEXT` = the link, wrapped in `Intent.createChooser(...)` (Android Sharesheet), or `ShareCompat.IntentBuilder`. |
+| `ShareLink` (image, 9:16) | Render the image 9:16, save it in the app's cache, expose it with a `FileProvider` content URI, and send it with `ACTION_SEND`, `type = "image/png"`, `EXTRA_STREAM`, `FLAG_GRANT_READ_URI_PERMISSION` (and `ClipData`) in the chooser. Instagram Stories directly: `com.instagram.share.ADD_TO_STORY` with the image as the data (background asset), a `source_application` extra, the same URI permission, and a `<queries>` entry for `com.instagram.android` in the manifest. Snapchat, Signal, and the others appear in the chooser. |
+| Private items cannot be shared | Unchanged: do not offer the action, or disable it. |
+
+#### Without an Android equivalent
+
+- `contextMenu`'s custom `preview:`: not possible, menus open without a preview.
+- Liquid Glass: only approximated (see above).
+- `backgroundExtensionEffect`: only approximated (see above).
+
+#### Sources
+
+- [Compose Material 3 release notes](https://developer.android.com/jetpack/androidx/releases/compose-material3), [`ButtonGroup`](https://composables.com/docs/androidx.compose.material3/material3/components/ButtonGroup), [`DropdownMenuPopup`](https://composables.com/components/material3-dropdownmenupopup), [`ModalBottomSheet`](https://composables.com/docs/androidx.compose.material3/material3/components/ModalBottomSheet)
+- [Tap and press (`combinedClickable`)](https://developer.android.com/develop/ui/compose/touch-input/pointer-input/tap-and-press), [Drawing edge to edge](https://composables.com/blog/insets)
+- [`CustomTabsIntent`](https://developer.android.com/reference/androidx/browser/customtabs/CustomTabsIntent), [Instagram: Sharing to stories](https://developers.facebook.com/documentation/instagram-platform/sharing-to-stories)
+- [ML Kit Translation](https://developers.google.com/ml-kit/language/translation/android), [ML Kit Prompt API](https://developer.android.com/blog/posts/ml-kit-s-prompt-api-unlock-custom-on-device-gemini-nano-experiences)
+- [Haze](https://github.com/chrisbanes/haze), [New graphics features in Compose (`MeshGradientPainter`)](https://ardakazanci.com/posts/new-graphics-features-in-jetpack-compose-and-android/)
+- [Android, animations and reduced motion](https://eevis.codes/blog/2022-12-12/android-animations-and-reduced-motion/), [Snackbar guidelines](https://m3.material.io/components/snackbar/guidelines)

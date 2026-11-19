@@ -17,6 +17,7 @@
 import { accessSync, constants, existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { delimiter, join, resolve } from "node:path";
 import { apnSettings } from "./apn";
+import { fcmSettings } from "./fcm";
 import { readRecConfig } from "./recommender/config";
 
 export type EnvSeverity = "error" | "warn" | "info";
@@ -73,7 +74,7 @@ const STRING_VARIABLES = [
     "SOULSEEK_HOST", "SOULSEEK_USERNAME", "SOULSEEK_PASSWORD", "SOULSEEK_DOWNLOADS_PATH",
     "ACOUSTID_API_KEY", "THEAUDIODB_API_KEY",
     "DOMAINS_WHITELIST", "TRUST_PROXY", "NAFYN_PUBLIC_URL", "FPCALC_PATH",
-    "APN_KEY_ID", "APN_TEAM_ID", "APN_BUNDLE_ID", "APN_KEY_DIR"
+    "APN_KEY_ID", "APN_TEAM_ID", "APN_BUNDLE_ID", "APN_KEY_DIR", "FCM_SERVICE_ACCOUNT_FILE"
 ];
 
 // flags that only the exact value "false" switches off (everything else leaves the feature ON)
@@ -239,6 +240,16 @@ export async function checkEnvironment(config: EnvConfig = configFromEnv(), env:
         if (apn.legacyNames.length > 0) {
             add("info", "notifications", apn.legacyNames.join(", "), "still work but are deprecated names.", "Rename to APN_KEY_ID, APN_TEAM_ID, APN_BUNDLE_ID, APN_KEY_DIR.");
         }
+    }
+
+    // Firebase Cloud Messaging (the Android app)
+    const fcm = fcmSettings();
+    if (!fcm.file) {
+        add("info", "notifications", "FCM_SERVICE_ACCOUNT_FILE", "FCM is off - the Android app gets no push notifications, Live Updates or Now Playing sessions.", "See the Firebase Cloud Messaging block in .env.example.");
+    } else if (!existsSync(fcm.path!)) {
+        add("error", "notifications", "FCM_SERVICE_ACCOUNT_FILE", `${fcm.path} does not exist, so FCM stays off.`, "Firebase console -> Project settings -> Service accounts -> Generate new private key, and point this at the downloaded JSON.");
+    } else if (fcm.problem) {
+        add("error", "notifications", "FCM_SERVICE_ACCOUNT_FILE", `${fcm.path}: ${fcm.problem}, so FCM stays off.`, "Use the JSON key Firebase generates under Project settings -> Service accounts (not google-services.json, which belongs in the Android app).");
     }
 
     const publicUrl = env.NAFYN_PUBLIC_URL;

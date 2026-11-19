@@ -138,8 +138,31 @@ const MIGRATIONS: Migration[] = [
                 await conn.query(`DROP TABLE user_lastfm`);
             }
         }
+    },
+    {
+        // Android push (FCM): rows say which push service their token belongs to, and FCM registration tokens
+        // are longer than APNs' hex tokens (~160 characters today, no documented maximum)
+        id: "2026-11-push-platform",
+        up: async (conn) => {
+            for (const table of ["apn_devices", "apn_activity_tokens"] as const) {
+                if (!await columnExists(conn, table, "platform")) {
+                    await conn.query(`ALTER TABLE ${table} ADD COLUMN platform VARCHAR(16) NOT NULL DEFAULT 'ios' AFTER sessionId`);
+                }
+                if (await columnLength(conn, table, "token") < 512) {
+                    await conn.query(`ALTER TABLE ${table} MODIFY COLUMN token VARCHAR(512) NOT NULL`);
+                }
+            }
+        }
     }
 ];
+
+async function columnLength(conn: PoolConnection, table: string, column: string): Promise<number> {
+    const [rows] = await conn.execute(
+        `SELECT CHARACTER_MAXIMUM_LENGTH AS length FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ? LIMIT 1`,
+        [table, column]
+    );
+    return Number((rows as { length: number | null }[])[0]?.length ?? 0);
+}
 
 async function appliedIds(conn: PoolConnection): Promise<Set<string>> {
     const [rows] = await conn.query(`SELECT id FROM schema_migrations`);

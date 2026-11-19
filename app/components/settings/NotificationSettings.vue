@@ -14,7 +14,8 @@
           <span class="col">
             <span class="title">{{ d.deviceName || $t('settings.notifications.devices.unnamed') }}{{ d.currentSession ? ` (${$t('settings.notifications.devices.thisDevice')})` : '' }}</span>
             <span class="artist">
-              <template v-if="d.environment === 'sandbox'">{{ $t('settings.notifications.devices.sandbox') }} &middot; </template>{{ $t('settings.notifications.devices.lastSeen', { date: formatDate(d.lastSeenAt) }) }}
+              {{ $t(d.platform === 'android' ? 'settings.notifications.devices.android' : 'settings.notifications.devices.ios') }} &middot;
+              <template v-if="d.platform !== 'android' && d.environment === 'sandbox'">{{ $t('settings.notifications.devices.sandbox') }} &middot; </template>{{ $t('settings.notifications.devices.lastSeen', { date: formatDate(d.lastSeenAt) }) }}
             </span>
           </span>
           <button class="danger" type="button" filled="hollow" :disabled="busyDeviceId === d.id" @click="removeDevice(d.id)">{{ $t('settings.notifications.devices.remove') }}</button>

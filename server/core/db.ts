@@ -290,15 +290,17 @@ export async function initDatabases(): Promise<void> {
             INDEX idx_webhooks_userId (userId)
         );
 
-        -- APNs tokens registered by the Nafyn iOS app. One row per (token, kind), bound to the login
-        -- (sessionId = JWT jti) that registered it, so logging that device out or revoking its session stops
-        -- its pushes too. kind separates the regular alert token from the per-attributes-type push-to-start
-        -- tokens Live Activities and Now Playing remote sessions use.
+        -- push tokens registered by the Nafyn apps: APNs tokens (iOS) and FCM registration tokens (Android,
+        -- platform = 'android'). One row per (token, kind), bound to the login (sessionId = JWT jti) that
+        -- registered it, so logging that device out or revoking its session stops its pushes too. kind separates
+        -- the regular alert token from the per-attributes-type push-to-start tokens Live Activities and Now
+        -- Playing remote sessions use; an Android device registers its one FCM token under each kind it opts into.
         CREATE TABLE IF NOT EXISTS apn_devices (
             id VARCHAR(36) PRIMARY KEY,
             userId VARCHAR(36) NOT NULL,
             sessionId VARCHAR(36) NOT NULL,
-            token VARCHAR(255) NOT NULL,
+            platform VARCHAR(16) NOT NULL DEFAULT 'ios',
+            token VARCHAR(512) NOT NULL,
             kind VARCHAR(32) NOT NULL,
             environment VARCHAR(16) NOT NULL,
             deviceName VARCHAR(100) NULL,
@@ -312,14 +314,17 @@ export async function initDatabases(): Promise<void> {
 
         -- per-activity APNs update tokens: a running Live Activity (request progress, release countdown) or a
         -- Now Playing remote session hands the app a token that only addresses that one activity/session.
+        -- Android has no such token: when the server starts an activity on an Android device it records the
+        -- device's FCM token here itself (platform = 'android'), so updates and ends reach it the same way.
         -- Bound to the registering login like apn_devices, and swept with it.
         CREATE TABLE IF NOT EXISTS apn_activity_tokens (
             id VARCHAR(36) PRIMARY KEY,
             userId VARCHAR(36) NOT NULL,
             sessionId VARCHAR(36) NOT NULL,
+            platform VARCHAR(16) NOT NULL DEFAULT 'ios',
             kind VARCHAR(16) NOT NULL,
             refId VARCHAR(64) NOT NULL,
-            token VARCHAR(255) NOT NULL,
+            token VARCHAR(512) NOT NULL,
             environment VARCHAR(16) NOT NULL,
             createdAt BIGINT NOT NULL,
             -- last registration or push, a request activity idle for 15 minutes is stale

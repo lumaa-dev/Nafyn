@@ -20,6 +20,7 @@
     "slskd": ".dev/slskd/slskd",
     "check:env": "bun scripts/check-env.ts",
     "apn:test": "bun scripts/apn-test.ts",
+    "fcm:test": "bun scripts/fcm-test.ts",
     "test": "bun test tests",
     "search:record": "bun scripts/record-search-fixtures.ts",
     "openapi": "bun scripts/generate-openapi.ts",

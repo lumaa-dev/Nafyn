@@ -13,7 +13,7 @@ import { Rng, clamp } from "../math";
 export const USER_EMBEDDING_DIM = 8;
 export const AUDIO_SUMMARY_DIM = 6; // energy, valence, tempo (scaled), danceability, acousticness, brightness
 
-export const DEVICES = ["web", "ios", "subsonic", "other"] as const;
+export const DEVICES = ["web", "ios", "android", "subsonic", "other"] as const;
 export type Device = (typeof DEVICES)[number];
 
 // Nafyn knows no location; the client's UTC offset is the only regional signal, bucketed coarsely on purpose

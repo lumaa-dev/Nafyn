@@ -154,6 +154,7 @@ Configured via environment variables (see `.env.example`):
 | `NAFYN_PUBLIC_URL` | Public URL of the instance (`https://music.example.com`). Used for "Open in Nafyn" links in webhooks and push notifications; without it they carry no link. |
 | `NAFYN_WEBHOOK_ALLOW_PRIVATE` | Set `true` to let *instance* webhooks (never personal ones) target LAN addresses and plain `http`. See [Notifications](#notifications). |
 | `APN_KEY_ID` / `APN_TEAM_ID` / `APN_BUNDLE_ID` / `APN_KEY_DIR` / `APN_PRODUCTION` | Apple Push Notifications for the [iOS app](https://github.com/lumaa-dev/NafynApp). Leave key and team ids empty to switch APNs off. See [Notifications](#notifications). |
+| `FCM_SERVICE_ACCOUNT_FILE` | Path of the Firebase service-account key (JSON) used to push to the Android app (FCM). Leave empty to switch FCM off. See [Notifications](#notifications). |
 | `NAFYN_NOTIFICATION_SCHEDULER` | Set `false` to stop this replica running the release-countdown scheduler. Safe on several replicas. |
 | `NAFYN_ENV_CHECK` | Set `false` to silence the configuration report logged at boot. `bun run check:env` prints it on demand. |
 | `NAFYN_SEARCH_*` | Tunables of the [search engine](#search) (relevance floor, best-result margin, candidate pool, ...), all optional. Listed in [`.env.example`](.env.example). |
@@ -250,6 +251,8 @@ Nafyn tells people when a request is created, accepted, denied, completed or fai
 - The URL is a credential: listings show only the scheme and host, and the data export only the host.
 
 **Apple push** (the [Nafyn iOS app](https://github.com/lumaa-dev/NafynApp)): alerts, a Live Activity following a download, a release countdown Live Activity, and Now Playing remote sessions. Create an APNs auth key (`.p8`) in your Apple Developer account, put it in `APN_KEY_DIR`, and set `APN_KEY_ID`, `APN_TEAM_ID` and `APN_BUNDLE_ID`; without them APNs stays off silently. `bun run apn:test <deviceToken>` sends a real test push and prints Apple's answer. Devices are listed (one entry per login) and removable under **Settings → Notifications**.
+
+**Android push** (the Nafyn Android app): the same alerts, a Live Update following a download, a release countdown Live Update, and the Now Playing notification of another device. In the Firebase project the Android app is built with, generate a service-account key (Project settings → Service accounts → Generate new private key), store it on the server outside the repository, and set `FCM_SERVICE_ACCOUNT_FILE` to its path; without it FCM stays off silently. `bun run fcm:test <fcmToken>` (or `--user <username>`) sends a real test push and prints Google's answer.
 
 **Upcoming releases**: an album or track that is not released yet cannot be requested. It shows a countdown and a *Notify me* toggle; the notification is sent at local midnight of the release day in the subscriber's own timezone, with a countdown Live Activity three hours before.
 

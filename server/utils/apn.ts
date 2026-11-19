@@ -1,9 +1,18 @@
-// Apple Push Notification service: token storage, alerts, Live Activities and Now Playing remote sessions.
+// Push notifications for the Nafyn apps: token storage, alerts, Live Activities / Live Updates and Now Playing
+// remote sessions, dispatched to Apple (APNs, the iOS app) and to Firebase Cloud Messaging (FCM, the Android
+// app - transport in fcm.ts, payloads in fcmPayload.ts). Every token row says which one it belongs to
+// (`platform`), and send() routes each target to its service.
 //
-// Everything here is a silent no-op until APNs is configured (APN_KEY_ID + APN_TEAM_ID + a .p8 key) - the same
-// "not configured means skipped, never an error" contract as the optional metadata providers. Nothing in this
-// file can be exercised without an Apple device, so the payload shapes below are the contract with the Nafyn
-// iOS app and are documented in CLAUDE.md ("Notifications"); change them on both sides at once.
+// Everything here is a silent no-op until a service is configured (APNs: APN_KEY_ID + APN_TEAM_ID + a .p8 key;
+// FCM: FCM_SERVICE_ACCOUNT_FILE) - the same "not configured means skipped, never an error" contract as the
+// optional metadata providers. Nothing in this file can be exercised without a device, so the payload shapes
+// below are the contract with the Nafyn apps and are documented in CLAUDE.md ("Notifications"); change them on
+// both sides at once.
+//
+// Android has no push-to-start or per-activity tokens: the app registers its one FCM token under each kind it
+// opts into (alert, la-start:request, la-start:release, nowplaying-start), and when a start goes to an Android
+// device the server records that same token in apn_activity_tokens itself (recordAndroidActivities), so the
+// updates and the end of that activity reach it exactly like an iOS update token.
 //
 // Token kinds (apn_devices.kind) - push-to-start tokens are minted per ActivityKit attributes type, so each
 // startable thing needs its own:
@@ -26,6 +35,17 @@ import {
     type ResponseFailure
 } from "@parse/node-apn";
 import { getUsersDb } from "../core/db";
+import { fcmEnabled, sendFcm } from "./fcm";
+import {
+    fcmActivityMessage,
+    fcmAlertMessage,
+    fcmNowPlayingMessage,
+    normalizePushToken,
+    type FcmActivityKind,
+    type FcmMessage,
+    type PushAlert,
+    type PushPlatform
+} from "./fcmPayload";
 import { getUnitySettings } from "../core/unitySettings";
 import type { NotificationEvent } from "../entity/Notification";
 import type { DownloadProgressEvent } from "./downloadEvents";
@@ -126,6 +146,11 @@ export function apnEnabled(): boolean {
     return !!env("APN_KEY_ID", "KEY_ID") && !!env("APN_TEAM_ID", "TEAM_ID") && keyPath() !== null;
 }
 
+/** true when at least one push service (APNs or FCM) can send */
+export function pushEnabled(): boolean {
+    return apnEnabled() || fcmEnabled();
+}
+
 /** the effective APNs settings, as read from the environment - for diagnostics (envCheck.ts, scripts/apn-test.ts) */
 export function apnSettings() {
     return {
@@ -170,6 +195,7 @@ interface DeviceRow {
     id: string,
     userId: string,
     sessionId: string,
+    platform: PushPlatform,
     token: string,
     kind: ApnDeviceKind,
     environment: ApnEnvironment,
@@ -180,14 +206,16 @@ interface DeviceRow {
 }
 
 /**
- * One physical Apple device, as the settings screen shows it. The iOS app registers up to four tokens per
- * device (alert, request Live Activities, release countdowns, Now Playing) - an implementation detail nobody
- * should have to manage separately - so they are folded into one entry per login (`sessionId`), the thing
- * that is actually 1:1 with an install. Removing the device removes every token behind it.
+ * One physical device, as the settings screen shows it. The apps register up to four tokens per device (alert,
+ * request Live Activities, release countdowns, Now Playing) - an implementation detail nobody should have to
+ * manage separately - so they are folded into one entry per login (`sessionId`), the thing that is actually
+ * 1:1 with an install. Removing the device removes every token behind it.
  */
 export interface ApnDeviceSummary {
     /** the login's session id; what DELETE /api/v1/user/devices/{id} takes */
     id: string,
+    /** ios (APNs) or android (FCM) */
+    platform: PushPlatform,
     deviceName: string | null,
     environment: ApnEnvironment,
     /** which push features this device registered for */
@@ -201,7 +229,8 @@ export interface ApnDeviceSummary {
 
 interface ApnTarget {
     token: string,
-    environment: ApnEnvironment
+    environment: ApnEnvironment,
+    platform: PushPlatform
 }
 
 // APNs device and push-to-start tokens are hex strings (32 bytes today, Apple reserves the right to grow them)
@@ -235,6 +264,7 @@ function groupDevices(rows: DeviceRow[], currentSessionId?: string): ApnDeviceSu
         const newestFirst = [...group].sort((a, b) => Number(b.lastSeenAt) - Number(a.lastSeenAt));
         return {
             id: sessionId,
+            platform: primary.platform ?? "ios",
             deviceName: newestFirst.find((r) => r.deviceName)?.deviceName ?? null,
             environment: primary.environment,
             kinds: [...new Set(group.map((r) => r.kind))],
@@ -247,6 +277,7 @@ function groupDevices(rows: DeviceRow[], currentSessionId?: string): ApnDeviceSu
 }
 
 export interface RegisterDeviceInput {
+    platform: PushPlatform,
     token: string,
     kind: ApnDeviceKind,
     environment: ApnEnvironment,
@@ -262,15 +293,16 @@ export async function registerDevice(userId: string, sessionId: string, input: R
     const now = Date.now();
     const db = getUsersDb();
     await db.prepare(`
-        INSERT INTO apn_devices (id, userId, sessionId, token, kind, environment, deviceName, events, createdAt, lastSeenAt)
-        VALUES (:id, :userId, :sessionId, :token, :kind, :environment, :deviceName, :events, :now, :now)
-        ON DUPLICATE KEY UPDATE userId = VALUES(userId), sessionId = VALUES(sessionId), environment = VALUES(environment),
-            deviceName = VALUES(deviceName), events = VALUES(events), lastSeenAt = VALUES(lastSeenAt)
+        INSERT INTO apn_devices (id, userId, sessionId, platform, token, kind, environment, deviceName, events, createdAt, lastSeenAt)
+        VALUES (:id, :userId, :sessionId, :platform, :token, :kind, :environment, :deviceName, :events, :now, :now)
+        ON DUPLICATE KEY UPDATE userId = VALUES(userId), sessionId = VALUES(sessionId), platform = VALUES(platform),
+            environment = VALUES(environment), deviceName = VALUES(deviceName), events = VALUES(events), lastSeenAt = VALUES(lastSeenAt)
     `).run({
         id: randomUUID(),
         userId,
         sessionId,
-        token: input.token.toLowerCase(),
+        platform: input.platform,
+        token: normalizePushToken(input.platform, input.token),
         kind: input.kind,
         environment: input.environment,
         deviceName: input.deviceName,
@@ -301,7 +333,7 @@ export async function deleteDevice(userId: string, id: string): Promise<boolean>
     return tokens.changes + activities.changes > 0;
 }
 
-/** Registers the update token of a running Live Activity / Now Playing session. Ownership of `refId` is the caller's job. */
+/** Registers the (iOS) update token of a running Live Activity / Now Playing session. Ownership of `refId` is the caller's job. */
 export async function registerActivityToken(userId: string, sessionId: string, input: { kind: ApnActivityKind, refId: string, token: string, environment: ApnEnvironment }): Promise<void> {
     await getUsersDb().prepare(`
         INSERT INTO apn_activity_tokens (id, userId, sessionId, kind, refId, token, environment, createdAt, updatedAt)
@@ -321,14 +353,31 @@ export async function registerActivityToken(userId: string, sessionId: string, i
 
 async function activityTargets(kind: ApnActivityKind, refId: string): Promise<ApnTarget[]> {
     return await getUsersDb().prepare(
-        `SELECT token, environment FROM apn_activity_tokens WHERE kind = ? AND refId = ?`
+        `SELECT token, environment, platform FROM apn_activity_tokens WHERE kind = ? AND refId = ?`
     ).all(kind, refId) as ApnTarget[];
 }
 
 async function activityTargetsWithUser(kind: ApnActivityKind, refId: string): Promise<(ApnTarget & { userId: string })[]> {
     return await getUsersDb().prepare(
-        `SELECT token, environment, userId FROM apn_activity_tokens WHERE kind = ? AND refId = ?`
+        `SELECT token, environment, platform, userId FROM apn_activity_tokens WHERE kind = ? AND refId = ?`
     ).all(kind, refId) as (ApnTarget & { userId: string })[];
+}
+
+/**
+ * An activity was just started on these devices. iOS devices answer with their own update token
+ * (POST /api/v1/user/activities); Android ones never do, so their FCM token is recorded as the activity's
+ * token right here, and update/end/the stale sweep then reach them like any other.
+ */
+async function recordAndroidActivities(userId: string, targets: (ApnTarget & { sessionId: string })[], kind: ApnActivityKind, refId: string): Promise<void> {
+    const now = Date.now();
+    for (const target of targets) {
+        if (target.platform !== "android") continue;
+        await getUsersDb().prepare(`
+            INSERT INTO apn_activity_tokens (id, userId, sessionId, platform, kind, refId, token, environment, createdAt, updatedAt)
+            VALUES (:id, :userId, :sessionId, 'android', :kind, :refId, :token, 'production', :now, :now)
+            ON DUPLICATE KEY UPDATE token = VALUES(token), platform = VALUES(platform), createdAt = VALUES(createdAt), updatedAt = VALUES(updatedAt)
+        `).run({ id: randomUUID(), userId, sessionId: target.sessionId, kind, refId, token: target.token, now });
+    }
 }
 
 /** Logins that currently run a Live Activity for this refId, i.e. devices where one is really on screen. */
@@ -359,10 +408,10 @@ export async function deleteApnDataForUser(userId: string): Promise<number> {
 }
 
 // data-access export (GDPR art. 15): metadata only, tokens are credentials for pushing to that device
-export async function listDeviceExportForUser(userId: string): Promise<{ kind: ApnDeviceKind, environment: ApnEnvironment, deviceName: string | null, events: NotificationEvent[] | null, createdAt: number, lastSeenAt: number }[]> {
+export async function listDeviceExportForUser(userId: string): Promise<{ platform: PushPlatform, kind: ApnDeviceKind, environment: ApnEnvironment, deviceName: string | null, events: NotificationEvent[] | null, createdAt: number, lastSeenAt: number }[]> {
     const rows = await getUsersDb().prepare(`SELECT * FROM apn_devices WHERE userId = ? ORDER BY createdAt ASC`).all(userId) as DeviceRow[];
-    return rows.map(({ kind, environment, deviceName, events, createdAt, lastSeenAt }) => ({
-        kind, environment, deviceName, events: parseEvents(events), createdAt: Number(createdAt), lastSeenAt: Number(lastSeenAt)
+    return rows.map(({ platform, kind, environment, deviceName, events, createdAt, lastSeenAt }) => ({
+        platform, kind, environment, deviceName, events: parseEvents(events), createdAt: Number(createdAt), lastSeenAt: Number(lastSeenAt)
     }));
 }
 
@@ -396,7 +445,7 @@ async function deviceTargets(userIds: string[], kind: ApnDeviceKind, event?: Not
     if (userIds.length === 0) return [];
     const placeholders = userIds.map(() => "?").join(", ");
     const rows = await getUsersDb().prepare(
-        `SELECT token, environment, sessionId, events FROM apn_devices WHERE kind = ? AND userId IN (${placeholders})`
+        `SELECT token, environment, platform, sessionId, events FROM apn_devices WHERE kind = ? AND userId IN (${placeholders})`
     ).all(kind, ...userIds) as (ApnTarget & { sessionId: string, events: string | null })[];
     return rows
         .filter((row) => !excluded?.has(row.sessionId))
@@ -411,10 +460,14 @@ async function deviceTargets(userIds: string[], kind: ApnDeviceKind, event?: Not
 // sending
 // ---------------------------------------------------------------------------------------------------------
 
-async function pruneDeadTokens(failures: ResponseFailure[]): Promise<void> {
-    const dead = failures
+function deadApnTokens(failures: ResponseFailure[]): string[] {
+    return failures
         .filter((f) => f.status === 410 || DEAD_TOKEN_REASONS.has(f.response?.reason ?? ""))
         .map((f) => f.device.toLowerCase());
+}
+
+/** deletes every row holding one of these tokens (already normalized: APNs lowercased, FCM as-is) */
+async function pruneDeadTokens(dead: string[]): Promise<void> {
     if (dead.length === 0) return;
     const placeholders = dead.map(() => "?").join(", ");
     const db = getUsersDb();
@@ -429,32 +482,59 @@ interface SendOutcome {
 
 const THROTTLE_REASONS = new Set(["TooManyRequests", "ServiceUnavailable", "Shutdown", "InternalServerError"]);
 
-/** Sends one notification to every target, grouped by APNs environment. Never throws. */
-async function send(targets: ApnTarget[], build: () => Notification, label: string): Promise<SendOutcome> {
+/** one push, built for each service on demand (only the services with targets build theirs) */
+interface PushMessage {
+    apns: () => Notification,
+    fcm: () => FcmMessage
+}
+
+/**
+ * Sends one push to every target: iOS targets through APNs grouped by environment, Android targets through
+ * FCM one token at a time. Dead tokens of both services are deleted. Never throws.
+ */
+async function send(targets: ApnTarget[], message: PushMessage, label: string): Promise<SendOutcome> {
     const outcome: SendOutcome = { throttled: false };
-    if (!apnEnabled() || targets.length === 0) return outcome;
+    if (targets.length === 0) return outcome;
+    const dead: string[] = [];
 
-    const byEnvironment = new Map<ApnEnvironment, string[]>();
-    for (const { token, environment } of targets) {
-        const list = byEnvironment.get(environment) ?? [];
-        if (!list.includes(token)) list.push(token);
-        byEnvironment.set(environment, list);
-    }
+    if (apnEnabled()) {
+        const byEnvironment = new Map<ApnEnvironment, string[]>();
+        for (const { token, environment, platform } of targets) {
+            if (platform === "android") continue;
+            const list = byEnvironment.get(environment) ?? [];
+            if (!list.includes(token)) list.push(token);
+            byEnvironment.set(environment, list);
+        }
 
-    for (const [environment, tokens] of byEnvironment) {
-        try {
-            const result = await getProvider(environment).send(build(), tokens);
-            if (result.failed.length > 0) {
-                for (const failure of result.failed) {
-                    console.warn(`[apn] ${label} to …${failure.device.slice(-8)} failed: ${failure.response?.reason ?? failure.error?.message ?? failure.status}`);
-                    if (failure.status === 429 || failure.status === 503 || THROTTLE_REASONS.has(failure.response?.reason ?? "")) outcome.throttled = true;
+        for (const [environment, tokens] of byEnvironment) {
+            try {
+                const result = await getProvider(environment).send(message.apns(), tokens);
+                if (result.failed.length > 0) {
+                    for (const failure of result.failed) {
+                        console.warn(`[apn] ${label} to …${failure.device.slice(-8)} failed: ${failure.response?.reason ?? failure.error?.message ?? failure.status}`);
+                        if (failure.status === 429 || failure.status === 503 || THROTTLE_REASONS.has(failure.response?.reason ?? "")) outcome.throttled = true;
+                    }
+                    dead.push(...deadApnTokens(result.failed));
                 }
-                await pruneDeadTokens(result.failed);
+            } catch (err) {
+                console.error(`[apn] ${label} (${environment}) failed:`, err);
             }
-        } catch (err) {
-            console.error(`[apn] ${label} (${environment}) failed:`, err);
         }
     }
+
+    const androidTokens = [...new Set(targets.filter((t) => t.platform === "android").map((t) => t.token))];
+    if (androidTokens.length > 0 && fcmEnabled()) {
+        const fcmMessage = message.fcm();
+        const results = await Promise.all(androidTokens.map((token) => sendFcm(token, fcmMessage)));
+        for (const result of results) {
+            if (result.ok) continue;
+            console.warn(`[fcm] ${label} to …${result.token.slice(-8)} failed: ${result.reason ?? result.status}`);
+            if (result.throttled) outcome.throttled = true;
+            if (result.dead) dead.push(result.token);
+        }
+    }
+
+    await pruneDeadTokens(dead).catch((err) => console.error("[push] could not prune dead tokens:", err));
     return outcome;
 }
 
@@ -472,22 +552,8 @@ const unixSeconds = (ms: number = Date.now()) => Math.floor(ms / 1000);
 // alerts
 // ---------------------------------------------------------------------------------------------------------
 
-export interface ApnAlert {
-    /** English fallback, also what a client without the localization keys shows */
-    title: string,
-    body: string,
-    /** Localizable.strings keys in the app; when set the system shows the localized text instead */
-    titleLocKey?: string,
-    locKey?: string,
-    locArgs?: string[],
-    /** groups related notifications (e.g. every update about one request) */
-    threadId?: string,
-    category?: string,
-    /** cover art, for a Notification Service Extension to attach */
-    imageUrl?: string | null,
-    /** deep-link details, delivered under the top-level `nafyn` key */
-    data?: Record<string, unknown>
-}
+/** an alert for both platforms (fcmPayload.ts); on iOS the deep-link `data` lands under the top-level `nafyn` key */
+export type ApnAlert = PushAlert;
 
 function alertNotification(alert: ApnAlert): Notification {
     const notif = baseNotification("alert", null);
@@ -505,10 +571,14 @@ function alertNotification(alert: ApnAlert): Notification {
     return notif;
 }
 
-/** Sends an alert to one or more raw device tokens. */
+function alertMessage(alert: ApnAlert): PushMessage {
+    return { apns: () => alertNotification(alert), fcm: () => fcmAlertMessage(alert) };
+}
+
+/** Sends an alert to one or more raw APNs device tokens. */
 export async function sendNotification(deviceTokens: string | string[], alert: ApnAlert, environment: ApnEnvironment = defaultEnvironment()): Promise<void> {
     const tokens = Array.isArray(deviceTokens) ? deviceTokens : [deviceTokens];
-    await send(tokens.map((token) => ({ token, environment })), () => alertNotification(alert), "alert");
+    await send(tokens.map((token) => ({ token, environment, platform: "ios" as const })), alertMessage(alert), "alert");
 }
 
 /**
@@ -516,9 +586,9 @@ export async function sendNotification(deviceTokens: string | string[], alert: A
  * is in `excludeSessionIds` are skipped (e.g. the ones already telling the person through a Live Activity).
  */
 export async function sendNotificationToUsers(userIds: string[], event: NotificationEvent, alert: ApnAlert, excludeSessionIds?: ReadonlySet<string>): Promise<void> {
-    if (!apnEnabled()) return;
+    if (!pushEnabled()) return;
     const targets = await deviceTargets(userIds, "alert", event, excludeSessionIds);
-    await send(targets, () => alertNotification(alert), `alert ${event}`);
+    await send(targets, alertMessage(alert), `alert ${event}`);
 }
 
 // ---------------------------------------------------------------------------------------------------------
@@ -588,14 +658,14 @@ export async function sendTestAlert(token: string, environment: ApnEnvironment, 
     }
 }
 
-/** the `alert` tokens a user registered through the iOS app, with the environment each one belongs to */
-export async function listAlertTargetsForUsername(username: string): Promise<{ token: string, environment: ApnEnvironment, deviceName: string | null }[] | null> {
+/** the `alert` tokens a user registered through the iOS (or Android) app, with the environment each one belongs to */
+export async function listAlertTargetsForUsername(username: string, platform: PushPlatform = "ios"): Promise<{ token: string, environment: ApnEnvironment, deviceName: string | null }[] | null> {
     const db = getUsersDb();
     const user = await db.prepare(`SELECT id FROM users WHERE username = ?`).get(username) as { id: string } | undefined;
     if (!user) return null;
     return await db.prepare(
-        `SELECT token, environment, deviceName FROM apn_devices WHERE userId = ? AND kind = 'alert' ORDER BY lastSeenAt DESC`
-    ).all(user.id) as { token: string, environment: ApnEnvironment, deviceName: string | null }[];
+        `SELECT token, environment, deviceName FROM apn_devices WHERE userId = ? AND kind = 'alert' AND platform = ? ORDER BY lastSeenAt DESC`
+    ).all(user.id, platform) as { token: string, environment: ApnEnvironment, deviceName: string | null }[];
 }
 
 /** closes the HTTP/2 connections so a one-shot script can exit */
@@ -658,6 +728,24 @@ interface LiveActivityOptions {
     staleDateMs?: number,
     dismissalDateMs?: number,
     priority?: number
+}
+
+/** a Live Activity push for iOS and the matching Live Update message for Android (`refId` = request / subscription id) */
+function activityMessage(kind: FcmActivityKind, refId: string, options: LiveActivityOptions): PushMessage {
+    return {
+        apns: () => liveActivityNotification(options),
+        fcm: () => fcmActivityMessage({
+            kind,
+            refId,
+            event: options.event,
+            contentState: options.contentState,
+            attributes: options.attributes,
+            alert: options.alert,
+            staleDateMs: options.staleDateMs,
+            dismissalDateMs: options.dismissalDateMs,
+            priority: options.priority
+        })
+    };
 }
 
 function liveActivityNotification(options: LiveActivityOptions): Notification {
@@ -812,7 +900,7 @@ function settleFinishing(requestId: string): void {
  * instead of cutting it off. A no-op for a request that has no activity.
  */
 export function announceRequestActivityEnd(requestId: string): void {
-    if (!apnEnabled() || finishingRequestActivities.has(requestId)) return;
+    if (!pushEnabled() || finishingRequestActivities.has(requestId)) return;
     if (![...activeRequestByUser.values()].includes(requestId)) return;
     let settle!: () => void;
     const done = new Promise<void>((resolve) => { settle = resolve; });
@@ -835,7 +923,7 @@ async function endRequestActivityNow(userId: string, requestId: string): Promise
         const state: RequestActivityState = {
             stage: "processing", message: null, trackTitle: null, trackIndex: null, trackCount: null, progress: null, etaSeconds: null
         };
-        await enqueueActivityJob(userId, `end:${requestId}`, JOB_URGENT, () => send(targets, () => liveActivityNotification({
+        await enqueueActivityJob(userId, `end:${requestId}`, JOB_URGENT, () => send(targets, activityMessage("request", requestId, {
             event: "end",
             contentState: state,
             dismissalDateMs: Date.now(),
@@ -867,7 +955,7 @@ async function retireOtherRequestActivities(userId: string, keepRequestId: strin
  * outcome is on screen are skipped (their own end is already scheduled). Returns how many were ended.
  */
 export async function sweepStaleRequestActivities(now = Date.now()): Promise<number> {
-    if (!apnEnabled()) return 0;
+    if (!pushEnabled()) return 0;
     const rows = await getUsersDb().prepare(`
         SELECT userId, refId FROM apn_activity_tokens WHERE kind = 'request'
         GROUP BY userId, refId HAVING MAX(COALESCE(updatedAt, createdAt)) < ?
@@ -886,7 +974,7 @@ export async function sweepStaleRequestActivities(now = Date.now()): Promise<num
  * request's activity is waited for (its outcome is on screen for a few seconds) or ended first.
  */
 export async function startRequestActivity(requesterId: string, attributes: RequestActivityAttributes): Promise<void> {
-    if (!apnEnabled()) return;
+    if (!pushEnabled()) return;
     await retireOtherRequestActivities(requesterId, attributes.requestId);
     activeRequestByUser.set(requesterId, attributes.requestId);
     const targets = await deviceTargets([requesterId], "la-start:request");
@@ -894,7 +982,8 @@ export async function startRequestActivity(requesterId: string, attributes: Requ
         stage: "searching", message: null, trackTitle: null, trackIndex: null, trackCount: null, progress: null, etaSeconds: null
     };
     requestActivityThrottle.set(attributes.requestId, { userId: requesterId, sentAt: Date.now(), stage: state.stage, trackIndex: null, trackCount: null });
-    await enqueueActivityJob(requesterId, `start:${attributes.requestId}`, JOB_URGENT, () => send(targets, () => liveActivityNotification({
+    await recordAndroidActivities(requesterId, targets, "request", attributes.requestId);
+    await enqueueActivityJob(requesterId, `start:${attributes.requestId}`, JOB_URGENT, () => send(targets, activityMessage("request", attributes.requestId, {
         event: "start",
         attributesType: REQUEST_ACTIVITY_TYPE,
         attributes,
@@ -905,7 +994,7 @@ export async function startRequestActivity(requesterId: string, attributes: Requ
 
 /** Pushes download progress to a running request Live Activity, throttled. Terminal stages go through endRequestActivity. */
 export async function updateRequestActivity(event: DownloadProgressEvent): Promise<void> {
-    if (!apnEnabled()) return;
+    if (!pushEnabled()) return;
     // the outcome is already on screen; a straggling progress event must not overwrite it
     if (finishingRequestActivities.has(event.requestId)) return;
     // per-track "completed"/"failed" events arrive in the middle of an album; only the request-level end
@@ -952,7 +1041,7 @@ export async function updateRequestActivity(event: DownloadProgressEvent): Promi
         const sentAt = Date.now();
         const high = important && sentAt - (lastHighPriorityAt.get(userId) ?? 0) >= ACTIVITY_HIGH_PRIORITY_MIN_GAP_MS;
         if (high) lastHighPriorityAt.set(userId, sentAt);
-        const outcome = await send(current, () => liveActivityNotification({
+        const outcome = await send(current, activityMessage("request", event.requestId, {
             event: "update",
             contentState: state,
             priority: high ? 10 : 5
@@ -975,7 +1064,7 @@ export async function updateRequestActivity(event: DownloadProgressEvent): Promi
  */
 export async function endRequestActivity(requestId: string, outcome: "completed" | "failed", message: string | null = null, alert?: { title: string, body: string }): Promise<Set<string>> {
     requestActivityThrottle.delete(requestId);
-    if (!apnEnabled()) return new Set();
+    if (!pushEnabled()) return new Set();
     const targets = await activityTargetsWithUser("request", requestId);
     if (targets.length === 0) {
         for (const [id, active] of activeRequestByUser) if (active === requestId) activeRequestByUser.delete(id);
@@ -989,7 +1078,7 @@ export async function endRequestActivity(requestId: string, outcome: "completed"
         stage: outcome, message, trackTitle: null, trackIndex: null, trackCount: null, progress: outcome === "completed" ? 1 : null, etaSeconds: null
     };
     announceRequestActivityEnd(requestId);
-    await enqueueActivityJob(userId, `update:${requestId}`, JOB_URGENT, () => send(targets, () => liveActivityNotification({
+    await enqueueActivityJob(userId, `update:${requestId}`, JOB_URGENT, () => send(targets, activityMessage("request", requestId, {
         event: "update",
         contentState: state,
         alert,
@@ -1000,7 +1089,7 @@ export async function endRequestActivity(requestId: string, outcome: "completed"
         try {
             // fresh read: the activity's update token may have been replaced since
             const current = await activityTargets("request", requestId);
-            await enqueueActivityJob(userId, `end:${requestId}`, JOB_URGENT, () => send(current.length > 0 ? current : targets, () => liveActivityNotification({
+            await enqueueActivityJob(userId, `end:${requestId}`, JOB_URGENT, () => send(current.length > 0 ? current : targets, activityMessage("request", requestId, {
                 event: "end",
                 contentState: state,
                 dismissalDateMs: Date.now(),
@@ -1021,10 +1110,11 @@ export async function endRequestActivity(requestId: string, outcome: "completed"
 
 /** Starts the release countdown Live Activity on the subscriber's devices (push-to-start). */
 export async function startReleaseActivity(userId: string, attributes: ReleaseActivityAttributes, releaseAtMs: number): Promise<void> {
-    if (!apnEnabled()) return;
+    if (!pushEnabled()) return;
     const targets = await deviceTargets([userId], "la-start:release");
     const state: ReleaseActivityState = { releaseAt: unixSeconds(releaseAtMs), released: false };
-    await send(targets, () => liveActivityNotification({
+    await recordAndroidActivities(userId, targets, "release", attributes.subscriptionId);
+    await send(targets, activityMessage("release", attributes.subscriptionId, {
         event: "start",
         attributesType: RELEASE_ACTIVITY_TYPE,
         attributes,
@@ -1036,11 +1126,11 @@ export async function startReleaseActivity(userId: string, attributes: ReleaseAc
 
 /** At release: flips the countdown to "out now" and lets it linger for an hour. */
 export async function endReleaseActivity(subscriptionId: string, releaseAtMs: number): Promise<void> {
-    if (!apnEnabled()) return;
+    if (!pushEnabled()) return;
     const targets = await activityTargets("release", subscriptionId);
     if (targets.length === 0) return;
     const state: ReleaseActivityState = { releaseAt: unixSeconds(releaseAtMs), released: true };
-    await send(targets, () => liveActivityNotification({
+    await send(targets, activityMessage("release", subscriptionId, {
         event: "end",
         contentState: state,
         dismissalDateMs: Math.max(Date.now(), releaseAtMs) + RELEASE_ACTIVITY_LINGER_MS
@@ -1154,6 +1244,10 @@ function nowPlayingNotification(event: "start" | "update" | "end", attributes: N
     return notif;
 }
 
+function nowPlayingMessage(event: "start" | "update" | "end", attributes: NowPlayingAttributes): PushMessage {
+    return { apns: () => nowPlayingNotification(event, attributes), fcm: () => fcmNowPlayingMessage(event, attributes) };
+}
+
 async function unityEnabledFor(userId: string, session: NowPlayingSession): Promise<boolean> {
     if (process.env.NAFYN_UNITY_ENABLED === "false") return false;
     const cached = session.unityEnabled;
@@ -1183,7 +1277,7 @@ function enqueue(userId: string, work: () => Promise<void>): Promise<void> {
  * nothing touches the database unless the state changed in a way a remote session would show.
  */
 export function nowPlayingOnState(userId: string, masterSessionId: string, masterLabel: string, rawState: unknown): Promise<void> {
-    if (!apnEnabled() || !rawState || typeof rawState !== "object") return Promise.resolve();
+    if (!pushEnabled() || !rawState || typeof rawState !== "object") return Promise.resolve();
     return enqueue(userId, () => handleState(userId, masterSessionId, masterLabel, rawState as UnityPlayerState));
 }
 
@@ -1237,12 +1331,15 @@ async function handleState(userId: string, masterSessionId: string, masterLabel:
         .filter((t) => !session.startedSessions.has(t.sessionId));
     if (startTargets.length > 0) {
         for (const t of startTargets) session.startedSessions.add(t.sessionId);
-        await send(startTargets, () => nowPlayingNotification("start", attributes), "now playing start");
+        await recordAndroidActivities(userId, startTargets, "nowplaying", session.id);
+        await send(startTargets, nowPlayingMessage("start", attributes), "now playing start");
     }
 
-    // ...and every session that already reported its update token gets the `update`
-    const updateTargets = await activityTargets("nowplaying", session.id);
-    await send(updateTargets, () => nowPlayingNotification("update", attributes), "now playing update");
+    // ...and every session that already reported its update token gets the `update` (an Android device that
+    // was just started is recorded above already, and doesn't need the same state twice)
+    const justStarted = new Set(startTargets.map((t) => t.token));
+    const updateTargets = (await activityTargets("nowplaying", session.id)).filter((t) => !justStarted.has(t.token));
+    await send(updateTargets, nowPlayingMessage("update", attributes), "now playing update");
 }
 
 /** Ends the user's remote session everywhere (master gone, master changed, account erased). */
@@ -1255,10 +1352,10 @@ async function endSession(userId: string): Promise<void> {
     const session = nowPlaying.get(userId);
     if (!session) return;
     nowPlaying.delete(userId);
-    if (!apnEnabled()) return;
+    if (!pushEnabled()) return;
 
     const targets = await activityTargets("nowplaying", session.id);
-    await send(targets, () => nowPlayingNotification("end", { id: session.id }), "now playing end");
+    await send(targets, nowPlayingMessage("end", { id: session.id }), "now playing end");
     await deleteActivityTokens("nowplaying", session.id);
 }
 

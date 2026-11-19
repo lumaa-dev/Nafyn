@@ -427,13 +427,15 @@
         "intro": "Envoyez vos propres notifications (vos demandes, les sorties que vous suivez, et l'activité des demandes si vous les gérez) vers Discord, Slack, ntfy, Gotify ou tout service acceptant un POST JSON. Les URL de webhook doivent utiliser https et pointer vers une adresse publique."
       },
       "devices": {
-        "title": "Appareils Apple",
-        "intro": "Appareils Apple où l'app Nafyn est connectée. Supprimer un appareil coupe toutes ses notifications, Activités en direct et commandes « À l'écoute » ; se déconnecter de l'app, ou révoquer sa session, fait de même.",
+        "title": "Appareils",
+        "intro": "Téléphones et tablettes où l'app Nafyn est connectée. Supprimer un appareil coupe toutes ses notifications, Activités en direct, mises à jour en direct et commandes « À l'écoute » ; se déconnecter de l'app, ou révoquer sa session, fait de même.",
         "unnamed": "Appareil sans nom",
         "sandbox": "Version de développement",
+        "ios": "iOS",
+        "android": "Android",
         "lastSeen": "Vu le {date}",
         "remove": "Supprimer",
-        "empty": "Aucun appareil Apple n'est encore enregistré pour les notifications.",
+        "empty": "Aucun appareil n'est encore enregistré pour les notifications.",
         "thisDevice": "Cet appareil"
       },
       "releases": {

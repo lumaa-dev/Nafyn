@@ -427,13 +427,15 @@
         "intro": "Post your own notifications (your requests, releases you follow, and request activity if you manage requests) to Discord, Slack, ntfy, Gotify or any service that accepts a JSON POST. Webhook URLs must use https and point to a public address."
       },
       "devices": {
-        "title": "Apple devices",
-        "intro": "Apple devices where the Nafyn app is signed in. Removing a device stops all of its notifications, Live Activities and Now Playing controls; signing out of the app, or revoking its session, does the same.",
+        "title": "Devices",
+        "intro": "Phones and tablets where the Nafyn app is signed in. Removing a device stops all of its notifications, Live Activities, Live Updates and Now Playing controls; signing out of the app, or revoking its session, does the same.",
         "unnamed": "Unnamed device",
         "sandbox": "Development build",
+        "ios": "iOS",
+        "android": "Android",
         "lastSeen": "Last seen {date}",
         "remove": "Remove",
-        "empty": "No Apple device has registered for notifications yet.",
+        "empty": "No device has registered for notifications yet.",
         "thisDevice": "This device"
       },
       "releases": {
