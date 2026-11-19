@@ -53,6 +53,23 @@ export interface MenuOptions {
   hideDetails?: boolean
 }
 
+/** One page a "View" item leads to. */
+interface ViewTarget { kind: "track" | "album" | "artist" | "playlist", path: string }
+
+/** The label of a lone "View" item, when there is nothing to nest it with. */
+const VIEW_FLAT_LABEL: Record<ViewTarget["kind"], string> = {
+  track: "track.viewDetails",
+  album: "menu.viewAlbum",
+  artist: "menu.viewArtist",
+  playlist: "menu.viewPlaylist"
+};
+
+const MBID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+/** A MusicBrainz id, i.e. a catalog page exists for it (manual imports carry `manual-...` album ids, no artist id). */
+function isMbid(value: string | null | undefined): value is string {
+  return typeof value === "string" && MBID_RE.test(value);
+}
+
 interface HostState {
   items: ContextMenuItem[],
   anchor: { x: number, y: number, seq: number },
@@ -100,6 +117,7 @@ export function useMediaMenu() {
   const { sendError, sendToast } = useToast();
   // `$t` is only a global inside .vue files - a composable takes the translator from i18n at setup
   const { t } = useI18n();
+  const router = useRouter();
 
   const auth = () => ({ Authorization: token.value ?? "" });
 
@@ -252,6 +270,22 @@ export function useMediaMenu() {
     }];
   }
 
+  // "View" > Track | Album | Artist (DESIGN.md "Context Menus": actions starting with the same word are nested). One
+  // place to go stays a flat "View album"; the page the menu was opened on is never offered (it would only reload it)
+  function viewItems(targets: ViewTarget[]): ContextMenuItem[] {
+    const here = router.currentRoute.value.path;
+    const reachable = targets.filter((target) => target.path !== here);
+    if (reachable.length === 0) return [];
+    if (reachable.length === 1) {
+      const only = reachable[0]!;
+      return [{ label: t(VIEW_FLAT_LABEL[only.kind]), action: () => void navigateTo(only.path) }];
+    }
+    return [{
+      label: t("menu.view"),
+      children: reachable.map((target) => ({ label: t(`menu.viewTarget.${target.kind}`), action: () => void navigateTo(target.path) }))
+    }];
+  }
+
   // DESIGN.md "Sharing": on the web, copies the link of the selected item; one item at a time; a private item cannot
   // be shared (the action stays in the menu, disabled)
   function shareItem(title: string, path: string, isPublic: boolean): ContextMenuItem {
@@ -274,10 +308,17 @@ export function useMediaMenu() {
       { label: t("player.addToQueue"), action: () => void addToQueue(media, "end") }
     ];
 
-    const view: ContextMenuItem[] = [];
-    if (!options.hideDetails && owned) {
-      view.push({ label: t("track.viewDetails"), action: () => void navigateTo(`/l/t/${media.id}`) });
+    // the viewer's own copy leads to their library pages; a shared playlist's track to the catalog ones
+    const targets: ViewTarget[] = [];
+    if (!options.hideDetails) {
+      if (owned) targets.push({ kind: "track", path: `/l/t/${media.id}` });
+      else if (isMbid(media.musicbrainzId)) targets.push({ kind: "track", path: `/t/${media.musicbrainzId}` });
     }
+    if (media.albumId && (owned || isMbid(media.albumId))) {
+      targets.push({ kind: "album", path: owned ? `/l/a/${media.albumId}` : `/a/${media.albumId}` });
+    }
+    if (isMbid(media.artistMbid)) targets.push({ kind: "artist", path: `/ar/${media.artistMbid}` });
+    const view: ContextMenuItem[] = viewItems(targets);
     // a track the viewer does not own (a shared playlist's) cannot be added to a playlist: it is not in their library
     if (owned) {
       view.push({ label: t("playlist.addToPlaylist"), action: () => openPicker([media.id], options.pickerAdmin) });
@@ -344,10 +385,10 @@ export function useMediaMenu() {
       { label: t("player.addToQueue"), action: withTracks((tracks) => queueMany(tracks, "end")) }
     ];
 
-    const view: ContextMenuItem[] = [];
-    if (!options.hideDetails) {
-      view.push({ label: t("menu.viewAlbum"), action: () => void navigateTo(`/l/a/${album.id}`) });
-    }
+    const targets: ViewTarget[] = [];
+    if (!options.hideDetails) targets.push({ kind: "album", path: `/l/a/${album.id}` });
+    if (isMbid(album.artistMbid)) targets.push({ kind: "artist", path: `/ar/${album.artistMbid}` });
+    const view: ContextMenuItem[] = viewItems(targets);
     view.push(
       { label: t("playlist.addToPlaylist"), action: withTracks((tracks) => openPicker(tracks.map((track) => track.id), options.pickerAdmin)) },
       {
@@ -388,10 +429,7 @@ export function useMediaMenu() {
       { label: t("player.addToQueue"), action: withTracks((tracks) => queueMany(tracks, "end")) }
     ];
 
-    const view: ContextMenuItem[] = [];
-    if (!options.hideDetails) {
-      view.push({ label: t("menu.viewPlaylist"), action: () => void navigateTo(`/l/playlist/${playlist.id}`) });
-    }
+    const view: ContextMenuItem[] = viewItems(options.hideDetails ? [] : [{ kind: "playlist", path: `/l/playlist/${playlist.id}` }]);
     view.push({
       label: pins.isPinned("playlist", playlist.id) ? t("menu.unpin") : t("menu.pin"),
       action: guarded(playlist.title, t("menu.pinError"), () => togglePin("playlist", playlist.id, options.onChanged))

@@ -18,6 +18,10 @@ export interface TrackInfo {
     /** MusicBrainz genres (most voted first), lowercased */
     genres: string[],
     audio: AudioFeatures | null,
+    /** the mood an editor gave the album or artist (TheAudioDB), used when no audio could be measured */
+    tagMood?: Mood | null,
+    /** the editor's genre / style / mood words (TheAudioDB), compared as text */
+    tags?: string[],
     owned: boolean
 }
 
@@ -46,9 +50,12 @@ export function timeBin(hour: number): TimeBin {
 export const MOODS = ["upbeat", "intense", "mellow", "melancholic"] as const;
 export type Mood = (typeof MOODS)[number];
 
-/** quadrant of the (estimated) energy x valence plane */
-export function moodOf(audio: AudioFeatures | null): Mood | null {
-    if (!audio) return null;
+/**
+ * quadrant of the (estimated) energy x valence plane. Measured audio wins; without it, the mood an editor tagged
+ * the album or artist with (TheAudioDB, already mapped to a quadrant), if any.
+ */
+export function moodOf(audio: AudioFeatures | null, tagged: Mood | null = null): Mood | null {
+    if (!audio) return tagged;
     const high = audio.energy >= 0.55;
     const positive = audio.valence >= 0.5;
     if (high) return positive ? "upbeat" : "intense";

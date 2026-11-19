@@ -23,6 +23,8 @@ export interface ArtistDetail {
     id: string,
     name: string,
     image: string | null,
+    // TheAudioDB's logo: a transparent, horizontal PNG (800 x 310)
+    logo: string | null,
     bio: string | null,
     listeners: number | null,
     // every release-group of the artist, newest first, all kinds mixed: the discography without its categories

@@ -1,5 +1,6 @@
 // Pure helpers behind the artist info and picture lookups (server/utils/artistInfo.ts, server/utils/artistImage.ts):
 // no Nitro auto-imports, so they run under `bun test`.
+import { audioDbTagsOf, type AudioDbTags } from "./audioDbTags";
 
 // MusicBrainz url-rels of an artist: `{ type: "wikidata", url: { resource: "https://www.wikidata.org/wiki/Q44190" } }`
 export interface UrlRelation {
@@ -22,7 +23,11 @@ export function usableImageUrl(value: string | null | undefined): string | null 
 
 export interface AudioDbArtist {
     image: string | null,
-    bio: string | null
+    bio: string | null,
+    /** the artist's logo: a transparent PNG, horizontal (800 x 310) */
+    logo: string | null,
+    /** what the artist sounds like, for recommendations (see utils/audioDbTags.ts) */
+    tags: AudioDbTags
 }
 
 function text(value: unknown): string | null {
@@ -42,7 +47,9 @@ export function audioDbArtist(body: unknown, mbid: string | null): AudioDbArtist
         return {
             image: usableImageUrl(text(artist.strArtistThumb)),
             // the English one is `strBiographyEN` in older answers, plain `strBiography` in newer ones
-            bio: text(artist.strBiographyEN) ?? text(artist.strBiography)
+            bio: text(artist.strBiographyEN) ?? text(artist.strBiography),
+            logo: usableImageUrl(text(artist.strArtistLogo)),
+            tags: audioDbTagsOf(artist)
         };
     }
     return null;

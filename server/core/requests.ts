@@ -2,6 +2,7 @@ import { randomUUID, UUID } from "node:crypto";
 import { getRequestsDb, sqlInt } from "./db";
 import { NafynRequest, RequestStatus } from "../entity/NafynRequest";
 import { getUserById } from "./users";
+import type { NafynUser } from "../entity/NafynUser";
 import { getMediaInfo } from "../utils/musicbrainz";
 import type { MediaInfo } from "../entity/media/MediaInfo";
 
@@ -102,44 +103,64 @@ export const REQUEST_STATUS_GROUPS = {
 
 export type RequestStatusGroup = keyof typeof REQUEST_STATUS_GROUPS;
 
-// `AND status NOT IN (...)` for the excluded groups, empty when nothing is excluded
-function excludeClause(excluded: RequestStatusGroup[]): { sql: string, params: string[] } {
-    const statuses: string[] = excluded.flatMap((group) => [...REQUEST_STATUS_GROUPS[group]]);
-    if (statuses.length === 0) return { sql: "", params: [] };
-    return { sql: ` AND status NOT IN (${statuses.map(() => "?").join(", ")})`, params: statuses };
+/** What a request list can be narrowed to (GET /api/v1/requests). Every field left out keeps everything. */
+export interface RequestListFilter {
+    /** status groups left out */
+    excluded?: RequestStatusGroup[],
+    /** only album requests, or only track requests */
+    type?: "album" | "track",
+    /** only the requests of this account */
+    requestedBy?: string
 }
 
-export async function listRequests(limit?: number, offset?: number, excluded: RequestStatusGroup[] = []): Promise<NafynRequest[]> {
-    const filter = excludeClause(excluded);
-    let sql = `SELECT * FROM requests WHERE 1 = 1${filter.sql} ORDER BY createdAt DESC, id ASC`;
+// the WHERE clause for a filter (`1 = 1` when nothing is filtered), its values bound, never concatenated
+function filterClause(filter: RequestListFilter): { sql: string, params: unknown[] } {
+    let sql = "1 = 1";
+    const params: unknown[] = [];
+    if (filter.requestedBy !== undefined) {
+        sql += " AND requestedBy = ?";
+        params.push(filter.requestedBy);
+    }
+    if (filter.type !== undefined) {
+        sql += " AND type = ?";
+        params.push(filter.type);
+    }
+    const statuses: string[] = (filter.excluded ?? []).flatMap((group) => [...REQUEST_STATUS_GROUPS[group]]);
+    if (statuses.length > 0) {
+        sql += ` AND status NOT IN (${statuses.map(() => "?").join(", ")})`;
+        params.push(...statuses);
+    }
+    return { sql, params };
+}
+
+export async function listRequests(filter: RequestListFilter = {}, limit?: number, offset?: number): Promise<NafynRequest[]> {
+    const where = filterClause(filter);
+    let sql = `SELECT * FROM requests WHERE ${where.sql} ORDER BY createdAt DESC, id ASC`;
     if (limit !== undefined) {
         sql += ` LIMIT ${sqlInt(limit)} OFFSET ${sqlInt(offset ?? 0)}`;
     }
-    const rows = await getRequestsDb().prepare(sql).all(...filter.params) as RequestRow[];
+    const rows = await getRequestsDb().prepare(sql).all(...where.params) as RequestRow[];
     return Promise.all(rows.map(rowToRequest));
 }
 
-export async function countRequests(excluded: RequestStatusGroup[] = []): Promise<number> {
-    const filter = excludeClause(excluded);
-    const row = await getRequestsDb().prepare(`SELECT COUNT(*) AS count FROM requests WHERE 1 = 1${filter.sql}`).get(...filter.params) as { count: number };
+export async function countRequests(filter: RequestListFilter = {}): Promise<number> {
+    const where = filterClause(filter);
+    const row = await getRequestsDb().prepare(`SELECT COUNT(*) AS count FROM requests WHERE ${where.sql}`).get(...where.params) as { count: number };
     return Number(row.count);
 }
 
-export async function listRequestsByUser(requestedBy: string, limit?: number, offset?: number, excluded: RequestStatusGroup[] = []): Promise<NafynRequest[]> {
-    const filter = excludeClause(excluded);
-    let sql = `SELECT * FROM requests WHERE requestedBy = ?${filter.sql} ORDER BY createdAt DESC, id ASC`;
-    const params: unknown[] = [requestedBy, ...filter.params];
-    if (limit !== undefined) {
-        sql += ` LIMIT ${sqlInt(limit)} OFFSET ${sqlInt(offset ?? 0)}`;
-    }
-    const rows = await getRequestsDb().prepare(sql).all(...params) as RequestRow[];
-    return Promise.all(rows.map(rowToRequest));
+/** Every request of one account, newest first (the account export). */
+export async function listRequestsByUser(requestedBy: string): Promise<NafynRequest[]> {
+    return listRequests({ requestedBy });
 }
 
-export async function countRequestsByUser(requestedBy: string, excluded: RequestStatusGroup[] = []): Promise<number> {
-    const filter = excludeClause(excluded);
-    const row = await getRequestsDb().prepare(`SELECT COUNT(*) AS count FROM requests WHERE requestedBy = ?${filter.sql}`).get(requestedBy, ...filter.params) as { count: number };
-    return Number(row.count);
+/** The accounts that made at least one request still listed, for the requests filter (managers only). */
+export async function listRequesters(): Promise<NafynUser[]> {
+    const rows = await getRequestsDb().prepare(`SELECT DISTINCT requestedBy FROM requests WHERE requestedBy IS NOT NULL`).all() as { requestedBy: string }[];
+    const users = await Promise.all(rows.map((row) => getUserById(row.requestedBy, true)));
+    return users
+        .filter((user): user is NafynUser => user !== null)
+        .sort((a, b) => (a.displayName ?? a.username).localeCompare(b.displayName ?? b.username) || a.username.localeCompare(b.username));
 }
 
 export async function updateRequestStatus(id: UUID | string, status: RequestStatus, checkValidity: boolean = false): Promise<NafynRequest | null> {

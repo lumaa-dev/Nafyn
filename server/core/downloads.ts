@@ -454,6 +454,14 @@ async function shareExistingCopy(userId: string, identity: RecordingIdentity): P
     return null;
 }
 
+// true when shareExistingCopy would find a copy of this recording to share (read-only)
+async function hasExistingCopy(identity: RecordingIdentity): Promise<boolean> {
+    for (const media of await findMediaByIdentity(identity)) {
+        if (await findAnyLibraryEntryForMedia(media.id)) return true;
+    }
+    return false;
+}
+
 // how one track of a request ended. `addedMediaId` is the media row this attempt put into the requester's
 // library (downloaded, or someone else's copy shared), null when they already had it: what an album that fails
 // further down takes back out again (see rollBackAlbum)
@@ -835,8 +843,7 @@ async function runDownloadRequest(request: NafynRequest, signal: AbortSignal): P
 
     try {
         await updateRequestStatus(request.id, "searching");
-        // out of the download queue and about to search: the requester's Live Activity starts now
-        notifyRequestStarted(request);
+        // the Live Activity starts further down, once it is known that something has to come from Soulseek
         emitDownloadProgress({ requestId: request.id, stage: "searching", message: "Resolving MusicBrainz data" });
 
         const client = getMusicBrainzRepository();
@@ -877,6 +884,13 @@ async function runDownloadRequest(request: NafynRequest, signal: AbortSignal): P
             await finish("completed", "Already in library");
             return;
         }
+
+        // out of the download queue and about to search: the requester's Live Activity starts now - unless every
+        // missing track is already on the server (another user's copy, shared in milliseconds). That request is
+        // over before the device has even registered the activity's update token, so the outcome could never
+        // reach it and the activity stayed on screen at 0/0 tracks; the requester gets the plain alert instead
+        const shareable = await Promise.all(missingTargets.map((target) => hasExistingCopy(targetIdentity(target))));
+        if (shareable.some((found) => !found)) notifyRequestStarted(request);
 
         // album/EP: one Soulseek search for the whole release, one seller picked for every track so we never
         // end up pulling the same track twice from two different users; the rest of that same search's

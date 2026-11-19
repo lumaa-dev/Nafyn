@@ -122,7 +122,7 @@ export function passesGate(mode: ListeningMode, t: TrackInfo, profileText: Float
                 break;
             }
             case "mood": {
-                const m = moodOf(t.audio);
+                const m = moodOf(t.audio, t.tagMood ?? null);
                 if (m !== null && m !== c.value) return false;
                 break;
             }

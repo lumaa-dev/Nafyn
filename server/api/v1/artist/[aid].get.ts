@@ -14,7 +14,7 @@ import { luceneQuote } from "~~/server/utils/musicbrainzRepository";
 
 defineRouteMeta({
     openAPI: {
-        description: "Get artist details: name, picture and bio (TheAudioDB), listener count (ListenBrainz), and their discography from MusicBrainz with per-album library status for the requesting user. `categories` lays the discography out by kind (Albums, EPs, Singles, Compilations, Live, Remixes, Soundtracks, Other), newest first, and adds the Deluxe / Remaster edition of an album when it is a release inside the album's own release-group",
+        description: "Get artist details: name, picture, logo and bio (TheAudioDB), listener count (ListenBrainz), and their discography from MusicBrainz with per-album library status for the requesting user. `categories` lays the discography out by kind (Albums, EPs, Singles, Compilations, Live, Remixes, Soundtracks, Other), newest first, and adds the Deluxe / Remaster edition of an album when it is a release inside the album's own release-group",
         tags: ["artist"],
         operationId: "getArtist",
         parameters: [
@@ -65,11 +65,12 @@ defineRouteMeta({
                 schemas: {
                     ArtistDetail: {
                         type: "object",
-                        required: ["id", "name", "image", "bio", "listeners", "albums", "categories"],
+                        required: ["id", "name", "image", "logo", "bio", "listeners", "albums", "categories"],
                         properties: {
                             id: { type: "string", description: "MusicBrainz artist ID" },
                             name: { type: "string" },
                             image: { type: "string", nullable: true, description: "From TheAudioDB; without one there, the Wikimedia Commons image of the Wikidata item MusicBrainz links to the artist. Null when none has one" },
+                            logo: { type: "string", nullable: true, description: "The artist's logo from TheAudioDB: a transparent, horizontal PNG (800 x 310). Null when it has none" },
                             bio: { type: "string", nullable: true, description: "From TheAudioDB, in English" },
                             listeners: { type: "number", nullable: true, description: "How many people listened to the artist on ListenBrainz" },
                             albums: {
@@ -228,6 +229,7 @@ export default defineEventHandler(async (event) => {
         id: artist.id,
         name: artist.name,
         image,
+        logo: info.logo,
         bio: info.bio,
         listeners: info.listeners,
         albums,

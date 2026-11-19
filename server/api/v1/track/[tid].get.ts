@@ -38,13 +38,14 @@ defineRouteMeta({
                                 { $ref: "#/components/schemas/MediaInfo" },
                                 {
                                     type: "object",
-                                    required: ["albumMbid", "releaseDatePrecision", "released", "subscribed", "requested"],
+                                    required: ["albumMbid", "releaseDatePrecision", "released", "subscribed", "requested", "libraryId"],
                                     properties: {
                                         albumMbid: { type: "string", nullable: true, description: "MusicBrainz release-group ID for the track's release, if any" },
                                         releaseDatePrecision: { type: "string", enum: ["day", "month", "year"], nullable: true, description: "How much of releaseDate MusicBrainz actually knows; a partial date is padded to its first day" },
                                         released: { type: "boolean", description: "false while the release date hasn't started anywhere yet - unreleased tracks can't be requested" },
                                         subscribed: { type: "boolean", description: "Whether the caller follows this upcoming track (POST /api/v1/subscriptions)" },
-                                        requested: { type: "boolean", description: "Whether the caller has a request for this track that is waiting or being processed - false again once it completed, failed or was denied" }
+                                        requested: { type: "boolean", description: "Whether the caller has a request for this track that is waiting or being processed - false again once it completed, failed or was denied" },
+                                        libraryId: { type: "string", nullable: true, description: "The id of the caller's own copy of this track (GET /api/v1/library/{id}), matched like `inLibrary`; null when they don't have it" }
                                     }
                                 }
                             ]
@@ -107,6 +108,17 @@ export default defineEventHandler(async (event) => {
     const coverArt = release?.id ? `https://coverartarchive.org/release/${release.id}/front-250` : null;
     const { imageColors, textColor } = await getImageColors({ coverArtUrl: coverArt });
 
+    // same identity match as POST /api/v1/request: this MBID, the one it redirected from, an ISRC, or the
+    // same title + artist + duration - the page hides Request when it's found, and links the caller's own copy
+    const owned = await findOwnedMediaByIdentity(userId, buildIdentity({
+        mbids: [tid, recording.id],
+        isrcs: recording.isrcs,
+        title: recording.title,
+        artistMbid: credit?.id,
+        artistName: credit?.name ?? "Unknown Artist",
+        duration: recording.length ? recording.length / 1000 : 0
+    }));
+
     const media: MediaInfo = {
         id: recording.id,
         title: recording.title,
@@ -117,16 +129,7 @@ export default defineEventHandler(async (event) => {
         imageColors,
         textColor,
         releaseDate: parseReleaseDate(recording["first-release-date"]),
-        // same identity match as POST /api/v1/request: this MBID, the one it redirected from, an ISRC, or the
-        // same title + artist + duration - the page hides Request when it's true
-        inLibrary: await findOwnedMediaByIdentity(userId, buildIdentity({
-            mbids: [tid, recording.id],
-            isrcs: recording.isrcs,
-            title: recording.title,
-            artistMbid: credit?.id,
-            artistName: credit?.name ?? "Unknown Artist",
-            duration: recording.length ? recording.length / 1000 : 0
-        })) != null,
+        inLibrary: owned != null,
         duration: recording.length ? Math.round(recording.length / 1000) : 0,
         label: null,
         relations: {
@@ -143,5 +146,8 @@ export default defineEventHandler(async (event) => {
 
     const requested = await hasActiveRequest(userId, [tid, recording.id]);
 
-    return { ...media, albumMbid, releaseDatePrecision, released, subscribed, requested };
+    // the caller's own copy (GET /api/v1/library/{id}), so a client can switch to the library version of the track
+    const libraryId = owned?.media.id ?? null;
+
+    return { ...media, albumMbid, releaseDatePrecision, released, subscribed, requested, libraryId };
 });

@@ -1,4 +1,5 @@
-// renders a shareable PNG of a period's headline numbers, in the browser.
+// renders a shareable PNG of a period's headline numbers, in the browser. 9:16 at 1080 x 1920, like every image
+// Nafyn shares (DESIGN.md "Sharing": Instagram / Snapchat stories).
 //
 // Client-only: canvas does not exist during SSR, so every entry point guards on import.meta.client.
 //
@@ -17,11 +18,12 @@ export interface ShareCardSpec {
 }
 
 const WIDTH = 1080;
-const HEIGHT = 1350;
+const HEIGHT = 1920;
 const BG = "#2a2a27";
 const ACCENT = "#e0a666";
 const TEXT = "#ffffff";
-const MUTED = "#8a8a86";
+// secondary text, still above 7:1 on the background (WCAG AAA)
+const MUTED = "#c8c8c4";
 
 // "Instrument-Serif" is loaded as a webfont; if it hasn't finished loading the browser silently falls back,
 // so the stack names a real serif rather than leaving it to chance
@@ -66,7 +68,8 @@ export async function renderShareCard(spec: ShareCardSpec): Promise<Blob | null>
     ctx.fillRect(0, 0, WIDTH, 12);
 
     const margin = 90;
-    let y = 190;
+    // a story's top and bottom are covered by the app's own controls: the content starts lower than on a post
+    let y = 300;
 
     ctx.textBaseline = "alphabetic";
     ctx.fillStyle = ACCENT;
@@ -85,7 +88,7 @@ export async function renderShareCard(spec: ShareCardSpec): Promise<Blob | null>
         const col = i % 2;
         const row = Math.floor(i / 2);
         const x = margin + col * colWidth;
-        const rowY = y + row * 150;
+        const rowY = y + row * 190;
 
         ctx.fillStyle = MUTED;
         ctx.font = `30px ${MONO}`;
@@ -96,15 +99,17 @@ export async function renderShareCard(spec: ShareCardSpec): Promise<Blob | null>
         ctx.fillText(truncate(ctx, stat.value, colWidth - 20), x, rowY + 110);
     });
 
-    y += Math.ceil(Math.min(spec.stats.length, 4) / 2) * 150 + 60;
+    y += Math.ceil(Math.min(spec.stats.length, 4) / 2) * 190 + 100;
 
     ctx.fillStyle = ACCENT;
     ctx.font = `36px ${MONO}`;
     ctx.fillText(spec.listHeading.toUpperCase(), margin, y);
     y += 30;
 
-    for (const item of spec.list.slice(0, 5)) {
-        y += 88;
+    // as many as fit above the footer (up to 8): the list is what the taller card has room for
+    for (const item of spec.list.slice(0, 8)) {
+        if (y + 110 + (item.subtitle ? 62 : 0) > HEIGHT - 240) break;
+        y += 110;
 
         ctx.fillStyle = MUTED;
         ctx.font = `44px ${MONO}`;
@@ -124,7 +129,7 @@ export async function renderShareCard(spec: ShareCardSpec): Promise<Blob | null>
 
     ctx.fillStyle = MUTED;
     ctx.font = `32px ${MONO}`;
-    ctx.fillText(spec.footer, margin, HEIGHT - 80);
+    ctx.fillText(spec.footer, margin, HEIGHT - 160);
 
     return await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
 }

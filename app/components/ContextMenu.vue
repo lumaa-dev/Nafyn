@@ -92,7 +92,8 @@ const y = ref(0);
 const menuEl = ref<HTMLUListElement | null>(null);
 
 const subIndex = ref<number | null>(null);
-const subItems = ref<ContextMenuItem[] | null>(null);
+// read from the items, not copied when it opens: a `keepOpen` check item in it updates in place (filters)
+const subItems = computed<ContextMenuItem[] | null>(() => subIndex.value === null ? null : props.items[subIndex.value]?.children ?? null);
 const subX = ref(0);
 const subY = ref(0);
 const subEl = ref<HTMLUListElement | null>(null);
@@ -125,13 +126,11 @@ function close() {
 
 function closeSub() {
   subIndex.value = null;
-  subItems.value = null;
 }
 
 async function openSub(item: ContextMenuItem, index: number, li: HTMLElement) {
   if (item.disabled || !item.children) return;
   subIndex.value = index;
-  subItems.value = item.children;
 
   // beside the item, on its right
   const anchor = li.getBoundingClientRect();

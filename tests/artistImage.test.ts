@@ -60,9 +60,9 @@ describe("images", () => {
 
     test("TheAudioDB: the thumb and bio of the artist with that MusicBrainz ID", () => {
         expect(audioDbArtist({ artists: [{ strMusicBrainzID: RADIOHEAD.toUpperCase(), strArtistThumb: "https://r2.theaudiodb.com/t.jpg", strBiography: " Bio " }] }, RADIOHEAD))
-            .toEqual({ image: "https://r2.theaudiodb.com/t.jpg", bio: "Bio" });
+            .toEqual({ image: "https://r2.theaudiodb.com/t.jpg", bio: "Bio", logo: null, tags: { genre: null, style: null, mood: null } });
         expect(audioDbArtist({ artists: [{ strMusicBrainzID: RADIOHEAD, strArtistThumb: null, strBiographyEN: "Old", strBiography: "New" }] }, RADIOHEAD))
-            .toEqual({ image: null, bio: "Old" });
+            .toEqual({ image: null, bio: "Old", logo: null, tags: { genre: null, style: null, mood: null } });
         expect(audioDbArtist({ artists: [{ strMusicBrainzID: "other", strArtistThumb: "https://r2.theaudiodb.com/t.jpg" }] }, RADIOHEAD)).toBeNull();
         expect(audioDbArtist({ artists: null }, RADIOHEAD)).toBeNull();
         expect(audioDbArtist(null, RADIOHEAD)).toBeNull();
@@ -70,7 +70,17 @@ describe("images", () => {
 
     test("TheAudioDB name search: the first artist", () => {
         expect(audioDbArtist({ artists: [{ strMusicBrainzID: RADIOHEAD, strArtistThumb: "https://r2.theaudiodb.com/t.jpg", strBiography: "" }] }, null))
-            .toEqual({ image: "https://r2.theaudiodb.com/t.jpg", bio: null });
+            .toEqual({ image: "https://r2.theaudiodb.com/t.jpg", bio: null, logo: null, tags: { genre: null, style: null, mood: null } });
+    });
+
+    test("TheAudioDB: the logo (https only) and what the artist sounds like", () => {
+        const artist = audioDbArtist({ artists: [{
+            strMusicBrainzID: RADIOHEAD, strArtistLogo: "https://r2.theaudiodb.com/logo.png",
+            strGenre: " Alternative Rock ", strStyle: "Rock/Pop", strMood: "Reflective"
+        }] }, RADIOHEAD);
+        expect(artist?.logo).toBe("https://r2.theaudiodb.com/logo.png");
+        expect(artist?.tags).toEqual({ genre: "alternative rock", style: "rock/pop", mood: "reflective" });
+        expect(audioDbArtist({ artists: [{ strMusicBrainzID: RADIOHEAD, strArtistLogo: "http://r2.theaudiodb.com/logo.png" }] }, RADIOHEAD)?.logo).toBeNull();
     });
 });
 

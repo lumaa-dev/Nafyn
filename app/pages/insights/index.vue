@@ -255,7 +255,7 @@ async function shareMonth() {
         { label: $t('insights.stats.artists'), value: String(monthly.value.totals.uniqueArtists) },
         { label: $t('insights.stats.tracks'), value: String(monthly.value.totals.uniqueTracks) }
       ],
-      list: monthly.value.top.track.slice(0, 5).map((t) => ({
+      list: monthly.value.top.track.slice(0, 8).map((t) => ({
         rank: t.rank,
         title: t.title ?? "?",
         subtitle: t.subtitle
@@ -345,10 +345,13 @@ onUnmounted(() => {
 </script>
 
 <style>
+/* the nav (220px) + gap + content (560px at most) is narrower than the 900px box `div.view` centres: centre the
+   group inside it too, or the page sits off to the left */
 .insights {
   display: flex;
   gap: 60px;
   align-items: flex-start;
+  justify-content: center;
   max-width: 900px;
 }
 

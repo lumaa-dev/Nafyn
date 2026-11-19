@@ -676,6 +676,30 @@ function stop(state: PlayerState) {
 
 let mediaSessionActionsBound = false;
 let historyWatchBound = false;
+let repeatRestored = false;
+
+// the repeat mode is the listener's own setting: kept in this browser, so it is still on after a reload. Written
+// only by this device's own choice (cycleRepeat / setRepeat), never by a Nafyn Unity session picked up from
+// another device (restoreSession). Shuffle has nothing to keep: on the web it reorders the queue once.
+const REPEAT_STORAGE_KEY = "nafyn.player.repeat";
+
+function readStoredRepeat(): RepeatMode | null {
+    try {
+        const value = localStorage.getItem(REPEAT_STORAGE_KEY);
+        return value === "off" || value === "queue" || value === "track" ? value : null;
+    } catch {
+        return null; // storage blocked (private mode, site data off)
+    }
+}
+
+function storeRepeat(mode: RepeatMode): void {
+    if (!import.meta.client) return;
+    try {
+        localStorage.setItem(REPEAT_STORAGE_KEY, mode);
+    } catch {
+        // nothing to keep it in: it lasts as long as the page
+    }
+}
 
 // wires OS/lock-screen/hardware media keys (play, pause, previous, next, scrub) to the player; only needs to run once since every usePlayer() call shares the same underlying state
 function bindMediaSessionActions(actions: { togglePlay: () => void; next: () => void; prev: () => void; seek: (time: number) => void }) {
@@ -706,6 +730,16 @@ export const usePlayer = () => {
     }));
     // client only: a module-level ref would otherwise leak one request's state into the next during SSR
     if (import.meta.client) playbackSettings ??= usePlaybackSettings();
+
+    // once per page load, after hydration: the server rendered "off", and changing it before the page hydrates
+    // would leave the repeat button's markup out of step
+    if (import.meta.client && !repeatRestored) {
+        repeatRestored = true;
+        onNuxtReady(() => {
+            const stored = readStoredRepeat();
+            if (stored) state.value.repeat = stored;
+        });
+    }
 
     // turning "Listening history" off drops the history already shown, not just what would come next
     if (import.meta.client && !historyWatchBound) {
@@ -794,6 +828,7 @@ export const usePlayer = () => {
     // off -> queue (loop the whole queue) -> track (loop the current song) -> off
     function cycleRepeat() {
         state.value.repeat = state.value.repeat === "off" ? "queue" : state.value.repeat === "queue" ? "track" : "off";
+        storeRepeat(state.value.repeat);
     }
 
     // reorders what plays after the current track, at random (Fisher-Yates); the current track, the tracks before
@@ -811,6 +846,7 @@ export const usePlayer = () => {
 
     function setRepeat(mode: RepeatMode) {
         state.value.repeat = mode;
+        storeRepeat(mode);
     }
 
     function seek(time: number) {

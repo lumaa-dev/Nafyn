@@ -137,9 +137,9 @@ export async function generateMixes(input: MixEngineInput, provider: CandidatePr
                 const t = enriched.get(e.track.key);
                 if (!t) continue;
                 e.track = t;
-                // enrichment can bring genres the recall step did not know: the text profile follows
+                // enrichment can bring genres (and editor tags) the recall step did not know: the text profile follows
                 const doc = docs.get(t.key);
-                if (doc && t.genres.length) e.text = index.vector(docFields({ ...doc, genres: t.genres }));
+                if (doc && (t.genres.length || t.tags?.length)) e.text = index.vector(docFields({ ...doc, genres: [...new Set([...t.genres, ...(t.tags ?? [])])] }));
             }
             scored = scoreCandidates(mode, profile, evidence.filter((e) => !dropped.has(e.track.key)), audioStats, cfg.sourceWeights);
         }

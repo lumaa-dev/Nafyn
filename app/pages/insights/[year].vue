@@ -199,7 +199,7 @@ async function shareYear() {
         { label: $t('insights.stats.tracks'), value: String(yearly.value.totals.uniqueTracks) },
         { label: $t('insights.stats.streak'), value: String(yearly.value.totals.longestStreakDays ?? 0) }
       ],
-      list: yearly.value.top.artist.slice(0, 5).map((a) => ({ rank: a.rank, title: a.title ?? "?", subtitle: null })),
+      list: yearly.value.top.artist.slice(0, 8).map((a) => ({ rank: a.rank, title: a.title ?? "?", subtitle: null })),
       footer: "Nafyn"
     }, `nafyn-${year}.png`);
   } catch (e) {
@@ -362,8 +362,13 @@ onUnmounted(() => {
   width: 50px;
 }
 
+/* the video is 9:16 (DESIGN.md "Sharing"): as tall as the screen allows, never wider than the page */
 .year-package .reel-video {
-  width: 100%;
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: min(80vh, 960px);
+  aspect-ratio: 9 / 16;
   border-radius: 12px;
   background: #000;
 }

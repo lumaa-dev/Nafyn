@@ -172,7 +172,14 @@
       "succeeded": "Réussies",
       "failed": "Échouées",
       "waiting": "En attente",
-      "processing": "En cours"
+      "processing": "En cours",
+      "type": "Type",
+      "allTypes": "Tous les types",
+      "albums": "Albums",
+      "tracks": "Titres",
+      "requestedBy": "Demandé par",
+      "everyone": "Tout le monde",
+      "you": "{name} (vous)"
     }
   },
   "settings": {
@@ -789,6 +796,14 @@
     "pinError": "Impossible de modifier l'épingle",
     "viewAlbum": "Voir l'album",
     "viewPlaylist": "Voir la playlist",
+    "view": "Voir",
+    "viewArtist": "Voir l'artiste",
+    "viewTarget": {
+      "track": "Titre",
+      "album": "Album",
+      "artist": "Artiste",
+      "playlist": "Playlist"
+    },
     "openOnYouTube": "Ouvrir sur YouTube",
     "share": "Partager",
     "openOn": "Ouvrir sur",

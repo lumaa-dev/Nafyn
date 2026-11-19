@@ -20,10 +20,16 @@ import { similarArtists, similarRecordings } from "../utils/listenbrainz";
 import { ArtistGraph } from "../utils/recommender/mixes/graph";
 import type { CandidateProvider, ProviderCandidate, UserTrack } from "../utils/recommender/mixes/pipeline";
 import type { ListeningMode } from "../utils/recommender/mixes/modes";
+import { audioDbTags, trackTags } from "./recAudioDb";
+import { moodFromTag, tagGenres, tagWords } from "../utils/audioDbTags";
 import type { TrackInfo } from "../utils/recommender/mixes/types";
 
 const SEEDS_PER_MODE = 10;
 const GRAPH_ARTISTS_PER_MODE = 5;
+
+// TheAudioDB lookups the suggestions of one refresh may spend in all (2.1 s apart, see recAudioDb.ts): the cache
+// fills over the refreshes, a refresh never waits minutes for it
+const CANDIDATE_AUDIODB_LOOKUPS = 12;
 
 /** display fields of a suggestion that TrackInfo does not carry */
 export interface SuggestionDisplay {
@@ -37,6 +43,8 @@ export class CatalogProvider implements CandidateProvider {
     readonly display = new Map<string, SuggestionDisplay>();
     private readonly graph = new ArtistGraph();
     private graphSeeded = new Set<string>();
+    /** TheAudioDB lookups this refresh may still spend on suggestions */
+    private audioDbBudget = CANDIDATE_AUDIODB_LOOKUPS;
 
     constructor(
         private readonly userId: string,
@@ -181,7 +189,15 @@ export class CatalogProvider implements CandidateProvider {
                 }
                 const credits = recording["artist-credit"] ?? [];
                 const artistMbid = credits[0]?.artist?.id ?? null;
-                const genres = artistMbid ? (await artistGenres([artistMbid], 1)).get(artistMbid.toLowerCase()) ?? [] : [];
+                const mbGenres = artistMbid ? (await artistGenres([artistMbid], 1)).get(artistMbid.toLowerCase()) ?? [] : [];
+                // TheAudioDB's editors on the album and artist: a genre where MusicBrainz has none, a mood where no
+                // preview could be measured, words for the text profile (a small budget: the cache fills over time)
+                const albumId = release?.["release-group"]?.id ?? null;
+                const budget = Math.min(2, this.audioDbBudget);
+                const tagSets = await audioDbTags([{ artistMbid, albumId }], budget);
+                this.audioDbBudget -= budget;
+                const tags = trackTags(tagSets, artistMbid, albumId);
+                const genres = mbGenres.length ? mbGenres : tagGenres(tags);
                 const releasedAt = firstDate ? Date.parse(firstDate.length === 4 ? `${firstDate}-01-01` : firstDate.length === 7 ? `${firstDate}-01` : firstDate) : null;
                 let audio = t.audio;
                 if (!audio) audio = await previewFeatures(t.recordingId).catch(() => null);
@@ -190,12 +206,14 @@ export class CatalogProvider implements CandidateProvider {
                     title: recording.title || t.title,
                     artists: credits.length ? credits.map((c) => c.name) : t.artists,
                     album: release?.title ?? t.album,
-                    albumId: release?.["release-group"]?.id ?? null,
+                    albumId,
                     releasedAt: releasedAt && Number.isFinite(releasedAt) ? releasedAt : null,
                     releaseYear: releasedAt && Number.isFinite(releasedAt) ? new Date(releasedAt).getUTCFullYear() : null,
                     durationMs: recording.length ?? null,
                     genres,
-                    audio
+                    audio,
+                    tagMood: moodFromTag(tags.mood),
+                    tags: tagWords(tags)
                 });
                 const display = this.display.get(t.key);
                 if (display) {

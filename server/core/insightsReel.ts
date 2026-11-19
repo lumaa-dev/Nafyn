@@ -33,7 +33,12 @@ const NO_COVER_PATH = join(process.cwd(), "app", "assets", "no-cover.png");
 
 const SLIDE_COUNT = 8;
 const SLIDE_SECONDS = 6;
-const VIDEO_SIZE = 720;
+// DESIGN.md "Sharing": everything shared as a picture is 9:16 (stories), 1080 x 1920
+const VIDEO_WIDTH = 1080;
+const VIDEO_HEIGHT = 1920;
+// the sharp cover in the middle of each slide, square, with the blurred one filling the frame behind it
+const COVER_SIZE = 900;
+const COVER_Y = 330;
 const EXCERPT_START_RATIO = 0.3;
 const MAX_COVER_BYTES = 8 * 1024 * 1024;
 const COVER_FETCH_TIMEOUT_MS = 10_000;
@@ -267,19 +272,29 @@ async function fileExists(path: string): Promise<boolean> {
 async function renderSlide(slide: SlideSource, imagePath: string, outputPath: string, hasFont: boolean): Promise<void> {
     const startSeconds = Math.max(0, Math.floor(slide.durationSeconds * EXCERPT_START_RATIO));
 
-    // scale-and-crop to a square, dim the lower third so text stays readable over bright artwork
+    // 9:16: the cover blown up to fill the frame, blurred and darkened, under the cover itself (a square, never
+    // stretched); the rank, title and artist below it, white on that dark ground so they read over any artwork
+    const textX = Math.round((VIDEO_WIDTH - COVER_SIZE) / 2);
+    const textY = COVER_Y + COVER_SIZE + 90;
     const filters = [
-        `scale=${VIDEO_SIZE}:${VIDEO_SIZE}:force_original_aspect_ratio=increase`,
-        `crop=${VIDEO_SIZE}:${VIDEO_SIZE}`,
-        `drawbox=y=${Math.round(VIDEO_SIZE * 0.68)}:w=${VIDEO_SIZE}:h=${Math.round(VIDEO_SIZE * 0.32)}:color=black@0.55:t=fill`
+        `split=2[bg][fg]`,
+        `[bg]scale=${VIDEO_WIDTH}:${VIDEO_HEIGHT}:force_original_aspect_ratio=increase,crop=${VIDEO_WIDTH}:${VIDEO_HEIGHT},boxblur=40:3,eq=brightness=-0.35[back]`,
+        `[fg]scale=${COVER_SIZE}:${COVER_SIZE}:force_original_aspect_ratio=increase,crop=${COVER_SIZE}:${COVER_SIZE}[front]`,
+        `[back][front]overlay=x=${textX}:y=${COVER_Y}`
+    ];
+    // one filtergraph: the branches above are `;`-separated, the text is drawn on the overlay's output, over a
+    // band darkened once more (a bright cover blurred stays bright: white text needs a dark ground under it)
+    const chain = [
+        filters.join(";"),
+        `drawbox=x=0:y=${COVER_Y + COVER_SIZE}:w=${VIDEO_WIDTH}:h=${VIDEO_HEIGHT - COVER_Y - COVER_SIZE}:color=black@0.55:t=fill`
     ];
 
     if (hasFont) {
         const font = FONT_PATH.replace(/\\/g, "/").replace(/:/g, "\\:");
-        filters.push(
-            `drawtext=fontfile='${font}':text='#${slide.rank}':fontsize=44:fontcolor=0xe0a666:x=40:y=${Math.round(VIDEO_SIZE * 0.71)}`,
-            `drawtext=fontfile='${font}':text='${escapeDrawText(slide.title)}':fontsize=40:fontcolor=white:x=40:y=${Math.round(VIDEO_SIZE * 0.78)}`,
-            `drawtext=fontfile='${font}':text='${escapeDrawText(slide.subtitle)}':fontsize=28:fontcolor=0xbbbbbb:x=40:y=${Math.round(VIDEO_SIZE * 0.86)}`
+        chain.push(
+            `drawtext=fontfile='${font}':text='#${slide.rank}':fontsize=72:fontcolor=0xe0a666:x=${textX}:y=${textY}`,
+            `drawtext=fontfile='${font}':text='${escapeDrawText(slide.title)}':fontsize=64:fontcolor=white:x=${textX}:y=${textY + 110}`,
+            `drawtext=fontfile='${font}':text='${escapeDrawText(slide.subtitle)}':fontsize=44:fontcolor=white:x=${textX}:y=${textY + 200}`
         );
     }
 
@@ -288,7 +303,7 @@ async function renderSlide(slide: SlideSource, imagePath: string, outputPath: st
         .input(slide.audioPath!).inputOptions("-ss", String(startSeconds))
         .outputOptions(
             "-t", String(SLIDE_SECONDS),
-            "-vf", filters.join(","),
+            "-vf", chain.join(","),
             "-r", "25",
             "-c:v", "libx264",
             "-pix_fmt", "yuv420p",

@@ -3,10 +3,13 @@
 // paid key in THEAUDIODB_API_KEY lifts that limit. Answers are cached in memory, a failed lookup only briefly.
 import { USER_AGENT } from "./app";
 import { audioDbArtist, listenBrainzListeners, type AudioDbArtist } from "./artistImageParse";
+import { audioDbAlbumTags, type AudioDbTags } from "./audioDbTags";
 
 export interface ArtistMetadata {
     bio: string | null,
     image: string | null,
+    /** TheAudioDB's logo: a transparent, horizontal PNG (800 x 310) */
+    logo: string | null,
     listeners: number | null
 }
 
@@ -84,6 +87,22 @@ export function getAudioDbArtist(name: string, mbid?: string | null): Promise<Au
     }).catch(() => undefined);
 }
 
+const audioDbAlbumCache = new TimedCache<AudioDbTags | null | undefined>();
+
+/**
+ * TheAudioDB's genre / style / mood of an album, by its MusicBrainz release-group ID. null when it doesn't know the
+ * album, undefined when it couldn't be asked.
+ */
+export function getAudioDbAlbum(releaseGroupId: string): Promise<AudioDbTags | null | undefined> {
+    const key = useRuntimeConfig().theaudiodbApiKey;
+    if (!key || !MBID_RE.test(releaseGroupId)) return Promise.resolve(null);
+    const id = releaseGroupId.toLowerCase();
+    return audioDbAlbumCache.get(id, async () => {
+        const answer = await getJson(`https://www.theaudiodb.com/api/v1/json/${encodeURIComponent(key)}/album-mb.php?i=${id}`);
+        return answer.ok ? { value: audioDbAlbumTags(answer.body, id), unsure: false } : { value: undefined, unsure: true };
+    }).catch(() => undefined);
+}
+
 const listenersCache = new TimedCache<number | null>();
 
 /** How many people listened to the artist on ListenBrainz (needs the MusicBrainz ID). */
@@ -103,5 +122,5 @@ export function getArtistListeners(mbid: string | null | undefined): Promise<num
 /** Bio and picture from TheAudioDB, listeners from ListenBrainz; each null when unknown. Never throws. */
 export async function getArtistInfo(name: string, mbid?: string | null): Promise<ArtistMetadata> {
     const [audioDb, listeners] = await Promise.all([getAudioDbArtist(name, mbid), getArtistListeners(mbid)]);
-    return { bio: audioDb?.bio ?? null, image: audioDb?.image ?? null, listeners };
+    return { bio: audioDb?.bio ?? null, image: audioDb?.image ?? null, logo: audioDb?.logo ?? null, listeners };
 }

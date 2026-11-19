@@ -172,7 +172,14 @@
       "succeeded": "Succeeded",
       "failed": "Failed",
       "waiting": "Waiting",
-      "processing": "Processing"
+      "processing": "Processing",
+      "type": "Type",
+      "allTypes": "All types",
+      "albums": "Albums",
+      "tracks": "Tracks",
+      "requestedBy": "Requested by",
+      "everyone": "Everyone",
+      "you": "{name} (you)"
     }
   },
   "settings": {
@@ -789,6 +796,14 @@
     "pinError": "Couldn't update the pin",
     "viewAlbum": "View album",
     "viewPlaylist": "View playlist",
+    "view": "View",
+    "viewArtist": "View artist",
+    "viewTarget": {
+      "track": "Track",
+      "album": "Album",
+      "artist": "Artist",
+      "playlist": "Playlist"
+    },
     "openOnYouTube": "Open on YouTube",
     "share": "Share",
     "openOn": "Open on",

@@ -377,7 +377,7 @@ function facetDistributions(members: readonly { key: string, weight: number }[],
         const t = input.tracks.get(m.key)!.info;
         add("genre", t.genres[0], m.weight);
         add("decade", decadeOf(t.releaseYear), m.weight);
-        add("mood", moodOf(t.audio), m.weight);
+        add("mood", moodOf(t.audio, t.tagMood ?? null), m.weight);
         const hours = input.affinities.get(m.key)?.hours;
         if (hours) {
             const hs = hours.reduce((s, x) => s + x, 0);

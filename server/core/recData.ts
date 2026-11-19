@@ -16,6 +16,8 @@ import { withMusicBrainzContext } from "../utils/musicbrainzRepository";
 import { getAudioFeatures } from "./recAudio";
 import { type AlsModel, similarUsers, trainAls } from "../utils/recommender/mixes/als";
 import { countCooccurrences, ppmi, randomizedEmbedding } from "../utils/recommender/mixes/graph";
+import { audioDbTags, trackTags } from "./recAudioDb";
+import { moodFromTag, tagGenres, tagWords } from "../utils/audioDbTags";
 import type { Engagement, TrackInfo } from "../utils/recommender/mixes/types";
 import type { UserTrack } from "../utils/recommender/mixes/pipeline";
 import { USER_EMBEDDING_DIM } from "../utils/recommender/bandit/features";
@@ -26,6 +28,9 @@ const SESSION_GAP_MS = 30 * 60_000;
 const EMBEDDING_DIM = 16;
 const GLOBAL_TTL_MS = 60 * 60_000;
 const GENRE_TTL_MS = 30 * DAY;
+// TheAudioDB lookups one refresh of a user's mixes may spend (2.1 s apart, see recAudioDb.ts); the rest of a large
+// library is asked about on the next refreshes, the answers being kept 30 days
+const AUDIODB_LOOKUPS_PER_REFRESH = 24;
 
 export function artistKeyOf(name: string | null | undefined): string {
     return (name ?? "").trim().toLowerCase();
@@ -290,6 +295,9 @@ export async function loadUserData(userId: string, models: GlobalModels): Promis
     }
     const audio = await getAudioFeatures(ids.map((id) => `media:${id}`));
     const genres = await artistGenres([...media.values()].map((m) => m.artistMbid ?? "").filter(Boolean), 40);
+    // what TheAudioDB's editors say the albums and artists sound like: a genre where MusicBrainz has none, a mood
+    // where no preview was measured, and their words in the text profile
+    const editorTags = await audioDbTags([...media.values()], AUDIODB_LOOKUPS_PER_REFRESH);
 
     const ownedRecordings = new Set<string>();
     for (const m of media.values()) if (m.owned) ownedRecordings.add(m.musicbrainzId.toLowerCase());
@@ -302,6 +310,8 @@ export async function loadUserData(userId: string, models: GlobalModels): Promis
     const tracks = new Map<string, UserTrack>();
     for (const m of media.values()) {
         const releasedAt = m.releaseDate ? Number(m.releaseDate) : null;
+        const tags = trackTags(editorTags, m.artistMbid, m.albumId);
+        const mbGenres = m.artistMbid ? genres.get(m.artistMbid.toLowerCase()) ?? [] : [];
         const info: TrackInfo = {
             key: m.id,
             recordingId: m.musicbrainzId || null,
@@ -313,8 +323,10 @@ export async function loadUserData(userId: string, models: GlobalModels): Promis
             releaseYear: releasedAt ? new Date(releasedAt).getUTCFullYear() : null,
             releasedAt,
             durationMs: m.duration ? m.duration * 1000 : null,
-            genres: m.artistMbid ? genres.get(m.artistMbid.toLowerCase()) ?? [] : [],
+            genres: mbGenres.length ? mbGenres : tagGenres(tags),
             audio: audio.get(`media:${m.id}`) ?? null,
+            tagMood: moodFromTag(tags.mood),
+            tags: tagWords(tags),
             owned: m.owned === 1
         };
         const gi = models.mediaIndex.get(m.id);
@@ -322,7 +334,7 @@ export async function loadUserData(userId: string, models: GlobalModels): Promis
             info,
             cf: gi !== undefined && models.als ? models.als.items[gi]! : null,
             embedding: gi !== undefined ? models.embeddings[gi] ?? null : null,
-            doc: { genres: info.genres, playlistTitles: playlistTitles.get(m.id) ?? [], title: m.title, album: m.album, lyrics: lyrics.get(m.id) ?? null }
+            doc: { genres: [...new Set([...info.genres, ...(info.tags ?? [])])], playlistTitles: playlistTitles.get(m.id) ?? [], title: m.title, album: m.album, lyrics: lyrics.get(m.id) ?? null }
         });
     }
 

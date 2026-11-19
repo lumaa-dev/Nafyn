@@ -551,6 +551,7 @@ import Sidebar from "./components/Sidebar.vue";
 import ToastPill from "./components/ToastPill.vue";
 import NowPlaying from "./components/NowPlaying.vue";
 import { useAuthToken, isTokenExpired } from "./composables/useAuthToken";
+import { appLinkFor } from "./utils/appLink";
 
 applyDyslexicFont();
 
@@ -571,7 +572,9 @@ function redirectIfLoggedOut() {
 	// a user's profile (/u/<username>) is public, like a public playlist
 	const isViewingProfile = route.path.startsWith("/u/");
 	if (isNotLogging && !isViewingPlaylist && !isViewingProfile && !hasToken.value) {
-		useRouter().push(`/login`);
+		// the page asked for rides along, so a phone can still hand it over to the app (plugins/appHandoff.client.ts)
+		const from = appLinkFor(route.path) ? route.fullPath : null;
+		useRouter().push(from ? { path: "/login", query: { from } } : "/login");
 	}
 }
 redirectIfLoggedOut();
