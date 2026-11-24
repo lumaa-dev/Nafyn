@@ -294,7 +294,7 @@ export async function initDatabases(): Promise<void> {
         -- platform = 'android'). One row per (token, kind), bound to the login (sessionId = JWT jti) that
         -- registered it, so logging that device out or revoking its session stops its pushes too. kind separates
         -- the regular alert token from the per-attributes-type push-to-start tokens Live Activities and Now
-        -- Playing remote sessions use; an Android device registers its one FCM token under each kind it opts into.
+        -- Playing remote sessions use, and an Android device registers its one FCM token under each kind it opts into.
         CREATE TABLE IF NOT EXISTS apn_devices (
             id VARCHAR(36) PRIMARY KEY,
             userId VARCHAR(36) NOT NULL,
