@@ -183,6 +183,7 @@
     }
   },
   "settings": {
+    "version": "Version de Nafyn",
     "title": "Paramètres",
     "categories": {
       "profile": "Profil",

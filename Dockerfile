@@ -7,6 +7,9 @@ COPY package.json package-lock.json* ./
 RUN npm install -g npm@latest && npm install
 
 COPY . .
+# the commit this image is built from (no .git in the build context); shown at the bottom of Settings
+ARG NUXT_BUILD_SHA=""
+ENV NUXT_BUILD_SHA=${NUXT_BUILD_SHA}
 RUN npm run build
 
 FROM node:22-alpine AS runtime

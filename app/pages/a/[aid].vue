@@ -7,7 +7,10 @@
           <h1>{{ album.title }}</h1>
           <p class="type" v-if="album.type">{{ album.type }}</p>
         </span>
-        <p class="artist">{{ typeof album.artist == "string" ? album.artist : album.artist.name }}</p>
+        <p class="artist">
+          <NuxtLink v-if="typeof album.artist !== 'string' && album.artist.musicbrainzId" class="artist-link" :to="`/ar/${album.artist.musicbrainzId}`">{{ album.artist.name }}</NuxtLink>
+          <template v-else>{{ typeof album.artist == "string" ? album.artist : album.artist.name }}</template>
+        </p>
         <p class="description" v-if="album.description">{{ album.description }}</p>
         <div class="upcoming" v-if="!album.released">
           <span class="label">{{ $t('upcoming.label') }}</span>

@@ -102,6 +102,11 @@ async function loadLevel(level: SlateLevel): Promise<ServingModel> {
     if (row) {
         try {
             const policy = deserializePolicy(row.state, row.id);
+            // a state carries its own dimension and loads happily, then throws on the first predict(): compare it
+            // with the layout this build produces (a new device added a one-hot slot, 83 -> 84)
+            const space = level === "card" ? cardSpace() : shelfSpace();
+            const expected = policy.kind === "linucb" ? space.linearDim : space.neuralDim;
+            if (policy.dim !== expected) throw new Error(`stored model has ${policy.dim} features, this build uses ${expected}`);
             if (level === "card" && policy instanceof NeuralBanditPolicy) await rebuildReplay(policy);
             return { id: row.id, level, kind: row.kind, policy, served: Number(row.served), dirty: false };
         } catch (error) {

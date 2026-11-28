@@ -142,6 +142,7 @@ Configured via environment variables (see `.env.example`):
 | `NAFYN_ACOUSTID_MAX_ALIAS_LOOKUPS` | Merged-away MusicBrainz IDs looked up per file. Default `3`. |
 | `MYSQL_HOST` / `MYSQL_PORT` / `MYSQL_USER` / `MYSQL_PASSWORD` / `MYSQL_DATABASE` | MySQL connection. The database is created on first boot if it doesn't exist. |
 | `NAFYN_SLSKD_MAX_CONCURRENT_SEARCHES` / `NAFYN_SLSKD_SEARCH_INTERVAL_MS` | Soulseek search pacing: searches in flight (default `3`) and the minimum gap between starts (default `1000` ms). Bursts get throttled by the Soulseek server, and a throttled search looks exactly like "nobody shares this". |
+| `NAFYN_DOWNLOAD_COOLDOWN_SECONDS` | Pause between one download request ending and the next queued one starting (default `7`, `0` = none). Back-to-back requests get throttled by Soulseek, failing a chain of requests whose songs are fine. |
 | `NAFYN_MAX_ACTIVE_REQUESTS_PER_USER` | Requests one account may have waiting or in the pipeline at once. Default `500`; past it, requests answer `429`. |
 | `THEAUDIODB_API_KEY` | TheAudioDB key for artist bios and pictures (artist page, search results, Subsonic's `getArtistInfo2`). Defaults to `123`, TheAudioDB's free public key (30 requests a minute); a paid key lifts the limit. |
 | `DOMAINS_WHITELIST` | Comma-separated hostnames exempt from the login/register rate limits. Leave empty unless you specifically need it — every entry is an IP that can brute-force passwords freely. |

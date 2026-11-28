@@ -87,7 +87,8 @@ const OFF_SWITCHES = [
 const NUMBER_VARIABLES: Array<[name: string, min: number, integer: boolean]> = [
     ["NAFYN_MAX_ACTIVE_REQUESTS_PER_USER", 1, true], // 500, core/requestCreate.ts
     ["NAFYN_SLSKD_MAX_CONCURRENT_SEARCHES", 1, true], // 3, utils/soulseek.ts
-    ["NAFYN_SLSKD_SEARCH_INTERVAL_MS", 0, false] // 1000, utils/soulseek.ts
+    ["NAFYN_SLSKD_SEARCH_INTERVAL_MS", 0, false], // 1000, utils/soulseek.ts
+    ["NAFYN_DOWNLOAD_COOLDOWN_SECONDS", 0, false] // 7, core/downloadQueue.ts
 ];
 // flags that only the exact value "true" switches on
 const ON_SWITCHES = ["NAFYN_PUBLIC_OPENAPI", "NAFYN_WEBHOOK_ALLOW_PRIVATE", "APN_PRODUCTION"];

@@ -1,3 +1,17 @@
+import { execSync } from 'node:child_process'
+
+// the commit this build comes from, shown at the bottom of Settings (GET /api/v1/version). The Docker build has no
+// .git (.dockerignore), so CI hands it over as NUXT_BUILD_SHA; a local build asks git.
+function buildSha(): string {
+  const fromEnv = (process.env.NUXT_BUILD_SHA || '').trim()
+  if (/^[0-9a-f]{7,40}$/i.test(fromEnv)) return fromEnv.toLowerCase()
+  try {
+    return execSync('git rev-parse HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim().toLowerCase()
+  } catch {
+    return ''
+  }
+}
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -35,6 +49,8 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    // baked at build time, never read from the runtime environment
+    buildSha: buildSha(),
     jwtSecret: process.env.JWT_SECRET || '',
 
     soulseekUsername: process.env.SOULSEEK_USERNAME || 'slskd',

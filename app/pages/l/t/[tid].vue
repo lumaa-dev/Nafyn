@@ -6,7 +6,10 @@
         <span class="header">
           <h1>{{ track.title }}</h1>
         </span>
-        <p class="artist">{{ track.artistName }}</p>
+        <p class="artist">
+          <NuxtLink v-if="track.artistMbid" class="artist-link" :to="`/ar/${track.artistMbid}`">{{ track.artistName }}</NuxtLink>
+          <template v-else>{{ track.artistName }}</template>
+        </p>
         <NuxtLink class="album-link" v-if="track.album && track.albumId" :to="`/l/a/${track.albumId}`">
           {{ track.album }}
         </NuxtLink>

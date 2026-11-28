@@ -6,7 +6,10 @@
         <span class="header">
           <h1>{{ track.title }}</h1>
         </span>
-        <p class="artist">{{ typeof track.artist == "string" ? track.artist : track.artist.name }}</p>
+        <p class="artist">
+          <NuxtLink v-if="typeof track.artist !== 'string' && track.artist.musicbrainzId" class="artist-link" :to="`/ar/${track.artist.musicbrainzId}`">{{ track.artist.name }}</NuxtLink>
+          <template v-else>{{ typeof track.artist == "string" ? track.artist : track.artist.name }}</template>
+        </p>
         <NuxtLink class="album-link" v-if="track.album?.id" :to="`/a/${track.album.id}`">
           {{ track.album.title }}
         </NuxtLink>

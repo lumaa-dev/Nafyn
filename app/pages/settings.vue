@@ -411,6 +411,9 @@
           <p class="subsonic-note">{{ $t('settings.developer.sampleData.note') }}</p>
         </section>
       </div>
+      <p v-if="versionInfo?.shortCommit" class="build-version">
+        {{ $t('settings.version') }} <code>{{ versionInfo.shortCommit }}</code>
+      </p>
     </section>
   </div>
 </template>
@@ -555,6 +558,8 @@ const initial = computed(() => (displayName.value || user.value?.username || "?"
 
 const canSave = computed(() => displayName.value.trim().length >= 1 && displayName.value.trim().length <= 20);
 
+// the build's commit, at the very bottom; a failure just leaves the line out (nothing the person asked for)
+const { data: versionInfo } = useFetch<{ commit: string, shortCommit: string }>("/api/v1/version", { server: false, lazy: true });
 const { data, error: meError } = await useFetch<NafynUser>("/api/v1/user/me", { headers: { Authorization: token } });
 if (data.value) {
   applyUser(data.value);
@@ -1274,6 +1279,15 @@ watch(activeCategory, async (cat) => {
 .settings-nav button.active {
   background: #ffffffae;
   color: #000;
+}
+
+.build-version {
+  margin: 40px 0 0;
+  font-size: 0.85em;
+}
+
+.build-version code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 .settings-content {

@@ -45,7 +45,9 @@ export interface RankedEntity {
     isFirstEver: boolean,
     title: string | null,
     subtitle: string | null,
-    cover: string | null
+    cover: string | null,
+    /** playlists only: how many tracks it holds now */
+    trackCount?: number
 }
 
 export interface PeriodTotals {
@@ -101,6 +103,41 @@ function toRanked(row: StatsRow, rank: number, score: number): RankedEntity {
     };
 }
 
+/**
+ * Playlists are named in their own table and can be renamed, so their daily/monthly/yearly rows carry no display
+ * snapshot: the name and picture are read live here. One a person no longer has access to (left, made private
+ * by its owner) or that was deleted keeps no title, which the clients show as an unknown entry.
+ * `cover` is the playlist image path without credentials (clients add their own, like every other playlist image).
+ */
+async function withPlaylistDetails(userId: string, ranked: RankedEntity[]): Promise<RankedEntity[]> {
+    const ids = ranked.filter((r) => r.entityType === "playlist").map((r) => r.entityId);
+    if (ids.length === 0) return ranked;
+
+    const placeholders = ids.map(() => "?").join(", ");
+    const rows = await getLibrariesDb().prepare(`
+        SELECT p.id, p.title, p.image,
+               (SELECT COUNT(*) FROM playlist_entries e WHERE e.playlistId = p.id) AS trackCount
+        FROM playlists p
+        WHERE p.id IN (${placeholders})
+          AND (p.privacy = 'public' OR p.ownerId = ?
+               OR EXISTS (SELECT 1 FROM playlist_members m WHERE m.playlistId = p.id AND m.userId = ?))
+    `).all<{ id: string, title: string, image: string | null, trackCount: number | string }>(...ids, userId, userId);
+    const byId = new Map(rows.map((r) => [r.id, r]));
+
+    return ranked.map((r) => {
+        if (r.entityType !== "playlist") return r;
+        const found = byId.get(r.entityId);
+        if (!found) return r;
+        return {
+            ...r,
+            title: found.title,
+            subtitle: null,
+            cover: found.image ? `/api/v1/playlist/${found.id}/image?v=${encodeURIComponent(found.image)}` : null,
+            trackCount: num(found.trackCount)
+        };
+    });
+}
+
 // --- bucket reads (month / year) ---------------------------------------------------------------------
 
 // hard-coded table names and predicates, selected by a typed key. Nothing a caller sends ever becomes SQL.
@@ -128,7 +165,7 @@ export async function getTopEntitiesForBucket(
         LIMIT ${sqlInt(limit)} OFFSET ${sqlInt(offset)}
     `).all<StatsRow>({ userId, year: bucket.year, month: bucket.month ?? 0, entityType });
 
-    return rows.map((row) => toRanked(row, num(row.rank_in_bucket), num(row.score)));
+    return await withPlaylistDetails(userId, rows.map((row) => toRanked(row, num(row.rank_in_bucket), num(row.score))));
 }
 
 export async function countEntitiesForBucket(userId: string, level: BucketLevel, bucket: BucketKey, entityType: EntityType): Promise<number> {
@@ -212,9 +249,9 @@ export async function getTopEntitiesForRange(
     const scored = scoreEntities(scorable, toMs, config);
     const byId = new Map(rows.map((r) => [r.entity_id, r]));
 
-    return scored
+    return await withPlaylistDetails(userId, scored
         .slice(offset, offset + limit)
-        .map((s) => toRanked(byId.get(s.entityId)!, s.rank, s.score));
+        .map((s) => toRanked(byId.get(s.entityId)!, s.rank, s.score)));
 }
 
 export async function getRangeTotals(userId: string, fromMs: number, toMs: number): Promise<PeriodTotals> {
@@ -448,7 +485,7 @@ export async function getAllTimeTop(userId: string, entityType: EntityType, limi
     })), Date.now(), config);
 
     const byId = new Map(rows.map((r) => [r.entity_id, r]));
-    return scored.slice(offset, offset + limit).map((s) => toRanked(byId.get(s.entityId)!, s.rank, s.score));
+    return await withPlaylistDetails(userId, scored.slice(offset, offset + limit).map((s) => toRanked(byId.get(s.entityId)!, s.rank, s.score)));
 }
 
 export async function countAllTime(userId: string, entityType: EntityType): Promise<number> {

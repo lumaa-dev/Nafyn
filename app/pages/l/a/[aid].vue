@@ -4,7 +4,10 @@
       <CoverImage class="cover" :src="coverSrc(detail.album)" eager />
       <div class="meta">
         <h1>{{ detail.album.title }}</h1>
-        <p class="artist">{{ detail.album.artistName }}</p>
+        <p class="artist">
+          <NuxtLink v-if="detail.album.artistMbid" class="artist-link" :to="`/ar/${detail.album.artistMbid}`">{{ detail.album.artistName }}</NuxtLink>
+          <template v-else>{{ detail.album.artistName }}</template>
+        </p>
         <div class="actions">
           <button type="button" filled :disabled="tracks.length === 0" @click="playAll">{{ $t('playlist.play') }}</button>
           <button type="button" filled :disabled="tracks.length === 0" @click="shuffleAll">{{ $t('playlist.shuffle') }}</button>

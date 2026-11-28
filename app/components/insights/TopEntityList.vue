@@ -8,7 +8,7 @@
         :to="hrefFor(entity)"
         class="row"
       >
-        <CoverImage v-if="showCover" :src="entity.cover" />
+        <CoverImage v-if="showCover" :src="coverFor(entity)" />
         <span class="col">
           <span class="title">{{ entity.title ?? $t('insights.unknownEntity') }}</span>
           <span class="artist">{{ entity.subtitle ?? '' }}</span>
@@ -32,7 +32,8 @@ export interface RankedEntity {
   minutes: number,
   title: string | null,
   subtitle: string | null,
-  cover: string | null
+  cover: string | null,
+  trackCount?: number
 }
 
 const props = defineProps<{
@@ -53,6 +54,16 @@ function hrefFor(entity: RankedEntity): string | undefined {
     case "artist": return `/ar/${entity.entityId}`;
     case "playlist": return `/l/playlist/${entity.entityId}`;
   }
+}
+
+// a playlist's picture is served behind the login like every other playlist image: the path carries no
+// credentials, so the token is added here
+const { token: authToken } = useAuthToken();
+function coverFor(entity: RankedEntity): string | null {
+  if (entity.entityType === "playlist" && entity.cover?.startsWith("/api/v1/playlist/")) {
+    return `${entity.cover}&token=${encodeURIComponent(authToken.value ?? "")}`;
+  }
+  return entity.cover;
 }
 
 function metricFor(entity: RankedEntity): string {
